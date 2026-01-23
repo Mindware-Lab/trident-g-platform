@@ -784,14 +784,14 @@ function ZoneCoach() {
             <div className="h1">Your current state</div>
 
             <div className="card" style={{ boxShadow: 'none', background: 'rgba(34,170,255,0.08)', border: '1px solid rgba(39,100,183,0.18)', marginTop: 12 }}>
-              <div style={{ fontWeight: 900, fontSize: 18, color: 'rgba(0,0,0,0.90)' }}>
+              <div style={{ fontWeight: 900, fontSize: 36, color: 'rgba(0,0,0,0.90)' }}>
                 {MODE_LABELS[classification.primaryMode]}
               </div>
               <p className="p" style={{ marginTop: 6 }}>Confidence: <span style={{ fontWeight: 900, color: 'var(--deep)' }}>{classification.confidence}</span></p>
             </div>
 
             <div className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
-              <div style={{ fontWeight: 900, fontSize: 14, color: 'rgba(0,0,0,0.85)' }}>Recommended reset</div>
+              <div style={{ fontWeight: 900, fontSize: 20, color: 'rgba(0,0,0,0.85)' }}>Recommended reset</div>
               <div style={{ fontWeight: 900, fontSize: 16, color: 'var(--deep)', marginTop: 6 }}>
                 {BREATH_PATTERNS[breathPattern].name}
               </div>
