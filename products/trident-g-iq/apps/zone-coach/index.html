@@ -19,6 +19,41 @@
     /* Keep these minimal so brand.css remains the source of truth */
     body { margin: 0; padding: 0; font-family: var(--font, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif); }
     input[type="range"] { accent-color: var(--deep, #2764B7); }
+    .sliderLabel { font-weight: 900; font-size: 28px; color: rgba(0,0,0,0.85); }
+    .sliderValue { font-weight: 900; font-size: 24px; color: var(--deep); }
+    .sliderControl {
+      width: 100%;
+      margin-top: 8px;
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(39,100,183,0.18);
+      appearance: none;
+      -webkit-appearance: none;
+      outline: none;
+    }
+    .sliderControl::-webkit-slider-thumb {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--deep);
+      border: 2px solid #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      -webkit-appearance: none;
+      margin-top: -7px;
+    }
+    .sliderControl::-moz-range-thumb {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--deep);
+      border: 2px solid #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .sliderControl::-moz-range-track {
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(39,100,183,0.18);
+    }
   </style>
 </head>
 
@@ -705,8 +740,8 @@ function ZoneCoach() {
               {SLIDERS.map(s => (
                 <div key={s.key} className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
-                    <div style={{ fontWeight: 900, fontSize: 14, color: 'rgba(0,0,0,0.85)' }}>{s.label}</div>
-                    <div style={{ fontWeight: 900, color: 'var(--deep)' }}>{ratings[s.key]}</div>
+                    <div className="sliderLabel">{s.label}</div>
+                    <div className="sliderValue">{ratings[s.key]}</div>
                   </div>
                   <p className="p" style={{ marginTop: 6 }}>{s.desc}</p>
 
@@ -716,7 +751,7 @@ function ZoneCoach() {
                     max="10"
                     value={ratings[s.key]}
                     onChange={(e) => setRatings({ ...ratings, [s.key]: parseInt(e.target.value, 10) })}
-                    style={{ width: '100%', marginTop: 8 }}
+                    className="sliderControl"
                   />
                 </div>
               ))}
