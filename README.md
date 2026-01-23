@@ -13,7 +13,7 @@ This repo is the **root** for two sister products that share a common architectu
 
 ---
 
-## 1) What this is optimising (the core promises)
+## 1) What this is optimising (the main promises)
 
 ### A. Trainable zone (state control + fast re-entry)
 
@@ -25,7 +25,7 @@ Your best strategies don’t help if you can’t access them under fatigue, stre
 - `too_cold` (flat, avoidant, under-engaged)
 - `shaky` (volatile, unstable, drifting)
 
-### B. Far transfer as the product (not the hope)
+### B. Far transfer as the product  
 
 Most training improves performance inside the training wrapper. Trident-G only counts a “win” when the learning survives:
 
@@ -71,7 +71,7 @@ This is how “insight” becomes a repeatable operator rather than a one-off mo
 
 ## 3) Four-phase development plan  
 
-### Phase 1 — Ship now (hybrid stack)
+### Phase 1 — Deliver now (hybrid stack)
 
 - N-back games delivered via the **legacy Adobe AIR desktop app** (downloadable).
 - Web apps on GitHub Pages provide:
