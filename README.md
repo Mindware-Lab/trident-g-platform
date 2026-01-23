@@ -25,7 +25,7 @@ Your best strategies don’t help if you can’t access them under fatigue, stre
 - `too_cold` (flat, avoidant, under-engaged)
 - `shaky` (volatile, unstable, drifting)
 
-### B. Far transfer as the product 
+### B. Far transfer as the product (not the hope)
 
 Most training improves performance inside the training wrapper. Trident-G only counts a “win” when the learning survives:
 
@@ -69,7 +69,7 @@ This is how “insight” becomes a repeatable operator rather than a one-off mo
 
 ---
 
-## 3) Four-phase development plan 
+## 3) Four-phase development plan (shipping without blocking)
 
 ### Phase 1 — Ship now (hybrid stack)
 
@@ -115,16 +115,36 @@ This is how “insight” becomes a repeatable operator rather than a one-off mo
 **Universal loop unit (runs at micro/meso/macro scales):**  
 **Gate → Frame → Map → Choose mode → Test → Update → Compile (or reframe)**
 
+### Gate (MVP deliverables)
+
+Gate is not just “how you feel”. It is a small, explicit control layer that prevents panic-grind and avoidant wandering.
+
+At minimum, Gate records:
+- `corridorState` (`too_hot | in_band | too_cold | shaky`)
+- `rigourBudget` (`low | medium | high`)
+- `timeboxMinutes` (session time cap)
+- `reentryOperatorUsed` (downshift / upshift / stabilise)
+- `reentryAttempts` (count)
+- `stopRuleFired` + `stopRuleReason` (if you fail to re-enter, end cleanly and restart later)
+
 ### Shared app roles
 
 - **Zone Coach**  
-  State gate + re-entry operators + rigour defaults + “stop rules” (prevents panic-grind and avoidant wandering).
+  State gate + re-entry operators + rigour defaults + timebox + stop rules (prevents panic-grind and avoidant wandering).
 - **Capacity Coach (training hub)**  
   Type-1 primitives that make operators cheaper to run: interference control, updating/switching, calibration, relational fluency.
 - **Mindware Coach**  
   Type-2 operator installation: map/tether → discriminating test → compression into a portable card → portability checks → cue-fired mission.
 - **Tracking Battery**  
   Pre/post and longitudinal probes for “difference reports” (not just in-app scores).
+
+### “Transfer tether” (portable invariant Y)
+
+To make far transfer auditable, Mindware Coach (and occasionally Capacity Coach) asks for a one-line **transfer tether**:
+
+- `tetherY`: *what must generalise across wrapper swaps?*
+
+This becomes the anchor for portability checks and delayed re-checks.
 
 ---
 
@@ -183,7 +203,6 @@ trident-g-platform/
     scripts/                     # Build/copy scripts for shared assets, pack versioning, export helpers
     qa/                          # Link checklists, smoke-test steps, release checklists
 
-```markdown
 ## Why this structure works for the business plan
 
 - Standalone apps are just **entry points** that can live inside either product site or be linked directly.
@@ -200,10 +219,18 @@ trident-g-platform/
 
 **Each session logs:**
 - corridor state (`too_hot | in_band | too_cold | shaky`)
+- rigour budget (`low | medium | high`)
+- timebox minutes (`timeboxMinutes`)
 - re-entry operator used (downshift / upshift / stabilise)
-- rigour budget + mode choice (explore/exploit)
+- re-entry attempts (`reentryAttempts`)
+- stop rule fired (`stopRuleFired`) + reason (`stopRuleReason`)
+- mode choice (explore/exploit)
 - task results and drift markers
 - mindware card outputs (trigger → steps → self-check → near-miss/boundary)
+- transfer tether (`tetherY`)
+- end-of-block drift summary:
+  - `performanceDrift` (`improving | stable | worse`)
+  - `endCorridorState` (`too_hot | in_band | too_cold | shaky`)
 
 **Export:**
 - JSON export for personal backups
@@ -225,6 +252,7 @@ Keep the same schemas, change the sink:
 - Use a simple release checklist before pushing to `main`.
 
 ### GitHub Pages
+
 Each product site can be hosted from:
 - `/products/trident-g-iq/`
 - `/products/trident-g-resilience/`
@@ -280,4 +308,4 @@ Ship Trident-G-Resilience as a profile-driven variant:
 - **Wrapper:** the surface format of a task or situation.
 - **Far transfer:** a skill that still works after the wrapper changes.
 - **Mindware card:** a compact reusable tool (trigger → steps → self-check → boundary).
-```
+
