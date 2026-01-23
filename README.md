@@ -69,7 +69,7 @@ This is how “insight” becomes a repeatable operator rather than a one-off mo
 
 ---
 
-## 3) Four-phase development plan (shipping without blocking)
+## 3) Four-phase development plan  
 
 ### Phase 1 — Ship now (hybrid stack)
 
