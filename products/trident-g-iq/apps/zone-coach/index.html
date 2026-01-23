@@ -35,9 +35,9 @@
       width: 26px;
       height: 26px;
       border-radius: 50%;
-      background: var(--deep);
+      background: limegreen;
       border: 2px solid #fff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      box-shadow: 0 0 10px rgba(0,0,0,0.55);
       -webkit-appearance: none;
       margin-top: -7px;
     }
@@ -45,9 +45,9 @@
       width: 26px;
       height: 26px;
       border-radius: 50%;
-      background: var(--deep);
+      background: limegreen;
       border: 2px solid #fff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      box-shadow: 0 0 10px rgba(0,0,0,0.55);
     }
     .sliderControl::-moz-range-track {
       height: 12px;
@@ -743,7 +743,7 @@ function ZoneCoach() {
                     <div className="sliderLabel">{s.label}</div>
                     <div className="sliderValue">{ratings[s.key]}</div>
                   </div>
-                  <p className="p" style={{ marginTop: 6 }}>{s.desc}</p>
+                  <p className="p" style={{ marginTop: 6, marginBottom: 10 }}>{s.desc}</p>
 
                   <input
                     type="range"
