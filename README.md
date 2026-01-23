@@ -1,3 +1,4 @@
+
 # Trident-G Platform (IQ Mindware Suite)
 
 A unified, modular app suite for training **general adaptive intelligence**:
@@ -19,7 +20,6 @@ This repo is the **root** for two sister products that share a common architectu
 Your best strategies don’t help if you can’t access them under fatigue, stress, interruptions, or pressure. The suite treats “state” as a first-class variable: you learn to **enter**, **stay**, and **re-enter** a workable band.
 
 **Zone labels (internal, consistent across apps):**
-
 - `too_hot` (overloaded, reactive, tunnel vision)
 - `in_band` (workable, trainable)
 - `too_cold` (flat, avoidant, under-engaged)
@@ -152,6 +152,8 @@ This becomes the anchor for portability checks and delayed re-checks.
 
 This repo is organised as a **single “platform root”** with shared assets and two product “sites”.
 
+> The folder tree below is a **code block** on purpose so it stays visually distinct from the README headings and text.
+
 ```text
 trident-g-platform/
   README.md
@@ -202,14 +204,17 @@ trident-g-platform/
   tools/                         # Dev utilities (optional in Phase 1–2)
     scripts/                     # Build/copy scripts for shared assets, pack versioning, export helpers
     qa/                          # Link checklists, smoke-test steps, release checklists
+````
+
+---
 
 ## Why this structure works for the business plan
 
-- Standalone apps are just **entry points** that can live inside either product site or be linked directly.
-- Phase 1 AIR dependency is isolated to **routing in Capacity Coach** (no re-architecture later).
-- Phase 2 adds **relational n-back web apps** without touching the rest of the suite.
-- Phase 3 swaps **storage/auth** behind the scenes (shared schemas + shared logging layer make this tractable).
-- Phase 4 becomes a **controlled variant build (Resilience)** rather than a forked rewrite.
+* Standalone apps are just **entry points** that can live inside either product site or be linked directly.
+* Phase 1 AIR dependency is isolated to **routing in Capacity Coach** (no re-architecture later).
+* Phase 2 adds **relational n-back web apps** without touching the rest of the suite.
+* Phase 3 swaps **storage/auth** behind the scenes (shared schemas + shared logging layer make this tractable).
+* Phase 4 becomes a **controlled variant build (Resilience)** rather than a forked rewrite.
 
 ---
 
@@ -218,44 +223,50 @@ trident-g-platform/
 ### Local storage (MVP)
 
 **Each session logs:**
-- corridor state (`too_hot | in_band | too_cold | shaky`)
-- rigour budget (`low | medium | high`)
-- timebox minutes (`timeboxMinutes`)
-- re-entry operator used (downshift / upshift / stabilise)
-- re-entry attempts (`reentryAttempts`)
-- stop rule fired (`stopRuleFired`) + reason (`stopRuleReason`)
-- mode choice (explore/exploit)
-- task results and drift markers
-- mindware card outputs (trigger → steps → self-check → near-miss/boundary)
-- transfer tether (`tetherY`)
-- end-of-block drift summary:
-  - `performanceDrift` (`improving | stable | worse`)
-  - `endCorridorState` (`too_hot | in_band | too_cold | shaky`)
+
+* corridor state (`too_hot | in_band | too_cold | shaky`)
+* rigour budget (`low | medium | high`)
+* timebox minutes (`timeboxMinutes`)
+* re-entry operator used (downshift / upshift / stabilise)
+* re-entry attempts (`reentryAttempts`)
+* stop rule fired (`stopRuleFired`) + reason (`stopRuleReason`)
+* mode choice (explore/exploit)
+* task results and drift markers
+* mindware card outputs (trigger → steps → self-check → near-miss/boundary)
+* transfer tether (`tetherY`)
+* end-of-block drift summary:
+
+  * `performanceDrift` (`improving | stable | worse`)
+  * `endCorridorState` (`too_hot | in_band | too_cold | shaky`)
 
 **Export:**
-- JSON export for personal backups
-- optional CSV summaries for quick trend checks
+
+* JSON export for personal backups
+* optional CSV summaries for quick trend checks
 
 ### Phase 3 (Supabase)
 
 Keep the same schemas, change the sink:
-- local-first buffering → sync when signed in
-- cohort dashboards + coaching review tools
+
+* local-first buffering → sync when signed in
+* cohort dashboards + coaching review tools
 
 ---
 
 ## 7) Development workflow (recommended)
 
 ### Day-to-day
-- Work locally in **VS Code**, commit small changes, push to GitHub.
-- Prefer **feature branches** for structural changes (moving folders, link rewrites).
-- Use a simple release checklist before pushing to `main`.
+
+* Work locally in **VS Code**, commit small changes, push to GitHub.
+* Prefer **feature branches** for structural changes (moving folders, link rewrites).
+* Use a simple release checklist before pushing to `main`.
 
 ### GitHub Pages
 
 Each product site can be hosted from:
-- `/products/trident-g-iq/`
-- `/products/trident-g-resilience/`
+
+* `/products/trident-g-iq/`
+* `/products/trident-g-resilience/`
 
 If needed later: split into separate repos, but keep this mono-root while iterating fast.
 
@@ -264,48 +275,56 @@ If needed later: split into separate repos, but keep this mono-root while iterat
 ## 8) Roadmap (high-level)
 
 ### Phase 1 (now)
-- Stabilise Zone Coach + Tracking + Capacity routing to AIR
-- Add minimal Mindware Coach with one scenario pack
-- Publish IQ + Resilience hubs with clear product entry points
+
+* Stabilise Zone Coach + Tracking + Capacity routing to AIR
+* Add minimal Mindware Coach with one scenario pack
+* Publish IQ + Resilience hubs with clear product entry points
 
 ### Phase 2
-- Ship 3–4 relational n-back web apps
-- Integrate with Zone gating + session routing
-- Add portability probes + delayed re-check flows
+
+* Ship 3–4 relational n-back web apps
+* Integrate with Zone gating + session routing
+* Add portability probes + delayed re-check flows
 
 ### Phase 3
-- Auth/subscriptions + central telemetry
-- Coaching dashboards, cohort management, data governance
+
+* Auth/subscriptions + central telemetry
+* Coaching dashboards, cohort management, data governance
 
 ### Phase 4
+
 Ship Trident-G-Resilience as a profile-driven variant:
-- resilience-oriented n-back catalogue
-- resilience mindware packs
-- resilience tracking emphasis (state drift + re-entry stability)
-- shared Zone Coach + shared loop architecture
+
+* resilience-oriented n-back catalogue
+* resilience mindware packs
+* resilience tracking emphasis (state drift + re-entry stability)
+* shared Zone Coach + shared loop architecture
 
 ---
 
 ## 9) Safety, privacy, and boundaries
 
-- This platform is for **performance and self-regulation training**, not diagnosis.
-- Biosignals (HR/HRV) are treated as **sensitive** and should be minimised, consented, and optional.
-- Stop rules and dose control are built in to avoid “panic-grind” and avoidant wandering.
+* This platform is for **performance and self-regulation training**, not diagnosis.
+* Biosignals (HR/HRV) are treated as **sensitive** and should be minimised, consented, and optional.
+* Stop rules and dose control are built in to avoid “panic-grind” and avoidant wandering.
 
 ---
 
 ## 10) Licence and ownership
 
-- © Mark Ashton Smith / Mindware Lab. All rights reserved unless stated otherwise.
-- Third-party libraries retain their own licences.
+* © Mark Ashton Smith / Mindware Lab. All rights reserved unless stated otherwise.
+* Third-party libraries retain their own licences.
 
 ---
 
 ## 11) Quick glossary (plain terms)
 
-- **Zone / corridor:** your workable band where thinking is trainable.
-- **State drift:** sliding out of the band (hot/cold/volatile).
-- **Wrapper:** the surface format of a task or situation.
-- **Far transfer:** a skill that still works after the wrapper changes.
-- **Mindware card:** a compact reusable tool (trigger → steps → self-check → boundary).
+* **Zone / corridor:** your workable band where thinking is trainable.
+* **State drift:** sliding out of the band (hot/cold/volatile).
+* **Wrapper:** the surface format of a task or situation.
+* **Far transfer:** a skill that still works after the wrapper changes.
+* **Mindware card:** a compact reusable tool (trigger → steps → self-check → boundary).
 
+```
+::contentReference[oaicite:0]{index=0}
+```
