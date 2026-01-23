@@ -422,7 +422,7 @@
           </div>
 
           <div className="content">
-            <div className="card">
+            <div className="card" style={{ maxWidth: 820, margin: '0 auto' }}>
               <div className="h1">{pattern.name}</div>
               <p className="p">{pattern.description}</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 10 }}>
@@ -490,7 +490,7 @@
                 <div className="p" style={{ marginTop: 6, color: 'rgba(0,0,0,0.78)' }}>{pattern.safety}</div>
               </div>
 
-              <div className="btnRow">
+              <div className="btnRow" style={{ flexDirection: 'column' }}>
                 {!running ? (
                   <button onClick={start} className="btn btnPrimary" style={{ flex: '1 1 220px' }}>
                     Start 3-minute reset
