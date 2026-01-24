@@ -116,6 +116,12 @@
       Low: 'Low confidence'
     });
 
+    const SIGNAL_COLORS = Object.freeze({
+      Good: '#1f7a1f',
+      Mixed: '#b56a00',
+      Poor: '#b00020'
+    });
+
     // Map classifier output to the simple gate used across the ecosystem
     const toZoneGate = (primaryMode) => {
       if (primaryMode === 'PSI') return 'in_band';
@@ -242,6 +248,112 @@
       const confidence = top >= 0.60 ? 'High' : top >= 0.45 ? 'Medium' : 'Low';
 
       return { primaryMode, modeProbs: probs, confidence, N_eff };
+    }
+
+    function computeStateConfidence({ signalClarity, probe, interruptions, ratings }) {
+      const clarity = (signalClarity ?? 7);
+
+      const tabSwitches = interruptions?.tabSwitches ?? 0;
+      const blurs = interruptions?.blurs ?? 0;
+      const interruptScore = tabSwitches + blurs;
+
+      const hits = probe?.rts?.length ?? 0;
+      const trials = probe?.trials ?? 0;
+      const falseStarts = probe?.falseStarts ?? 0;
+      const lapses = probe?.lapses ?? 0;
+
+      const lowData = (trials > 0) && (hits < Math.max(10, Math.floor(trials * 0.6)));
+      const noisyProbe = falseStarts >= 4 || lapses >= 3;
+
+      const selfSaysSteady = ratings && (ratings.F >= 6 && ratings.N <= 4 && ratings.O <= 5);
+      const variability = probe?.madScaledMs ?? probe?.madMs ?? null;
+      const behaviourSaysNoisy = noisyProbe || (variability !== null && variability >= 260);
+
+      const disagreement = selfSaysSteady && behaviourSaysNoisy;
+
+      if (clarity <= 4 || interruptScore >= 2 || lowData || disagreement) return 'Low';
+      if (clarity <= 6 || interruptScore === 1 || noisyProbe) return 'Medium';
+      return 'High';
+    }
+
+    function computeOverallConfidence(modeConfidence, stateConfidence) {
+      if (stateConfidence === 'Low') return 'Low';
+      if (stateConfidence === 'Medium' && modeConfidence === 'High') return 'Medium';
+      return modeConfidence;
+    }
+
+    function computeSignalQuality({ probe, interruptions, ratings }) {
+      const tabSwitches = interruptions?.tabSwitches ?? 0;
+      const blurs = interruptions?.blurs ?? 0;
+      const interruptScore = tabSwitches + blurs;
+
+      const hits = probe?.rts?.length ?? 0;
+      const trials = probe?.trials ?? 0;
+      if (!trials) return { label: 'Poor', reason: 'no probe data' };
+
+      const hitRate = hits / trials;
+      const lapses = probe?.lapses ?? 0;
+      const falseStarts = probe?.falseStarts ?? 0;
+      let variability = probe?.madScaledMs ?? probe?.madMs ?? null;
+      if (variability === null && Array.isArray(probe?.rts) && probe.rts.length) {
+        const mean = probe.rts.reduce((a, b) => a + b, 0) / probe.rts.length;
+        const sd = Math.sqrt(probe.rts.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / probe.rts.length);
+        variability = Math.round(sd);
+      }
+
+      const selfSaysSteady = ratings && (ratings.F >= 6 && ratings.N <= 4 && ratings.O <= 5);
+      const behaviourSaysNoisy = lapses >= 2 || falseStarts >= 2 || hitRate < 0.85 || (variability !== null && variability >= 260);
+      const disagreement = selfSaysSteady && behaviourSaysNoisy;
+
+      const lowHits = hitRate < 0.8;
+      const someHitLoss = hitRate < 0.9;
+      const manyLapses = lapses >= 3;
+      const someLapses = lapses >= 1;
+      const manyFalseStarts = falseStarts >= 3;
+      const someFalseStarts = falseStarts >= 1;
+      const highVariability = variability !== null && variability >= 260;
+      const midVariability = variability !== null && variability >= 200;
+
+      const objectivePoor = lowHits || manyLapses || manyFalseStarts || interruptScore >= 2 || highVariability;
+      const mixedFromProbe = someHitLoss || someLapses || someFalseStarts || midVariability;
+
+      let label = 'Good';
+      if (objectivePoor) {
+        label = 'Poor';
+      } else if (mixedFromProbe) {
+        label = 'Mixed';
+      }
+
+      const reasons = [];
+      if (interruptScore >= 2) {
+        reasons.push('Multiple interruptions');
+      } else if (interruptScore === 1) {
+        reasons.push('1 interruption');
+      }
+      if (lowHits) reasons.push('Low hit rate');
+      else if (someHitLoss) reasons.push('Reduced hit rate');
+      if (manyLapses) reasons.push('Several lapses');
+      else if (someLapses) reasons.push('Some lapses');
+      if (manyFalseStarts) reasons.push('Multiple early taps');
+      else if (someFalseStarts) reasons.push('Early taps');
+      if (highVariability) reasons.push('High RT variability');
+      else if (midVariability) reasons.push('Elevated RT variability');
+
+      if (label === 'Good' && disagreement) {
+        label = 'Mixed';
+        return { label, reason: 'Self-report and probe differ today' };
+      }
+
+      if (label === 'Good') {
+        return { label, reason: 'Few interruptions, consistent responses' };
+      }
+
+      if (label === 'Mixed' && reasons.length === 0) {
+        return { label, reason: 'Self-report and probe differ today' };
+      }
+
+      const reason = reasons.length ? reasons.slice(0, 2).join(' + ') : 'Mixed signals today';
+      return { label, reason };
     }
 
     // -----------------------------
@@ -520,7 +632,7 @@
     // Simple dot probe (fast RT check)
     // -----------------------------
     function DotProbe({ label, onComplete }) {
-      const TRIALS = 40;
+      const TRIALS = 30;
       const MIN_DELAY_MS = 400;
       const MAX_DELAY_MS = 1200;
       const RESPONSE_WINDOW_MS = 1200;
@@ -532,6 +644,7 @@
       const [result, setResult] = useState(null);
       const rtsRef = useRef([]);
       const lapseRef = useRef(0);
+      const falseStartRef = useRef(0);
       const activeRef = useRef(false);
       const respondedRef = useRef(false);
       const showAtRef = useRef(null);
@@ -564,6 +677,22 @@
         }, delay);
       }, []);
 
+      const median = (arr) => {
+        if (!arr.length) return null;
+        const sorted = arr.slice().sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 === 1
+          ? sorted[mid]
+          : (sorted[mid - 1] + sorted[mid]) / 2;
+      };
+
+      const mad = (arr) => {
+        if (!arr.length) return null;
+        const med = median(arr);
+        const absDevs = arr.map((x) => Math.abs(x - med));
+        return median(absDevs);
+      };
+
       useEffect(() => {
         if (!started) return;
         if (trialIndex >= TRIALS) {
@@ -572,21 +701,22 @@
           const rts = rtsRef.current.slice();
           const n = rts.length;
           const mean = n ? rts.reduce((a, b) => a + b, 0) / n : null;
-          const sorted = rts.slice().sort((a, b) => a - b);
-          const median = n ? sorted[Math.floor(n / 2)] : null;
-          const sd = n && mean !== null
-            ? Math.sqrt(rts.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / n)
-            : null;
+          const medianRt = median(rts);
+          const madRt = mad(rts);
+          const madScaled = madRt === null ? null : madRt * 1.4826;
 
           setShowDot(false);
           setStatus('Complete');
           setResult({
             trials: TRIALS,
+            hits: rts.length,
             rts,
             meanMs: mean ? Math.round(mean) : null,
-            medianMs: median ? Math.round(median) : null,
-            sdMs: sd ? Math.round(sd) : null,
-            lapses: lapseRef.current
+            medianMs: medianRt ? Math.round(medianRt) : null,
+            madMs: madRt ? Math.round(madRt) : null,
+            madScaledMs: madScaled ? Math.round(madScaled) : null,
+            lapses: lapseRef.current,
+            falseStarts: falseStartRef.current
           });
           return;
         }
@@ -596,7 +726,11 @@
       }, [started, trialIndex, nextTrial, onComplete]);
 
       const handleTap = () => {
-        if (!started || !activeRef.current || !showAtRef.current) return;
+        if (!started || result) return;
+        if (!activeRef.current || !showAtRef.current) {
+          if (status === 'Wait') falseStartRef.current += 1;
+          return;
+        }
         const rt = performance.now() - showAtRef.current;
         rtsRef.current.push(rt);
         respondedRef.current = true;
@@ -609,6 +743,7 @@
       const start = () => {
         rtsRef.current = [];
         lapseRef.current = 0;
+        falseStartRef.current = 0;
         setResult(null);
         setTrialIndex(0);
         setStarted(true);
@@ -653,7 +788,7 @@
                     <p className="p" style={{ marginTop: 6 }}>
                       Median RT: <span style={{ fontWeight: 900 }}>{result.medianMs ?? '—'} ms</span>
                       <span style={{ color: 'var(--grey-600)' }}> • Variability: </span>
-                      <span style={{ fontWeight: 900 }}>{result.sdMs ?? '—'} ms</span>
+                      <span style={{ fontWeight: 900 }}>{result.madScaledMs ?? result.madMs ?? '—'} ms</span>
                       <span style={{ color: 'var(--grey-600)' }}> • Lapses: </span>
                       <span style={{ fontWeight: 900 }}>{result.lapses ?? 0}</span>
                     </p>
@@ -727,6 +862,22 @@ function ZoneCoach() {
   const [breathPattern, setBreathPattern] = useState(null);
   const [postBreathReport, setPostBreathReport] = useState(null);
 
+  const interruptionsRef = useRef({ tabSwitches: 0, blurs: 0 });
+
+  useEffect(() => {
+    const onBlur = () => { interruptionsRef.current.blurs += 1; };
+    const onVisibilityChange = () => {
+      if (document.hidden) interruptionsRef.current.tabSwitches += 1;
+    };
+
+    window.addEventListener('blur', onBlur);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('blur', onBlur);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
+
   const brand = useMemo(() => ({
     appName: 'Zone Coach',
     subtitle: 'Quick state check → mindful reset → start training',
@@ -784,7 +935,22 @@ function ZoneCoach() {
 
     const preInBand = classification.primaryMode === 'PSI';
     const postInBand = report === 'Ψ-band';
-    const proceedNormal = postInBand || preInBand;
+    const stateConfidence = computeStateConfidence({
+      signalClarity: null,
+      probe: probePre,
+      interruptions: interruptionsRef.current,
+      ratings
+    });
+    const overallConfidence = computeOverallConfidence(classification.confidence, stateConfidence);
+    const signalQualityLocal = computeSignalQuality({
+      probe: probePre,
+      interruptions: interruptionsRef.current,
+      ratings
+    });
+    const proceedNormal =
+      (postInBand || preInBand)
+      && overallConfidence !== 'Low'
+      && signalQualityLocal.label !== 'Poor';
 
     const derived = {
       N_eff: classification.N_eff,
@@ -806,8 +972,13 @@ function ZoneCoach() {
         primaryMode: classification.primaryMode,
         label: MODE_LABELS[classification.primaryMode],
         modeProbs: classification.modeProbs,
-        confidence: classification.confidence
+        confidence: classification.confidence,
+        modeConfidence: classification.confidence,
+        stateConfidence,
+        overallConfidence
       },
+      signalQuality: signalQualityLocal,
+      interruptions: { ...interruptionsRef.current },
       breathing: {
         patternId: breathPattern,
         patternName: BREATH_PATTERNS[breathPattern].name,
@@ -847,8 +1018,28 @@ function ZoneCoach() {
     setStep('complete');
   };
 
+  const stateConfidence = classification
+    ? computeStateConfidence({
+      signalClarity: null,
+      probe: probePre,
+      interruptions: interruptionsRef.current,
+      ratings
+    })
+    : null;
+  const overallConfidence = classification
+    ? computeOverallConfidence(classification.confidence, stateConfidence)
+    : null;
+  const signalQuality = classification
+    ? computeSignalQuality({
+      probe: probePre,
+      interruptions: interruptionsRef.current,
+      ratings
+    })
+    : null;
+
   const startNewCheck = () => {
     setStep('probePre');
+    interruptionsRef.current = { tabSwitches: 0, blurs: 0 };
     setPostBreathReport(null);
     setClassification(null);
     setBreathPattern(null);
@@ -1034,7 +1225,25 @@ function ZoneCoach() {
               <div style={{ fontWeight: 900, fontSize: 36, color: 'rgba(0,0,0,0.90)' }}>
                 {MODE_LABELS[classification.primaryMode]}
               </div>
-              <p className="p" style={{ marginTop: 6 }}>Confidence: <span style={{ fontWeight: 900, color: 'var(--deep)' }}>{CONF_UI[classification.confidence] || classification.confidence}</span></p>
+              <p className="p" style={{ marginTop: 6 }}>
+                Confidence: <span style={{ fontWeight: 900, color: 'var(--deep)' }}>{CONF_UI[overallConfidence || classification.confidence] || overallConfidence || classification.confidence}</span>
+              </p>
+              {signalQuality && (
+                <>
+                  <p className="p" style={{ marginTop: 6 }}>
+                    Signal quality (reliability):{' '}
+                    <span
+                      style={{ fontWeight: 900, color: SIGNAL_COLORS[signalQuality.label] || 'var(--deep)' }}
+                      title={signalQuality.reason}
+                    >
+                      {signalQuality.label}
+                    </span>
+                  </p>
+                  <p className="p" style={{ marginTop: 2, color: 'var(--grey-600)' }}>
+                    {signalQuality.reason}
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
@@ -1097,7 +1306,10 @@ function ZoneCoach() {
               const zoneGate = toZoneGate(classification.primaryMode);
               const preInBand = classification.primaryMode === 'PSI';
               const postInBand = postBreathReport === 'Ψ-band';
-              const proceedNormal = preInBand || postInBand;
+              const proceedNormal =
+                (preInBand || postInBand)
+                && overallConfidence !== 'Low'
+                && (!signalQuality || signalQuality.label !== 'Poor');
 
               const suggestion = suggestedCapacityFromMode(classification.primaryMode);
 
