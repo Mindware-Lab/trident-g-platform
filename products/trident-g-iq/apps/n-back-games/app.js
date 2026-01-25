@@ -7,6 +7,11 @@ const MATCH_RATE = 0.25;
 const MIN_MATCHES = 3;
 const N_LEVELS = [1, 2, 3];
 const SPEEDS = [3000, 1500];
+const LAYOUT_MODES = [
+  { id: 'rotate', label: 'Rotation-only' },
+  { id: 'rotate-swap', label: 'Rotation + occasional swap' },
+  { id: 'random', label: 'Full random permutation' }
+];
 
 const NODES = [
   { id: 'A', label: 'Red', colour: '#ef4444' },
@@ -224,12 +229,42 @@ function squarePositions() {
   ];
 }
 
-function nextPositions(rng) {
+function applyJitter(rng, positions) {
   const jitter = 10;
-  return shuffle(rng, squarePositions()).map((pos) => ({
+  return positions.map((pos) => ({
     x: pos.x + randInt(rng, -jitter, jitter),
     y: pos.y + randInt(rng, -jitter, jitter)
   }));
+}
+
+function rotatePermutation(perm, step) {
+  const n = perm.length;
+  return perm.map((_, i) => perm[(i - step + n) % n]);
+}
+
+function swapTwo(rng, perm) {
+  const copy = perm.slice();
+  const a = randInt(rng, 0, copy.length - 1);
+  let b = randInt(rng, 0, copy.length - 1);
+  if (a === b) b = (b + 1) % copy.length;
+  [copy[a], copy[b]] = [copy[b], copy[a]];
+  return copy;
+}
+
+function nextPermutation(rng, mode, prev) {
+  if (mode === 'random') return shuffle(rng, prev);
+  const step = rng() < 0.5 ? 1 : -1;
+  let next = rotatePermutation(prev, step);
+  if (mode === 'rotate-swap' && rng() < 0.3) {
+    next = swapTwo(rng, next);
+  }
+  return next;
+}
+
+function positionsFromPermutation(rng, perm) {
+  const base = squarePositions();
+  const mapped = perm.map((posIndex) => base[posIndex]);
+  return applyJitter(rng, mapped);
 }
 
 function useKeyPress(handler) {
@@ -351,7 +386,9 @@ function App() {
   const [nLevel, setNLevel] = useState(1);
   const [blockData, setBlockData] = useState(null);
   const [trialIndex, setTrialIndex] = useState(0);
-  const [positions, setPositions] = useState(nextPositions(mulberry32(1)));
+  const [layoutMode, setLayoutMode] = useState('rotate');
+  const [permutation, setPermutation] = useState([0, 1, 2, 3]);
+  const [positions, setPositions] = useState(positionsFromPermutation(mulberry32(1), [0, 1, 2, 3]));
   const [blockStats, setBlockStats] = useState(null);
   const [quizData, setQuizData] = useState([]);
   const [quizAnswers, setQuizAnswers] = useState({});
@@ -392,7 +429,9 @@ function App() {
     const data = generateBlock(nextN, baseTrials, rngRef.current);
     setBlockData(data);
     setTrialIndex(0);
-    setPositions(nextPositions(rngRef.current));
+    const startPerm = shuffle(rngRef.current, [0, 1, 2, 3]);
+    setPermutation(startPerm);
+    setPositions(positionsFromPermutation(rngRef.current, startPerm));
     statsRef.current = { hits: 0, misses: 0, falseAlarms: 0, correctRejections: 0 };
     setBlockStats(null);
     setQuizData([]);
@@ -411,7 +450,9 @@ function App() {
     }
 
     responseRef.current = false;
-    setPositions(nextPositions(rngRef.current));
+    const nextPerm = nextPermutation(rngRef.current, layoutMode, permutation);
+    setPermutation(nextPerm);
+    setPositions(positionsFromPermutation(rngRef.current, nextPerm));
 
     const timer = setTimeout(() => {
       const match = blockData.matchSet.has(trialIndex);
@@ -424,7 +465,7 @@ function App() {
     }, speedMs);
 
     return () => clearTimeout(timer);
-  }, [screen, blockData, trialIndex, speedMs]);
+  }, [screen, blockData, trialIndex, speedMs, layoutMode, permutation]);
 
   useEffect(() => {
     if (screen !== 'quiz' || quizData.length === 0) return;
@@ -750,6 +791,21 @@ function App() {
               <button className="btn" onClick={continueAfterBlock}>
                 {currentBlock + 1 >= BLOCKS_PER_SESSION ? 'Finish session' : 'Next block'}
               </button>
+            </div>
+
+            <div className="card card--soft" style={{ marginTop: 16 }}>
+              <div className="stat-label">Surface variation (next block)</div>
+              <div className="toggle" style={{ marginTop: 10 }}>
+                {LAYOUT_MODES.map((mode) => (
+                  <button
+                    key={mode.id}
+                    className={layoutMode === mode.id ? 'active' : ''}
+                    onClick={() => setLayoutMode(mode.id)}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
             </div>
             </div>
           </div>

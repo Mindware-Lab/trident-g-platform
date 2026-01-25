@@ -196,6 +196,7 @@ body {
   grid-template-columns: 1fr;
   gap: 16px;
   align-items: center;
+  justify-items: center;
 }
 
 .graph-board {
@@ -203,6 +204,7 @@ body {
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   padding: 16px;
+  margin: 0 auto;
 }
 
 .graph-meta {
