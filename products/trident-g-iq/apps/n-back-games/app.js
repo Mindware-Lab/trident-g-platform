@@ -215,13 +215,21 @@ function saveState(state) {
   }
 }
 
-function fixedPositions() {
+function squarePositions() {
   return [
     { x: 80, y: 80 },
     { x: 240, y: 80 },
     { x: 80, y: 240 },
     { x: 240, y: 240 }
   ];
+}
+
+function nextPositions(rng) {
+  const jitter = 10;
+  return shuffle(rng, squarePositions()).map((pos) => ({
+    x: pos.x + randInt(rng, -jitter, jitter),
+    y: pos.y + randInt(rng, -jitter, jitter)
+  }));
 }
 
 function useKeyPress(handler) {
@@ -268,6 +276,24 @@ function GraphView({ token, positions }) {
   const width = 320;
   const height = 320;
   const edge = token?.edge || null;
+  const nodeRadius = 20;
+  const nodeStroke = 2;
+  const arrowGap = 8;
+
+  const shortenLine = (from, to) => {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const offset = nodeRadius + nodeStroke + arrowGap;
+    const ux = dx / dist;
+    const uy = dy / dist;
+    return {
+      x1: from.x + ux * offset,
+      y1: from.y + uy * offset,
+      x2: to.x - ux * offset,
+      y2: to.y - uy * offset
+    };
+  };
 
   return (
     <div className="graph-board">
@@ -275,34 +301,37 @@ function GraphView({ token, positions }) {
         <defs>
           <marker
             id="arrow"
-            markerWidth="10"
-            markerHeight="10"
-            refX="7"
-            refY="3"
+            markerWidth="12"
+            markerHeight="12"
+            refX="10"
+            refY="6"
             orient="auto"
+            markerUnits="userSpaceOnUse"
           >
-            <path d="M0,0 L8,3 L0,6 Z" fill="#111111" />
+            <path d="M0,0 L12,6 L0,12 Z" fill="#111111" />
           </marker>
         </defs>
         {edge && (() => {
           const from = positions[edge.from];
           const to = positions[edge.to];
+          const line = shortenLine(from, to);
           return (
             <line
-              x1={from.x}
-              y1={from.y}
-              x2={to.x}
-              y2={to.y}
+              x1={line.x1}
+              y1={line.y1}
+              x2={line.x2}
+              y2={line.y2}
               stroke="#111111"
-              strokeWidth="4"
+              strokeWidth="6"
+              strokeLinecap="round"
               markerEnd="url(#arrow)"
             />
           );
         })()}
         {positions.map((pos, idx) => (
           <g key={NODES[idx].id}>
-            <circle cx={pos.x} cy={pos.y} r="20" fill={NODES[idx].colour} />
-            <circle cx={pos.x} cy={pos.y} r="24" fill="none" stroke="#111111" strokeWidth="2" />
+            <circle cx={pos.x} cy={pos.y} r={nodeRadius} fill={NODES[idx].colour} />
+            <circle cx={pos.x} cy={pos.y} r={nodeRadius + 4} fill="none" stroke="#111111" strokeWidth={nodeStroke} />
           </g>
         ))}
       </svg>
@@ -322,7 +351,7 @@ function App() {
   const [nLevel, setNLevel] = useState(1);
   const [blockData, setBlockData] = useState(null);
   const [trialIndex, setTrialIndex] = useState(0);
-  const [positions, setPositions] = useState(fixedPositions());
+  const [positions, setPositions] = useState(nextPositions(mulberry32(1)));
   const [blockStats, setBlockStats] = useState(null);
   const [quizData, setQuizData] = useState([]);
   const [quizAnswers, setQuizAnswers] = useState({});
@@ -363,7 +392,7 @@ function App() {
     const data = generateBlock(nextN, baseTrials, rngRef.current);
     setBlockData(data);
     setTrialIndex(0);
-    setPositions(fixedPositions());
+    setPositions(nextPositions(rngRef.current));
     statsRef.current = { hits: 0, misses: 0, falseAlarms: 0, correctRejections: 0 };
     setBlockStats(null);
     setQuizData([]);
@@ -382,7 +411,7 @@ function App() {
     }
 
     responseRef.current = false;
-    setPositions(fixedPositions());
+    setPositions(nextPositions(rngRef.current));
 
     const timer = setTimeout(() => {
       const match = blockData.matchSet.has(trialIndex);
