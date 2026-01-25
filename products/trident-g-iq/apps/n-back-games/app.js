@@ -518,7 +518,7 @@ function App() {
   const [blockData, setBlockData] = useState(null);
   const [trialIndex, setTrialIndex] = useState(0);
   const initialPos = nextPositions(mulberry32(1), null);
-  const [positionsOrder, setPositionsOrder] = useState(initialPos.order);
+  const positionsOrderRef = useRef(initialPos.order);
   const [positions, setPositions] = useState(initialPos.positions);
   const [blockStats, setBlockStats] = useState(null);
   const [quizData, setQuizData] = useState([]);
@@ -567,8 +567,8 @@ function App() {
     const data = generateBlock(mode, nextN, baseTrials, rngRef.current);
     setBlockData(data);
     setTrialIndex(0);
-    const nextPos = nextPositions(rngRef.current, positionsOrder);
-    setPositionsOrder(nextPos.order);
+    const nextPos = nextPositions(rngRef.current, positionsOrderRef.current);
+    positionsOrderRef.current = nextPos.order;
     setPositions(nextPos.positions);
     statsRef.current = { hits: 0, misses: 0, falseAlarms: 0, correctRejections: 0 };
     setBlockStats(null);
@@ -590,8 +590,8 @@ function App() {
     }
 
     responseRef.current = false;
-    const nextPos = nextPositions(rngRef.current, positionsOrder);
-    setPositionsOrder(nextPos.order);
+    const nextPos = nextPositions(rngRef.current, positionsOrderRef.current);
+    positionsOrderRef.current = nextPos.order;
     setPositions(nextPos.positions);
 
     const timer = setTimeout(() => {
@@ -605,7 +605,7 @@ function App() {
     }, speedMs);
 
     return () => clearTimeout(timer);
-  }, [screen, blockData, trialIndex, speedMs, positionsOrder]);
+  }, [screen, blockData, trialIndex, speedMs]);
 
   useEffect(() => {
     if (screen !== 'quiz' || quizData.length === 0) return;
