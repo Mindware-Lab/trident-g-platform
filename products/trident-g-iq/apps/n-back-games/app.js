@@ -3,7 +3,7 @@ const { useEffect, useMemo, useRef, useState } = React;
 const STORAGE_KEY = 'relnback_v1_state';
 const BLOCKS_PER_SESSION = 10;
 const BASE_TRIALS_DEFAULT = 20;
-const MATCH_RATE = 0.25;
+const MATCH_RATE = 0.3;
 const MIN_MATCHES = 3;
 const N_LEVELS = [1, 2, 3];
 const SPEEDS = [3000, 1500];
@@ -100,8 +100,11 @@ function generateGraphToken(world, rng, avoidKey) {
 }
 
 function relationKey(relation) {
-  const pair = [relation.a, relation.b].sort().join('|');
-  return `${pair}|${relation.type}`;
+  if (relation.type === '=') {
+    const pair = [relation.a, relation.b].sort().join('|');
+    return `${pair}|=`;
+  }
+  return `${relation.a}->${relation.b}|>`;
 }
 
 function generateTransitiveWorld(rng) {
@@ -162,8 +165,8 @@ function generateTransitiveToken(world, rng, avoidKey) {
 
 function scheduleMatches(trials, nLevel, rng) {
   const maxPossible = Math.max(0, trials - nLevel);
-  const minTarget = Math.max(MIN_MATCHES, Math.floor(trials * 0.2));
-  const maxTarget = Math.floor(trials * 0.3);
+  const minTarget = Math.max(MIN_MATCHES, Math.floor(trials * 0.28));
+  const maxTarget = Math.ceil(trials * 0.32);
   let target = Math.round(trials * MATCH_RATE);
   target = clamp(target, minTarget, maxTarget);
   target = Math.min(target, maxPossible);
@@ -212,7 +215,7 @@ function generateBlock(mode, nLevel, baseTrials, rng) {
         tokens[t] = {
           relation: { ...prevToken.relation },
           key: prevToken.key,
-          displayFlip: rng() < 0.5
+          displayFlip: nextTransitiveDisplayFlip(prevToken, rng, nLevel)
         };
       } else {
         tokens[t] = { edge: { ...prevToken.edge }, key: prevToken.key };
@@ -346,12 +349,27 @@ function squarePositions() {
   ];
 }
 
-function nextPositions(rng) {
+function nextPositions(rng, prevOrder) {
+  const base = squarePositions();
+  let order = shuffle(rng, [0, 1, 2, 3]);
+  if (prevOrder && order.join(',') === prevOrder.join(',')) {
+    order = order.slice();
+    [order[0], order[1]] = [order[1], order[0]];
+  }
   const jitter = 10;
-  return shuffle(rng, squarePositions()).map((pos) => ({
-    x: pos.x + randInt(rng, -jitter, jitter),
-    y: pos.y + randInt(rng, -jitter, jitter)
-  }));
+  return {
+    order,
+    positions: order.map((idx) => base[idx]).map((pos) => ({
+      x: pos.x + randInt(rng, -jitter, jitter),
+      y: pos.y + randInt(rng, -jitter, jitter)
+    }))
+  };
+}
+
+function nextTransitiveDisplayFlip(prevToken, rng, nLevel) {
+  if (!prevToken || prevToken.relation.type !== '>') return rng() < 0.5;
+  if (nLevel === 1) return !prevToken.displayFlip;
+  return rng() < 0.5;
 }
 
 function useKeyPress(handler) {
@@ -499,7 +517,9 @@ function App() {
   const [nLevel, setNLevel] = useState(1);
   const [blockData, setBlockData] = useState(null);
   const [trialIndex, setTrialIndex] = useState(0);
-  const [positions, setPositions] = useState(nextPositions(mulberry32(1)));
+  const initialPos = nextPositions(mulberry32(1), null);
+  const [positionsOrder, setPositionsOrder] = useState(initialPos.order);
+  const [positions, setPositions] = useState(initialPos.positions);
   const [blockStats, setBlockStats] = useState(null);
   const [quizData, setQuizData] = useState([]);
   const [quizAnswers, setQuizAnswers] = useState({});
@@ -547,7 +567,9 @@ function App() {
     const data = generateBlock(mode, nextN, baseTrials, rngRef.current);
     setBlockData(data);
     setTrialIndex(0);
-    setPositions(nextPositions(rngRef.current));
+    const nextPos = nextPositions(rngRef.current, positionsOrder);
+    setPositionsOrder(nextPos.order);
+    setPositions(nextPos.positions);
     statsRef.current = { hits: 0, misses: 0, falseAlarms: 0, correctRejections: 0 };
     setBlockStats(null);
     setQuizData([]);
@@ -568,7 +590,9 @@ function App() {
     }
 
     responseRef.current = false;
-    setPositions(nextPositions(rngRef.current));
+    const nextPos = nextPositions(rngRef.current, positionsOrder);
+    setPositionsOrder(nextPos.order);
+    setPositions(nextPos.positions);
 
     const timer = setTimeout(() => {
       const match = blockData.matchSet.has(trialIndex);
@@ -581,7 +605,7 @@ function App() {
     }, speedMs);
 
     return () => clearTimeout(timer);
-  }, [screen, blockData, trialIndex, speedMs]);
+  }, [screen, blockData, trialIndex, speedMs, positionsOrder]);
 
   useEffect(() => {
     if (screen !== 'quiz' || quizData.length === 0) return;
