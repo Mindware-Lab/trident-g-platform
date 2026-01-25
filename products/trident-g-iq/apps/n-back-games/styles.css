@@ -205,6 +205,26 @@ body {
   padding: 16px;
 }
 
+.relation-card {
+  width: min(320px, 100%);
+  min-height: 200px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--paper);
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow);
+}
+
+.relation-text {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
 .graph-meta {
   display: flex;
   justify-content: space-between;

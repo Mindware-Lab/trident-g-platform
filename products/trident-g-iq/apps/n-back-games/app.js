@@ -7,6 +7,10 @@ const MATCH_RATE = 0.25;
 const MIN_MATCHES = 3;
 const N_LEVELS = [1, 2, 3];
 const SPEEDS = [3000, 1500];
+const GAME_MODES = [
+  { id: 'graph', label: 'Graph n-back', blurb: 'Follow coloured nodes and directed edges.' },
+  { id: 'transitive', label: 'Transitive n-back', blurb: 'Work with letter relations and inference.' }
+];
 
 const NODES = [
   { id: 'A', label: 'Red', colour: '#ef4444' },
@@ -14,6 +18,7 @@ const NODES = [
   { id: 'C', label: 'Green', colour: '#22c55e' },
   { id: 'D', label: 'Yellow', colour: '#f59e0b' }
 ];
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 function mulberry32(seed) {
   let t = seed >>> 0;
@@ -59,7 +64,7 @@ function edgesToKey(edges) {
   return edges.map(edgeKey).sort().join('|');
 }
 
-function generateWorldGraph(rng) {
+function generateGraphWorld(rng) {
   const pairs = [];
   for (let i = 0; i < NODES.length; i += 1) {
     for (let j = 0; j < NODES.length; j += 1) {
@@ -85,13 +90,74 @@ function generateWorldGraph(rng) {
   return { baseEdges, foilEdge };
 }
 
-function generateToken(world, rng, avoidKey) {
+function generateGraphToken(world, rng, avoidKey) {
   const pool = [...world.baseEdges, world.foilEdge];
   const options = pool.filter((edge) => edgeKey(edge) !== avoidKey);
   const pick = options.length
     ? options[randInt(rng, 0, options.length - 1)]
     : pool[0];
   return { edge: { ...pick }, key: edgeKey(pick) };
+}
+
+function relationKey(relation) {
+  const pair = [relation.a, relation.b].sort().join('|');
+  return `${pair}|${relation.type}`;
+}
+
+function generateTransitiveWorld(rng) {
+  const letterPool = shuffle(rng, LETTERS).slice(0, 5);
+  const baseLetters = letterPool.slice(0, 4);
+  const pairs = [];
+  for (let i = 0; i < baseLetters.length; i += 1) {
+    for (let j = i + 1; j < baseLetters.length; j += 1) {
+      pairs.push([baseLetters[i], baseLetters[j]]);
+    }
+  }
+
+  const baseRelations = [];
+  for (const pair of shuffle(rng, pairs)) {
+    if (baseRelations.length >= 3) break;
+    const type = rng() < 0.2 ? '=' : '>';
+    const [a, b] = pair;
+    if (type === '=') {
+      baseRelations.push({ a, b, type });
+    } else {
+      const flip = rng() < 0.5;
+      baseRelations.push({ a: flip ? b : a, b: flip ? a : b, type });
+    }
+  }
+
+  const baseKeys = new Set(baseRelations.map(relationKey));
+  const foilPairs = [];
+  for (let i = 0; i < letterPool.length; i += 1) {
+    for (let j = 0; j < letterPool.length; j += 1) {
+      if (i === j) continue;
+      const a = letterPool[i];
+      const b = letterPool[j];
+      const key = relationKey({ a, b, type: '>' });
+      if (!baseKeys.has(key)) foilPairs.push({ a, b });
+    }
+  }
+
+  const foilPick = foilPairs.length
+    ? foilPairs[randInt(rng, 0, foilPairs.length - 1)]
+    : { a: baseLetters[0], b: baseLetters[1] };
+  const foilRelation = { a: foilPick.a, b: foilPick.b, type: '>' };
+
+  return { letters: baseLetters, baseRelations, foilRelation };
+}
+
+function generateTransitiveToken(world, rng, avoidKey) {
+  const pool = [...world.baseRelations, world.foilRelation];
+  const options = pool.filter((rel) => relationKey(rel) !== avoidKey);
+  const pick = options.length
+    ? options[randInt(rng, 0, options.length - 1)]
+    : pool[0];
+  return {
+    relation: { ...pick },
+    key: relationKey(pick),
+    displayFlip: rng() < 0.5
+  };
 }
 
 function scheduleMatches(trials, nLevel, rng) {
@@ -132,31 +198,42 @@ function scheduleMatches(trials, nLevel, rng) {
   return picks.sort((a, b) => a - b);
 }
 
-function generateBlock(nLevel, baseTrials, rng) {
+function generateBlock(mode, nLevel, baseTrials, rng) {
   const trials = baseTrials + nLevel;
-  const world = generateWorldGraph(rng);
+  const world = mode === 'transitive' ? generateTransitiveWorld(rng) : generateGraphWorld(rng);
   const matchIndices = scheduleMatches(trials, nLevel, rng);
   const matchSet = new Set(matchIndices);
   const tokens = new Array(trials);
 
   for (let t = 0; t < trials; t += 1) {
-    if (matchSet.has(t)) {
-      tokens[t] = tokens[t - nLevel];
+    const prevToken = t >= nLevel ? tokens[t - nLevel] : null;
+    if (matchSet.has(t) && prevToken) {
+      if (mode === 'transitive') {
+        tokens[t] = {
+          relation: { ...prevToken.relation },
+          key: prevToken.key,
+          displayFlip: rng() < 0.5
+        };
+      } else {
+        tokens[t] = { edge: { ...prevToken.edge }, key: prevToken.key };
+      }
     } else {
-      const avoidKey = t >= nLevel && tokens[t - nLevel] ? tokens[t - nLevel].key : null;
-      tokens[t] = generateToken(world, rng, avoidKey);
+      const avoidKey = prevToken ? prevToken.key : null;
+      tokens[t] = mode === 'transitive'
+        ? generateTransitiveToken(world, rng, avoidKey)
+        : generateGraphToken(world, rng, avoidKey);
     }
   }
 
-  return { trials, world, tokens, matchSet };
+  return { trials, world, tokens, matchSet, mode };
 }
 
-function reachableExact(world, start, end, steps) {
+function reachableExact(edges, start, end, steps) {
   let current = new Set([start]);
   for (let i = 0; i < steps; i += 1) {
     const next = new Set();
     for (const node of current) {
-      for (const edge of world.baseEdges) {
+      for (const edge of edges) {
         if (edge.from === node) next.add(edge.to);
       }
     }
@@ -165,7 +242,7 @@ function reachableExact(world, start, end, steps) {
   return current.has(end);
 }
 
-function generateQuiz(world, rng) {
+function generateGraphQuiz(world, rng) {
   const questions = [];
   const used = new Set();
   const targets = [
@@ -183,15 +260,60 @@ function generateQuiz(world, rng) {
       const key = `${target.steps}-${start}-${end}`;
       if (used.has(key)) continue;
       used.add(key);
-      const truth = reachableExact(world, start, end, target.steps);
+      const truth = reachableExact(world.baseEdges, start, end, target.steps);
       questions.push({
         id: key,
         steps: target.steps,
         start,
         end,
-        truth
+        truth,
+        prompt: `Can you go from ${NODES[start].label} to ${NODES[end].label} in exactly ${target.steps} moves?`
       });
     }
+  }
+
+  return questions;
+}
+
+function relationsToEdges(relations, letters) {
+  const index = new Map(letters.map((l, i) => [l, i]));
+  const edges = [];
+  for (const rel of relations) {
+    const from = index.get(rel.a);
+    const to = index.get(rel.b);
+    if (rel.type === '=') {
+      edges.push({ from, to });
+      edges.push({ from: to, to: from });
+    } else {
+      edges.push({ from, to });
+    }
+  }
+  return edges;
+}
+
+function generateTransitiveQuiz(world, rng) {
+  const questions = [];
+  const used = new Set();
+  const edges = relationsToEdges(world.baseRelations, world.letters);
+
+  while (questions.length < 6) {
+    const start = randInt(rng, 0, world.letters.length - 1);
+    const end = randInt(rng, 0, world.letters.length - 1);
+    if (start === end) continue;
+    const key = `2-${start}-${end}`;
+    if (used.has(key)) continue;
+    used.add(key);
+    const truth = reachableExact(edges, start, end, 2);
+    const startLetter = world.letters[start];
+    const endLetter = world.letters[end];
+    questions.push({
+      id: key,
+      steps: 2,
+      start,
+      end,
+      truth,
+      prompt: `Is ${startLetter} > ${endLetter}?`
+    });
   }
 
   return questions;
@@ -339,6 +461,31 @@ function GraphView({ token, positions }) {
   );
 }
 
+function TransitiveView({ token }) {
+  if (!token?.relation) return null;
+  const { a, b, type } = token.relation;
+  let left = a;
+  let right = b;
+  let symbol = type;
+  if (type === '>') {
+    if (token.displayFlip) {
+      left = b;
+      right = a;
+      symbol = '<';
+    }
+  }
+
+  return (
+    <div className="relation-card">
+      <div className="relation-text">
+        <span>{left}</span>
+        <span>{symbol}</span>
+        <span>{right}</span>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const stored = useMemo(loadState, []);
   const [sessionNumber, setSessionNumber] = useState(stored?.sessionNumber || 0);
@@ -346,7 +493,8 @@ function App() {
   const [speedMs, setSpeedMs] = useState(stored?.lastSpeedMs || 3000);
   const [baseTrials, setBaseTrials] = useState(stored?.lastBaseTrials || BASE_TRIALS_DEFAULT);
   const [sessions, setSessions] = useState(stored?.sessions || []);
-  const [screen, setScreen] = useState('home');
+  const [gameMode, setGameMode] = useState(stored?.lastGameMode || 'graph');
+  const [screen, setScreen] = useState('gameSelect');
   const [currentBlock, setCurrentBlock] = useState(0);
   const [nLevel, setNLevel] = useState(1);
   const [blockData, setBlockData] = useState(null);
@@ -376,20 +524,27 @@ function App() {
     responseRef.current = true;
   });
 
-  const lastSession = sessions[sessions.length - 1] || null;
+  const lastSession = [...sessions].reverse().find((s) => (s.mode || 'graph') === gameMode) || null;
 
   const startSession = () => {
     sessionSeedRef.current = Date.now();
     setSessionBlocks([]);
     setCurrentBlock(0);
     setNLevel(1);
-    beginBlock(0, 1);
+    beginBlock(0, 1, gameMode);
   };
 
-  const beginBlock = (blockIndex, nextN) => {
+  const selectMode = (modeId) => {
+    setGameMode(modeId);
+    setScreen('home');
+    setShowChart(false);
+    setShowHelp(true);
+  };
+
+  const beginBlock = (blockIndex, nextN, mode) => {
     const seed = makeSeed(sessionSeedRef.current, blockIndex + 1, nextN);
     rngRef.current = mulberry32(seed);
-    const data = generateBlock(nextN, baseTrials, rngRef.current);
+    const data = generateBlock(mode, nextN, baseTrials, rngRef.current);
     setBlockData(data);
     setTrialIndex(0);
     setPositions(nextPositions(rngRef.current));
@@ -403,7 +558,9 @@ function App() {
   useEffect(() => {
     if (screen !== 'trials' || !blockData) return;
     if (trialIndex >= blockData.trials) {
-      const questions = generateQuiz(blockData.world, rngRef.current);
+      const questions = blockData.mode === 'transitive'
+        ? generateTransitiveQuiz(blockData.world, rngRef.current)
+        : generateGraphQuiz(blockData.world, rngRef.current);
       setQuizData(questions);
       setQuizAnswers({});
       setScreen('quiz');
@@ -449,7 +606,8 @@ function App() {
       falseAlarms,
       correctRejections,
       quizAccuracy,
-      speedMs
+      speedMs,
+      mode: gameMode
     };
 
     setBlockStats(stats);
@@ -475,13 +633,14 @@ function App() {
       const newSessionNumber = sessionNumber + 1;
       const newSessions = [
         ...sessions,
-        { timestamp: new Date().toISOString(), blocks: updatedBlocks }
+        { timestamp: new Date().toISOString(), blocks: updatedBlocks, mode: gameMode }
       ];
       const state = {
         sessionNumber: newSessionNumber,
         lastNLevel: nextN,
         lastSpeedMs: speedMs,
         lastBaseTrials: baseTrials,
+        lastGameMode: gameMode,
         sessions: newSessions
       };
       saveState(state);
@@ -494,7 +653,7 @@ function App() {
 
     setCurrentBlock((b) => b + 1);
     setNLevel(nextN);
-    beginBlock(currentBlock + 1, nextN);
+    beginBlock(currentBlock + 1, nextN, gameMode);
   };
 
   useEffect(() => {
@@ -504,17 +663,19 @@ function App() {
       lastNLevel,
       lastSpeedMs: speedMs,
       lastBaseTrials: baseTrials,
+      lastGameMode: gameMode,
       sessions
     };
     saveState(state);
   }, [screen, sessionNumber, lastNLevel, speedMs, baseTrials, sessions]);
 
-  const displaySessionNumber = screen === 'home'
+  const displaySessionNumber = screen === 'home' || screen === 'gameSelect'
     ? sessionNumber
     : screen === 'sessionEnd'
       ? sessionNumber
       : sessionNumber + 1;
 
+  const modeMeta = GAME_MODES.find((m) => m.id === gameMode) || GAME_MODES[0];
   const accuracyPercent = (value) => `${Math.round(value * 100)}%`;
 
   return (
@@ -524,13 +685,37 @@ function App() {
           <div className="brand-badge">N</div>
           <div>
             <p className="brand-title">Relational N-Back</p>
-            <p className="brand-subtitle">Graph-edge memory challenge</p>
+            <p className="brand-subtitle">{modeMeta.label}</p>
           </div>
         </div>
         <div className="pill">Session {displaySessionNumber}</div>
       </div>
 
       <div className="content">
+        {screen === 'gameSelect' && (
+          <div className="panel">
+            <div className="card">
+              <h1 className="title">Choose a game</h1>
+              <p className="subtitle">Pick a relational n-back variant to start your session.</p>
+              <div className="stat-grid" style={{ marginTop: 16 }}>
+                {GAME_MODES.map((mode) => (
+                  <div key={mode.id} className="stat">
+                    <div className="stat-label">{mode.label}</div>
+                    <div className="subtitle" style={{ marginTop: 8 }}>{mode.blurb}</div>
+                    <button
+                      className="btn"
+                      style={{ marginTop: 12, width: '100%' }}
+                      onClick={() => selectMode(mode.id)}
+                    >
+                      Choose {mode.label}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {screen === 'home' && (
           <div className="panel">
             <div className="card">
@@ -541,6 +726,7 @@ function App() {
             <div className="row" style={{ marginTop: 16 }}>
               <button className="btn" onClick={startSession}>Start session</button>
               <button className="btn btn-ghost" onClick={() => setShowChart(false)}>Reset chart</button>
+              <button className="btn btn-ghost" onClick={() => setScreen('gameSelect')}>Change game</button>
             </div>
             <div className="card card--soft" style={{ marginTop: 16 }}>
               <div className="row">
@@ -603,9 +789,19 @@ function App() {
               </div>
               {showHelp && (
                 <ul className="help-list">
-                  <li>Watch the single edge and press Match (or Space) if it matches {nLevel}-back.</li>
+                  <li>
+                    {gameMode === 'transitive'
+                      ? 'Watch the relation and press Match (or Space) if it matches n-back, even when the letter order flips.'
+                      : 'Watch the single edge and press Match (or Space) if it matches n-back.'
+                    }
+                  </li>
                   <li>Do nothing for non-matches. Accuracy counts non-response trials.</li>
-                  <li>Each block ends with a True/False quiz on 2- and 3-move relations.</li>
+                  <li>
+                    {gameMode === 'transitive'
+                      ? 'Each block ends with True/False questions on two-step inference.'
+                      : 'Each block ends with a True/False quiz on 2- and 3-move relations.'
+                    }
+                  </li>
                   <li>N levels adjust block-to-block based on accuracy.</li>
                 </ul>
               )}
@@ -620,7 +816,9 @@ function App() {
             <div className="row" style={{ justifyContent: 'space-between' }}>
               <div>
                 <h1 className="title">Block {currentBlock + 1}</h1>
-                <p className="subtitle">Press Match (or Space) when the edge matches {nLevel}-back.</p>
+                <p className="subtitle">
+                  Press Match (or Space) when the {blockData.mode === 'transitive' ? 'relation' : 'edge'} matches {nLevel}-back.
+                </p>
               </div>
               <div className="stack">
                 <div className="pill">N = {nLevel}</div>
@@ -640,7 +838,10 @@ function App() {
             )}
 
             <div className="arena" style={{ marginTop: 16 }}>
-              <GraphView token={blockData.tokens[trialIndex]} positions={positions} />
+              {blockData.mode === 'transitive'
+                ? <TransitiveView token={blockData.tokens[trialIndex]} />
+                : <GraphView token={blockData.tokens[trialIndex]} positions={positions} />
+              }
               <div className="stack">
                 <div className="graph-meta">
                   <span>Trial {Math.min(trialIndex + 1, blockData.trials)} / {blockData.trials}</span>
@@ -673,7 +874,7 @@ function App() {
               {quizData.map((q, idx) => (
                 <div key={q.id} className="quiz-item">
                   <div>
-                    Q{idx + 1}. Can you go from {NODES[q.start].label} to {NODES[q.end].label} in exactly {q.steps} moves?
+                    Q{idx + 1}. {q.prompt}
                   </div>
                   <div className="btn-group">
                     <button
