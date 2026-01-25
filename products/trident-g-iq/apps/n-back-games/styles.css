@@ -1,15 +1,12 @@
 :root {
-  --ink: #111111;
-  --blue: #2563eb;
-  --blue-soft: rgba(37, 99, 235, 0.12);
-  --lime: #ccff66;
-  --paper: #ffffff;
-  --panel: #f3f6fb;
-  --border: #d7dee9;
-  --shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+  --ink: var(--grey-600);
+  --blue: var(--primary);
+  --blue-soft: rgba(34, 170, 255, 0.12);
+  --paper: var(--white);
+  --panel: rgba(34, 170, 255, 0.08);
+  --border: var(--grey-100);
   --radius-lg: 20px;
   --radius-md: 12px;
-  --font: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
 * {
@@ -20,7 +17,7 @@ body {
   margin: 0;
   font-family: var(--font);
   color: var(--ink);
-  background: linear-gradient(180deg, #f7f9ff 0%, #ffffff 60%);
+  background: var(--paper);
   font-size: 16px;
 }
 
@@ -53,11 +50,12 @@ body {
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: var(--blue-soft);
+  background: linear-gradient(135deg, #E8F6FF 0%, #D4EDFF 100%);
+  border: 2px solid rgba(34,170,255,0.2);
   display: grid;
   place-items: center;
   font-weight: 900;
-  color: var(--blue);
+  color: #2A2A2A;
 }
 
 .brand-title {
@@ -89,7 +87,7 @@ body {
   border-radius: var(--radius-lg);
   padding: 24px;
   border: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-soft);
 }
 
 .card--soft {
@@ -128,10 +126,10 @@ body {
   font-weight: 800;
   padding: 12px 20px;
   border-radius: 999px;
-  background: var(--blue);
-  color: var(--paper);
+  background: var(--lime);
+  color: #0B1A0B;
   transition: transform 0.08s ease, box-shadow 0.2s ease;
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 8px 20px rgba(204, 255, 102, 0.3);
 }
 
 .btn:active {
@@ -139,9 +137,9 @@ body {
 }
 
 .btn-secondary {
-  background: var(--lime);
-  color: var(--ink);
-  box-shadow: 0 8px 20px rgba(204, 255, 102, 0.3);
+  background: var(--blue);
+  color: var(--paper);
+  box-shadow: 0 8px 20px rgba(34, 170, 255, 0.25);
 }
 
 .btn-ghost {
@@ -160,9 +158,10 @@ body {
 .pill {
   padding: 6px 14px;
   border-radius: 999px;
-  background: var(--blue-soft);
+  background: var(--lime);
   font-weight: 700;
   font-size: 14px;
+  color: #0B1A0B;
 }
 
 .stat-grid {
