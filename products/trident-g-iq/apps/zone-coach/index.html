@@ -732,6 +732,15 @@
           return;
         }
         const rt = performance.now() - showAtRef.current;
+        if (rt > RESPONSE_WINDOW_MS) {
+          lapseRef.current += 1;
+          respondedRef.current = true;
+          activeRef.current = false;
+          setShowDot(false);
+          setStatus('Too slow');
+          setTrialIndex((t) => t + 1);
+          return;
+        }
         rtsRef.current.push(rt);
         respondedRef.current = true;
         activeRef.current = false;
