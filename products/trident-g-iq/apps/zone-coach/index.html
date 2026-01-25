@@ -516,9 +516,9 @@
 
       return (
         <div className="screen">
-          <div className="topbar">
-            <div className="brandleft">
-              <div className="icon">
+          <div className="topbar flex-between bg-white" style={{ padding: '20px 20px', borderBottom: '2px solid var(--color-light-grey)' }}>
+            <div className="brandleft flex-start" style={{ gap: 14, alignItems: 'center' }}>
+              <div className="icon-circle icon-circle--small icon-circle--grey">
                 <img
                   src={brand?.logoSrc}
                   alt="Trident logo"
@@ -526,24 +526,24 @@
                 />
               </div>
               <div>
-                <p className="title">{brand?.appName || 'Zone Coach'}</p>
-                <p className="subtitle">{brand?.subtitle || 'Quick state check → mindful reset → start training'}</p>
+                <p className="title card-title">{brand?.appName || 'Zone Coach'}</p>
+                <p className="subtitle text-small">{brand?.subtitle || 'Quick state check → mindful reset → start training'}</p>
               </div>
             </div>
-            <div className="chip">Reset</div>
+            <div className="badge badge--lime">Reset</div>
           </div>
 
           <div className="content">
             <div className="card" style={{ maxWidth: 820, margin: '0 auto' }}>
-              <div className="h1">{pattern.name}</div>
-              <p className="p">{pattern.description}</p>
+              <div className="h1 header-section__title">{pattern.name}</div>
+              <p className="p text-body">{pattern.description}</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 10 }}>
                 <div className="card" style={{ boxShadow: 'none' }}>
-                  <div className="p" style={{ fontWeight: 800, color: 'var(--deep)' }}>Time remaining</div>
-                  <div className="h1" style={{ fontSize: 28, marginTop: 6, color: 'var(--deep)' }}>
+                  <div className="p text-body" style={{ fontWeight: 800, color: 'var(--deep)' }}>Time remaining</div>
+                  <div className="h1 header-section__title" style={{ fontSize: 28, marginTop: 6, color: 'var(--deep)' }}>
                     {mm}:{String(ss).padStart(2, '0')}
                   </div>
-                  <p className="p" style={{ marginTop: 6 }}>{pattern.attentionCue}</p>
+                  <p className="p text-body" style={{ marginTop: 6 }}>{pattern.attentionCue}</p>
                 </div>
 
                 <div className="card" style={{ boxShadow: 'none' }}>
@@ -584,13 +584,13 @@
                       checked={pingEnabled}
                       onChange={(e) => setPingEnabled(e.target.checked)}
                     />
-                    <span className="p" style={{ margin: 0, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
+                    <span className="p text-body" style={{ margin: 0, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
                       Ping at high/low points
                     </span>
                   </label>
 
                   {!audioReady && pingEnabled && (
-                    <div className="p" style={{ marginTop: 8 }}>
+                    <div className="p text-body" style={{ marginTop: 8 }}>
                       Audio pings may be unavailable in this browser until interaction is allowed.
                     </div>
                   )}
@@ -598,31 +598,31 @@
               </div>
 
               <div className="card" style={{ marginTop: 12, background: 'rgba(204,255,102,0.18)', border: '1px solid rgba(0,0,0,0.06)' }}>
-                <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Safety</div>
-                <div className="p" style={{ marginTop: 6, color: 'rgba(0,0,0,0.78)' }}>{pattern.safety}</div>
+                <div className="p text-body" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Safety</div>
+                <div className="p text-body" style={{ marginTop: 6, color: 'rgba(0,0,0,0.78)' }}>{pattern.safety}</div>
               </div>
 
               <div className="btnRow" style={{ flexDirection: 'column' }}>
                 {!running ? (
-                  <button onClick={start} className="btn btnPrimary" style={{ flex: '1 1 220px' }}>
+                  <button onClick={start} className="btn btn-primary" style={{ flex: '1 1 220px' }}>
                     Start 3-minute reset
                   </button>
                 ) : (
-                  <button onClick={stop} className="btn btnSecondary" style={{ flex: '1 1 220px' }}>
+                  <button onClick={stop} className="btn btn-ghost" style={{ flex: '1 1 220px' }}>
                     Stop
                   </button>
                 )}
 
-                <button onClick={() => { stop(); onComplete?.(); }} className="btn btnSecondary" style={{ flex: '1 1 220px' }}>
+                <button onClick={() => { stop(); onComplete?.(); }} className="btn btn-ghost" style={{ flex: '1 1 220px' }}>
                   I’m done
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="footer">
+          <div className="footer flex-between bg-white" style={{ padding: '20px 20px', borderTop: '2px solid var(--color-light-grey)' }}>
             <span>Mindware Lab • Trident</span>
-            <a className="link" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">Capacity Coach</a>
+            <a className="link text-small" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">Capacity Coach</a>
           </div>
         </div>
       );
@@ -631,7 +631,7 @@
     // -----------------------------
     // Simple dot probe (fast RT check)
     // -----------------------------
-    function DotProbe({ label, onComplete }) {
+    function DotProbe({ label, onComplete, brand }) {
       const TRIALS = 30;
       const MIN_DELAY_MS = 400;
       const MAX_DELAY_MS = 1200;
@@ -758,43 +758,47 @@
         setStarted(true);
       };
 
+      const logoSrc = brand?.logoSrc || '../../../../branding/Trident-G-Icon.svg';
+      const appName = brand?.appName || 'Zone Coach';
+      const subtitle = brand?.subtitle || 'Quick state check → mindful reset → start training';
+
       return (
         <div className="screen">
-          <div className="topbar">
-            <div className="brandleft">
-              <div className="icon">
+          <div className="topbar flex-between bg-white" style={{ padding: '20px 20px', borderBottom: '2px solid var(--color-light-grey)' }}>
+            <div className="brandleft flex-start" style={{ gap: 14, alignItems: 'center' }}>
+              <div className="icon-circle icon-circle--small icon-circle--grey">
                 <img
-                  src="../../../../branding/Trident-G-Icon.svg"
+                  src={logoSrc}
                   alt="Trident logo"
                   onError={(e) => { e.target.style.display = 'none'; }}
                 />
               </div>
               <div>
-                <p className="title">Zone Coach</p>
-                <p className="subtitle">Quick state check → mindful reset → start training</p>
+                <p className="title card-title" style={{ margin: 0 }}>{appName}</p>
+                <p className="subtitle text-small" style={{ margin: 0 }}>{subtitle}</p>
               </div>
             </div>
-            <div className="chip">{label}</div>
+            <div className="badge badge--lime">{label}</div>
           </div>
 
           <div className="content">
             <div className="card" style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
-              <div className="h1">Tap the dot</div>
-              <p className="p" style={{ marginTop: 6 }}>
+              <div className="h1 header-section__title">Tap the dot</div>
+              <p className="p text-body" style={{ marginTop: 6 }}>
                 Wait for the dot to appear, then tap as fast as you can. Keep it simple.
               </p>
 
               {!started && !result ? (
                 <div className="btnRow" style={{ justifyContent: 'center' }}>
-                  <button className="btn btnPrimary" style={{ width: 'min(360px, 100%)' }} onClick={start}>
+                  <button className="btn btn-primary" style={{ width: 'min(360px, 100%)' }} onClick={start}>
                     Start probe
                   </button>
                 </div>
               ) : result ? (
                 <>
                   <div className="card" style={{ boxShadow: 'none', marginTop: 12, textAlign: 'left' }}>
-                    <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Quick results</div>
-                    <p className="p" style={{ marginTop: 6 }}>
+                    <div className="p text-body" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Quick results</div>
+                    <p className="p text-body" style={{ marginTop: 6 }}>
                       Median RT: <span style={{ fontWeight: 900 }}>{result.medianMs ?? '—'} ms</span>
                       <span style={{ color: 'var(--grey-600)' }}> • Variability: </span>
                       <span style={{ fontWeight: 900 }}>{result.madScaledMs ?? result.madMs ?? '—'} ms</span>
@@ -805,7 +809,7 @@
 
                   <div className="btnRow" style={{ justifyContent: 'center' }}>
                     <button
-                      className="btn btnPrimary"
+                      className="btn btn-primary"
                       style={{ width: 'min(360px, 100%)' }}
                       onClick={() => onComplete?.(result)}
                     >
@@ -838,7 +842,7 @@
                     )}
                   </div>
 
-                  <p className="p" style={{ marginTop: 10 }}>
+                  <p className="p text-body" style={{ marginTop: 10 }}>
                     Tap area is the full panel. Lapses are counted if no tap occurs in time.
                   </p>
                 </>
@@ -848,7 +852,7 @@
 
           <div className="footer">
             <span>Mindware Lab • Trident</span>
-            <a className="link" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">Capacity Coach</a>
+            <a className="link text-small" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">Capacity Coach</a>
           </div>
         </div>
       );
@@ -1059,9 +1063,9 @@ function ZoneCoach() {
   // ----- Shared frame (topbar + footer) -----
   const Frame = ({ chip, children }) => (
     <div className="screen">
-      <div className="topbar">
-        <div className="brandleft">
-          <div className="icon">
+      <div className="topbar flex-between bg-white" style={{ padding: '20px 20px', borderBottom: '2px solid var(--color-light-grey)' }}>
+        <div className="brandleft flex-start" style={{ gap: 14, alignItems: 'center' }}>
+          <div className="icon-circle icon-circle--small icon-circle--grey">
             <img
               src={brand.logoSrc}
               alt="Trident logo"
@@ -1069,18 +1073,18 @@ function ZoneCoach() {
             />
           </div>
           <div>
-            <p className="title">{brand.appName}</p>
-            <p className="subtitle">{brand.subtitle}</p>
+            <p className="title card-title">{brand.appName}</p>
+            <p className="subtitle text-small">{brand.subtitle}</p>
           </div>
         </div>
-        <div className="chip">{chip}</div>
+        <div className="badge badge--lime">{chip}</div>
       </div>
 
       <div className="content">{children}</div>
 
-      <div className="footer">
+      <div className="footer flex-between bg-white" style={{ padding: '20px 20px', borderTop: '2px solid var(--color-light-grey)' }}>
         <span>Mindware Lab • Trident</span>
-        <a className="link" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">
+        <a className="link text-small" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">
           Capacity Coach
         </a>
       </div>
@@ -1091,9 +1095,9 @@ function ZoneCoach() {
   if (showSplash) {
     return (
       <div className="screen">
-        <div className="topbar">
-          <div className="brandleft">
-            <div className="icon">
+        <div className="topbar flex-between bg-white" style={{ padding: '20px 20px', borderBottom: '2px solid var(--color-light-grey)' }}>
+          <div className="brandleft flex-start" style={{ gap: 14, alignItems: 'center' }}>
+            <div className="icon-circle icon-circle--small icon-circle--grey">
               <img
                 src={brand.logoSrc}
                 alt="Trident logo"
@@ -1101,17 +1105,17 @@ function ZoneCoach() {
               />
             </div>
             <div>
-              <p className="title">{brand.appName}</p>
-              <p className="subtitle">{brand.subtitle}</p>
+              <p className="title card-title">{brand.appName}</p>
+              <p className="subtitle text-small">{brand.subtitle}</p>
             </div>
           </div>
-          <div className="chip">Start</div>
+          <div className="badge badge--lime">Start</div>
         </div>
 
         <div className="content" style={{ justifyContent: 'center' }}>
           <div className="card" style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
-              <div className="icon" style={{ width: 64, height: 64, borderRadius: 18 }}>
+              <div className="icon-circle icon-circle--grey">
                 <img
                   src={brand.logoSrc}
                   alt="Trident logo"
@@ -1120,16 +1124,16 @@ function ZoneCoach() {
               </div>
             </div>
 
-            <div className="h1" style={{ fontSize: 26, marginBottom: 8 }}>{brand.appName}</div>
-            <p className="p" style={{ fontSize: 14 }}>{brand.subtitle}</p>
+            <div className="h1 header-section__title" style={{ fontSize: 26, marginBottom: 8 }}>{brand.appName}</div>
+            <p className="p text-body" style={{ fontSize: 14 }}>{brand.subtitle}</p>
 
             <div className="btnRow" style={{ justifyContent: 'center' }}>
-              <button className="btn btnPrimary" style={{ width: 'min(360px, 100%)' }} onClick={() => setShowSplash(false)}>
+              <button className="btn btn-primary" style={{ width: 'min(360px, 100%)' }} onClick={() => setShowSplash(false)}>
                 Continue
               </button>
             </div>
 
-            <p className="p" style={{ marginTop: 10 }}>Mindware Lab • Trident</p>
+            <p className="p text-body" style={{ marginTop: 10 }}>Mindware Lab • Trident</p>
           </div>
         </div>
       </div>
@@ -1141,6 +1145,7 @@ function ZoneCoach() {
     return (
       <DotProbe
         label="Probe"
+        brand={brand}
         onComplete={(result) => {
           setProbePre(result);
           setStep('ratings');
@@ -1165,6 +1170,7 @@ function ZoneCoach() {
     return (
       <DotProbe
         label="Recheck"
+        brand={brand}
         onComplete={(result) => {
           setProbePost(result);
           setStep('postBreath');
@@ -1180,8 +1186,8 @@ function ZoneCoach() {
 
         {step === 'ratings' && (
           <>
-            <div className="h1">Zone check</div>
-            <p className="p">Rate how you feel right now (0 = not at all, 10 = extremely).</p>
+            <div className="h1 header-section__title">Zone check</div>
+            <p className="p text-body">Rate how you feel right now (0 = not at all, 10 = extremely).</p>
 
             <div style={{ marginTop: 10 }}>
               {SLIDERS.map(s => (
@@ -1190,7 +1196,7 @@ function ZoneCoach() {
                     <div className="sliderLabel">{s.label}</div>
                     <div className="sliderValue">{ratings[s.key]}</div>
                   </div>
-                  <p className="p" style={{ marginTop: 6, marginBottom: 10 }}>{s.desc}</p>
+                  <p className="p text-body" style={{ marginTop: 6, marginBottom: 10 }}>{s.desc}</p>
 
                   <input
                     type="range"
@@ -1212,14 +1218,14 @@ function ZoneCoach() {
                   onChange={(e) => setExternalDistractions(e.target.checked)}
                   style={{ marginTop: 2 }}
                 />
-                <span className="p" style={{ margin: 0, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
+                <span className="p text-body" style={{ margin: 0, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
                   Notifications, noise, people, or interruptions are affecting me right now
                 </span>
               </label>
             </div>
 
             <div className="btnRow">
-              <button onClick={handleRatingsSubmit} className="btn btnPrimary" style={{ width: '100%' }}>
+              <button onClick={handleRatingsSubmit} className="btn btn-primary" style={{ width: '100%' }}>
                 Analyse my state
               </button>
             </div>
@@ -1228,18 +1234,18 @@ function ZoneCoach() {
 
         {step === 'results' && classification && (
           <>
-            <div className="h1">Your current state</div>
+            <div className="h1 header-section__title">Your current state</div>
 
             <div className="card" style={{ boxShadow: 'none', background: 'rgba(34,170,255,0.08)', border: '1px solid rgba(39,100,183,0.18)', marginTop: 12 }}>
               <div style={{ fontWeight: 900, fontSize: 36, color: 'rgba(0,0,0,0.90)' }}>
                 {MODE_LABELS[classification.primaryMode]}
               </div>
-              <p className="p" style={{ marginTop: 6 }}>
+              <p className="p text-body" style={{ marginTop: 6 }}>
                 Confidence: <span style={{ fontWeight: 900, color: 'var(--deep)' }}>{CONF_UI[overallConfidence || classification.confidence] || overallConfidence || classification.confidence}</span>
               </p>
               {signalQuality && (
                 <>
-                  <p className="p" style={{ marginTop: 6 }}>
+                  <p className="p text-body" style={{ marginTop: 6 }}>
                     Signal quality (reliability):{' '}
                     <span
                       style={{ fontWeight: 900, color: SIGNAL_COLORS[signalQuality.label] || 'var(--deep)' }}
@@ -1248,7 +1254,7 @@ function ZoneCoach() {
                       {signalQuality.label}
                     </span>
                   </p>
-                  <p className="p" style={{ marginTop: 2, color: 'var(--grey-600)' }}>
+                  <p className="p text-body" style={{ marginTop: 2, color: 'var(--grey-600)' }}>
                     {signalQuality.reason}
                   </p>
                 </>
@@ -1260,14 +1266,14 @@ function ZoneCoach() {
               <div style={{ fontWeight: 900, fontSize: 16, color: 'var(--deep)', marginTop: 6 }}>
                 {BREATH_PATTERNS[breathPattern].name}
               </div>
-              <p className="p" style={{ marginTop: 6 }}>{BREATH_PATTERNS[breathPattern].description}</p>
-              <p className="p" style={{ marginTop: 8 }}>Do the 3-minute reset, then we will decide the best training intensity.</p>
+              <p className="p text-body" style={{ marginTop: 6 }}>{BREATH_PATTERNS[breathPattern].description}</p>
+              <p className="p text-body" style={{ marginTop: 8 }}>Do the 3-minute reset, then we will decide the best training intensity.</p>
 
               <div className="btnRow">
-                <button onClick={handleStartBreathing} className="btn btnPrimary" style={{ width: '100%' }}>
+                <button onClick={handleStartBreathing} className="btn btn-primary" style={{ width: '100%' }}>
                   Start 3-minute reset
                 </button>
-                <button onClick={startNewCheck} className="btn btnSecondary" style={{ width: '100%' }}>
+                <button onClick={startNewCheck} className="btn btn-ghost" style={{ width: '100%' }}>
                   Back
                 </button>
               </div>
@@ -1277,8 +1283,8 @@ function ZoneCoach() {
 
         {step === 'postBreath' && (
           <>
-            <div className="h1">How do you feel now?</div>
-            <p className="p">Quick check after your breathing reset.</p>
+            <div className="h1 header-section__title">How do you feel now?</div>
+            <p className="p text-body">Quick check after your breathing reset.</p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
               {[
@@ -1291,7 +1297,7 @@ function ZoneCoach() {
                 <button
                   key={opt.value}
                   onClick={() => handlePostBreathSubmit(opt.value)}
-                  className="btn btnSecondary"
+                  className="btn btn-ghost"
                   style={{ textAlign: 'left', width: '100%' }}
                 >
                   {opt.label}
@@ -1303,7 +1309,7 @@ function ZoneCoach() {
 
         {step === 'complete' && classification && (
           <>
-            <div className="h1">Reset complete ✓</div>
+            <div className="h1 header-section__title">Reset complete ✓</div>
 
             <div className="card" style={{ boxShadow: 'none', background: 'rgba(34,170,255,0.08)', border: '1px solid rgba(39,100,183,0.18)', marginTop: 12 }}>
               <div style={{ fontWeight: 900, fontSize: 16, color: 'rgba(0,0,0,0.90)' }}>
@@ -1326,7 +1332,7 @@ function ZoneCoach() {
                 <div className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
                   <div style={{ fontWeight: 900, fontSize: 14, color: 'rgba(0,0,0,0.85)' }}>Next step</div>
 
-                  <p className="p" style={{ marginTop: 8 }}>
+                  <p className="p text-body" style={{ marginTop: 8 }}>
                     Zone gate: <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{ZONE_UI[zoneGate]?.title || '—'}</span>
                     <span style={{ color: 'var(--grey-600)' }}> • Suggested focus: </span>
                     <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{suggestion.primary}</span>
@@ -1336,35 +1342,35 @@ function ZoneCoach() {
 
                   {proceedNormal ? (
                     <>
-                      <p className="p" style={{ marginTop: 8, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
+                      <p className="p text-body" style={{ marginTop: 8, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
                         Proceed with training.
                       </p>
                       <div className="btnRow">
                         <button
                           onClick={() => window.open(CAPACITY_TRAINING_COACH_URL, '_blank')}
-                          className="btn btnPrimary"
+                          className="btn btn-primary"
                           style={{ width: '100%' }}
                         >
                           Go to Capacity Training Coach
                         </button>
                       </div>
-                      <p className="p" style={{ marginTop: 8 }}>
+                      <p className="p text-body" style={{ marginTop: 8 }}>
                         Your zone handoff has been saved for the coach/switcher.
                       </p>
                     </>
                   ) : (
                     <>
-                      <p className="p" style={{ marginTop: 8, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
+                      <p className="p text-body" style={{ marginTop: 8, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
                         Light session recommended.
                       </p>
-                      <p className="p" style={{ marginTop: 6 }}>
+                      <p className="p text-body" style={{ marginTop: 6 }}>
                         You were not fully in band today. Keep it short and stabilising.
                       </p>
 
                       <div className="btnRow">
                         <button
                           onClick={() => window.open(CAPACITY_TRAINING_COACH_URL, '_blank')}
-                          className="btn btnPrimary"
+                          className="btn btn-primary"
                           style={{ width: '100%' }}
                         >
                           Proceed with a light session (Recover focus)
@@ -1372,19 +1378,19 @@ function ZoneCoach() {
                       </div>
 
                       <div className="card" style={{ boxShadow: 'none', marginTop: 10 }}>
-                        <p className="p" style={{ margin: 0 }}>
+                        <p className="p text-body" style={{ margin: 0 }}>
                           If you still feel overloaded: walk, hydration, low stimulation, early night. Try again tomorrow.
                         </p>
                       </div>
 
-                      <p className="p" style={{ marginTop: 8 }}>
+                      <p className="p text-body" style={{ marginTop: 8 }}>
                         Your zone handoff has been saved for the coach/switcher.
                       </p>
                     </>
                   )}
 
                   <div className="btnRow">
-                    <button onClick={startNewCheck} className="btn btnSecondary" style={{ width: '100%' }}>
+                    <button onClick={startNewCheck} className="btn btn-ghost" style={{ width: '100%' }}>
                       Start new check
                     </button>
                   </div>
