@@ -800,9 +800,9 @@
                     <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Quick results</div>
                     <p className="p" style={{ marginTop: 6 }}>
                       Median RT: <span style={{ fontWeight: 900 }}>{result.medianMs ?? '—'} ms</span>
-                      <span style={{ color: 'var(--grey-600)' }}> • Variability: </span>
+                      <span style={{ color: '#111' }}> • Variability: </span>
                       <span style={{ fontWeight: 900 }}>{result.madScaledMs ?? result.madMs ?? '—'} ms</span>
-                      <span style={{ color: 'var(--grey-600)' }}> • Lapses: </span>
+                      <span style={{ color: '#111' }}> • Lapses: </span>
                       <span style={{ fontWeight: 900 }}>{result.lapses ?? 0}</span>
                     </p>
                   </div>
@@ -1254,7 +1254,7 @@ function ZoneCoach() {
                       {signalQuality.label}
                     </span>
                   </p>
-                  <p className="p" style={{ marginTop: 2, color: 'var(--grey-600)' }}>
+                  <p className="p" style={{ marginTop: 2, color: '#111' }}>
                     {signalQuality.reason}
                   </p>
                 </>
@@ -1334,9 +1334,9 @@ function ZoneCoach() {
 
                   <p className="p" style={{ marginTop: 8 }}>
                     Zone gate: <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{ZONE_UI[zoneGate]?.title || '—'}</span>
-                    <span style={{ color: 'var(--grey-600)' }}> • Suggested focus: </span>
+                    <span style={{ color: '#111' }}> • Suggested focus: </span>
                     <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{suggestion.primary}</span>
-                    {suggestion.secondary ? <span style={{ color: 'var(--grey-600)' }}> then </span> : null}
+                    {suggestion.secondary ? <span style={{ color: '#111' }}> then </span> : null}
                     {suggestion.secondary ? <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{suggestion.secondary}</span> : null}
                   </p>
 
