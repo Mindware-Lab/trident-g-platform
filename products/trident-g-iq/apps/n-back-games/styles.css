@@ -202,6 +202,13 @@ body {
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   padding: 16px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto;
+}
+
+.graph-board svg {
+  display: block;
 }
 
 .relation-card {
