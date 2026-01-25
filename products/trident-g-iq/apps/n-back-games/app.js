@@ -5,7 +5,6 @@ const BLOCKS_PER_SESSION = 10;
 const BASE_TRIALS_DEFAULT = 20;
 const MATCH_RATE = 0.25;
 const MIN_MATCHES = 3;
-const MAX_MATCHES = 10;
 const N_LEVELS = [1, 2, 3];
 const SPEEDS = [3000, 1500];
 
@@ -61,55 +60,46 @@ function edgesToKey(edges) {
 }
 
 function generateWorldGraph(rng) {
-  const edges = [];
   const pairs = [];
   for (let i = 0; i < NODES.length; i += 1) {
     for (let j = 0; j < NODES.length; j += 1) {
       if (i !== j) pairs.push({ from: i, to: j });
     }
   }
-  const count = randInt(rng, 4, 6);
-  const picked = shuffle(rng, pairs).slice(0, count);
-  edges.push(...picked);
-  return { edges };
+
+  const baseEdges = [];
+  const pool = shuffle(rng, pairs);
+  for (const edge of pool) {
+    if (baseEdges.length >= 3) break;
+    if (!baseEdges.some((e) => edgeKey(e) === edgeKey(edge))) {
+      baseEdges.push(edge);
+    }
+  }
+
+  const baseKeys = new Set(baseEdges.map(edgeKey));
+  const foilCandidates = pairs.filter((e) => !baseKeys.has(edgeKey(e)));
+  const foilEdge = foilCandidates.length
+    ? foilCandidates[randInt(rng, 0, foilCandidates.length - 1)]
+    : pool[0];
+
+  return { baseEdges, foilEdge };
 }
 
 function generateToken(world, rng, avoidKey) {
-  const allPairs = [];
-  for (let i = 0; i < NODES.length; i += 1) {
-    for (let j = 0; j < NODES.length; j += 1) {
-      if (i !== j) allPairs.push({ from: i, to: j });
-    }
-  }
-  const worldEdgeKeys = new Set(world.edges.map(edgeKey));
-
-  for (let attempt = 0; attempt < 80; attempt += 1) {
-    const pool = shuffle(rng, world.edges);
-    const edges = pool.slice(0, 3).map((e) => ({ ...e }));
-
-    if (rng() < 0.2) {
-      const foilCandidates = allPairs.filter((e) => !worldEdgeKeys.has(edgeKey(e)));
-      if (foilCandidates.length > 0) {
-        const foil = foilCandidates[randInt(rng, 0, foilCandidates.length - 1)];
-        const replaceIndex = randInt(rng, 0, edges.length - 1);
-        edges[replaceIndex] = { ...foil };
-      }
-    }
-
-    const key = edgesToKey(edges);
-    if (!avoidKey || key !== avoidKey) {
-      return { edges, key };
-    }
-  }
-
-  const fallback = world.edges.slice(0, 3).map((e) => ({ ...e }));
-  return { edges: fallback, key: edgesToKey(fallback) };
+  const pool = [...world.baseEdges, world.foilEdge];
+  const options = pool.filter((edge) => edgeKey(edge) !== avoidKey);
+  const pick = options.length
+    ? options[randInt(rng, 0, options.length - 1)]
+    : pool[0];
+  return { edge: { ...pick }, key: edgeKey(pick) };
 }
 
 function scheduleMatches(trials, nLevel, rng) {
   const maxPossible = Math.max(0, trials - nLevel);
+  const minTarget = Math.max(MIN_MATCHES, Math.floor(trials * 0.2));
+  const maxTarget = Math.floor(trials * 0.3);
   let target = Math.round(trials * MATCH_RATE);
-  target = clamp(target, MIN_MATCHES, MAX_MATCHES);
+  target = clamp(target, minTarget, maxTarget);
   target = Math.min(target, maxPossible);
   if (target <= 0) return [];
 
@@ -166,7 +156,7 @@ function reachableExact(world, start, end, steps) {
   for (let i = 0; i < steps; i += 1) {
     const next = new Set();
     for (const node of current) {
-      for (const edge of world.edges) {
+      for (const edge of world.baseEdges) {
         if (edge.from === node) next.add(edge.to);
       }
     }
@@ -225,17 +215,13 @@ function saveState(state) {
   }
 }
 
-function jitterPositions(rng) {
-  const base = [
+function fixedPositions() {
+  return [
     { x: 80, y: 80 },
     { x: 240, y: 80 },
     { x: 80, y: 240 },
     { x: 240, y: 240 }
   ];
-  return base.map((p) => ({
-    x: p.x + randInt(rng, -18, 18),
-    y: p.y + randInt(rng, -18, 18)
-  }));
 }
 
 function useKeyPress(handler) {
@@ -281,7 +267,7 @@ function Chart({ values }) {
 function GraphView({ token, positions }) {
   const width = 320;
   const height = 320;
-  const edges = token?.edges || [];
+  const edge = token?.edge || null;
 
   return (
     <div className="graph-board">
@@ -298,12 +284,11 @@ function GraphView({ token, positions }) {
             <path d="M0,0 L8,3 L0,6 Z" fill="#111111" />
           </marker>
         </defs>
-        {edges.map((edge, idx) => {
+        {edge && (() => {
           const from = positions[edge.from];
           const to = positions[edge.to];
           return (
             <line
-              key={`${edge.from}-${edge.to}-${idx}`}
               x1={from.x}
               y1={from.y}
               x2={to.x}
@@ -313,7 +298,7 @@ function GraphView({ token, positions }) {
               markerEnd="url(#arrow)"
             />
           );
-        })}
+        })()}
         {positions.map((pos, idx) => (
           <g key={NODES[idx].id}>
             <circle cx={pos.x} cy={pos.y} r="20" fill={NODES[idx].colour} />
@@ -337,7 +322,7 @@ function App() {
   const [nLevel, setNLevel] = useState(1);
   const [blockData, setBlockData] = useState(null);
   const [trialIndex, setTrialIndex] = useState(0);
-  const [positions, setPositions] = useState(jitterPositions(mulberry32(1)));
+  const [positions, setPositions] = useState(fixedPositions());
   const [blockStats, setBlockStats] = useState(null);
   const [quizData, setQuizData] = useState([]);
   const [quizAnswers, setQuizAnswers] = useState({});
@@ -378,7 +363,7 @@ function App() {
     const data = generateBlock(nextN, baseTrials, rngRef.current);
     setBlockData(data);
     setTrialIndex(0);
-    setPositions(jitterPositions(rngRef.current));
+    setPositions(fixedPositions());
     statsRef.current = { hits: 0, misses: 0, falseAlarms: 0, correctRejections: 0 };
     setBlockStats(null);
     setQuizData([]);
@@ -397,7 +382,7 @@ function App() {
     }
 
     responseRef.current = false;
-    setPositions(jitterPositions(rngRef.current));
+    setPositions(fixedPositions());
 
     const timer = setTimeout(() => {
       const match = blockData.matchSet.has(trialIndex);
@@ -518,7 +503,8 @@ function App() {
 
       <div className="content">
         {screen === 'home' && (
-          <div className="card">
+          <div className="panel">
+            <div className="card">
             <h1 className="title">Start a new session</h1>
             <p className="subtitle">
               Ten blocks. Each block includes N-back trials followed by a short relational quiz.
@@ -588,22 +574,24 @@ function App() {
               </div>
               {showHelp && (
                 <ul className="help-list">
-                  <li>Watch the 3-edge token and press Match (or Space) if it matches {nLevel}-back.</li>
+                  <li>Watch the single edge and press Match (or Space) if it matches {nLevel}-back.</li>
                   <li>Do nothing for non-matches. Accuracy counts non-response trials.</li>
                   <li>Each block ends with a True/False quiz on 2- and 3-move relations.</li>
                   <li>N levels adjust block-to-block based on accuracy.</li>
                 </ul>
               )}
             </div>
+            </div>
           </div>
         )}
 
         {screen === 'trials' && blockData && (
-          <div className="card">
+          <div className="panel">
+            <div className="card">
             <div className="row" style={{ justifyContent: 'space-between' }}>
               <div>
                 <h1 className="title">Block {currentBlock + 1}</h1>
-                <p className="subtitle">Press Match (or Space) when the token matches {nLevel}-back.</p>
+                <p className="subtitle">Press Match (or Space) when the edge matches {nLevel}-back.</p>
               </div>
               <div className="stack">
                 <div className="pill">N = {nLevel}</div>
@@ -643,11 +631,13 @@ function App() {
                 </button>
               </div>
             </div>
+            </div>
           </div>
         )}
 
         {screen === 'quiz' && (
-          <div className="card">
+          <div className="panel">
+            <div className="card">
             <h1 className="title">Relational quiz</h1>
             <p className="subtitle">Answer True or False for each question.</p>
             <div className="quiz-list" style={{ marginTop: 16 }}>
@@ -673,11 +663,13 @@ function App() {
                 </div>
               ))}
             </div>
+            </div>
           </div>
         )}
 
         {screen === 'blockSummary' && blockStats && (
-          <div className="card">
+          <div className="panel">
+            <div className="card">
             <h1 className="title">Block {blockStats.blockIndex} results</h1>
             <div className="stat-grid" style={{ marginTop: 12 }}>
               <div className="stat">
@@ -730,11 +722,13 @@ function App() {
                 {currentBlock + 1 >= BLOCKS_PER_SESSION ? 'Finish session' : 'Next block'}
               </button>
             </div>
+            </div>
           </div>
         )}
 
         {screen === 'sessionEnd' && (
-          <div className="card">
+          <div className="panel">
+            <div className="card">
             <h1 className="title">Session complete</h1>
             <p className="subtitle">Here is your summary for blocks 1 to {sessionBlocks.length}.</p>
             <table className="table" style={{ marginTop: 16 }}>
@@ -780,6 +774,7 @@ function App() {
                 <Chart values={sessionBlocks.map((b) => b.nLevel)} />
               </div>
             )}
+            </div>
           </div>
         )}
       </div>
