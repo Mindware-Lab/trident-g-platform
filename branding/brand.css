@@ -5,7 +5,7 @@
   --white: #FFFFFF;
   /* Secondary */
   --grey-100: #E0E0E0;
-  --grey-600: #6D6D6D;
+  --grey-600: #111111;
   --deep: #2764B7;
   /* Layout tokens */
   --radius: 16px;
@@ -79,7 +79,7 @@ body{
   user-select:none;
 }
 
-/* ✅ Make <a class="btn ..."> behave like a button */
+/* Make <a class="btn ..."> behave like a button */
 a.btn{
   display: inline-block;
   text-decoration: none;
@@ -154,7 +154,7 @@ a.btn{
 .subtitle{
   margin:4px 0 0;
   font-size: 14px;
-  color: #6D6D6D;
+  color: #111111;
   font-weight: 500;
 }
 
@@ -176,7 +176,7 @@ a.btn{
   justify-content:space-between;
   align-items:center;
   font-size: 14px;
-  color: #6D6D6D;
+  color: #111111;
   background: var(--white);
 }
 
