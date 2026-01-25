@@ -537,7 +537,7 @@
             <div className="card" style={{ maxWidth: 820, margin: '0 auto' }}>
               <div className="h1">{pattern.name}</div>
               <p className="p">{pattern.description}</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 10 }}>
+              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 12, marginTop: 10 }}>
                 <div className="card" style={{ boxShadow: 'none' }}>
                   <div className="p" style={{ fontWeight: 800, color: 'var(--deep)' }}>Time remaining</div>
                   <div className="h1" style={{ fontSize: 28, marginTop: 6, color: 'var(--deep)' }}>
@@ -602,18 +602,18 @@
                 <div className="p" style={{ marginTop: 6, color: 'rgba(0,0,0,0.78)' }}>{pattern.safety}</div>
               </div>
 
-              <div className="btnRow" style={{ flexDirection: 'column' }}>
+              <div className="btnRow" style={{ flexDirection: 'row', justifyContent: 'center' }}>
                 {!running ? (
-                  <button onClick={start} className="btn btnPrimary" style={{ flex: '1 1 220px' }}>
+                  <button onClick={start} className="btn btnPrimary" style={{ flex: '0 1 200px', padding: '12px 20px' }}>
                     Start 3-minute reset
                   </button>
                 ) : (
-                  <button onClick={stop} className="btn btnSecondary" style={{ flex: '1 1 220px' }}>
+                  <button onClick={stop} className="btn btnSecondary" style={{ flex: '0 1 200px', padding: '12px 20px' }}>
                     Stop
                   </button>
                 )}
 
-                <button onClick={() => { stop(); onComplete?.(); }} className="btn btnSecondary" style={{ flex: '1 1 220px' }}>
+                <button onClick={() => { stop(); onComplete?.(); }} className="btn btnSecondary" style={{ flex: '0 1 200px', padding: '12px 20px' }}>
                   I’m done
                 </button>
               </div>
@@ -1286,7 +1286,7 @@ function ZoneCoach() {
             <div className="h1">How do you feel now?</div>
             <p className="p">Quick check after your breathing reset.</p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 10, marginTop: 12 }}>
               {[
                 { label: 'Flat / low drive', value: 'Subcritical' },
                 { label: 'In the G Zone', value: 'Ψ-band' },
@@ -1408,6 +1408,7 @@ function ZoneCoach() {
 // React 18 root
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<ZoneCoach />);
+
 
 
 
