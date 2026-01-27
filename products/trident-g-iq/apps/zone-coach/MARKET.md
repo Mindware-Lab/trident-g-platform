@@ -8,7 +8,7 @@ It’s similar in spirit to athletes using HR/HRV for training decisions, but de
 - A fast **behavioural probe** (dot probe with lures) to sample steadiness and impulse control
 - A simple **state label** (in-band / too hot / too cold / shaky)
 - A short **reset protocol** (breathing) with a quick re-check
-- Optional **sensor telemetry** for long-run trends:
+- Optional **sensor biometrics** for long-run trends:
   - Polar H10 (or similar strap): **RR intervals → DFA α1 baseline trend** + HR during probe
   - Optional EEG (e.g., BrainBit): **EEG criticality-style features** during the same baseline window
 
@@ -20,6 +20,7 @@ Zone Coach is a **training-readiness and self-regulation** tool. It is not a med
 - Knowledge workers who want a reliable “am I trainable right now?” check
 - Students and high performers who want to reduce “bad state training”
 - Creators/executives who want more consistent deep work sessions
+- People focused on **cognitive longevity** who want a simple daily way to track readiness and build better training consistency over time
 - Anyone who already owns (or is willing to buy) a chest strap and wants an app that makes the data *actionable*
 
 ---
@@ -28,7 +29,7 @@ Zone Coach is a **training-readiness and self-regulation** tool. It is not a med
 Most HRV apps give a single readiness score based on physiology only.
 
 Zone Coach adds:
-- **Cognitive probe telemetry** (performance, drift, impulse capture)
+- **Cognitive probe metrics** (performance, drift, impulse capture)
 - **State-gated intervention** (you can run the reset immediately)
 - **Trend signals that are linked to performance**, not just physiology
 - Optional long-run **mind–body coupling** tracking (physiology + EEG + behaviour)
@@ -56,10 +57,10 @@ Users purchase hardware separately.
 
 ---
 
-## Pricing (Option A: One-off purchase)
-A simple, low-friction model with no subscription.
+## Pricing Bands
+A simple model with no subscription.
 
-### Zone Coach Basic — **£49 one-off**
+### Zone Coach Basic  
 Includes:
 - Daily Prime (η/χ/λ)
 - Dot probe with lures (pre/post breathing)
@@ -68,7 +69,7 @@ Includes:
 - Training recommendation (proceed/light/stop)
 - Local-first history and simple trend charts
 
-### Zone Coach Pro — **£129 one-off**
+### Zone Coach Pro  
 Everything in Basic, plus:
 - Sensor pairing (BLE) for compatible chest straps
 - Baseline DFA α1 trend (RR intervals) — recorded once per day
@@ -76,14 +77,14 @@ Everything in Basic, plus:
 - “Mind–Body Trend” dashboard (behaviour + physiology over time)
 - Correlation view over time (e.g., DFA α1 ↔ dot probe stability)
 
-### Optional: EEG Expansion Pack — **£79 one-off add-on**
+### Optional: EEG Expansion Pack  
 Adds:
 - EEG device integration (where supported by platform/SDK)
 - EEG trend features (e.g., LRTC-style / stability features you select)
 - Combined **Mind–Body Criticality Index** (trend only)
 - Correlation view: EEG ↔ DFA α1 ↔ dot probe stability over time
 
-> Note: EEG features are exploratory telemetry for performance training, not clinical metrics.
+> Note: EEG features are exploratory biometrics for performance training, not clinical metrics.
 
 ---
 
@@ -102,7 +103,7 @@ Adds:
 
 ---
 
-## Why it should sell (in plain terms)
+## Why it should sell  
 People already pay for:
 - Straps and wearables
 - HRV apps
