@@ -1,4 +1,4 @@
-# Zone Coach (Trident-G) — Daily Prime → Baseline Complexity → State Gate → Reset → Start Training
+# Zone Coach (Trident-G)  
 
 Zone Coach is a quick **pre-training state gate** you run once per day before any Trident-G training session.
 
@@ -156,7 +156,7 @@ Fluctuating control and inconsistent responding. The goal is stabilisation and c
 
 ---
 
-## How to use Zone Coach (the compounding method)
+## How to use Zone Coach 
 
 **Run it once per day before training.** Consistency beats perfect readings.
 
