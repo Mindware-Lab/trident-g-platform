@@ -1,6 +1,6 @@
 # Zone Coach (Trident-G)  
 
-Zone Coach is a quick **pre-training state gate** you run once per day before any Trident-G training session.
+Zone Coach is a quick **pre-training 'cognitive readiness check'** you run once per day before any Trident-G training session - or as a standalone for tracking general cognitive function (e.g. before deep work).
 
 Its job is simple:
 
@@ -12,7 +12,7 @@ Trident-G compounds by **training consistently in the right state**, not by grin
 
 ---
 
-## What you’ll do (the full flow)
+## What you’ll do  
 
 ### 0) Optional: Pair a Polar H10 (or similar chest strap) for RR + heart rate
 If you have a **Polar H10**, you can pair it once per session to record:
@@ -58,7 +58,7 @@ If no sensor is paired (or RR intervals aren’t available), Zone Coach simply s
 
 ---
 
-### Optional research add-on: EEG “brain criticality” trend (experimental)
+### Optional research add-on: EEG “brain criticality” trend  
 In a future version, Zone Coach could also record a short **EEG baseline** during the **same 2 minutes** as the DFA α1 reading, and track a combined **mind–body criticality** trend over training.
 
 Example hardware: **BrainBit Headband** (4-channel EEG at O1, O2, T3, T4; Bluetooth LE; SDK access to raw EEG and rhythms).
@@ -66,6 +66,7 @@ Example hardware: **BrainBit Headband** (4-channel EEG at O1, O2, T3, T4; Blueto
 How it would work (high level):
 
 - Pair the **BrainBit** headband (separate Bluetooth device) and start a 2-minute baseline alongside the Polar H10
+- Link: https://store.brainbit.com/products/brainbit-sdk?srsltid=AfmBOoqYrMWJU5aCyjsQ2E2pDdEhKBwwIAO5E8L6u1ViMiNBIjfjwW0k
 - Compute an EEG stability/criticality-style feature during the same window (e.g. **long-range temporal correlations, LRTC**, or another non-linear marker you choose)
 - Combine the EEG marker with DFA α1 into a single **Mind–Body Criticality Index** (trend only)
 
