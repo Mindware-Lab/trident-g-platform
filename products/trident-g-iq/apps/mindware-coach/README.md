@@ -31,14 +31,14 @@ This happens in three stages:
    You use a mindware tool deliberately, step by step. It takes attention.
 
 2) **Compilation (Gc)**  
-   If a tool works, you **compress it into a Mindware Card** (a short script you can recall quickly).  
+   If a tool works, you **compress it into a Mindware Script** (a short script you can recall quickly).  
    This “compiling” step is a *deliberate part of training*, not an afterthought.
 
 3) **Reuse under pressure (back to Gf when needed)**  
-   You then use the card in different situations. Over time it becomes fast and reliable, even when you are busy or stressed.
+   You then use the script in different situations. Over time it becomes fast and reliable, even when you are busy or stressed.
 
 **Key point:** making a tool “automatic” takes strategic effort.  
-This app supports that by combining **timed practice**, **real missions**, and **saving/reusing Mindware Cards**.
+This app supports that by combining **timed practice**, **real missions**, and **saving/reusing Mindware Scripts**.
 
 ---
 ## The four mission types (how scenarios are organised)
@@ -91,7 +91,7 @@ Each session focuses on **one** tool.
 
 ### 1) Standalone (simple)
 Use Mindware Coach as your daily or weekly mindware practice:
-**Practice (timed) → Mission → Save card.**
+**Practice (timed) → Mission → Save script.**
 
 ### 2) After **Ψ Zone Coach** (recommended)
 Run **Ψ Zone Coach first** (separately), then do Mindware training.
@@ -135,13 +135,13 @@ You apply the tool to something real you need to do today.
 - **Choose:** “Pick between two options using Trade-Off Choice or Expected Value, then do one quick ‘flip check’ (what would change your mind?).”
 - **Plan & Do:** “Write the next 3 steps for a task and do step 1 immediately.”
 
-### Step 5 — Compile it into a Mindware Card (30–60 seconds)
+### Step 5 — Compile it into a Mindware Script (30–60 seconds)
 If it helped, you convert it into a short recall script:  
 **Trigger → Steps → Quick check → Common trap.**
 
 This is the “compiling” step that turns effortful thinking into a reusable habit.
 
-**Example Mindware Card (The One Test)**
+**Example Mindware Script (The One Test)**
 - **Trigger:** “When I feel stuck or I’m about to do ‘more research’ again.”
 - **Steps:**  
   1) Name the main uncertainty  
@@ -151,7 +151,7 @@ This is the “compiling” step that turns effortful thinking into a reusable h
 - **Quick check:** “I can write the test in one sentence and it would genuinely change my next step.”
 - **Common trap:** “Wandering into more reading with no specific test.”
 
-**Example Mindware Card (Expected Value Choice)**
+**Example Mindware Script (Expected Value Choice)**
 - **Trigger:** “When outcomes are uncertain and I’m choosing between options.”
 - **Steps:**  
   1) List the options  
@@ -161,7 +161,7 @@ This is the “compiling” step that turns effortful thinking into a reusable h
 - **Quick check:** “I can say what would flip the decision.”
 - **Common trap:** “Choosing by emotion or story while pretending I’m doing the maths.”
 
-**Example Mindware Card (Simplify Under Constraints)**
+**Example Mindware Script (Simplify Under Constraints)**
 - **Trigger:** “When the problem feels too big and I’m overwhelmed.”
 - **Steps:**  
   1) List up to 6 factors  
@@ -172,7 +172,7 @@ This is the “compiling” step that turns effortful thinking into a reusable h
 - **Common trap:** “Trying to model everything and doing nothing.”
 
 ### Step 6 — Reuse it later (portability checks)
-The app will bring the same tool back in a different kind of scenario, and prompt you to use your card again in daily life.
+The app will bring the same tool back in a different kind of scenario, and prompt you to use your script again in daily life.
 
 **Examples**
 - You practise **The One Test** today in a **Choose** scenario (decision).  
@@ -183,9 +183,9 @@ The app will bring the same tool back in a different kind of scenario, and promp
   Later, the app gives you **Bottleneck First** in an **Understand** scenario (learning), to see if you can spot the limiting missing concept rather than studying everything.
 
 **Daily-life reuse prompt examples**
-- “When you open your inbox today, run your **One Test** card for 2 minutes before taking action.”
-- “Before you decide, run your **Trade-Off / Expected Value** card and do one flip check.”
-- “When you feel overwhelmed, run your **Simplify Under Constraints** card and choose one smallest next step.”
+- “When you open your inbox today, run your **One Test** script for 2 minutes before taking action.”
+- “Before you decide, run your **Trade-Off / Expected Value** script and do one flip check.”
+- “When you feel overwhelmed, run your **Simplify Under Constraints** script and choose one smallest next step.”
 
 ---
 
@@ -248,7 +248,7 @@ Simple progress labels:
 
 Simple progress labels:
 - **Practised** (I can do it with effort)
-- **Compiled** (I have a clear card I can follow)
+- **Compiled** (I have a clear script I can follow)
 - **Used in real life** (it works on a mission)
 - **Works in different situations** (it travels)
 - **Reliable habit** (it’s fast and dependable)
@@ -277,7 +277,7 @@ IQ Mindware Coach stores your progress **locally in your own browser** (via `loc
 Stored items include:
 - practice scores (right/wrong, time taken),
 - chosen tools and mission types,
-- saved Mindware Cards,
+- saved Mindware Scripts,
 - mission plans (implementation intentions),
 - basic streak/usage history.
 
@@ -298,7 +298,7 @@ If you clear your browser storage, your local history resets.
 
 - **Ψ Zone Coach**: state check + recovery steps (separate app)
 - **IQ Capacity Training Coach**: n-back drills (control + relational structure learning)
-- **IQ Mindware Coach**: timed mindware training + missions (this app). Mindware Coach is where Trident-G’s **effort → compile → reuse** loop is built, using Mindware Cards as the “compiled” form.
+- **IQ Mindware Coach**: timed mindware training + missions (this app). Mindware Coach is where Trident-G’s **effort → compile → reuse** loop is built, using Mindware Scripts as the “compiled” form.
 - **G Loop app (future)**: an optional “hub” that coordinates the full protocol across the three apps
 
 ---
