@@ -629,6 +629,94 @@
     }
 
     // -----------------------------
+    // Heart rate helper (Web Bluetooth)
+    // -----------------------------
+    const hrManager = (() => {
+      let device = null;
+      let characteristic = null;
+      let connected = false;
+      let lastHr = null;
+      const listeners = new Set();
+      let valueHandler = null;
+
+      const notify = (hr) => {
+        listeners.forEach((fn) => fn(hr));
+      };
+
+      const parseHr = (dataView) => {
+        const flags = dataView.getUint8(0);
+        const isUint16 = (flags & 0x01) === 0x01;
+        return isUint16 ? dataView.getUint16(1, true) : dataView.getUint8(1);
+      };
+
+      const handleDisconnect = () => {
+        connected = false;
+        characteristic = null;
+        lastHr = null;
+        notify(null);
+      };
+
+      const connect = async () => {
+        if (!navigator.bluetooth) {
+          throw new Error('Web Bluetooth not supported in this browser.');
+        }
+        if (connected && characteristic) {
+          return { connected, name: device?.name || null, lastHr };
+        }
+
+        device = await navigator.bluetooth.requestDevice({
+          filters: [{ services: ['heart_rate'] }]
+        });
+        device.addEventListener('gattserverdisconnected', handleDisconnect);
+
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService('heart_rate');
+        characteristic = await service.getCharacteristic('heart_rate_measurement');
+
+        valueHandler = (event) => {
+          const hr = parseHr(event.target.value);
+          lastHr = hr;
+          notify(hr);
+        };
+
+        await characteristic.startNotifications();
+        characteristic.addEventListener('characteristicvaluechanged', valueHandler);
+        connected = true;
+
+        return { connected, name: device?.name || null, lastHr };
+      };
+
+      const disconnect = async () => {
+        try {
+          if (characteristic && valueHandler) {
+            characteristic.removeEventListener('characteristicvaluechanged', valueHandler);
+          }
+          if (device?.gatt?.connected) device.gatt.disconnect();
+        } finally {
+          valueHandler = null;
+          device = null;
+          characteristic = null;
+          connected = false;
+          lastHr = null;
+          notify(null);
+        }
+      };
+
+      const subscribe = (fn) => {
+        listeners.add(fn);
+        return () => listeners.delete(fn);
+      };
+
+      const getStatus = () => ({
+        connected,
+        name: device?.name || null,
+        lastHr
+      });
+
+      return { connect, disconnect, subscribe, getStatus };
+    })();
+
+    // -----------------------------
     // Simple dot probe (fast RT check)
     // -----------------------------
     function DotProbe({ label, onComplete, brand }) {
@@ -642,6 +730,8 @@
       const [showDot, setShowDot] = useState(false);
       const [status, setStatus] = useState('Ready');
       const [result, setResult] = useState(null);
+      const [hrStatus, setHrStatus] = useState(() => hrManager.getStatus());
+      const [hrError, setHrError] = useState('');
       const rtsRef = useRef([]);
       const lapseRef = useRef(0);
       const falseStartRef = useRef(0);
@@ -649,6 +739,8 @@
       const respondedRef = useRef(false);
       const showAtRef = useRef(null);
       const timeoutRef = useRef(null);
+      const collectingRef = useRef(false);
+      const hrSamplesRef = useRef([]);
 
       const clearTimers = () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -694,9 +786,21 @@
       };
 
       useEffect(() => {
+        const unsubscribe = hrManager.subscribe((hr) => {
+          setHrStatus(hrManager.getStatus());
+          if (collectingRef.current && typeof hr === 'number') {
+            hrSamplesRef.current.push(hr);
+          }
+        });
+        setHrStatus(hrManager.getStatus());
+        return () => unsubscribe();
+      }, []);
+
+      useEffect(() => {
         if (!started) return;
         if (trialIndex >= TRIALS) {
           clearTimers();
+          collectingRef.current = false;
 
           const rts = rtsRef.current.slice();
           const n = rts.length;
@@ -704,6 +808,10 @@
           const medianRt = median(rts);
           const madRt = mad(rts);
           const madScaled = madRt === null ? null : madRt * 1.4826;
+          const hrSamples = hrSamplesRef.current.slice();
+          const hrAvg = hrSamples.length
+            ? Math.round(hrSamples.reduce((a, b) => a + b, 0) / hrSamples.length)
+            : null;
 
           setShowDot(false);
           setStatus('Complete');
@@ -716,7 +824,9 @@
             madMs: madRt ? Math.round(madRt) : null,
             madScaledMs: madScaled ? Math.round(madScaled) : null,
             lapses: lapseRef.current,
-            falseStarts: falseStartRef.current
+            falseStarts: falseStartRef.current,
+            hrAvgBpm: hrAvg,
+            hrSampleCount: hrSamples.length
           });
           return;
         }
@@ -753,6 +863,8 @@
         rtsRef.current = [];
         lapseRef.current = 0;
         falseStartRef.current = 0;
+        hrSamplesRef.current = [];
+        collectingRef.current = true;
         setResult(null);
         setTrialIndex(0);
         setStarted(true);
@@ -789,11 +901,58 @@
               </p>
 
               {!started && !result ? (
-                <div className="btnRow" style={{ justifyContent: 'center' }}>
-                  <button className="btn btnPrimary" style={{ width: 'min(360px, 100%)' }} onClick={start}>
-                    Start probe
-                  </button>
-                </div>
+                <>
+                  <div className="card" style={{ boxShadow: 'none', marginTop: 10 }}>
+                    <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Heart rate (optional)</div>
+                    <p className="p" style={{ marginTop: 6 }}>
+                      Connect a Polar H10 (or other BLE HR monitor) to record average HR during the probe.
+                    </p>
+                    <div className="btnRow" style={{ justifyContent: 'center' }}>
+                      <button
+                        className="btn btnSecondary"
+                        style={{ width: 'min(360px, 100%)' }}
+                        onClick={async () => {
+                          setHrError('');
+                          try {
+                            await hrManager.connect();
+                            setHrStatus(hrManager.getStatus());
+                          } catch (e) {
+                            setHrError(e?.message || 'Could not connect to heart rate sensor.');
+                          }
+                        }}
+                      >
+                        {hrStatus.connected ? 'HR connected' : 'Connect HR'}
+                      </button>
+                      {hrStatus.connected && (
+                        <button
+                          className="btn btnSecondary"
+                          style={{ width: 'min(360px, 100%)' }}
+                          onClick={async () => {
+                            await hrManager.disconnect();
+                            setHrStatus(hrManager.getStatus());
+                          }}
+                        >
+                          Disconnect HR
+                        </button>
+                      )}
+                    </div>
+                    <div className="p" style={{ marginTop: 6 }}>
+                      Status: {hrStatus.connected ? `Connected${hrStatus.name ? ` (${hrStatus.name})` : ''}` : 'Not connected'}
+                      {typeof hrStatus.lastHr === 'number' ? ` · Last HR: ${hrStatus.lastHr} bpm` : ''}
+                    </div>
+                    {hrError && (
+                      <div className="p" style={{ marginTop: 6, color: '#b00020', fontWeight: 800 }}>
+                        {hrError}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="btnRow" style={{ justifyContent: 'center' }}>
+                    <button className="btn btnPrimary" style={{ width: 'min(360px, 100%)' }} onClick={start}>
+                      Start probe
+                    </button>
+                  </div>
+                </>
               ) : result ? (
                 <>
                   <div className="card" style={{ boxShadow: 'none', marginTop: 12, textAlign: 'left' }}>
@@ -804,6 +963,12 @@
                       <span style={{ fontWeight: 900 }}>{result.madScaledMs ?? result.madMs ?? '—'} ms</span>
                       <span style={{ color: '#111' }}> • Lapses: </span>
                       <span style={{ fontWeight: 900 }}>{result.lapses ?? 0}</span>
+                      {result.hrAvgBpm ? (
+                        <>
+                          <span style={{ color: '#111' }}> â€¢ Avg HR: </span>
+                          <span style={{ fontWeight: 900 }}>{result.hrAvgBpm} bpm</span>
+                        </>
+                      ) : null}
                     </p>
                   </div>
 
