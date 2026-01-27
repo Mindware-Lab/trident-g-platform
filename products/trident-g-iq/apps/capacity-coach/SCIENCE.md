@@ -323,11 +323,11 @@ A central failure mode in cognitive training is “thin automation”, where con
 
 ### Mechanistic rationale (goal-directed generalisation + transfer-appropriate processing)
 
-1. **Goal-tethered memory control:** Computational work on PFC–hippocampal interaction models shows how **top-down goal control** can bias episodic encoding/retrieval towards goal-relevant structure, improving generalisation to novel but structurally related situations. This supports the design choice of *explicit missions* that set the goal/context before (and immediately after) training, so the system has a “query” that selects what should generalise. ([arXiv][1])
-2. **Transfer-appropriate processing:** Classic memory results show performance improves when the *processes trained* match the *processes required at test*. Missions operationalise this by forcing the trained control policy to run under the same processing demands as the user’s real task (comprehension, argumentation, decision trade-offs, or planning under constraints). ([ScienceDirect][2])
-3. **Retrieval practice for portability:** Testing/retrieval can produce better transfer than additional study because it requires reconstructing and applying knowledge rather than re-exposure. Missions can be framed as short “application tests” of the day’s strategy/operator. ([PubMed][3])
-4. **Interleaving/rotation to reduce context-locking:** Interleaving/rotation tends to improve discrimination and transfer (with important boundary conditions), which is consistent with your “wrapper swap” logic at a higher level: rotating *mission wrappers* trains the user to select the right operator under changing demands. ([ERIC][4])
-5. **Goals and implementation:** Goal-setting theory and implementation intentions support the idea that specifying a goal (and a simple if-then plan) increases follow-through and structured execution, which is useful for the Mindware → mission step. ([PubMed][5])
+1. **Goal-tethered memory control:** Computational work on PFC–hippocampal interaction models shows how **top-down goal control** can bias episodic encoding/retrieval towards goal-relevant structure, improving generalisation to novel but structurally related situations. This supports the design choice of *explicit missions* that set the goal/context before (and immediately after) training, so the system has a “query” that selects what should generalise.  
+2. **Transfer-appropriate processing:** Classic memory results show performance improves when the *processes trained* match the *processes required at test*. Missions operationalise this by forcing the trained control policy to run under the same processing demands as the user’s real task (comprehension, argumentation, decision trade-offs, or planning under constraints).  
+3. **Retrieval practice for portability:** Testing/retrieval can produce better transfer than additional study because it requires reconstructing and applying knowledge rather than re-exposure. Missions can be framed as short “application tests” of the day’s strategy/operator.  
+4. **Interleaving/rotation to reduce context-locking:** Interleaving/rotation tends to improve discrimination and transfer (with important boundary conditions), which is consistent with the “wrapper swap” logic at a higher level: rotating *mission wrappers* trains the user to select the right operator under changing demands.  
+5. **Goals and implementation:** Goal-setting theory and implementation intentions support the idea that specifying a goal (and a simple if-then plan) increases follow-through and structured execution, which is useful for the Mindware → mission step.  
 
 ### Mission wrappers (the “four wrappers” habit)
 
@@ -340,7 +340,7 @@ A **mission** is a small, repeatable, measurable 10–20 minute task that the us
 
 ### Phase 1: Guided rotation (1–2 weeks)
 
-Goal: teach the user the *process* (your 1–12 phases) across all four wrappers, so they learn to (a) identify the wrapper, (b) pick an operator, (c) run it, and (d) check outcomes.
+Goal: teach the user the *process* (the 1–12 phases) across all four wrappers, so they learn to (a) identify the wrapper, (b) pick an operator, (c) run it, and (d) check outcomes.
 
 **Protocol:** in the first 1–2 weeks, guide the user through **one mission in each wrapper** (order can be fixed or lightly interleaved). Keep missions small enough to finish even on a “Light” day.
 
