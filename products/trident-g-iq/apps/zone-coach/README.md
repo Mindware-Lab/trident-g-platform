@@ -1,4 +1,4 @@
-# Zone Coach (Trident-G)  
+# Ψ Zone Coach (Trident-G protocol)  
 
 Zone Coach is a quick **pre-training 'cognitive readiness check'** you run once per day before any Trident-G training session - or as a standalone for tracking general cognitive function (e.g. before deep work).
 
