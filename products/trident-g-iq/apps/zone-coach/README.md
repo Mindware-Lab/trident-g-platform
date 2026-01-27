@@ -1,14 +1,12 @@
 # Ψ Zone Coach (Trident-G protocol)  
 
-Zone Coach is a quick **pre-training 'cognitive readiness check'** you run once per day before any Trident-G training session - or as a standalone for tracking general cognitive function (e.g. before deep work).
+Ψ Zone Coach is a quick **pre-training 'cognitive readiness check'** you run once per day before any Trident-G training session - or as a standalone for tracking general cognitive function (e.g. before deep work).
 
 Its job is simple:
 
-- Help you start in a **trainable mental state** (the “G Zone”), instead of guessing.
-- Reduce **state drift** (overload, scatteredness, low drive, shaky control) before you train.
-- Protect learning quality by recommending either a normal session or a lighter stabilising session.
-
-Trident-G compounds by **training consistently in the right state**, not by grinding harder.
+- Help you start in a **trainable mental state** (the “Ψ Zone”), instead of guessing.
+- Reduce **state drift** (overload, scatteredness, low drive, shaky control) before you train/do cognitive work
+- Protect learning quality by recommending either a normal session / cognitive work or a lighter stabilising session / cognitive work.
 
 ---
 
@@ -143,7 +141,7 @@ A button then sends you to the **Capacity Training Coach** (your n-back session)
 
 ## What the labels mean (plain English)
 
-### **In the G Zone**
+### **In the Ψ Zone**
 Alert enough, steady enough, not overloaded. Best for normal training and deeper work.
 
 ### **Too cold (underpowered)**
