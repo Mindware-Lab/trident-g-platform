@@ -382,7 +382,7 @@ Keep these lightweight and non-clinical:
 
 ---
 
-## 10) References (APA 7) — consolidated
+## 10) References (APA 7) 
 
 Au, J., Sheehan, E., Tsai, N., Duncan, G. J., Buschkuehl, M., & Jaeggi, S. M. (2015). Improving fluid intelligence with training on working memory: A meta-analysis. *Psychonomic Bulletin & Review, 22*(2), 366–377. [https://doi.org/10.3758/s13423-014-0699-x](https://doi.org/10.3758/s13423-014-0699-x) ([PubMed][1])
 
