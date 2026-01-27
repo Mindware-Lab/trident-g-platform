@@ -8,11 +8,45 @@ IQ Capacity Training Coach is a **short, structured cognitive training app** bui
 It supports carryover to real life by combining:
 
 1. **Tuning and consolidation** (smooth gains within a stable setup), and
-2. **Portability checks (“wrapper swaps”)** after a “click/breakthrough” to test whether a strategy carries across a different task.
+2. **Portability checks (“game swaps”)** after a “click/breakthrough” to test whether a strategy carries across a different task.
 
 > **Important note:** evidence for far transfer from working-memory training in general is mixed. This app is designed to *increase the probability* of portable gains by building in portability checks and (optionally) real-world “missions”.
 
 ---
+## Two kinds of swaps (to keep the system clear)
+
+This stack uses *two different* kinds of “swap”, and they serve different purposes:
+
+### 1) Capacity Coach swaps = **game swaps** (surface variation inside training)
+These swaps happen **within the n-back training context** to test whether a breakthrough is a *game-specific trick* or a more general control/structure gain.
+
+* **Standard game swaps:** colour ↔ letter ↔ location  
+* **Relational game swaps:** transitive ↔ graph ↔ propositional
+
+**Goal:** controlled surface variation to reduce thin automation *within* the training domain.
+
+### 2) Mindware Coach swaps = **portability swaps** (real-world wrapper changes)
+These swaps happen **outside the games**, using the same underlying operator/Y-tether but changing the *real-world wrapper*:
+
+* Comprehension ↔ Argument ↔ Decision ↔ Planning/Action
+
+**Goal:** proof that an operator generalises across wrappers, not just within one task format.
+
+
+---
+
+## Missions in the full G-Loop (where they live)
+
+IQ Capacity Training Coach can include **optional missions** when used standalone.
+
+However, in the **full Trident-G G-Loop** (Zone → Capacity → Mindware → Mission), the mission system is **owned by IQ Mindware Coach**, because Mindware is where missions are:
+
+* tethered to a specific **Y-invariant** (+ strength τ),
+* compiled into an **operator card** (Trigger → Steps → Check → Trap/Boundary → Cue → Stop rule),
+* tested with **portability swaps** and **boundary/near-miss probes**, and
+* upgraded through the status ladder (Draft → Swap-Pass → Cue-Fire → Boundary-Pass → Reliable).
+
+
 
 ## Three ways to use this app
 
@@ -34,8 +68,8 @@ In the integrated system:
 If you are using the integrated Trident-G stack, the Capacity Coach can be embedded in a **G-Loop**:
 
 1. **Zone Coach**: check state and get a recommendation (Proceed, Light, Recovery)
-2. **Capacity Coach**: train for control or structure, with wrapper swaps and portability probes
-3. **Mindware Coach**: choose a strategy to deploy (the “operator” for today)
+2. **Capacity Coach**: train for control or structure, with game swaps as in-training portability probes
+3. **Mindware Coach**: choose the operator for today, run portability swaps + boundary checks, and schedule the mission
 4. **Mission**: apply it to a short real-world task (10–20 mins) so portability is tested outside the game
 
 This is the simplest way to turn training into real-world carryover: **train → swap-test → deploy**.
@@ -155,7 +189,7 @@ So there is **no fixed upper limit**. You decide how far to extend, and the app 
 
 ---
 
-## Game switching (wrapper swaps) — within-session and between sessions
+## Game switching (wrapper/game swaps) — within-session and between sessions
 
 ### Within a single training session
 
