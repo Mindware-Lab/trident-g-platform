@@ -11,7 +11,7 @@ It is designed to work:
 
 ---
 
-## What this app trains (in plain English)
+## What this app trains 
 
 You practise **mindware tools** in lots of different scenarios, so you can:
 - spot the **best next step** (not the tempting one),
@@ -21,7 +21,26 @@ You practise **mindware tools** in lots of different scenarios, so you can:
 - and convert the learning into a **repeatable mission habit**.
 
 ---
+## How skills become automatic (Trident-G: effort → habit)
 
+In Trident-G, you do not just “learn an idea”. You **build a skill that becomes easy to use**.
+
+This happens in three stages:
+
+1) **Effort mode (Gf)**  
+   You use a mindware tool deliberately, step by step. It takes attention.
+
+2) **Compilation (Gc)**  
+   If a tool works, you **compress it into a Mindware Card** (a short script you can recall quickly).  
+   This “compiling” step is a *deliberate part of training*, not an afterthought.
+
+3) **Reuse under pressure (back to Gf when needed)**  
+   You then use the card in different situations. Over time it becomes fast and reliable, even when you are busy or stressed.
+
+**Key point:** making a tool “automatic” takes strategic effort.  
+This app supports that by combining **timed practice**, **real missions**, and **saving/reusing Mindware Cards**.
+
+---
 ## The four mission types (how scenarios are organised)
 
 Scenarios and missions come in four categories:
@@ -107,14 +126,66 @@ You’ll do a short scenario set with:
 ### Step 3 — Choose a real-life mission (10–20 minutes)
 You specify something real you need to do today.
 
-### Step 4 — Set an implementation intention (cue-based plan)
-A short “When X, I will Y” plan so the tool actually fires in daily life.
+### Step 4 — Use it in a real mission (10–20 minutes)
+You apply the tool to something real you need to do today.
 
-Example:
-> “When I open the email thread, I will write the **one test** that would change my next step for 2 minutes, then decide what to do.”
+**Examples**
+- **Understand:** “Read a project brief and write a 5-sentence summary plus 3 ‘check questions’.”
+- **Discuss:** “Draft a calm reply to a disagreement: one clear claim, two supports, one counterpoint, then revise once.”
+- **Choose:** “Pick between two options using Trade-Off Choice or Expected Value, then do one quick ‘flip check’ (what would change your mind?).”
+- **Plan & Do:** “Write the next 3 steps for a task and do step 1 immediately.”
 
-### Step 5 — Save a Mindware Card
-The app compiles your session into a reusable card you can redeploy.
+### Step 5 — Compile it into a Mindware Card (30–60 seconds)
+If it helped, you convert it into a short recall script:  
+**Trigger → Steps → Quick check → Common trap.**
+
+This is the “compiling” step that turns effortful thinking into a reusable habit.
+
+**Example Mindware Card (The One Test)**
+- **Trigger:** “When I feel stuck or I’m about to do ‘more research’ again.”
+- **Steps:**  
+  1) Name the main uncertainty  
+  2) List 2 possible answers  
+  3) Pick one quick check that would separate them  
+  4) Decide what I’ll do if the check goes either way
+- **Quick check:** “I can write the test in one sentence and it would genuinely change my next step.”
+- **Common trap:** “Wandering into more reading with no specific test.”
+
+**Example Mindware Card (Expected Value Choice)**
+- **Trigger:** “When outcomes are uncertain and I’m choosing between options.”
+- **Steps:**  
+  1) List the options  
+  2) For each, estimate probability and value  
+  3) Compute ‘probability × value’ (rough is fine)  
+  4) Do a flip check: ‘what probability/value would change the winner?’
+- **Quick check:** “I can say what would flip the decision.”
+- **Common trap:** “Choosing by emotion or story while pretending I’m doing the maths.”
+
+**Example Mindware Card (Simplify Under Constraints)**
+- **Trigger:** “When the problem feels too big and I’m overwhelmed.”
+- **Steps:**  
+  1) List up to 6 factors  
+  2) Circle the top 3 that truly matter  
+  3) Name the hard constraint (time/energy/money)  
+  4) Choose one smallest action or check that fits
+- **Quick check:** “I have one clear next step that fits the constraint.”
+- **Common trap:** “Trying to model everything and doing nothing.”
+
+### Step 6 — Reuse it later (portability checks)
+The app will bring the same tool back in a different kind of scenario, and prompt you to use your card again in daily life.
+
+**Examples**
+- You practise **The One Test** today in a **Choose** scenario (decision).  
+  Later, the app gives you **The One Test** in a **Discuss** scenario (argument), to see if you can still pick the best settling question.
+- You practise **Evidence Update** today in an **Understand** scenario (reading).  
+  Later, the app gives you **Evidence Update** in a **Plan & Do** scenario (project planning), to see if you update your confidence when a new constraint appears.
+- You practise **Bottleneck First** today in a **Plan & Do** scenario (workflow).  
+  Later, the app gives you **Bottleneck First** in an **Understand** scenario (learning), to see if you can spot the limiting missing concept rather than studying everything.
+
+**Daily-life reuse prompt examples**
+- “When you open your inbox today, run your **One Test** card for 2 minutes before taking action.”
+- “Before you decide, run your **Trade-Off / Expected Value** card and do one flip check.”
+- “When you feel overwhelmed, run your **Simplify Under Constraints** card and choose one smallest next step.”
 
 ---
 
@@ -164,9 +235,9 @@ Examples:
 
 ---
 
-## Mindware Cards (what you build over time)
+## Mindware Operators (what you build over time)
 
-Each session can save a card with:
+Each session can save an operator with:
 
 - **Trigger** (When should I use this?)
 - **Steps** (3–5 bullets)
@@ -174,8 +245,15 @@ Each session can save a card with:
 - **Quick check** (how to know it worked)
 
 Simple progress labels:
-- **Saved** → **Tried once** → **Works in different situations** → **Reliable habit**
 
+Simple progress labels:
+- **Practised** (I can do it with effort)
+- **Compiled** (I have a clear card I can follow)
+- **Used in real life** (it works on a mission)
+- **Works in different situations** (it travels)
+- **Reliable habit** (it’s fast and dependable)
+
+This is how Trident-G turns effortful skill into reliable habit. 
 ---
 
 ## Optional warm-up (if you also use Capacity Coach)
@@ -220,7 +298,7 @@ If you clear your browser storage, your local history resets.
 
 - **Ψ Zone Coach**: state check + recovery steps (separate app)
 - **IQ Capacity Training Coach**: n-back drills (control + relational structure learning)
-- **IQ Mindware Coach**: timed mindware training + missions (this app)
+- **IQ Mindware Coach**: timed mindware training + missions (this app). Mindware Coach is where Trident-G’s **effort → compile → reuse** loop is built, using Mindware Cards as the “compiled” form.
 - **G Loop app (future)**: an optional “hub” that coordinates the full protocol across the three apps
 
 ---
