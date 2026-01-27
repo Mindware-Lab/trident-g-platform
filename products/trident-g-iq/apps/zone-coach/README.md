@@ -208,7 +208,7 @@ If you clear browser storage, your local history resets.
 
 ---
 
-## What this app is really doing (in one sentence)
+## What this app is really doing  
 Zone Coach helps you **enter and maintain the trainable corridor** where Trident-G training produces portable gains, and (optionally) tracks baseline mind–body dynamics as a long-run trend using RR/heart rate (and, in future, EEG).
 
 ---
