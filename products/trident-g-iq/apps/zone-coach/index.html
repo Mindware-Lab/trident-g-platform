@@ -635,6 +635,7 @@
       let device = null;
       let characteristic = null;
       let connected = false;
+      let connecting = false;
       let lastHr = null;
       const listeners = new Set();
       let valueHandler = null;
@@ -654,6 +655,12 @@
         characteristic = null;
         lastHr = null;
         notify(null);
+        // Best-effort auto-reconnect in case the strap drops briefly.
+        if (device && !connecting) {
+          setTimeout(() => {
+            reconnect().catch(() => {});
+          }, 500);
+        }
       };
 
       const connect = async () => {
@@ -663,27 +670,45 @@
         if (connected && characteristic) {
           return { connected, name: device?.name || null, lastHr };
         }
+        if (connecting) {
+          return { connected, name: device?.name || null, lastHr };
+        }
 
-        device = await navigator.bluetooth.requestDevice({
-          filters: [{ services: ['heart_rate'] }]
-        });
-        device.addEventListener('gattserverdisconnected', handleDisconnect);
+        connecting = true;
+        try {
+          if (!device) {
+            device = await navigator.bluetooth.requestDevice({
+              filters: [{ services: ['heart_rate'] }]
+            });
+            device.addEventListener('gattserverdisconnected', handleDisconnect);
+          }
 
-        const server = await device.gatt.connect();
-        const service = await server.getPrimaryService('heart_rate');
-        characteristic = await service.getCharacteristic('heart_rate_measurement');
+          const server = await device.gatt.connect();
+          const service = await server.getPrimaryService('heart_rate');
+          characteristic = await service.getCharacteristic('heart_rate_measurement');
 
-        valueHandler = (event) => {
-          const hr = parseHr(event.target.value);
-          lastHr = hr;
-          notify(hr);
-        };
+          valueHandler = (event) => {
+            const hr = parseHr(event.target.value);
+            lastHr = hr;
+            notify(hr);
+          };
 
-        await characteristic.startNotifications();
-        characteristic.addEventListener('characteristicvaluechanged', valueHandler);
-        connected = true;
+          await characteristic.startNotifications();
+          characteristic.addEventListener('characteristicvaluechanged', valueHandler);
+          connected = true;
+        } finally {
+          connecting = false;
+        }
 
         return { connected, name: device?.name || null, lastHr };
+      };
+
+      const reconnect = async () => {
+        if (!device) throw new Error('No device paired yet.');
+        if (connected && characteristic) {
+          return { connected, name: device?.name || null, lastHr };
+        }
+        return connect();
       };
 
       const disconnect = async () => {
@@ -709,11 +734,13 @@
 
       const getStatus = () => ({
         connected,
+        connecting,
+        hasDevice: !!device,
         name: device?.name || null,
         lastHr
       });
 
-      return { connect, disconnect, subscribe, getStatus };
+      return { connect, reconnect, disconnect, subscribe, getStatus };
     })();
 
     // -----------------------------
@@ -921,8 +948,25 @@
                           }
                         }}
                       >
-                        {hrStatus.connected ? 'HR connected' : 'Connect HR'}
+                        {hrStatus.connected ? 'HR connected' : (hrStatus.connecting ? 'Connectingâ€¦' : 'Connect HR')}
                       </button>
+                      {!hrStatus.connected && hrStatus.hasDevice && (
+                        <button
+                          className="btn btnSecondary"
+                          style={{ width: 'min(360px, 100%)' }}
+                          onClick={async () => {
+                            setHrError('');
+                            try {
+                              await hrManager.reconnect();
+                              setHrStatus(hrManager.getStatus());
+                            } catch (e) {
+                              setHrError(e?.message || 'Could not reconnect to heart rate sensor.');
+                            }
+                          }}
+                        >
+                          Reconnect HR
+                        </button>
+                      )}
                       {hrStatus.connected && (
                         <button
                           className="btn btnSecondary"
