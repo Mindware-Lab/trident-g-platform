@@ -11,9 +11,9 @@ It is designed to work:
 
 ---
 
-## What this app trains 
+## What this app trains
 
-You practise **mindware tools** in lots of different scenarios, so you can:
+You practise **portable thinking routines** (“Mindware Scripts”) across many different scenarios, so you can:
 - spot the **best next step** (not the tempting one),
 - choose actions under **trade-offs** and **uncertainty**,
 - tighten claims and avoid reasoning traps,
@@ -21,6 +21,7 @@ You practise **mindware tools** in lots of different scenarios, so you can:
 - and convert the learning into a **repeatable mission habit**.
 
 ---
+
 ## How skills become automatic (Trident-G: effort → habit)
 
 In Trident-G, you do not just “learn an idea”. You **build a skill that becomes easy to use**.
@@ -28,74 +29,283 @@ In Trident-G, you do not just “learn an idea”. You **build a skill that beco
 This happens in three stages:
 
 1) **Effort mode (Gf)**  
-   You use a mindware tool deliberately, step by step. It takes attention.
+   You run a script deliberately, step by step. It takes attention.
 
 2) **Compilation (Gc)**  
-   If a tool works, you **compress it into a Mindware Script** (a short script you can recall quickly).  
-   This “compiling” step is a *deliberate part of training*, not an afterthought.
+   If it works, you **compress it into a Mindware Script** you can recall quickly:  
+   **Trigger → Steps → Quick check → Common trap (+ stop/flip rule)**
 
 3) **Reuse under pressure (back to Gf when needed)**  
-   You then use the script in different situations. Over time it becomes fast and reliable, even when you are busy or stressed.
+   You then use the same script in different situations. Over time it becomes fast and reliable, even when you are busy or stressed.
 
 **Key point:** making a tool “automatic” takes strategic effort.  
 This app supports that by combining **timed practice**, **real missions**, and **saving/reusing Mindware Scripts**.
 
 ---
+
 ## The four mission types (how scenarios are organised)
 
-Scenarios and missions come in four categories:
+Scenarios and missions come in four categories (these are also the four *lenses* used for portability checks):
 
-1) **Understand** (make sense of something)
-2) **Discuss** (handle disagreement or arguments)
-3) **Choose** (decide under trade-offs)
-4) **Plan & Do** (move a plan forward)
+1) **Understand** (Beliefs / Comprehension)  
+2) **Discuss** (Argument / Conflict handling)  
+3) **Choose** (Decision making)  
+4) **Plan & Do** (Planning / Strategic action)
 
-These categories are also how the app checks whether a tool “travels” across different kinds of problem.
+These categories are how the app checks whether a script **travels** across different kinds of problem.
 
 ---
 
-## The nine mindware tools (v1)
+## The Mindware Script Library (Level 1.5)
 
-Each session focuses on **one** tool.
+In Trident-G, **far transfer** is supported when learning is tethered to a portable target **Y** (“what must generalise”), not surface cues.  
+In this design, the **Y-library is the Mindware Script library**.
 
-1) **The One Test**  
-   When you’re stuck: “What quick check would change what I do next?”
+There are **11 scripts total**:
+- **1 meta script:** **Y0**
+- **10 mindware scripts:** **Y1–Y10**
 
-2) **Trade-Off Choice**  
-   When options compete: “What matters most, and what could flip the best option?”
+Each script is both:
+- a **portable invariant** (what must generalise), and
+- a **user-facing routine** (what you do repeatedly),
 
-3) **Expected Value Choice**  
-   When outcomes are uncertain: “Value × probability, then compare.”
+with **Gate + Check enforced in every script**.
 
-4) **Claim → Support**  
-   When debating: “What’s the claim, what supports it, and does it truly support it?”
+---
 
-5) **Evidence Update**  
-   When new evidence arrives: “Update confidence based on strength and relevance.”
+### Y0 — Engage + satisficing gate (commitment + stopping discipline) **[META]**
 
-6) **Cause Chain**  
-   When deciding what will work: “Driver → mechanism → outcome. What would I expect to see?”
+**Use when:** you are unsure whether the problem is worth attention, or you tend to overthink/loop.  
+**Recognition question:** *“Is this worth committing to now, and what is ‘good enough’ so I can move on?”*  
+**Near-miss:** *“I’ll think a bit more”* with no timebox, no threshold, no park/commit decision.  
+**Primitives recruited:** Gate → Mode → Gist (often followed by Route into a specific Y).  
+**Explore:** set stakes × reversibility × uncertainty; pick rigour preset; set timebox.  
+**Exploit:** commit or park; define satisficing threshold + stop rule; route into the next Y.  
+**Gc gist:** *“Commit or park. Set rigour + timebox. Define ‘good enough’. Then run one chosen script.”*
 
-7) **Bottleneck First**  
-   When busy but not moving: “What constraint is actually limiting progress?”
+---
 
-8) **Make It Measurable**  
-   When goals are vague: “What would I actually observe if I’m improving?”
+### Y1 — The One Test (Discriminating test first: Crux + value of information)
 
-9) **Simplify Under Constraints**  
-   When it feels messy: “What’s the smallest useful picture that still lets me act?”
+**Use when:** one uncertainty or assumption is driving the whole choice.  
+**Recognition question:** *“What single test would most change what I do next?”*  
+**Near-miss:** *“Research more”* without a concrete probe or measurement.  
+**Primitives recruited:** Gate → Options → Check → Route (Mode enforces explore→exploit).  
+**Explore:** generate 2–3 rival hypotheses + 2–3 candidate discriminators.  
+**Exploit:** pick the smallest discriminating test + define the flip rule.  
+**Gc gist:** *“When stuck, force a crux test: smallest probe that flips the plan.”*
+
+---
+
+### Y2 — Trade-Off Choice (Decision under trade-offs + uncertainty)
+
+**Use when:** options compete across goals, criteria, and uncertainty.  
+**Recognition question:** *“What am I optimising, and what uncertainty could flip the best option?”*  
+**Near-miss:** choosing by vibe, or building a matrix with no sensitivity/flip test.  
+**Primitives recruited:** Map → Gate → Check → Gist (often calls Y1 to choose the next probe).  
+**Explore:** widen options/criteria; identify the one uncertain estimate that matters.  
+**Exploit:** choose + run a sensitivity flip + select one info probe.  
+**Gc gist:** *“Choose by structured trade-offs + flip test, not by narrative.”*
+
+---
+
+### Y3 — Expected Value Choice (Value × probability, then compare)
+
+**Use when:** outcomes are uncertain and you can roughly quantify value and probability.  
+**Recognition question:** *“Which probability or value estimate drives the decision, and what would change it?”*  
+**Near-miss:** EV theatre (made-up precision), or skipping the one estimate that matters.  
+**Primitives recruited:** Map → Gate → Check → Options → Gist (often invokes Y1 for the probe).  
+**Explore:** sketch outcomes; rough values and probabilities; identify decision-relevant uncertainty.  
+**Exploit:** compare EVs; time-box one probe to tighten the key estimate; re-run.  
+**Gc gist:** *“Compute rough EV, then buy information only where it can flip the choice.”*
+
+---
+
+### Y4 — Claim → Support (Claim → evidence → warrant)
+
+**Use when:** evaluating or constructing an argument (what supports what, and why).  
+**Recognition question:** *“What is the warrant that connects this evidence to this claim?”*  
+**Near-miss:** listing evidence without a warrant, or shifting definitions mid-stream.  
+**Primitives recruited:** Map → Bind → Check → Gist  
+**Explore:** build both sides’ maps; identify hidden assumptions.  
+**Exploit:** test whether evidence type matches the warrant; tighten claim scope.  
+**Gc gist:** *“No warrant = no support. Bind terms, then test the link.”*
+
+---
+
+### Y5 — Cause Chain (Mechanism-first causal model: driver → mediator → outcome)
+
+**Use when:** acting on a system and you need a causal chain, not a label.  
+**Recognition question:** *“Driver → mediator → outcome: what causal story am I betting on?”*  
+**Near-miss:** treating correlation, vibes, or category labels as mechanism.  
+**Primitives recruited:** Map → Bind → Options → Check  
+**Explore:** propose rival mechanisms; generate distinct causal routes.  
+**Exploit:** derive a falsifiable prediction + one discriminating probe (often Y1).  
+**Gc gist:** *“Name the causal chain → predict → probe → update.”*
+
+---
+
+### Y6 — Bottleneck First (Constraint / bottleneck first)
+
+**Use when:** progress is limited by one constraint, so optimising elsewhere is wasted motion.  
+**Recognition question:** *“What is the limiting constraint that, if moved, makes everything else easier?”*  
+**Near-miss:** polishing non-bottlenecks (busywork), or confusing symptoms with constraints.  
+**Primitives recruited:** Map → Gate → Route → Check  
+**Explore:** identify candidate bottlenecks and alternative constraints.  
+**Exploit:** choose one constraint-relief move + confirm the bottleneck shifted.  
+**Gc gist:** *“Find the bottleneck → act on it → verify it shifted.”*
+
+---
+
+### Y7 — Make It Measurable (Measurement / operational definition discipline)
+
+**Use when:** goals are fuzzy, success criteria are vague, or you cannot tell if anything improved.  
+**Recognition question:** *“What would I actually observe or measure if this were true?”*  
+**Near-miss:** abstract constructs with no variables, no success signal, or no feasible measurement step.  
+**Where it lives:** problem.successSignal, problem.minAcceptableWin, and “action must be a measurable probe” checks.  
+**Primitives recruited:** Map → Bind → Check → Gate  
+**Explore:** define observable signals and feasible measures.  
+**Exploit:** select the smallest measurable probe and a stopping rule.  
+**Gc gist:** *“No measure, no loop. Operationalise before optimising.”*
+
+---
+
+### Y8 — Simplify Under Constraints (Minimum viable model under constraints)
+
+**Use when:** you’re over-thinking, the situation is messy, time/energy is limited, or you keep building maps that never cash out into action.  
+**Recognition question:** *“What is the smallest model that still lets me run a discriminating test or take one useful step?”*  
+**Near-miss (tempting wrong move):**
+- “Keep it simple” with no variables, no test, no metric  
+- Dropping the key constraint or flip uncertainty  
+- Building a big map as avoidance  
+**Primitives recruited:** Gate → Map → Gist → Check (often followed by Route).  
+**Explore (bounded):** list 5–8 candidate variables/constraints, then identify the likely driver/bottleneck, the hard constraint, and the flip uncertainty.  
+**Exploit:** prune to a 3–5 node minimum viable map, then choose one smallest discriminating test or executable step.  
+**Gc gist:** *“Prune to the smallest map that still predicts. Keep the constraint + flip uncertainty. Run one test.”*
+
+---
+
+### Y9 — Strategic Experiment (Intervene to learn which policy works)
+
+**Use when:** you need to learn causally by acting, and you can run a time-bounded intervention (A/B, before–after, ABAB).  
+**Recognition question:** *“Which strategy should I run, for how long, and what would count as ‘works’?”*  
+**Near-miss:** endless planning, passive observation, or changing many things at once.  
+**Primitives recruited:** Gate → Map → Bind → Route → Check → Gist (Mode enforces bounded exploration then execution).  
+**Explore:** define hypothesis, intervention, comparator, primary metric, horizon, decision rule.  
+**Exploit:** run for the horizon; apply the decision rule; update belief and next policy.  
+**Gc gist:** *“Run a time-boxed intervention with a metric + decision rule. Keep or switch based on evidence.”*
+
+---
+
+### Y10 — Evidence Update (Belief revision after probes)
+
+**Use when:** you have new evidence from a probe/experiment and need to update confidence and policy cleanly.  
+**Recognition question:** *“Given this evidence, what should I believe now and what will I do differently?”*  
+**Near-miss:** ignoring disconfirming evidence, or over-updating from weak evidence.  
+**Primitives recruited:** Check → Gate → Gist (often calls Map/Bind if definitions drift).  
+**Explore:** rate evidence strength/relevance; generate the strongest disconfirming interpretation.  
+**Exploit:** update confidence one notch at a time; revise the policy; define the next probe only if worth it.  
+**Gc gist:** *“Update confidence proportionally, then change the plan (or not) explicitly.”*
+
+---
+
+### Script enforcement rule (applies to all mindware scripts)
+
+Disconfirmation and costed search are **not extra scripts**. They are expressions of **Gate + Check**, enforced as required fields (or a consistent footer) in every Y-script:
+
+- **Disconfirm (Check):** *“If I’m wrong, I’d expect to see ___.”*  
+- **Costed search (Gate):** *“Is it worth searching/probing more?”*  
+- **Flip/stop rule (Check + Gist):** *“If ___, I switch.”* / *“Stop after ___.”*
+
+---
+
+## Level 2: The same scripts expressed through the 4 lenses (mission types)
+
+Think of each lens as a domain where the same primitives become concrete, with different wrappers, different near-misses, and different success signals.
+
+**Shared entry gate (all lenses):**  
+**Y0 Engage + Satisfice** runs first: commit vs park, rigour preset, timebox + stop rule, and a “good enough” threshold.
+
+---
+
+### Lens A — Beliefs / Comprehension (**Understand**)
+
+**Goal:** build and update a relational model of what is true.  
+**Core scripts:** Y1, Y5, Y7, Y8, Y10  
+**Strategic Experiment:** Y9 when you can intervene to test a mechanism prediction.  
+**Common near-misses:**
+- “I need more research” without naming a discriminating probe (Y1 + Gate)
+- Treating labels as mechanisms (Y5 + Check)
+- Vague constructs with no success signal (Y7)
+
+---
+
+### Lens B — Argument / Conflict handling (**Discuss**)
+
+**Goal:** stress-test and resolve conflict between models without collapsing into vibes.  
+**Core scripts:** Y4, Y1, Y2, Y10  
+**Strategic Experiment:** Y9 for behavioural A/B in conflict resolution (track a concrete outcome).  
+**Common near-misses:**
+- Shifting definitions mid-stream (Bind failure)
+- “Winning” rhetorically while ignoring what would change your mind (Check failure)
+- Treating value conflicts as factual disputes (use Y2)
+
+---
+
+### Lens C — Decision making (**Choose**)
+
+**Goal:** translate beliefs + values into choice under uncertainty.  
+**Core scripts:** Y2, Y3, Y1, Y7, Y10  
+**Strategic Experiment:** Y9 when decisions are best made by trial periods or staged commitments.  
+**Common near-misses:**
+- Matrix with no sensitivity/flip test (Check failure)
+- Over-precision theatre (Bind/Gate failure)
+- Avoiding decision by endless search (Gate failure; fix with Y0)
+
+---
+
+### Lens D — Planning / Strategic action (**Plan & Do**)
+
+**Goal:** turn chosen goals into executable operator sequences that survive reality.  
+**Core scripts:** Y6, Y8, Y7, Y1, Y9, Y10  
+**Common near-misses:**
+- “Planning” that never touches the world (Route + Check failure; fix with Y9)
+- Optimising non-bottlenecks (needs Y6)
+- No monitoring triggers or stop rules (needs Y0 + Gate + Gist)
+
+---
+
+## The consolidation lens: Gf → Gc → Gf (how a script becomes a reliable skill)
+
+This is the “how it becomes real” layer: scripts start as explicit effort (**Gf**), then are compiled into cheap retrieval (**Gc**), then must be redeployed under novelty (**back to Gf**) to prove portability.
+
+1) **Gf installation (in-loop, under uncertainty)**  
+   Run the script explicitly. If a “click” happens, capture it immediately so it lands on **portable Y**, not wrapper cues.
+
+2) **Gc compilation (Mindware Script)**  
+   Save a retrieval unit with hard structure: **trigger → steps → check → trap/boundary + cue + stop/flip rule**.
+
+3) **Gf redeploy under novelty (portability proof)**  
+   Wrapper swaps + near-miss discrimination + mild load variation. Thin automation fails here by design.
+
+4) **Reliability threshold (when you can claim “installed”)**  
+   Use a two-tier rule:  
+   - **Transfer observed:** at least one wrapper swap success + at least one cue-fired real-world deployment.  
+   - **Reliable far transfer:** multiple wrapper families, multiple cue-fires across days, boundary discrimination, and stability under mild load variation. :contentReference[oaicite:0]{index=0}
+
+Suggested internal status ladder:
+**Draft → Swap-Pass 1 → Swap-Pass 2 → Cue-Fire 1 → Cue-Fire 2 → Cue-Fire 3 → Boundary-Pass → Reliable (Gc)**
 
 ---
 
 ## Three ways to use this app
 
 ### 1) Standalone (simple)
-Use Mindware Coach as your daily or weekly mindware practice:
+Use Mindware Coach as your daily or weekly practice:
 **Practice (timed) → Mission → Save script.**
 
 ### 2) After **Ψ Zone Coach** (recommended)
 Run **Ψ Zone Coach first** (separately), then do Mindware training.
-This keeps mindware sessions aligned with your current state.
 
 > This app does **not** do zone recalibration. All state regulation and recovery steps live in **Ψ Zone Coach**.
 
@@ -105,167 +315,115 @@ If you use the integrated Trident-G protocol:
 1. **Ψ Zone Coach**: check state and choose session intensity  
 2. **IQ Capacity Training Coach**: short drill block (optional warm-up or main training)  
 3. **IQ Mindware Coach**: timed scenarios + feedback + mission planning  
-4. **Mission**: apply the tool in real life (10–20 mins)
+4. **Mission**: apply the script in real life (10–20 mins)
 
-A future **G Loop app** will coordinate this full flow for users who want the complete protocol.
+A future **G Loop app** can coordinate this full flow for users who want the complete protocol.
 
 ---
 
-## What a session looks like (simple)
+## What a session looks like
 
-### Step 1 — Choose today’s mission type + mindware tool (30 seconds)
+### Step 1 — Choose today’s mission type + script (30 seconds)
 - Pick **Understand / Discuss / Choose / Plan & Do**
-- Pick **one** mindware tool (the app can recommend one)
+- Pick **one** script (the app can recommend one)
 
 ### Step 2 — Timed practice with feedback (3–8 minutes)
-You’ll do a short scenario set with:
+Short scenario set with:
 - **multiple choice** questions,
 - **time limits** (optional),
-- and **instant feedback** (right/wrong + a short explanation).
+- **instant feedback** (right/wrong + a short explanation).
 
 ### Step 3 — Choose a real-life mission (10–20 minutes)
-You specify something real you need to do today.
+Specify something real you need to do today.
 
-### Step 4 — Use it in a real mission (10–20 minutes)
-You apply the tool to something real you need to do today.
+### Step 4 — Do the mission (10–20 minutes)
+Apply the script in real life.
 
 **Examples**
-- **Understand:** “Read a project brief and write a 5-sentence summary plus 3 ‘check questions’.”
-- **Discuss:** “Draft a calm reply to a disagreement: one clear claim, two supports, one counterpoint, then revise once.”
-- **Choose:** “Pick between two options using Trade-Off Choice or Expected Value, then do one quick ‘flip check’ (what would change your mind?).”
-- **Plan & Do:** “Write the next 3 steps for a task and do step 1 immediately.”
+- **Understand:** read a brief and write a 5-sentence summary + 3 “check questions”.
+- **Discuss:** draft a calm reply with one clear claim, two supports, one counterpoint, then revise once.
+- **Choose:** run a Trade-Off or EV pass, then do one flip check (what would change your mind?).
+- **Plan & Do:** write the next 3 steps and do step 1 immediately.
 
 ### Step 5 — Compile it into a Mindware Script (30–60 seconds)
-If it helped, you convert it into a short recall script:  
-**Trigger → Steps → Quick check → Common trap.**
-
-This is the “compiling” step that turns effortful thinking into a reusable habit.
-
-**Example Mindware Script (The One Test)**
-- **Trigger:** “When I feel stuck or I’m about to do ‘more research’ again.”
-- **Steps:**  
-  1) Name the main uncertainty  
-  2) List 2 possible answers  
-  3) Pick one quick check that would separate them  
-  4) Decide what I’ll do if the check goes either way
-- **Quick check:** “I can write the test in one sentence and it would genuinely change my next step.”
-- **Common trap:** “Wandering into more reading with no specific test.”
-
-**Example Mindware Script (Expected Value Choice)**
-- **Trigger:** “When outcomes are uncertain and I’m choosing between options.”
-- **Steps:**  
-  1) List the options  
-  2) For each, estimate probability and value  
-  3) Compute ‘probability × value’ (rough is fine)  
-  4) Do a flip check: ‘what probability/value would change the winner?’
-- **Quick check:** “I can say what would flip the decision.”
-- **Common trap:** “Choosing by emotion or story while pretending I’m doing the maths.”
-
-**Example Mindware Script (Simplify Under Constraints)**
-- **Trigger:** “When the problem feels too big and I’m overwhelmed.”
-- **Steps:**  
-  1) List up to 6 factors  
-  2) Circle the top 3 that truly matter  
-  3) Name the hard constraint (time/energy/money)  
-  4) Choose one smallest action or check that fits
-- **Quick check:** “I have one clear next step that fits the constraint.”
-- **Common trap:** “Trying to model everything and doing nothing.”
+If it helped, save:
+**Trigger → Steps → Quick check → Common trap (+ stop/flip rule).**
 
 ### Step 6 — Reuse it later (portability checks)
-The app will bring the same tool back in a different kind of scenario, and prompt you to use your script again in daily life.
+The app brings the same script back in a different mission type, and prompts daily-life reuse.
 
-**Examples**
-- You practise **The One Test** today in a **Choose** scenario (decision).  
-  Later, the app gives you **The One Test** in a **Discuss** scenario (argument), to see if you can still pick the best settling question.
-- You practise **Evidence Update** today in an **Understand** scenario (reading).  
-  Later, the app gives you **Evidence Update** in a **Plan & Do** scenario (project planning), to see if you update your confidence when a new constraint appears.
-- You practise **Bottleneck First** today in a **Plan & Do** scenario (workflow).  
-  Later, the app gives you **Bottleneck First** in an **Understand** scenario (learning), to see if you can spot the limiting missing concept rather than studying everything.
+---
 
-**Daily-life reuse prompt examples**
-- “When you open your inbox today, run your **One Test** script for 2 minutes before taking action.”
-- “Before you decide, run your **Trade-Off / Expected Value** script and do one flip check.”
-- “When you feel overwhelmed, run your **Simplify Under Constraints** script and choose one smallest next step.”
+## Portability checks (how this app tests “does it travel?”)
+
+This app runs **portability swaps** by keeping the same script but changing the wrapper:
+
+- **Understand ↔ Discuss ↔ Choose ↔ Plan & Do**
+
+To the user it feels like variety.  
+To the system it is a carryover check.
 
 ---
 
 ## The practice engine (how you get right/wrong feedback)
 
-Each tool has many scenarios across all four mission types, so practice stays varied and measurable.
+Each script has scenarios across all four mission types, so practice stays varied and measurable.
 
 Typical question formats:
 - **Single best answer** (A–D)
-- **Spot the trap** (the tempting wrong option)
-- **Order the steps** (3-step sequencing)
-- **Pick the best check/metric** (what would actually test it?)
-- **Simplify choice** (best “minimum useful” version)
+- **Spot the trap** (tempting wrong option)
+- **Order the steps** (sequencing)
+- **Pick the best check/metric** (what would test it?)
+- **Minimum viable simplification** (smallest useful model)
 
-Each question includes:
+Each item includes:
 - the correct answer,
 - a one-line “why this is right”,
 - and a short reason the main traps fail.
 
 ---
 
-## Portability checks (how this app tests “does it travel?”)
-
-This app runs **portability swaps** by keeping the same mindware tool but changing the scenario type:
-
-- **Understand ↔ Discuss ↔ Choose ↔ Plan & Do**
-
-Example:
-- You practise **The One Test** in a “Choose” scenario today,
-- then the app gives you **The One Test** in a “Discuss” scenario later.
-
-To the user it feels like variety.
-To the system it is a carryover check.
-
----
-
 ## Missions (real-world deployment)
 
-A mission is a small, repeatable, measurable task you genuinely need to do.
+A mission is a small, repeatable, measurable task you genuinely need to do.  
 It is not extra homework. It is the “carryover step”.
 
 Examples:
 - **Understand**: 5-sentence summary + 3 questions you can answer without re-reading
-- **Discuss**: write a narrower claim + the strongest support + one counterpoint
-- **Choose**: quick trade-off grid + a simple “what would flip this?” check
+- **Discuss**: narrower claim + strongest support + one counterpoint
+- **Choose**: quick trade-off grid + flip check
 - **Plan & Do**: next 3 steps + do step 1 immediately
 
 ---
 
-## Mindware Operators (what you build over time)
+## Mindware Scripts (what you build over time)
 
-Each session can save an operator with:
-
+Each saved script includes:
 - **Trigger** (When should I use this?)
 - **Steps** (3–5 bullets)
-- **Common trap** (what to avoid)
-- **Quick check** (how to know it worked)
-
-Simple progress labels:
+- **Quick check** (How do I know it worked?)
+- **Trap / near-miss** (Tempting wrong move)
+- **Stop/flip rule** (When I stop or switch)
 
 Simple progress labels:
 - **Practised** (I can do it with effort)
 - **Compiled** (I have a clear script I can follow)
-- **Used in real life** (it works on a mission)
+- **Used in real life** (it worked on a mission)
 - **Works in different situations** (it travels)
-- **Reliable habit** (it’s fast and dependable)
+- **Reliable habit** (fast and dependable)
 
-This is how Trident-G turns effortful skill into reliable habit. 
 ---
 
 ## Optional warm-up (if you also use Capacity Coach)
 
 If you use **IQ Capacity Training Coach**, a short warm-up can make mindware practice easier under time pressure:
 
-- Feeling distracted or mentally noisy → **Standard n-back**
-- Need to understand cause/effect links → **Transitive**
-- Need to plan steps or choose a route → **Graph**
-- Need to argue clearly or test a claim → **Propositional**
+- Feeling distracted or mentally noisy → **standard n-back**
+- Need to understand cause/effect links → **transitive**
+- Need to plan steps or choose a route → **graph**
+- Need to argue clearly or test a claim → **propositional**
 
-Warm-ups are optional. The core learning in this app is:
+Warm-ups are optional. The core learning here is:
 **timed practice → feedback → mission → repeat.**
 
 ---
@@ -276,7 +434,7 @@ IQ Mindware Coach stores your progress **locally in your own browser** (via `loc
 
 Stored items include:
 - practice scores (right/wrong, time taken),
-- chosen tools and mission types,
+- chosen scripts and mission types,
 - saved Mindware Scripts,
 - mission plans (implementation intentions),
 - basic streak/usage history.
@@ -298,8 +456,8 @@ If you clear your browser storage, your local history resets.
 
 - **Ψ Zone Coach**: state check + recovery steps (separate app)
 - **IQ Capacity Training Coach**: n-back drills (control + relational structure learning)
-- **IQ Mindware Coach**: timed mindware training + missions (this app). Mindware Coach is where Trident-G’s **effort → compile → reuse** loop is built, using Mindware Scripts as the “compiled” form.
-- **G Loop app (future)**: an optional “hub” that coordinates the full protocol across the three apps
+- **IQ Mindware Coach**: timed mindware training + missions (this app). This is where Trident-G’s **effort → compile → reuse** loop is built, using Mindware Scripts as the “compiled” form.
+- **G Loop app (future)**: optional hub coordinating the full protocol across apps
 
 ---
 
@@ -314,3 +472,4 @@ If you clear your browser storage, your local history resets.
 ---
 
 © Mindware Lab • IQ Mindware
+```
