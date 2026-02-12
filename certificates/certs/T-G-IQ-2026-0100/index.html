@@ -62,16 +62,17 @@
       border: 1px solid rgba(17,17,17,0.15);
     }
 
-.inner{
-  position: relative;
-  height: 100%;
-  box-sizing: border-box;           
-  padding: 18mm 18mm 50mm 18mm;     
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  text-align: center;
-}
+    .inner{
+      position: relative;
+      height: 100%;
+      box-sizing: border-box;                 /* critical: padding stays inside height */
+      padding: 18mm 18mm 50mm 18mm;           /* bottom safe area keeps footer inside frame */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: center;
+    }
+
     .brandRow{
       display: flex;
       align-items: center;
@@ -186,7 +187,7 @@
       margin-top: 6mm;
       font-size: 11px;
       color: rgba(17,17,17,0.62);
-      text-align: centre;
+      text-align: center; /* CSS uses US spelling */
     }
 
     /* Icon image (uses your existing .icon container style) */
@@ -195,20 +196,25 @@
       height: 28px;
       display: block;
     }
+
+    /* Make the long verification URL wrap neatly if needed */
+    #verifyLink{
+      word-break: break-word;
+    }
   </style>
 </head>
 
 <body>
   <div class="toolbar">
     <button class="btn btnPrimary" onclick="window.print()">Print / Save as PDF</button>
-    <a class="btn btnSecondary" href="../../verify/?id=T-G-IQ-2026-0100">Verify this ID</a>
+    <a id="verifyBtn" class="btn btnSecondary" href="../../verify/?id=T-G-IQ-2026-0100">Verify this ID</a>
   </div>
 
   <main class="sheet" role="document" aria-label="Certificate of Completion">
     <div class="frame" aria-hidden="true"></div>
 
     <div class="inner">
-      <!-- Top branding row -->
+      <!-- Top content -->
       <div>
         <div class="brandRow">
           <div class="brandLeft">
@@ -220,36 +226,39 @@
               <p class="brandSub">Certificate Registry</p>
             </div>
           </div>
-          <div class="chipSmall">Credential ID: T-G-IQ-2026-0100</div>
+
+          <div class="chipSmall">
+            Credential ID: <span id="certId">T-G-IQ-2026-0100</span>
+          </div>
         </div>
 
         <div class="title">Certificate of Completion</div>
         <div class="subtitle">This certifies successful completion of the programme below.</div>
 
-        <div class="name">Raj Gaurav</div>
+        <div class="name" id="certName">Raj Gaurav</div>
         <div class="nameLine"></div>
 
         <div class="courseBlock">
           has completed the requirements for:
-          <div class="course">24 Day Cognitive Training Programme</div>
+          <div class="course" id="certCourse">24 Day Cognitive Training Programme</div>
           <div style="margin-top:4mm;">
             Issued as a record of completion.
           </div>
         </div>
       </div>
 
-      <!-- Footer signatures + metadata -->
+      <!-- Footer -->
       <div>
         <div class="footer">
           <div class="sig">
             <div class="sigLine"></div>
             <div><strong>Dr Mark Ashton Smith</strong></div>
-            <div>Director, Mindware Lab; University of Essex, Online </div>
+            <div>Director, Mindware Lab; University of Essex, Online</div>
           </div>
 
           <div class="meta">
-            <div><strong>Issue date:</strong> 2026-02-12</div>
-            <div><strong>Issuer:</strong> IQ Mindware / Trident-G IQ</div>
+            <div><strong>Issue date:</strong> <span id="issueDate">2026-02-12</span></div>
+            <div><strong>Issuer:</strong> <span id="issuerName">IQ Mindware / Trident-G IQ</span></div>
             <div>
               <strong>Verification:</strong>
               <a id="verifyLink" href="../../verify/?id=T-G-IQ-2026-0100">Verify certificate</a>
@@ -263,25 +272,66 @@
       </div>
     </div>
   </main>
-<script>
-  const CERT_ID = "T-G-IQ-2026-0100";
 
-  // Build an absolute verification URL based on where this page is hosted.
-  // This keeps it correct on GitHub Pages and avoids showing ../../ in the PDF.
-  const verifyUrl = new URL(`../../verify/?id=${encodeURIComponent(CERT_ID)}`, window.location.href);
-
-  const link = document.getElementById("verifyLink");
-  if (link) {
-    link.href = verifyUrl.toString();
-    link.textContent = verifyUrl.toString(); // shows the full URL on the certificate
-  }
-</script>
-
-  <!-- Optional: auto-fill from folder name (handy when you copy templates) -->
   <script>
-    // If you copy/paste this page, you can optionally replace the ID in one place:
-    // const CERT_ID = "T-G-IQ-2026-0100";
+    function getCertIdFromPath() {
+      // Expected GitHub Pages path:
+      // /<repo>/certificates/certs/<CERT_ID>/
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      const i = parts.lastIndexOf("certs");
+      if (i >= 0 && parts[i + 1]) return decodeURIComponent(parts[i + 1]);
+      return null;
+    }
+
+    function setText(id, value) {
+      const el = document.getElementById(id);
+      if (el && value !== undefined && value !== null && value !== "") {
+        el.textContent = value;
+      }
+    }
+
+    async function hydrateCertificate() {
+      const certId =
+        getCertIdFromPath() ||
+        document.getElementById("certId")?.textContent?.trim() ||
+        "T-G-IQ-2026-0100";
+
+      // Update ID everywhere immediately
+      setText("certId", certId);
+      document.title = `Certificate | ${certId}`;
+
+      // Build absolute verification URL (prevents showing ../../ in the PDF)
+      const verifyUrl = new URL(`../../verify/?id=${encodeURIComponent(certId)}`, window.location.href);
+
+      const verifyLink = document.getElementById("verifyLink");
+      if (verifyLink) {
+        verifyLink.href = verifyUrl.toString();
+        verifyLink.textContent = verifyUrl.toString(); // show full URL on the certificate PDF
+      }
+
+      const verifyBtn = document.getElementById("verifyBtn");
+      if (verifyBtn) {
+        verifyBtn.href = verifyUrl.toString();
+      }
+
+      // Load registry data (same source as your verifier page)
+      const res = await fetch("../../verify/certs.json", { cache: "no-store" });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const cert = data?.certs?.[certId];
+
+      // Only hydrate if found and valid
+      if (!cert) return;
+      if (cert.status && String(cert.status).toLowerCase() !== "valid") return;
+
+      setText("certName", cert.name);
+      setText("certCourse", cert.course);
+      setText("issueDate", cert.issued);
+      setText("issuerName", data.issuer || "IQ Mindware / Trident-G IQ");
+    }
+
+    hydrateCertificate().catch(console.error);
   </script>
 </body>
 </html>
-
