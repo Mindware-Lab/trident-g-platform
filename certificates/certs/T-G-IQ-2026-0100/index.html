@@ -261,7 +261,7 @@
             <div><strong>Programme:</strong> <span id="issuerName">IQ Mindware / Trident-G IQ</span></div>
             <div>
               <strong>Verification:</strong>
-              <a id="verifyLink" href="../../verify/?id=T-G-IQ-2026-0100">Verify certificate</a>
+              <a id="verifyLink" href="../../verify/?id=T-G-IQ-2026-0100">id=T-G-IQ-2026-0100</a>
             </div>
           </div>
         </div>
@@ -306,7 +306,8 @@
       const verifyLink = document.getElementById("verifyLink");
       if (verifyLink) {
         verifyLink.href = verifyUrl.toString();
-        verifyLink.textContent = verifyUrl.toString(); // show full URL on the certificate PDF
+        verifyLink.textContent = `id=${certId}`; // only show the ID (still clickable)
+        verifyLink.title = verifyUrl.toString(); // optional: full URL on hover
       }
 
       const verifyBtn = document.getElementById("verifyBtn");
