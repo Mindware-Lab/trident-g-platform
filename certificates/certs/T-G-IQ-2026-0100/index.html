@@ -252,7 +252,7 @@
             <div><strong>Issuer:</strong> IQ Mindware / Trident-G IQ</div>
             <div>
               <strong>Verification:</strong>
-              <span>../../verify/?id=T-G-IQ-2026-0100</span>
+              <a id="verifyLink" href="../../verify/?id=T-G-IQ-2026-0100">Verify certificate</a>
             </div>
           </div>
         </div>
@@ -263,6 +263,19 @@
       </div>
     </div>
   </main>
+<script>
+  const CERT_ID = "T-G-IQ-2026-0100";
+
+  // Build an absolute verification URL based on where this page is hosted.
+  // This keeps it correct on GitHub Pages and avoids showing ../../ in the PDF.
+  const verifyUrl = new URL(`../../verify/?id=${encodeURIComponent(CERT_ID)}`, window.location.href);
+
+  const link = document.getElementById("verifyLink");
+  if (link) {
+    link.href = verifyUrl.toString();
+    link.textContent = verifyUrl.toString(); // shows the full URL on the certificate
+  }
+</script>
 
   <!-- Optional: auto-fill from folder name (handy when you copy templates) -->
   <script>
