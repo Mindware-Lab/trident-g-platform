@@ -16,6 +16,7 @@
       body { background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .sheet { box-shadow: none !important; margin: 0 !important; }
       a { color: inherit; text-decoration: none; }
+      img { image-rendering: auto; }
     }
 
     /* Screen backdrop */
@@ -183,6 +184,35 @@
     .meta div{ margin: 2mm 0; }
     .meta strong{ color: var(--grey-600); }
 
+    /* QR block (LinkedIn-friendly) */
+    .qrWrap{
+      margin-top: 4mm;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2mm;
+    }
+    .qrLabel{
+      font-size: 11px;
+      font-weight: 800;
+      color: rgba(17,17,17,0.75);
+      letter-spacing: 0.2px;
+    }
+    .qr{
+      width: 28mm;              /* big enough to survive LinkedIn compression */
+      height: 28mm;
+      border: 1px solid rgba(17,17,17,0.15);
+      border-radius: 8px;
+      background: #fff;
+      padding: 2mm;
+      box-sizing: border-box;
+    }
+    .qr img{
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
     .disclaimer{
       margin-top: 6mm;
       font-size: 11px;
@@ -197,8 +227,10 @@
       display: block;
     }
 
-    /* Make the long verification URL wrap neatly if needed */
+    /* Keep the verification link tidy (we only show id=...) */
     #verifyLink{
+      color: inherit;
+      text-decoration: underline;
       word-break: break-word;
     }
   </style>
@@ -263,6 +295,14 @@
               <strong>Verification:</strong>
               <a id="verifyLink" href="../../verify/?id=T-G-IQ-2026-0100">id=T-G-IQ-2026-0100</a>
             </div>
+
+            <!-- QR for phone scan -->
+            <div class="qrWrap">
+              <div class="qrLabel">Scan to verify</div>
+              <div class="qr">
+                <img id="qrImg" alt="Scan to verify this certificate" />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -306,13 +346,21 @@
       const verifyLink = document.getElementById("verifyLink");
       if (verifyLink) {
         verifyLink.href = verifyUrl.toString();
-        verifyLink.textContent = `id=${certId}`; // only show the ID (still clickable)
-        verifyLink.title = verifyUrl.toString(); // optional: full URL on hover
+        verifyLink.textContent = `id=${certId}`;      // only show the ID (still clickable)
+        verifyLink.title = verifyUrl.toString();      // full URL on hover
       }
 
       const verifyBtn = document.getElementById("verifyBtn");
       if (verifyBtn) {
         verifyBtn.href = verifyUrl.toString();
+      }
+
+      // QR code (big enough for LinkedIn)
+      const qrImg = document.getElementById("qrImg");
+      if (qrImg) {
+        const qrData = encodeURIComponent(verifyUrl.toString());
+        // Free QR image endpoint (prints cleanly; keep size >= 220)
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${qrData}`;
       }
 
       // Load registry data (same source as your verifier page)
