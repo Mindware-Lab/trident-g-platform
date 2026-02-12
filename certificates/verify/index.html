@@ -1,1 +1,218 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Verify Certificate | IQ Mindware · Trident-G IQ</title>
+
+  <style>
+    :root{
+      --ink:#111;
+      --muted:#555;
+      --bg:#f6f6f6;
+      --paper:#fff;
+      --border:#ddd;
+      --good:#0b6b2b;
+      --bad:#8a1f11;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color:var(--ink);
+      background:var(--bg);
+      line-height:1.5;
+    }
+    .wrap{ max-width: 920px; margin: 0 auto; padding: 32px 16px 48px; }
+    header{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom: 18px; }
+    .brand{ font-weight: 750; letter-spacing: .01em; }
+    .tag{ color: var(--muted); font-size: 14px; }
+
+    .card{
+      background:var(--paper);
+      border:1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.05);
+    }
+
+    h1{ font-size: 22px; margin: 0 0 10px; }
+    p{ margin: 0 0 12px; color: var(--muted); }
+
+    label{ display:block; font-weight: 650; margin: 12px 0 8px; }
+    .row{ display:flex; gap: 10px; flex-wrap: wrap; }
+    input[type="text"]{
+      flex: 1 1 320px;
+      min-width: 260px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      font-size: 16px;
+    }
+    button{
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .status{
+      margin-top: 18px;
+      border-radius: 14px;
+      padding: 14px 14px;
+      border: 1px solid var(--border);
+      background: #fafafa;
+    }
+    .status.good{ border-color: rgba(11,107,43,.35); background: rgba(11,107,43,.06); }
+    .status.bad{ border-color: rgba(138,31,17,.35); background: rgba(138,31,17,.06); }
+
+    .pill{
+      display:inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing:.02em;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: #fff;
+    }
+    .pill.good{ color: var(--good); border-color: rgba(11,107,43,.35); }
+    .pill.bad{ color: var(--bad); border-color: rgba(138,31,17,.35); }
+
+    .details{ margin-top: 8px; color: var(--ink); }
+    .details div{ margin: 6px 0; }
+    .details strong{ font-weight: 650; }
+
+    .links{ margin-top: 12px; display:flex; gap: 12px; flex-wrap: wrap; }
+    a{ color: var(--ink); }
+    a:hover{ text-decoration: none; }
+
+    footer{
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    code{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand"><a href="../" style="text-decoration:none;color:inherit;">IQ Mindware · Trident-G IQ</a></div>
+      <div class="tag">Certificate verification</div>
+    </header>
+
+    <main class="card" role="main">
+      <h1>Verify a Certificate</h1>
+      <p>Enter a <strong>Credential ID</strong> to confirm whether it was issued.</p>
+
+      <form id="verifyForm" novalidate>
+        <label for="cred">Credential ID</label>
+        <div class="row">
+          <input id="cred" name="id" type="text" placeholder="e.g., TG-2026-0001" autocomplete="off" required />
+          <button type="submit">Verify</button>
+        </div>
+      </form>
+
+      <div id="result" class="status" style="display:none;"></div>
+
+      <footer>
+        This page confirms certificate issuance only. It supports healthy habits and learning and is not medical advice.
+        If you have health concerns, consult your GP.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const $cred = document.getElementById("cred");
+    const $form = document.getElementById("verifyForm");
+    const $result = document.getElementById("result");
+
+    function normaliseId(raw) {
+      return (raw || "").trim().toUpperCase();
+    }
+
+    function setResult({ ok, id, cert, issuer }) {
+      $result.style.display = "block";
+      $result.className = "status " + (ok ? "good" : "bad");
+
+      if (!ok) {
+        $result.innerHTML = `
+          <div class="pill bad">NOT FOUND</div>
+          <div class="details">
+            <div><strong>Credential ID:</strong> ${escapeHtml(id)}</div>
+            <div>No matching certificate was found on this registry.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const certPage = new URL(`../certs/${encodeURIComponent(id)}/`, window.location.href).toString();
+      const pdfUrl = new URL(`../certs/${encodeURIComponent(id)}/certificate.pdf`, window.location.href).toString();
+
+      $result.innerHTML = `
+        <div class="pill good">VALID</div>
+        <div class="details">
+          <div><strong>Credential ID:</strong> ${escapeHtml(id)}</div>
+          <div><strong>Name:</strong> ${escapeHtml(cert.name || "")}</div>
+          <div><strong>Course:</strong> ${escapeHtml(cert.course || "")}</div>
+          <div><strong>Issued:</strong> ${escapeHtml(cert.issued || "")}</div>
+          <div><strong>Issuer:</strong> ${escapeHtml(issuer || "")}</div>
+        </div>
+        <div class="links">
+          <a href="${certPage}">View certificate page</a>
+          <a href="${pdfUrl}">Download certificate PDF</a>
+        </div>
+      `;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, s => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"
+      }[s]));
+    }
+
+    async function verify(id) {
+      const res = await fetch("certs.json", { cache: "no-store" });
+      if (!res.ok) throw new Error("Could not load certs.json");
+      const data = await res.json();
+
+      const cert = data?.certs?.[id];
+      const ok = cert && (cert.status || "valid").toLowerCase() === "valid";
+      setResult({ ok: !!ok, id, cert, issuer: data.issuer });
+    }
+
+    function syncFromQuery() {
+      const params = new URLSearchParams(window.location.search);
+      const id = normaliseId(params.get("id"));
+      if (id) {
+        $cred.value = id;
+        verify(id).catch(() => {
+          setResult({ ok: false, id });
+        });
+      }
+    }
+
+    $form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const id = normaliseId($cred.value);
+      if (!id) return;
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("id", id);
+      window.history.replaceState({}, "", url);
+
+      verify(id).catch(() => setResult({ ok: false, id }));
+    });
+
+    syncFromQuery();
+  </script>
+</body>
+</html>
 
