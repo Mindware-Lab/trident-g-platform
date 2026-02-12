@@ -3,10 +3,11 @@
   "last_updated": "2026-02-12",
   "certs": {
     "T-G-IQ-2026-0100": {
-      "name": "Client Full Name",
-      "course": "Course Title Here",
+      "name": "Raj Gaurav",
+      "course": "24 Day Cognitive Training Programme",
       "issued": "2026-02-12",
       "status": "valid"
     }
   }
 }
+
