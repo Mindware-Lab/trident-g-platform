@@ -4,16 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Session Switcher Training App</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IQ Capacity Coach</title>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
+<body class="bg-slate-100">
   <div id="root"></div>
 
 <script type="text/babel" data-presets="env,react">
   const { useState } = React;
+  <script type="text/babel" data-presets="env,react">
+    const { useMemo, useState } = React;
 
   const SessionSwitcher = () => {
     // Branding
@@ -22,6 +28,10 @@
       subtitle: 'Adaptive cognitive training based on your current state',
       accent: '#2764B7',
       logoSrc: './assets/Trident-Logo.svg'
+    const KEYS = {
+      sessions: 'tg.capacity.v1.sessions',
+      settings: 'tg.capacity.v1.settings',
+      today: 'tg.capacity.v1.today'
     };
 
     // ------------------------------
@@ -41,14 +51,29 @@
       CAPACITY_LEGACY_LAST_SESSION: 'lastCapacitySession',      // legacy fallback
       CAPACITY_LAST_GAME: 'iqmw.capacity.lastGameSelection',    // new canonical
       CAPACITY_LEGACY_LAST_GAME: 'lastGameSelection'            // legacy fallback
+    const GAME_LABELS = {
+      classic: 'Classic dual n-back',
+      emotional: 'Emotional n-back',
+      noncat: 'Non-categorical n-back',
+      logic: 'Logic-gated n-back'
     };
 
     const safeJsonParse = (s) => {
       try { return JSON.parse(s); } catch { return null; }
+    const STABILITY_LABELS = {
+      smooth: 'Smooth',
+      mixed: 'Mixed',
+      fell_apart: 'Fell apart'
     };
 
     const safeSetItem = (k, v) => {
       try { localStorage.setItem(k, v); } catch {}
+    const defaultSettings = {
+      anchorGame: 'noncat',
+      allowSession2: false,
+      enableHandSwitch: false,
+      retentionLimit: 200,
+      sessionDurationReminder: 'Default: 10 blocks in AIR app.'
     };
 
     // ----- Date helper (local browser time) -----
@@ -57,6 +82,9 @@
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       const dd = String(d.getDate()).padStart(2, '0');
       return `${yyyy}-${mm}-${dd}`;
+    const todayDate = () => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     };
 
     // ------------------------------
@@ -193,11 +221,15 @@
     const todayKey = () => `iqmw.capacity.sessionsCompleted_${localYYYYMMDD()}`;
 
     const loadSessionsCompletedToday = () => {
+    const load = (key, fallback) => {
       try {
         const v = parseInt(localStorage.getItem(todayKey()) || '0', 10);
         return Number.isFinite(v) ? v : 0;
+        const parsed = JSON.parse(localStorage.getItem(key) || 'null');
+        return parsed ?? fallback;
       } catch {
         return 0;
+        return fallback;
       }
     };
 
@@ -206,6 +238,8 @@
       try { localStorage.setItem(todayKey(), String(next)); } catch {}
       setSessionsCompletedToday(next);
       return next;
+    const save = (key, value) => {
+      localStorage.setItem(key, JSON.stringify(value));
     };
 
     // Splash screen state
@@ -218,9 +252,17 @@
     const [userProgress, setUserProgress] = useState(() => {
       const fromNew = safeJsonParse(localStorage.getItem(STORAGE.PROGRESS) || '');
       if (fromNew) return fromNew;
+    const makeId = () => `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
       const fromLegacy = safeJsonParse(localStorage.getItem(STORAGE.PROGRESS_LEGACY) || '');
       if (fromLegacy) return fromLegacy;
+    const makeBlocks = (game, template, enableHandSwitch = false) => {
+      const base = Array.from({ length: 10 }, (_, i) => ({
+        block: i + 1,
+        game,
+        dials: { speed: false, interference: false, handSwitch: false },
+        notes: ''
+      }));
 
       return {
         schemaVersion: 'progress_v1',
@@ -232,6 +274,8 @@
         programStartDate: new Date().toISOString(),
         programCompleted: false,
         programCompletionDate: null
+      const pulse = (idx, dial) => {
+        if (idx >= 0 && idx < 10) base[idx].dials[dial] = true;
       };
     });
 
@@ -309,6 +353,15 @@
       stop:   { id: 'stop',   label: 'Stop',   def: 'Brake the default. Ignore distractors and guessing.' },
       recover:{ id: 'recover',label: 'Recover',def: 'Notice conflict/noise. Reset and re-enter the corridor.' }
     };
+      if (template === 'anchor_build') pulse(5, 'interference');
+      if (template === 'anchor_probe') {
+        pulse(3, 'interference');
+        pulse(7, 'interference');
+      }
+      if (template === 'hand_probe' && enableHandSwitch) {
+        pulse(3, 'handSwitch');
+        pulse(7, 'handSwitch');
+      }
 
     // Primary “signature” of each game wrapper (in primitives)
     const GAME_SIGNATURES = {
@@ -316,6 +369,7 @@
       classic:       ['hold', 'update', 'shield', 'stop'],
       emotional:     ['stop', 'recover', 'shield', 'hold'],
       logic_gated:   ['clear', 'stop', 'update', 'hold']
+      return base;
     };
 
     // Unit targets expressed in primitives (defaults; tune later)
@@ -340,6 +394,10 @@
       18: { primary: 'stop',   secondary: 'clear',   useLine: 'Use it to choose reversible vs irreversible moves cleanly.' },
       19: { primary: 'hold',   secondary: 'shield',  useLine: 'Use it to think in multipliers rather than one-step wins.' },
       20: { primary: 'clear',  secondary: 'hold',    useLine: 'Use it to preserve optionality while still committing to a next step.' }
+    const pickSwapGame = (anchorGame, sessions) => {
+      const options = ['classic', 'emotional', 'logic'].filter((g) => g !== anchorGame);
+      const swapCount = sessions.filter((s) => s.sessionType === 'swap').length;
+      return options[swapCount % options.length] || options[0] || 'classic';
     };
 
     const getUnitTargets = (unitNumber) => {
@@ -349,6 +407,11 @@
         useLine: 'Use it to run the strategy cleanly in one pass.'
       };
     };
+    const decideTemplateFromHistory = (sessions, settings, sessionIndexToday) => {
+      const sorted = [...sessions].sort((a, b) => b.startedAt - a.startedAt);
+      const last = sorted[0];
+      const lastTwoAnchor = sorted.filter((s) => s.sessionType === 'anchor').slice(0, 2);
+      const needsRebound = !!(last && (last.sessionType === 'swap' || last?.click?.happened));
 
     const getRoundForUnit = (unitNumber) => (unitNumber <= 10 ? 1 : 2);
 
@@ -361,6 +424,10 @@
         if (settings?.interference) return { ...CAPACITY_FOCI.shield, match: targets.primary === 'shield' ? 'primary' : (targets.secondary === 'shield' ? 'secondary' : 'other') };
         if (settings?.handSwitch)   return { ...CAPACITY_FOCI.clear,  match: targets.primary === 'clear' ? 'primary' : (targets.secondary === 'clear' ? 'secondary' : 'other') };
         if (settings?.speed)        return { ...CAPACITY_FOCI.hold,   match: targets.primary === 'hold' ? 'primary' : (targets.secondary === 'hold' ? 'secondary' : 'other') };
+      if (sessionIndexToday === 2 && settings.allowSession2) {
+        if (last?.stability === 'fell_apart') return { sessionType: 'light', game: settings.anchorGame, template: 'light_stable', reason: 'Session 2 kept light due to low stability.' };
+        if (last?.stability === 'smooth') return { sessionType: 'swap', game: pickSwapGame(settings.anchorGame, sessions), template: 'swap_clean', reason: 'Session 2 used as clean swap probe.' };
+        return { sessionType: 'anchor', game: settings.anchorGame, template: 'anchor_build', reason: 'Session 2 gets one clean pulse only.' };
       }
 
       const sig = GAME_SIGNATURES[gameId] || GAME_SIGNATURES.anchor_noncat;
@@ -369,6 +436,10 @@
         sig.includes(targets.primary) ? targets.primary :
         sig.includes(targets.secondary) ? targets.secondary :
         sig[0];
+      if (!last) return { sessionType: 'anchor', game: settings.anchorGame, template: 'anchor_stabilise', reason: 'Starting corridor reliability with stable anchor.' };
+      if (needsRebound) return { sessionType: 'anchor', game: settings.anchorGame, template: 'anchor_stabilise', reason: 'Rebound check after swap/click session.' };
+      if (last.stability === 'fell_apart') return { sessionType: 'anchor', game: settings.anchorGame, template: 'anchor_stabilise', reason: 'Stability-first reset (no pulses).' };
+      if (last.stability === 'mixed') return { sessionType: 'anchor', game: settings.anchorGame, template: 'anchor_build', reason: 'Mixed session -> one clean dial pulse.' };
 
       const pack = CAPACITY_FOCI[pickId] || CAPACITY_FOCI.hold;
       const match =
@@ -378,12 +449,16 @@
 
       return { ...pack, match };
     };
+      const twoSmoothAnchor = lastTwoAnchor.length === 2 && lastTwoAnchor.every((s) => s.stability === 'smooth');
+      if (twoSmoothAnchor) return { sessionType: 'swap', game: pickSwapGame(settings.anchorGame, sessions), template: 'swap_clean', reason: 'Two smooth anchor sessions -> portability probe.' };
+      if (last.click?.happened) return { sessionType: 'anchor', game: settings.anchorGame, template: 'anchor_probe', reason: 'Click detected -> near probe then rebound.' };
 
     // Persist a compact handoff record so the Unit app can read it on load.
     const persistCapacityHandoff = (payload) => {
       const json = JSON.stringify(payload);
       safeSetItem(STORAGE.CAPACITY_LAST_SESSION, json);
       safeSetItem(STORAGE.CAPACITY_LEGACY_LAST_SESSION, json); // legacy compatibility
+      return { sessionType: 'anchor', game: settings.anchorGame, template: 'anchor_build', reason: 'Build with controlled perturbation.' };
     };
 
     const persistLastGameSelection = (payload) => {
@@ -449,10 +524,31 @@
         capLabel: cap.label,
         capDef: cap.def,
         capMatch: cap.match,
+    function App() {
+      const [screen, setScreen] = useState('today');
+      const [settings, setSettings] = useState(() => ({ ...defaultSettings, ...load(KEYS.settings, {}) }));
+      const [sessions, setSessions] = useState(() => load(KEYS.sessions, []));
+      const [todayState, setTodayState] = useState(() => {
+        const t = load(KEYS.today, {});
+        return t.date === todayDate() ? t : { date: todayDate(), completed: 0, rest: false };
+      });
+
+      const [activeSession, setActiveSession] = useState(null);
+      const [resultsDraft, setResultsDraft] = useState({ effort: 3, stability: 'mixed', click: 'no' });
+      const [historyFilter, setHistoryFilter] = useState({ wrapper: 'all', type: 'all', days: '30' });
+
+      const persistSessions = (next) => {
+        const limited = next.slice(0, settings.retentionLimit || 200);
+        setSessions(limited);
+        save(KEYS.sessions, limited);
+      };
 
         // Unit targets (Option B / primitives)
         unitPrimaryCap: unitTargets.primary,
         unitSecondaryCap: unitTargets.secondary
+      const persistToday = (next) => {
+        setTodayState(next);
+        save(KEYS.today, next);
       };
     };
 
@@ -462,6 +558,25 @@
         const payload = {
           ...userProgress,
           schemaVersion: userProgress.schemaVersion || 'progress_v1'
+      const todaysPlan = useMemo(() => {
+        const nextIndex = todayState.completed >= 1 ? 2 : 1;
+        return decideTemplateFromHistory(sessions, settings, nextIndex);
+      }, [sessions, settings, todayState.completed]);
+
+      const startSession = (index) => {
+        const plan = decideTemplateFromHistory(sessions, settings, index);
+        const blockPlan = makeBlocks(plan.game, plan.template, settings.enableHandSwitch);
+        const draft = {
+          id: makeId(),
+          localDate: todayDate(),
+          startedAt: Date.now(),
+          sessionIndexToday: index,
+          sessionType: plan.sessionType,
+          game: plan.game,
+          anchorGame: settings.anchorGame,
+          blockPlan,
+          checklist: blockPlan.map(() => false),
+          planningReason: plan.reason
         };
         const json = JSON.stringify(payload);
         localStorage.setItem(STORAGE.PROGRESS, json);
@@ -605,15 +720,34 @@
         const sessionsRaw = urlParams.get('sessions');
         const blocksRaw = urlParams.get('blocks');
         const localDate = urlParams.get('localDate') || localYYYYMMDD();
+        setActiveSession(draft);
+        setResultsDraft({ effort: 3, stability: 'mixed', click: 'no' });
+        setScreen('session');
+      };
 
         const zone = urlParams.get('zone');           // cold | in_band | hot | mixed
         const rec = urlParams.get('rec');             // proceed | light
         const cap = urlParams.get('cap');             // hold/update/clear/shield/stop/recover (optional)
         const timebox = urlParams.get('timebox');     // minutes (optional)
+      const completedBlocks = activeSession ? activeSession.checklist.filter(Boolean).length : 0;
 
         const toInt = (v, fallback) => {
           const n = parseInt(v ?? '', 10);
           return Number.isFinite(n) ? n : fallback;
+      const saveSession = () => {
+        const payload = {
+          ...activeSession,
+          endedAt: Date.now(),
+          stability: resultsDraft.stability,
+          effort: Number(resultsDraft.effort),
+          overallScore: resultsDraft.overallScore ? Number(resultsDraft.overallScore) : undefined,
+          nLevelEnd: resultsDraft.nLevelEnd ? Number(resultsDraft.nLevelEnd) : undefined,
+          acc: resultsDraft.acc ? Number(resultsDraft.acc) : undefined,
+          falseAlarmRate: resultsDraft.falseAlarmRate ? Number(resultsDraft.falseAlarmRate) : undefined,
+          meanRtMs: resultsDraft.meanRtMs ? Number(resultsDraft.meanRtMs) : undefined,
+          rtVar: resultsDraft.rtVar ? Number(resultsDraft.rtVar) : undefined,
+          click: { happened: resultsDraft.click === 'yes', note: resultsDraft.clickNote || '' },
+          notes: resultsDraft.notes || ''
         };
 
         if (zone || rec) {
@@ -682,15 +816,56 @@
           'Supercritical: scattered explore': 'super_scattered',
           'Supercritical – explore': 'super_scattered',
           'Supercritical - scattered': 'super_scattered',
+        persistSessions([payload, ...sessions]);
+        persistToday({ ...todayState, completed: Math.min(2, todayState.completed + 1), rest: false });
+        setActiveSession(null);
+        setScreen('today');
+      };
 
           'Supercritical: overloaded': 'super_scattered', // new zone_v1 hot label
           'Supercritical - scattered explore': 'super_scattered',
+      const copyPlan = () => {
+        const lines = activeSession.blockPlan.map((b) => {
+          const on = Object.entries(b.dials).filter(([, v]) => v).map(([k]) => k).join(', ') || 'none';
+          return `B${b.block}: ${GAME_LABELS[b.game]} | dials: ${on}`;
+        });
+        navigator.clipboard.writeText(lines.join('\n'));
+      };
 
           'Depleted overload': 'super_scattered',
+      const exportData = () => {
+        const blob = new Blob([JSON.stringify({ settings, sessions, today: todayState }, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tg-capacity-export-${todayDate()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
 
           'Mixed / unclear': 'mixed',
           'Not sure': 'mixed'
+      const importData = (file) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = JSON.parse(reader.result);
+            const importedSettings = { ...defaultSettings, ...(parsed.settings || {}) };
+            const importedSessions = Array.isArray(parsed.sessions) ? parsed.sessions : [];
+            const importedToday = parsed.today?.date ? parsed.today : { date: todayDate(), completed: 0, rest: false };
+            setSettings(importedSettings);
+            setSessions(importedSessions);
+            setTodayState(importedToday.date === todayDate() ? importedToday : { date: todayDate(), completed: 0, rest: false });
+            save(KEYS.settings, importedSettings);
+            save(KEYS.sessions, importedSessions);
+            save(KEYS.today, importedToday);
+            alert('Import successful.');
+          } catch {
+            alert('Import failed: invalid JSON.');
+          }
         };
+        reader.readAsText(file);
+      };
 
         const mappedState = modeToStateMap[data.postBreathMode] || 'mixed';
         setPostBreathState(mappedState);
@@ -1332,6 +1507,23 @@ if (screen === 'lastSessions') {
                   }}
                 >
                   {o.label}
+      const filteredSessions = sessions.filter((s) => {
+        if (historyFilter.wrapper !== 'all' && s.game !== historyFilter.wrapper) return false;
+        if (historyFilter.type !== 'all' && s.sessionType !== historyFilter.type) return false;
+        const days = Number(historyFilter.days);
+        const ageMs = Date.now() - (s.startedAt || Date.now());
+        return ageMs <= days * 24 * 60 * 60 * 1000;
+      });
+
+      return (
+        <div className="max-w-5xl mx-auto p-4 sm:p-6">
+          <header className="mb-6 bg-white rounded-2xl shadow p-4">
+            <h1 className="text-2xl font-bold text-slate-900">IQ Capacity Coach</h1>
+            <p className="text-slate-600">Clean-edge adaptation + controlled perturbations, local-only.</p>
+            <div className="mt-3 flex gap-2 flex-wrap">
+              {['today', 'session', 'results', 'history', 'settings'].map((s) => (
+                <button key={s} className={`px-3 py-1.5 rounded-lg ${screen === s ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700'}`} onClick={() => setScreen(s)}>
+                  {s[0].toUpperCase() + s.slice(1)}
                 </button>
               ))}
             </div>
@@ -1396,6 +1588,17 @@ if (screen === 'lastSessions') {
                     Skip
                   </button>
                 </div>
+          </header>
+
+          {screen === 'today' && (
+            <section className="bg-white rounded-2xl shadow p-5 space-y-4">
+              <h2 className="text-xl font-semibold">Today</h2>
+              <div className="p-4 rounded-xl bg-slate-100">
+                <p><b>Session count today:</b> {settings.allowSession2 ? 'Up to 2' : '1'} | completed: {todayState.completed}</p>
+                <p><b>Session type:</b> {todaysPlan.sessionType}</p>
+                <p><b>Wrapper:</b> {GAME_LABELS[todaysPlan.game]}</p>
+                <p><b>Dial policy:</b> {todaysPlan.template.includes('stabilise') || todaysPlan.template.includes('swap') || todaysPlan.template.includes('light') ? 'Stable' : 'One pulse (single dial only)'}</p>
+                <p className="text-sm text-slate-600 mt-1">{todaysPlan.reason}</p>
               </div>
             )}
           </div>
@@ -1709,8 +1912,14 @@ if (screen === 'recommendation' && recommendation) {
                     </button>
                   </>
                 )}
+              <div className="flex gap-2 flex-wrap">
+                <button disabled={todayState.completed >= 1 && !settings.allowSession2} className="px-4 py-2 rounded-lg bg-blue-600 text-white disabled:opacity-40" onClick={() => startSession(1)}>Start Session 1</button>
+                {settings.allowSession2 && <button disabled={todayState.completed < 1 || todayState.completed >= 2} className="px-4 py-2 rounded-lg bg-indigo-600 text-white disabled:opacity-40" onClick={() => startSession(2)}>Start Session 2</button>}
+                <button className="px-4 py-2 rounded-lg bg-slate-300" onClick={() => persistToday({ date: todayDate(), completed: todayState.completed, rest: true })}>Rest day</button>
               </div>
             </div>
+              {todayState.rest && <p className="text-amber-700">Rest marker saved for today.</p>}
+            </section>
           )}
 
           {isSwap && (
@@ -1721,6 +1930,42 @@ if (screen === 'recommendation' && recommendation) {
               <p className="text-sm mb-4" style={{ color: '#6D6D6D' }}>
                 You can follow the recommendation, or choose a different swap game below.
               </p>
+          {screen === 'session' && (
+            <section className="bg-white rounded-2xl shadow p-5 space-y-4 overflow-auto">
+              {!activeSession ? <p>Start a session from Today.</p> : (
+                <>
+                  <h2 className="text-xl font-semibold">Session Plan ({completedBlocks}/10 complete)</h2>
+                  <p className="text-slate-600">{activeSession.planningReason}</p>
+                  <div className="space-y-2">
+                    {activeSession.blockPlan.map((b, idx) => (
+                      <div key={b.block} className="grid grid-cols-12 gap-2 items-center bg-slate-50 rounded-lg p-2">
+                        <div className="col-span-1 font-semibold">{b.block}</div>
+                        <div className="col-span-4 text-sm">{GAME_LABELS[b.game]}</div>
+                        <div className="col-span-4 text-sm">
+                          Speed: {b.dials.speed ? 'ON' : 'off'} | Interference: {b.dials.interference ? 'ON' : 'off'} {settings.enableHandSwitch ? `| Hand: ${b.dials.handSwitch ? 'ON' : 'off'}` : ''}
+                        </div>
+                        <input className="col-span-2 border rounded px-2 py-1 text-sm" placeholder="notes" value={b.notes} onChange={(e) => {
+                          const next = structuredClone(activeSession);
+                          next.blockPlan[idx].notes = e.target.value;
+                          setActiveSession(next);
+                        }} />
+                        <input className="col-span-1" type="checkbox" checked={activeSession.checklist[idx]} onChange={(e) => {
+                          const next = structuredClone(activeSession);
+                          next.checklist[idx] = e.target.checked;
+                          setActiveSession(next);
+                        }} />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <button className="px-3 py-2 rounded bg-slate-200" onClick={copyPlan}>Copy block plan</button>
+                    <button className="px-3 py-2 rounded bg-slate-200" onClick={() => setScreen('today')}>Back to Today</button>
+                    <button className="px-3 py-2 rounded bg-blue-600 text-white" onClick={() => setScreen('results')}>I've finished the 10 blocks</button>
+                  </div>
+                </>
+              )}
+            </section>
+          )}
 
               <div className="space-y-3">
                 {swapGames.map(g => (
@@ -1738,6 +1983,43 @@ if (screen === 'recommendation' && recommendation) {
                       {recommendation.game === g.id && !swapChoice && <span style={{ color: '#2764B7' }}>(Recommended)</span>}
                     </p>
                     <p className="text-sm mb-2" style={{ color: '#6D6D6D' }}>{g.bestWhen}</p>
+          {screen === 'results' && (
+            <section className="bg-white rounded-2xl shadow p-5 space-y-3">
+              {!activeSession ? <p>No active session. Start from Today.</p> : (
+                <>
+                  <h2 className="text-xl font-semibold">Results Entry</h2>
+                  <div className="grid sm:grid-cols-3 gap-3">
+                    <label className="text-sm">Effort (1-5)<input className="w-full border rounded px-2 py-1" type="number" min="1" max="5" value={resultsDraft.effort} onChange={(e) => setResultsDraft({ ...resultsDraft, effort: e.target.value })} /></label>
+                    <label className="text-sm">Stability
+                      <select className="w-full border rounded px-2 py-1" value={resultsDraft.stability} onChange={(e) => setResultsDraft({ ...resultsDraft, stability: e.target.value })}>
+                        <option value="smooth">Smooth</option>
+                        <option value="mixed">Mixed</option>
+                        <option value="fell_apart">Fell apart</option>
+                      </select>
+                    </label>
+                    <label className="text-sm">Overall score<input className="w-full border rounded px-2 py-1" value={resultsDraft.overallScore || ''} onChange={(e) => setResultsDraft({ ...resultsDraft, overallScore: e.target.value })} /></label>
+                    <label className="text-sm">N level end<input className="w-full border rounded px-2 py-1" value={resultsDraft.nLevelEnd || ''} onChange={(e) => setResultsDraft({ ...resultsDraft, nLevelEnd: e.target.value })} /></label>
+                    <label className="text-sm">Accuracy<input className="w-full border rounded px-2 py-1" value={resultsDraft.acc || ''} onChange={(e) => setResultsDraft({ ...resultsDraft, acc: e.target.value })} /></label>
+                    <label className="text-sm">False alarm rate<input className="w-full border rounded px-2 py-1" value={resultsDraft.falseAlarmRate || ''} onChange={(e) => setResultsDraft({ ...resultsDraft, falseAlarmRate: e.target.value })} /></label>
+                    <label className="text-sm">Mean RT ms<input className="w-full border rounded px-2 py-1" value={resultsDraft.meanRtMs || ''} onChange={(e) => setResultsDraft({ ...resultsDraft, meanRtMs: e.target.value })} /></label>
+                    <label className="text-sm">RT variability<input className="w-full border rounded px-2 py-1" value={resultsDraft.rtVar || ''} onChange={(e) => setResultsDraft({ ...resultsDraft, rtVar: e.target.value })} /></label>
+                    <label className="text-sm">Anything click?
+                      <select className="w-full border rounded px-2 py-1" value={resultsDraft.click} onChange={(e) => setResultsDraft({ ...resultsDraft, click: e.target.value })}>
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                      </select>
+                    </label>
+                  </div>
+                  {resultsDraft.click === 'yes' && <label className="text-sm block">What changed?<input className="w-full border rounded px-2 py-1" value={resultsDraft.clickNote || ''} onChange={(e) => setResultsDraft({ ...resultsDraft, clickNote: e.target.value })} /></label>}
+                  <label className="text-sm block">Notes<textarea className="w-full border rounded px-2 py-1" value={resultsDraft.notes || ''} onChange={(e) => setResultsDraft({ ...resultsDraft, notes: e.target.value })}></textarea></label>
+                  <div className="flex gap-2">
+                    <button className="px-3 py-2 rounded bg-green-600 text-white" onClick={saveSession}>Save session</button>
+                    {settings.allowSession2 && todayState.completed < 1 && <button className="px-3 py-2 rounded bg-indigo-600 text-white" onClick={() => { saveSession(); setTimeout(() => startSession(2), 0); }}>Save + Start Session 2</button>}
+                  </div>
+                </>
+              )}
+            </section>
+          )}
 
                     <div className="flex gap-2 mt-2">
                       {g.strategies.map(s => (
@@ -1755,10 +2037,33 @@ if (screen === 'recommendation' && recommendation) {
                         </button>
                       ))}
                     </div>
+          {screen === 'history' && (
+            <section className="bg-white rounded-2xl shadow p-5 space-y-4">
+              <h2 className="text-xl font-semibold">History</h2>
+              <div className="grid sm:grid-cols-3 gap-2">
+                <select className="border rounded px-2 py-1" value={historyFilter.wrapper} onChange={(e) => setHistoryFilter({ ...historyFilter, wrapper: e.target.value })}>
+                  <option value="all">All wrappers</option>
+                  {Object.keys(GAME_LABELS).map((g) => <option key={g} value={g}>{GAME_LABELS[g]}</option>)}
+                </select>
+                <select className="border rounded px-2 py-1" value={historyFilter.type} onChange={(e) => setHistoryFilter({ ...historyFilter, type: e.target.value })}>
+                  <option value="all">All types</option><option value="anchor">Anchor</option><option value="swap">Probe swap</option><option value="light">Light</option>
+                </select>
+                <select className="border rounded px-2 py-1" value={historyFilter.days} onChange={(e) => setHistoryFilter({ ...historyFilter, days: e.target.value })}>
+                  <option value="7">Last 7 days</option><option value="30">Last 30 days</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                {filteredSessions.map((s) => (
+                  <div key={s.id} className="border rounded-lg p-3">
+                    <p className="font-semibold">{s.localDate} · Session {s.sessionIndexToday} · {s.sessionType.toUpperCase()}</p>
+                    <p className="text-sm">{GAME_LABELS[s.game]} {s.game !== s.anchorGame ? '🔁 swap' : ''} | Stability: {STABILITY_LABELS[s.stability]} | Effort: {s.effort}</p>
+                    <p className="text-sm text-slate-600">Pulse: {s.blockPlan.some((b) => b.dials.interference) ? 'Interference' : s.blockPlan.some((b) => b.dials.speed) ? 'Speed' : s.blockPlan.some((b) => b.dials.handSwitch) ? 'Hand switch' : 'None'}</p>
                   </div>
                 ))}
+                {filteredSessions.length === 0 && <p className="text-slate-500">No sessions in this filter.</p>}
               </div>
             </div>
+            </section>
           )}
 
           <button
@@ -1908,6 +2213,28 @@ if (screen === 'afterTraining') {
                 Starting session {Math.min(sessionsCompletedToday + 1, totalSessionsToday)} of {totalSessionsToday}
               </p>
             </div>
+          {screen === 'settings' && (
+            <section className="bg-white rounded-2xl shadow p-5 space-y-3">
+              <h2 className="text-xl font-semibold">Settings</h2>
+              <label className="block text-sm">Anchor wrapper
+                <select className="w-full border rounded px-2 py-1" value={settings.anchorGame} onChange={(e) => {
+                  const next = { ...settings, anchorGame: e.target.value };
+                  setSettings(next); save(KEYS.settings, next);
+                }}>
+                  <option value="noncat">Non-categorical</option>
+                  <option value="classic">Classic</option>
+                  <option value="emotional">Emotional</option>
+                  <option value="logic">Logic-gated</option>
+                </select>
+              </label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={settings.allowSession2} onChange={(e) => { const next = { ...settings, allowSession2: e.target.checked }; setSettings(next); save(KEYS.settings, next); }} />Allow Session 2</label>
+              <label className="flex items-center gap-2"><input type="checkbox" checked={settings.enableHandSwitch} onChange={(e) => { const next = { ...settings, enableHandSwitch: e.target.checked }; setSettings(next); save(KEYS.settings, next); }} />Enable hand switching dial</label>
+              <label className="block text-sm">Session reminder<input className="w-full border rounded px-2 py-1" value={settings.sessionDurationReminder} onChange={(e) => { const next = { ...settings, sessionDurationReminder: e.target.value }; setSettings(next); save(KEYS.settings, next); }} /></label>
+              <div className="flex gap-2">
+                <button className="px-3 py-2 rounded bg-slate-200" onClick={exportData}>Export JSON</button>
+                <label className="px-3 py-2 rounded bg-slate-200 cursor-pointer">Import JSON<input className="hidden" type="file" accept="application/json" onChange={(e) => e.target.files[0] && importData(e.target.files[0])} /></label>
+              </div>
+            </section>
           )}
 
           <div
@@ -2228,6 +2555,8 @@ if (screen === 'afterTraining') {
     </div>
   );
 }
+      );
+    }
 
 return null;
 };
@@ -2236,6 +2565,8 @@ return null;
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<SessionSwitcher />);
 </script>
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
 </body>
 </html>
 
