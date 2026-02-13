@@ -13,7 +13,7 @@
   <div id="root"></div>
 
 <script type="text/babel" data-presets="env,react">
-  const { useMemo, useState } = React;
+  const { useEffect, useMemo, useState } = React;
 
   const STORAGE = {
     PROGRESS: 'iqmw.progress.v1',
@@ -30,6 +30,24 @@
     { id: 'non_categorical', label: 'Non-categorical n-back', note: 'Train broad runtime control.' },
     { id: 'logic_gated', label: 'Logic-gated n-back', note: 'Rule discipline and clean updating.' }
   ];
+
+  const BREATH_ROUTINES = {
+    upshift: {
+      name: 'Upshift',
+      description: 'Inhale-led breathing to raise engagement.',
+      cue: 'Inhale 3s, exhale 2s.'
+    },
+    amplify: {
+      name: 'Amplify',
+      description: 'Slow-paced breathing to stabilise.',
+      cue: 'Inhale 4s, exhale 6s.'
+    },
+    downshift: {
+      name: 'Downshift',
+      description: 'Cyclic sighing to reduce overload.',
+      cue: 'Two short inhales, one long sigh out.'
+    }
+  };
 
   const safeParse = (raw, fallback) => {
     try { return JSON.parse(raw); } catch { return fallback; }
@@ -66,11 +84,16 @@
     const [progress, setProgress] = useState(() => loadProgress());
     const [zoneMode, setZoneMode] = useState('in_band');
     const [planType, setPlanType] = useState('type1_build');
+    const [stateRatings, setStateRatings] = useState({ load: 4, drift: 4, mismatch: 4 });
+    const [lastStateReason, setLastStateReason] = useState('');
     const [selectedGame, setSelectedGame] = useState('classic');
     const [speedPreset, setSpeedPreset] = useState('calm');
     const [interferencePreset, setInterferencePreset] = useState('low');
     const [bridgeObs, setBridgeObs] = useState('');
     const [bridgeMove, setBridgeMove] = useState('');
+    const [breathRoutine, setBreathRoutine] = useState('amplify');
+    const [breathRunning, setBreathRunning] = useState(false);
+    const [breathRemaining, setBreathRemaining] = useState(0);
 
     const selectedGameObj = useMemo(
       () => GAMES.find((g) => g.id === selectedGame) || GAMES[0],
@@ -83,6 +106,37 @@
       if (zone !== 'in_band') return 'type1_light';
       return 'type1_build';
     };
+
+    const estimateZoneFromRatings = () => {
+      const vals = [stateRatings.load, stateRatings.drift, stateRatings.mismatch];
+      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+      const peak = Math.max(...vals);
+      let nextZone = 'in_band';
+      let reason = 'Low volatility and manageable load.';
+      if (peak >= 8 || avg >= 7) {
+        nextZone = 'reset';
+        reason = 'High strain detected. Downshift before hard training.';
+      } else if (avg >= 5) {
+        nextZone = 'light';
+        reason = 'Moderate instability. Keep session light and clean.';
+      }
+      setZoneMode(nextZone);
+      setPlanType(computePlanType(nextZone));
+      setLastStateReason(reason);
+      if (nextZone === 'reset') setBreathRoutine('downshift');
+      else if (nextZone === 'light') setBreathRoutine('amplify');
+      else setBreathRoutine('upshift');
+    };
+
+    useEffect(() => {
+      if (!breathRunning || breathRemaining <= 0) return;
+      const id = setInterval(() => setBreathRemaining((s) => s - 1), 1000);
+      return () => clearInterval(id);
+    }, [breathRunning, breathRemaining]);
+
+    useEffect(() => {
+      if (breathRunning && breathRemaining <= 0) setBreathRunning(false);
+    }, [breathRunning, breathRemaining]);
 
     const planLabel = {
       type1_light: 'Type-1 light session',
@@ -100,6 +154,10 @@
         settings: {
           speedPreset,
           interferencePreset
+        },
+        breathing: {
+          routineId: breathRoutine,
+          routineName: BREATH_ROUTINES[breathRoutine].name
         }
       };
       localStorage.setItem(STORAGE.CAPACITY_LAST_GAME, JSON.stringify(handoff));
@@ -131,6 +189,10 @@
         settings: {
           speedPreset,
           interferencePreset
+        },
+        breathing: {
+          routineId: breathRoutine,
+          routineName: BREATH_ROUTINES[breathRoutine].name
         },
         bridge: {
           observation: bridgeObs.trim(),
@@ -223,6 +285,36 @@
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
             <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>State gate</p>
+            <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333333' }}>
+              Estimate state from quick ratings, then optionally override manually.
+            </p>
+            {[
+              ['load', 'Load'],
+              ['drift', 'Drift'],
+              ['mismatch', 'Mismatch']
+            ].map(([k, label]) => (
+              <div key={k} style={{ marginBottom: '10px' }}>
+                <label style={{ fontWeight: 700 }}>{label}: {stateRatings[k]}</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="10"
+                  value={stateRatings[k]}
+                  onChange={(e) => setStateRatings((prev) => ({ ...prev, [k]: Number(e.target.value) }))}
+                  style={{ width: '100%' }}
+                />
+              </div>
+            ))}
+            <div className="btnRow" style={{ marginTop: 8 }}>
+              <button className="btn" style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }} onClick={estimateZoneFromRatings}>
+                Estimate state
+              </button>
+            </div>
+            {lastStateReason ? (
+              <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>
+                {lastStateReason}
+              </p>
+            ) : null}
             <div className="btnRow">
               {[
                 { id: 'in_band', label: 'In-band (Full)' },
@@ -246,6 +338,54 @@
                 </button>
               ))}
             </div>
+          </section>
+
+          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Optional breathing reset</p>
+            <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333333' }}>
+              Simplified from Zone Coach (no HR capture).
+            </p>
+            <select
+              value={breathRoutine}
+              onChange={(e) => setBreathRoutine(e.target.value)}
+              style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0', marginBottom: '10px' }}
+            >
+              <option value="upshift">Upshift</option>
+              <option value="amplify">Amplify</option>
+              <option value="downshift">Downshift</option>
+            </select>
+            <p style={{ margin: '0 0 4px 0', fontWeight: 700 }}>{BREATH_ROUTINES[breathRoutine].name}</p>
+            <p style={{ margin: '0 0 4px 0', fontSize: '13px' }}>{BREATH_ROUTINES[breathRoutine].description}</p>
+            <p style={{ margin: 0, fontSize: '13px', color: '#555555' }}>{BREATH_ROUTINES[breathRoutine].cue}</p>
+            <div className="btnRow">
+              <button
+                className="btn"
+                style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }}
+                onClick={() => {
+                  setBreathRemaining(90);
+                  setBreathRunning(true);
+                }}
+              >
+                Start 90s routine
+              </button>
+              {breathRunning ? (
+                <button
+                  className="btn"
+                  style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', color: '#333333' }}
+                  onClick={() => {
+                    setBreathRunning(false);
+                    setBreathRemaining(0);
+                  }}
+                >
+                  Stop
+                </button>
+              ) : null}
+            </div>
+            {breathRunning ? (
+              <p style={{ margin: '8px 0 0 0', fontWeight: 900 }}>
+                {Math.max(0, breathRemaining)}s remaining
+              </p>
+            ) : null}
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
