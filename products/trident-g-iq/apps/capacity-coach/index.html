@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Capacity Training Coach</title>
+  <link rel="stylesheet" href="../../../../branding/brand.css">
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
   <div id="root"></div>
@@ -25,10 +25,10 @@
   const PROGRAM_TARGET = 24;
 
   const GAMES = [
-    { id: 'classic', label: 'Classic dual n-back', url: '../n-back-games/index.html?game=classic', note: 'Default baseline for Type-1 stability.' },
-    { id: 'transitive', label: 'Transitive n-back', url: '../n-back-games/index.html?game=transitive', note: 'Relational binding and ordered comparisons.' },
-    { id: 'graph', label: 'Graph / edge n-back', url: '../n-back-games/index.html?game=graph', note: 'Map-like relation tracking under load.' },
-    { id: 'propositional', label: 'Propositional n-back', url: '../n-back-games/index.html?game=propositional', note: 'Rule discipline and logical updating.' }
+    { id: 'classic', label: 'Classic n-back', note: 'Default start for Type-1 stability.' },
+    { id: 'emotional', label: 'Emotional n-back', note: 'Add salience control under load.' },
+    { id: 'non_categorical', label: 'Non-categorical n-back', note: 'Train broad runtime control.' },
+    { id: 'logic_gated', label: 'Logic-gated n-back', note: 'Rule discipline and clean updating.' }
   ];
 
   const safeParse = (raw, fallback) => {
@@ -89,6 +89,24 @@
       type1_build: 'Type-1 build session'
     }[planType] || 'Type-1 session';
 
+    const launchExternalGame = () => {
+      const handoff = {
+        localDate: new Date().toISOString().slice(0, 10),
+        timestamp: Date.now(),
+        gameId: selectedGame,
+        gameLabel: selectedGameObj.label,
+        planType,
+        zoneMode,
+        settings: {
+          speedPreset,
+          interferencePreset
+        }
+      };
+      localStorage.setItem(STORAGE.CAPACITY_LAST_GAME, JSON.stringify(handoff));
+      alert('Launch i3 Mindware (Adobe AIR), choose "' + selectedGameObj.label + '", run your block(s), then return here.');
+      setScreen('results');
+    };
+
     const completeSession = () => {
       const nextCompleted = Math.min(PROGRAM_TARGET, (progress.totalSessionsCompleted || 0) + 1);
       const nowIso = new Date().toISOString();
@@ -108,6 +126,7 @@
         timestamp: Date.now(),
         planType,
         gameId: selectedGame,
+        gameLabel: selectedGameObj.label,
         zoneMode,
         settings: {
           speedPreset,
@@ -129,64 +148,82 @@
     if (screen === 'results') {
       const bridgeReady = bridgeObs.trim() && bridgeMove.trim();
       return (
-        <div className="min-h-screen bg-neutral-200 p-4 md:p-8">
-          <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 md:p-8">
-            <h1 className="text-3xl font-bold mb-2 text-neutral-800">Session wrap-up</h1>
-            <p className="text-neutral-600 mb-6">Lock in one observation and one next-use move, then count this session.</p>
-
-            <div className="p-4 rounded-lg border-2 border-blue-200 bg-blue-50 mb-6">
-              <p className="font-semibold text-neutral-800">Played: <span className="text-blue-700">{selectedGameObj.label}</span></p>
-              <p className="text-sm text-neutral-600">Plan: {planLabel} | Speed: {speedPreset} | Interference: {interferencePreset}</p>
+        <div className="screen">
+          <div className="topbar">
+            <div className="brandleft">
+              <div className="icon"><span className="iconText">T</span></div>
+              <div>
+                <p className="title">Capacity Training Coach</p>
+                <p className="subtitle">Type-1 transfer session</p>
+              </div>
             </div>
-
-            <label className="block text-sm font-semibold mb-2 text-neutral-800">In the game it looked like...</label>
-            <input
-              type="text"
-              value={bridgeObs}
-              onChange={(e) => setBridgeObs(e.target.value)}
-              className="w-full p-3 rounded border-2 border-neutral-300 mb-4"
-              placeholder="One concise observation"
-            />
-
-            <label className="block text-sm font-semibold mb-2 text-neutral-800">In the next task I will use it by...</label>
-            <input
-              type="text"
-              value={bridgeMove}
-              onChange={(e) => setBridgeMove(e.target.value)}
-              className="w-full p-3 rounded border-2 border-neutral-300 mb-6"
-              placeholder="One concrete transfer move"
-            />
-
-            <button
-              onClick={completeSession}
-              disabled={!bridgeReady}
-              className="w-full py-3 px-6 rounded-lg font-semibold"
-              style={{
-                backgroundColor: bridgeReady ? '#2764B7' : '#E0E0E0',
-                color: bridgeReady ? '#FFFFFF' : '#6D6D6D'
-              }}
-            >
-              Complete session ({Math.min(PROGRAM_TARGET, progress.totalSessionsCompleted + 1)}/{PROGRAM_TARGET})
-            </button>
+            <span className="chip">{progress.totalSessionsCompleted}/{PROGRAM_TARGET}</span>
           </div>
+
+          <main className="content">
+            <section className="card">
+              <h1 className="h1">Session Wrap-Up</h1>
+              <p className="p">Played: {selectedGameObj.label} | Plan: {planLabel}</p>
+            </section>
+
+            <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+              <label style={{ display: 'block', fontWeight: 900, marginBottom: '8px' }}>In the game it looked like...</label>
+              <input
+                type="text"
+                value={bridgeObs}
+                onChange={(e) => setBridgeObs(e.target.value)}
+                placeholder="One concise observation"
+                style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0', marginBottom: '12px' }}
+              />
+
+              <label style={{ display: 'block', fontWeight: 900, marginBottom: '8px' }}>In the next task I will use it by...</label>
+              <input
+                type="text"
+                value={bridgeMove}
+                onChange={(e) => setBridgeMove(e.target.value)}
+                placeholder="One concrete transfer move"
+                style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0' }}
+              />
+
+              <div className="btnRow">
+                <button className="btn btnPrimary" onClick={completeSession} disabled={!bridgeReady}>
+                  Complete session ({Math.min(PROGRAM_TARGET, progress.totalSessionsCompleted + 1)}/{PROGRAM_TARGET})
+                </button>
+                <button className="btn btnSecondary" onClick={() => setScreen('home')}>Back</button>
+              </div>
+            </section>
+          </main>
         </div>
       );
     }
 
     return (
-      <div className="min-h-screen bg-neutral-200 p-4 md:p-8">
-        <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6 md:p-8">
-          <h1 className="text-3xl font-bold mb-2 text-neutral-800">Capacity Training Coach</h1>
-          <p className="text-neutral-600 mb-6">Type-1 transfer mode: build runtime stability across any of the four n-back games.</p>
-
-          <div className="p-4 rounded-lg border-2 border-blue-200 bg-blue-50 mb-6">
-            <p className="font-semibold text-neutral-800">Program progress: {progress.totalSessionsCompleted}/{PROGRAM_TARGET} sessions</p>
-            <p className="text-sm text-neutral-600">Remaining: {sessionsRemaining}</p>
+      <div className="screen">
+        <div className="topbar">
+          <div className="brandleft">
+            <div className="icon"><span className="iconText">T</span></div>
+            <div>
+              <p className="title">Capacity Training Coach</p>
+              <p className="subtitle">i3 Mindware session coordinator</p>
+            </div>
           </div>
+          <span className="chip">{progress.totalSessionsCompleted}/{PROGRAM_TARGET}</span>
+        </div>
 
-          <div className="mb-6">
-            <p className="font-semibold mb-3 text-neutral-800">State gate</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <main className="content">
+          <section className="card">
+            <h1 className="h1">Type-1 Program</h1>
+            <p className="p">24 sessions total. No anchor wheel. Choose any of the 4 n-back variants each session.</p>
+          </section>
+
+          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+            <p style={{ margin: 0, fontWeight: 900 }}>Progress</p>
+            <p style={{ marginTop: '8px' }}>{progress.totalSessionsCompleted}/{PROGRAM_TARGET} complete | {sessionsRemaining} remaining</p>
+          </section>
+
+          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>State gate</p>
+            <div className="btnRow">
               {[
                 { id: 'in_band', label: 'In-band (Full)' },
                 { id: 'light', label: 'Light' },
@@ -194,80 +231,69 @@
               ].map((z) => (
                 <button
                   key={z.id}
+                  className="btn"
                   onClick={() => {
                     setZoneMode(z.id);
                     setPlanType(computePlanType(z.id));
                   }}
-                  className="p-3 rounded-lg border-2 text-left"
                   style={{
-                    borderColor: zoneMode === z.id ? '#2764B7' : '#E0E0E0',
-                    backgroundColor: zoneMode === z.id ? '#E8F4FF' : '#FFFFFF'
+                    background: zoneMode === z.id ? '#E8F4FF' : '#FFFFFF',
+                    border: '1px solid ' + (zoneMode === z.id ? '#2764B7' : '#E0E0E0'),
+                    color: '#111111'
                   }}
                 >
                   {z.label}
                 </button>
               ))}
             </div>
-          </div>
+          </section>
 
-          <div className="mb-6">
-            <p className="font-semibold mb-3 text-neutral-800">Preset controls</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <select className="p-3 rounded border-2 border-neutral-300" value={speedPreset} onChange={(e) => setSpeedPreset(e.target.value)}>
+          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Preset controls</p>
+            <div className="btnRow">
+              <select value={speedPreset} onChange={(e) => setSpeedPreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
                 <option value="calm">Speed: Calm</option>
                 <option value="fast">Speed: Fast</option>
               </select>
-              <select className="p-3 rounded border-2 border-neutral-300" value={interferencePreset} onChange={(e) => setInterferencePreset(e.target.value)}>
+              <select value={interferencePreset} onChange={(e) => setInterferencePreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
                 <option value="low">Interference: Low</option>
                 <option value="high">Interference: High</option>
               </select>
             </div>
-          </div>
+          </section>
 
-          <div className="mb-6">
-            <p className="font-semibold mb-3 text-neutral-800">Choose today’s game (all allowed)</p>
-            <div className="space-y-2">
+          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Choose today's i3 Mindware game</p>
+            <div style={{ display: 'grid', gap: '10px' }}>
               {GAMES.map((g) => (
                 <button
                   key={g.id}
+                  className="btn"
                   onClick={() => setSelectedGame(g.id)}
-                  className="w-full p-3 rounded-lg border-2 text-left"
                   style={{
-                    borderColor: selectedGame === g.id ? '#2764B7' : '#E0E0E0',
-                    backgroundColor: selectedGame === g.id ? '#E8F4FF' : '#FFFFFF'
+                    width: '100%',
+                    textAlign: 'left',
+                    background: selectedGame === g.id ? '#E8F4FF' : '#FFFFFF',
+                    border: '1px solid ' + (selectedGame === g.id ? '#2764B7' : '#E0E0E0'),
+                    color: '#111111'
                   }}
                 >
-                  <div className="font-semibold text-neutral-800">{g.label}{g.id === 'classic' ? ' (Suggested start)' : ''}</div>
-                  <div className="text-sm text-neutral-600">{g.note}</div>
+                  <div style={{ fontWeight: 900 }}>{g.label}{g.id === 'classic' ? ' (Suggested start)' : ''}</div>
+                  <div style={{ fontSize: '13px', marginTop: '6px', opacity: 0.85 }}>{g.note}</div>
                 </button>
               ))}
             </div>
-          </div>
+          </section>
 
-          <div className="p-4 rounded-lg bg-neutral-100 mb-6">
-            <p className="text-neutral-800 font-semibold">Today’s plan: {planLabel}</p>
-            <p className="text-sm text-neutral-600">No anchor game and no wheel progression. You can choose any of the four games each session.</p>
-          </div>
-
-          <button
-            onClick={() => {
-              window.open(selectedGameObj.url, '_blank', 'noopener,noreferrer');
-              setScreen('results');
-            }}
-            className="w-full py-3 px-6 rounded-lg font-semibold mb-3"
-            style={{ backgroundColor: '#2764B7', color: '#FFFFFF' }}
-          >
-            Open {selectedGameObj.label}
-          </button>
-
-          <button
-            onClick={() => setScreen('results')}
-            className="w-full py-3 px-6 rounded-lg font-semibold border-2"
-            style={{ borderColor: '#2764B7', color: '#2764B7', backgroundColor: '#FFFFFF' }}
-          >
-            I finished the game
-          </button>
-        </div>
+          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+            <p style={{ margin: 0, fontWeight: 900 }}>Today's plan: {planLabel}</p>
+            <p style={{ marginTop: '8px' }}>Open i3 Mindware, run {selectedGameObj.label}, then return for wrap-up.</p>
+            <div className="btnRow">
+              <button className="btn btnPrimary" onClick={launchExternalGame}>Launch external app flow</button>
+              <button className="btn btnSecondary" onClick={() => setScreen('results')}>I already ran it</button>
+            </div>
+          </section>
+        </main>
       </div>
     );
   }
