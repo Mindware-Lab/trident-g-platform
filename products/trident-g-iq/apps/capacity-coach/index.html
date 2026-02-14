@@ -13,7 +13,7 @@
   <div id="root"></div>
 
 <script type="text/babel" data-presets="env,react">
-  const { useEffect, useMemo, useState } = React;
+  const { useEffect, useMemo, useRef, useState } = React;
 
   const STORAGE = {
     PROGRESS: 'iqmw.progress.v1',
@@ -98,21 +98,35 @@
     FAR: 'Big switch'
   };
 
+  const makeRepeat = (n, seq) => Array.from({ length: n }, () => seq).flat();
   const BREATH_ROUTINES = {
     upshift: {
       name: 'Upshift',
       description: 'Inhale-led breathing to raise engagement.',
-      cue: 'Inhale 3s, exhale 2s.'
+      cue: 'Inhale 3s, exhale 2s.',
+      phases: makeRepeat(18, [
+        { label: 'Inhale', durationMs: 3000, kind: 'inhale' },
+        { label: 'Exhale', durationMs: 2000, kind: 'exhale' }
+      ])
     },
     amplify: {
       name: 'Amplify',
       description: 'Slow-paced breathing to stabilise.',
-      cue: 'Inhale 4s, exhale 6s.'
+      cue: 'Inhale 4s, exhale 6s.',
+      phases: makeRepeat(9, [
+        { label: 'Inhale', durationMs: 4000, kind: 'inhale' },
+        { label: 'Exhale', durationMs: 6000, kind: 'exhale' }
+      ])
     },
     downshift: {
       name: 'Downshift',
       description: 'Cyclic sighing to reduce overload.',
-      cue: 'Two short inhales, one long sigh out.'
+      cue: 'Two short inhales, one long sigh out.',
+      phases: makeRepeat(10, [
+        { label: 'Inhale (1)', durationMs: 1000, kind: 'inhale' },
+        { label: 'Inhale (2)', durationMs: 1000, kind: 'inhale' },
+        { label: 'Sigh out', durationMs: 7000, kind: 'exhale' }
+      ])
     }
   };
 
@@ -244,6 +258,11 @@
     const [breathRoutine, setBreathRoutine] = useState('amplify');
     const [breathRunning, setBreathRunning] = useState(false);
     const [breathRemaining, setBreathRemaining] = useState(0);
+    const [breathPhaseLabel, setBreathPhaseLabel] = useState('Ready');
+    const [breathPhaseKind, setBreathPhaseKind] = useState('inhale');
+    const [breathPhaseProgress, setBreathPhaseProgress] = useState(0);
+    const breathStartRef = useRef(null);
+    const breathRafRef = useRef(null);
     const [restConfirm, setRestConfirm] = useState(false);
     const [restReason, setRestReason] = useState('');
     const [sessionType, setSessionType] = useState('TUNE');
@@ -393,14 +412,51 @@
     };
 
     useEffect(() => {
-      if (!breathRunning || breathRemaining <= 0) return;
-      const id = setInterval(() => setBreathRemaining((s) => s - 1), 1000);
-      return () => clearInterval(id);
-    }, [breathRunning, breathRemaining]);
+      if (!breathRunning) {
+        if (breathRafRef.current) cancelAnimationFrame(breathRafRef.current);
+        breathRafRef.current = null;
+        breathStartRef.current = null;
+        return;
+      }
 
-    useEffect(() => {
-      if (breathRunning && breathRemaining <= 0) setBreathRunning(false);
-    }, [breathRunning, breathRemaining]);
+      const targetMs = 90000;
+      const pattern = BREATH_ROUTINES[breathRoutine];
+      const cycleMs = pattern.phases.reduce((s, p) => s + p.durationMs, 0);
+      if (!breathStartRef.current) breathStartRef.current = performance.now();
+
+      const tick = () => {
+        const elapsedMs = performance.now() - breathStartRef.current;
+        const remainingMs = Math.max(0, targetMs - elapsedMs);
+        setBreathRemaining(Math.ceil(remainingMs / 1000));
+
+        const t = ((elapsedMs % cycleMs) + cycleMs) % cycleMs;
+        let acc = 0;
+        for (let i = 0; i < pattern.phases.length; i += 1) {
+          const p = pattern.phases[i];
+          const next = acc + p.durationMs;
+          if (t >= acc && t < next) {
+            setBreathPhaseLabel(p.label);
+            setBreathPhaseKind(p.kind);
+            setBreathPhaseProgress(p.durationMs > 0 ? (t - acc) / p.durationMs : 0);
+            break;
+          }
+          acc = next;
+        }
+
+        if (remainingMs <= 0) {
+          setBreathRunning(false);
+          setBreathPhaseLabel('Complete');
+          setBreathPhaseProgress(1);
+          return;
+        }
+        breathRafRef.current = requestAnimationFrame(tick);
+      };
+
+      breathRafRef.current = requestAnimationFrame(tick);
+      return () => {
+        if (breathRafRef.current) cancelAnimationFrame(breathRafRef.current);
+      };
+    }, [breathRunning, breathRoutine]);
 
     useEffect(() => {
       const mapped = GAME_ID_FROM_ENUM[recommendationV11.recommended_game];
@@ -1139,12 +1195,31 @@
             <p style={{ margin: '0 0 4px 0', fontWeight: 700 }}>{BREATH_ROUTINES[breathRoutine].name}</p>
             <p style={{ margin: '0 0 4px 0', fontSize: '13px' }}>{BREATH_ROUTINES[breathRoutine].description}</p>
             <p style={{ margin: 0, fontSize: '13px', color: '#555555' }}>{BREATH_ROUTINES[breathRoutine].cue}</p>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
+              <svg width="220" height="220" viewBox="0 0 220 220">
+                <circle cx="110" cy="110" r="88" fill="none" stroke="rgba(39,100,183,0.20)" strokeWidth="8" />
+                <circle
+                  cx="110"
+                  cy="110"
+                  r={54 + (42 * (breathPhaseKind === 'inhale' ? breathPhaseProgress : (1 - breathPhaseProgress)))}
+                  fill="none"
+                  stroke="var(--deep)"
+                  strokeWidth="10"
+                  strokeOpacity="0.9"
+                />
+                <text x="110" y="115" textAnchor="middle" fontSize="18" fontWeight="900" fill="#143a73">
+                  {breathPhaseLabel}
+                </text>
+              </svg>
+            </div>
             <div className="btnRow">
               <button
                 className="btn"
                 style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }}
                 onClick={() => {
                   setBreathRemaining(90);
+                  setBreathPhaseLabel('Ready');
+                  setBreathPhaseProgress(0);
                   setBreathRunning(true);
                 }}
               >
@@ -1157,6 +1232,8 @@
                   onClick={() => {
                     setBreathRunning(false);
                     setBreathRemaining(0);
+                    setBreathPhaseLabel('Stopped');
+                    setBreathPhaseProgress(0);
                   }}
                 >
                   Stop
