@@ -19,10 +19,62 @@
     PROGRESS: 'iqmw.progress.v1',
     PROGRESS_LEGACY: 'trainingProgress',
     CAPACITY_LAST_GAME: 'iqmw.capacity.lastGameSelection',
-    CAPACITY_LAST_SESSION: 'iqmw.capacity.lastSession'
+    CAPACITY_LAST_SESSION: 'iqmw.capacity.lastSession',
+    SETTINGS_V11: 'iqmw.capacity.settings.v1',
+    PROGRAM_V11: 'iqmw.capacity.program.v1',
+    SESSIONS_V11: 'iqmw.capacity.sessions.v1',
+    MISSIONS_V11: 'iqmw.capacity.missions.v1'
   };
 
   const PROGRAM_TARGET = 24;
+  const SESSION_TYPES = ['TUNE', 'EXPLORE', 'TIGHTEN', 'PROBE', 'RECHECK', 'RESET'];
+  const GAME_ENUM = {
+    classic: 'CLASSIC',
+    emotional: 'EMOTIONAL',
+    non_categorical: 'NONCAT',
+    logic_gated: 'OUTPUT_GATED'
+  };
+  const GAME_ID_FROM_ENUM = {
+    CLASSIC: 'classic',
+    EMOTIONAL: 'emotional',
+    NONCAT: 'non_categorical',
+    OUTPUT_GATED: 'logic_gated'
+  };
+  const DEFAULT_SETTINGS_V11 = {
+    schemaVersion: 'capacity_settings_v1_1',
+    thresholds: {
+      plateau_epsilon: 0.25,
+      churn_volatility: 5,
+      probe_swap_cost_min: -1,
+      probe_recovery_delta_min: -0.5,
+      probe_end_hold_min: -1,
+      recheck_mean_tolerance: 1.0
+    },
+    defaults: {
+      pulse_block_index: 4,
+      recovery_blocks: [5, 6],
+      end_hold_block: 10
+    }
+  };
+  // Planned opportunities only: these slots can be deferred when out-of-band or data-quality is compromised.
+  const makeScaffold = () => Array.from({ length: PROGRAM_TARGET }, (_, i) => ({
+    program_day: i + 1,
+    probe_slot: (i + 1) % 4 === 0,
+    recheck_slot: i + 1 === 12 || i + 1 === 24
+  }));
+  const DEFAULT_PROGRAM_V11 = {
+    schemaVersion: 'capacity_program_v1_1',
+    // Legacy-only counter kept for back-compat with earlier app state.
+    // Do not use as source of truth for new flow logic.
+    program_day_completed: 0,
+    // Authoritative training-session counter (increments on TRAINING entries only).
+    program_session_index: 0,
+    calendar_entry_count: 0,
+    consecutive_rest_count: 0,
+    anchor_lane: 'CLASSIC',
+    last_probe_radius_passed: null,
+    scaffold: makeScaffold()
+  };
 
   const GAMES = [
     { id: 'classic', label: 'Classic n-back', note: 'Default start for Type-1 stability.' },
@@ -51,6 +103,78 @@
 
   const safeParse = (raw, fallback) => {
     try { return JSON.parse(raw); } catch { return fallback; }
+  };
+  const mean = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+  const uid = () => 'id_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now().toString(36);
+  const saveJson = (key, value) => {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
+  };
+  const loadProgramV11 = () => {
+    const raw = safeParse(localStorage.getItem(STORAGE.PROGRAM_V11), {});
+    return {
+      ...DEFAULT_PROGRAM_V11,
+      ...raw,
+      program_session_index: Number(raw.program_session_index ?? raw.program_day_completed ?? 0),
+      scaffold: Array.isArray(raw.scaffold) && raw.scaffold.length === PROGRAM_TARGET ? raw.scaffold : makeScaffold()
+    };
+  };
+  const loadSessionsV11 = () => {
+    const rows = safeParse(localStorage.getItem(STORAGE.SESSIONS_V11), []);
+    return Array.isArray(rows) ? rows : [];
+  };
+  const loadMissionsV11 = () => {
+    const rows = safeParse(localStorage.getItem(STORAGE.MISSIONS_V11), []);
+    return Array.isArray(rows) ? rows : [];
+  };
+  const loadSettingsV11 = () => {
+    const raw = safeParse(localStorage.getItem(STORAGE.SETTINGS_V11), {});
+    return {
+      ...DEFAULT_SETTINGS_V11,
+      ...raw,
+      thresholds: { ...DEFAULT_SETTINGS_V11.thresholds, ...(raw.thresholds || {}) },
+      defaults: { ...DEFAULT_SETTINGS_V11.defaults, ...(raw.defaults || {}) }
+    };
+  };
+  const getTrainingSessions = (rows) => rows.filter((x) => x.entry_type === 'TRAINING');
+  const nextProbeRadius = (lastPassed) => {
+    if (!lastPassed) return 'NEAR';
+    if (lastPassed === 'NEAR') return 'MID';
+    return 'FAR';
+  };
+  const probeTargetFor = (anchor, radius) => {
+    const map = {
+      CLASSIC: { NEAR: 'EMOTIONAL', MID: 'NONCAT', FAR: 'OUTPUT_GATED' },
+      EMOTIONAL: { NEAR: 'CLASSIC', MID: 'OUTPUT_GATED', FAR: 'NONCAT' },
+      NONCAT: { NEAR: 'CLASSIC', MID: 'OUTPUT_GATED', FAR: 'EMOTIONAL' },
+      OUTPUT_GATED: { NEAR: 'CLASSIC', MID: 'NONCAT', FAR: 'EMOTIONAL' }
+    };
+    return map[anchor]?.[radius] || 'CLASSIC';
+  };
+  const computeDerivedFromNTrace = (nTrace, pulseCfg = { block_index: 4, recovery_blocks: [5, 6] }) => {
+    const n = nTrace.map((x) => Number(x));
+    const volatility = n.slice(1).reduce((acc, v, i) => acc + (v !== n[i] ? 1 : 0), 0);
+    const dropDeltas = n.slice(1).map((v, i) => n[i] - v).filter((d) => d > 0);
+    const baselineMean = mean([n[0], n[1]]);
+    const recBlocks = (pulseCfg?.recovery_blocks || [5, 6]).map((ix) => n[Math.max(0, Math.min(9, ix - 1))]);
+    const recoveryMean = mean(recBlocks);
+    return {
+      mean_n: Number(mean(n).toFixed(2)),
+      volatility,
+      drop_count: dropDeltas.length,
+      max_drop: dropDeltas.length ? Math.max(...dropDeltas) : 0,
+      end_hold_delta: Number((n[9] - baselineMean).toFixed(2)),
+      baseline_mean: Number(baselineMean.toFixed(2)),
+      recovery_delta: Number((recoveryMean - baselineMean).toFixed(2))
+    };
+  };
+  const trendFlags = (sameLaneSessions, epsilon = 0.25) => {
+    const last3 = sameLaneSessions.slice(-3);
+    if (last3.length < 3) return { plateau: false, churn: false, breakthrough: false };
+    const [a, b, c] = last3.map((s) => s.derived || {});
+    const plateau = (Number(c.mean_n || 0) - Number(a.mean_n || 0)) < epsilon && mean([a.volatility || 0, b.volatility || 0, c.volatility || 0]) <= 2;
+    const churn = (c.volatility || 0) > 5 || (c.end_hold_delta || 0) < -1;
+    const breakthrough = (Number(c.mean_n || 0) - Number(b.mean_n || 0)) >= 1 || (((b.volatility || 0) > 0) && ((c.volatility || 99) <= Math.max(1, (b.volatility || 1) / 2)) && ((c.end_hold_delta || -99) > (b.end_hold_delta || -99)));
+    return { plateau, churn, breakthrough };
   };
 
   const loadProgress = () => {
@@ -82,6 +206,10 @@
   function App() {
     const [screen, setScreen] = useState('home');
     const [progress, setProgress] = useState(() => loadProgress());
+    const [settingsV11] = useState(() => loadSettingsV11());
+    const [programV11, setProgramV11] = useState(() => loadProgramV11());
+    const [sessionsV11, setSessionsV11] = useState(() => loadSessionsV11());
+    const [missionsV11, setMissionsV11] = useState(() => loadMissionsV11());
     const [zoneMode, setZoneMode] = useState('in_band');
     const [planType, setPlanType] = useState('type1_build');
     const [stateRatings, setStateRatings] = useState({ load: 4, drift: 4, mismatch: 4 });
@@ -94,13 +222,64 @@
     const [breathRoutine, setBreathRoutine] = useState('amplify');
     const [breathRunning, setBreathRunning] = useState(false);
     const [breathRemaining, setBreathRemaining] = useState(0);
+    const [restConfirm, setRestConfirm] = useState(false);
+    const [restReason, setRestReason] = useState('');
 
     const selectedGameObj = useMemo(
       () => GAMES.find((g) => g.id === selectedGame) || GAMES[0],
       [selectedGame]
     );
 
-    const sessionsRemaining = Math.max(0, PROGRAM_TARGET - (progress.totalSessionsCompleted || 0));
+    const trainingSessionsV11 = useMemo(() => getTrainingSessions(sessionsV11), [sessionsV11]);
+    const sessionsRemaining = Math.max(0, PROGRAM_TARGET - (programV11.program_session_index || 0));
+    const pendingMission = useMemo(() => missionsV11.find((m) => !m.outcome) || null, [missionsV11]);
+    const recommendationV11 = useMemo(() => {
+      const zoneRecommendation = zoneMode === 'reset' ? 'RESET' : (zoneMode === 'light' ? 'LIGHT' : 'FULL');
+      const lane = programV11.anchor_lane || 'CLASSIC';
+      const sameLane = trainingSessionsV11.filter((s) => s.game === lane);
+      const tf = trendFlags(sameLane, settingsV11.thresholds.plateau_epsilon);
+      const row = programV11.scaffold[Math.max(0, programV11.program_session_index)] || { probe_slot: false, recheck_slot: false };
+      const latestTraining = [...trainingSessionsV11].reverse().find(Boolean);
+      const dataQualityAllowsProbe = !latestTraining || latestTraining.data_quality !== 'COMPROMISED';
+      let session_type = 'TUNE';
+      let reason = 'Stable training day.';
+      let game = lane;
+      let probe_radius = null;
+      let probe_target_game = null;
+
+      if (zoneRecommendation === 'RESET') {
+        session_type = 'RESET';
+        reason = 'Zone gate recommends reset conditions.';
+      } else if (zoneRecommendation === 'LIGHT') {
+        session_type = 'TIGHTEN';
+        reason = 'Zone gate recommends lighter stabilisation.';
+      }
+      if (tf.churn && zoneRecommendation !== 'RESET') {
+        session_type = 'TIGHTEN';
+        reason = 'Recent churn signal. Stabilise before pushing.';
+      }
+      if ((tf.breakthrough || row.probe_slot) && zoneRecommendation === 'FULL' && dataQualityAllowsProbe) {
+        session_type = 'PROBE';
+        probe_radius = nextProbeRadius(programV11.last_probe_radius_passed);
+        probe_target_game = probeTargetFor(lane, probe_radius);
+        game = probe_target_game;
+        reason = tf.breakthrough ? 'Breakthrough cue detected; run state-gated probe.' : 'Planned probe opportunity.';
+      }
+      if (row.recheck_slot && zoneRecommendation === 'FULL' && dataQualityAllowsProbe) {
+        const lastCleanTune = [...trainingSessionsV11].reverse().find((s) => s.session_type === 'TUNE' && s.data_quality !== 'COMPROMISED');
+        if (lastCleanTune) {
+          session_type = 'RECHECK';
+          game = lastCleanTune.game;
+          reason = 'Planned delay re-check opportunity.';
+        }
+      }
+      if (tf.plateau && zoneRecommendation === 'FULL' && stateRatings.drift >= 6) {
+        session_type = 'EXPLORE';
+        game = lane === 'CLASSIC' ? 'EMOTIONAL' : 'CLASSIC';
+        reason = 'Plateau + drift signal; controlled explore day.';
+      }
+      return { recommended_session_type: session_type, recommendation_reason: reason, recommended_game: game, probe_radius, probe_target_game };
+    }, [zoneMode, programV11, trainingSessionsV11, settingsV11, stateRatings]);
 
     const computePlanType = (zone) => {
       if (zone !== 'in_band') return 'type1_light';
@@ -138,10 +317,37 @@
       if (breathRunning && breathRemaining <= 0) setBreathRunning(false);
     }, [breathRunning, breathRemaining]);
 
-    const planLabel = {
-      type1_light: 'Type-1 light session',
-      type1_build: 'Type-1 build session'
-    }[planType] || 'Type-1 session';
+    useEffect(() => {
+      const mapped = GAME_ID_FROM_ENUM[recommendationV11.recommended_game];
+      if (mapped) setSelectedGame(mapped);
+    }, [recommendationV11.recommended_game]);
+
+    useEffect(() => {
+      saveJson(STORAGE.SETTINGS_V11, settingsV11);
+    }, [settingsV11]);
+
+    useEffect(() => {
+      saveJson(STORAGE.PROGRAM_V11, programV11);
+      // Legacy mirror only: keep old progress keys readable by older surfaces.
+      const legacy = {
+        ...progress,
+        totalSessionsCompleted: programV11.program_session_index,
+        totalSessionsTarget: PROGRAM_TARGET,
+        programCompleted: programV11.program_session_index >= PROGRAM_TARGET
+      };
+      saveProgress(legacy);
+      setProgress(legacy);
+    }, [programV11]);
+
+    useEffect(() => {
+      saveJson(STORAGE.SESSIONS_V11, sessionsV11);
+    }, [sessionsV11]);
+
+    useEffect(() => {
+      saveJson(STORAGE.MISSIONS_V11, missionsV11);
+    }, [missionsV11]);
+
+    const planLabel = recommendationV11.recommended_session_type + ' session';
 
     const launchExternalGame = () => {
       const handoff = {
@@ -149,7 +355,8 @@
         timestamp: Date.now(),
         gameId: selectedGame,
         gameLabel: selectedGameObj.label,
-        planType,
+        planType: recommendationV11.recommended_session_type,
+        recommended_session_type: recommendationV11.recommended_session_type,
         zoneMode,
         settings: {
           speedPreset,
@@ -163,6 +370,29 @@
       localStorage.setItem(STORAGE.CAPACITY_LAST_GAME, JSON.stringify(handoff));
       alert('Launch i3 Mindware (Adobe AIR), choose "' + selectedGameObj.label + '", run your block(s), then return here.');
       setScreen('results');
+    };
+
+    const saveRestDay = () => {
+      if ((programV11.consecutive_rest_count || 0) >= 2 && !restConfirm) {
+        alert('Reset recommended after 2 consecutive rest logs. Confirm rest again to proceed.');
+        return;
+      }
+      const restEntry = {
+        id: uid(),
+        ts: new Date().toISOString(),
+        entry_type: 'REST',
+        is_training: false,
+        program_day: programV11.program_session_index,
+        reason: restReason || null
+      };
+      setSessionsV11((prev) => [...prev, restEntry]);
+      setProgramV11((prev) => ({
+        ...prev,
+        calendar_entry_count: (prev.calendar_entry_count || 0) + 1,
+        consecutive_rest_count: (prev.consecutive_rest_count || 0) + 1
+      }));
+      setRestConfirm(false);
+      setRestReason('');
     };
 
     const completeSession = () => {
@@ -182,9 +412,12 @@
       const handoff = {
         localDate: nowIso.slice(0, 10),
         timestamp: Date.now(),
-        planType,
+        planType: recommendationV11.recommended_session_type,
+        recommended_session_type: recommendationV11.recommended_session_type,
+        session_type: recommendationV11.recommended_session_type,
         gameId: selectedGame,
         gameLabel: selectedGameObj.label,
+        game_enum: GAME_ENUM[selectedGame] || 'CLASSIC',
         zoneMode,
         settings: {
           speedPreset,
@@ -201,6 +434,85 @@
       };
       localStorage.setItem(STORAGE.CAPACITY_LAST_SESSION, JSON.stringify(handoff));
       localStorage.setItem(STORAGE.CAPACITY_LAST_GAME, JSON.stringify(handoff));
+
+      const trainingEntry = {
+        id: uid(),
+        ts: nowIso,
+        entry_type: 'TRAINING',
+        is_training: true,
+        program_day: (programV11.program_session_index || 0) + 1,
+        recommended_session_type: recommendationV11.recommended_session_type,
+        session_type: recommendationV11.recommended_session_type,
+        recommendation_reason: recommendationV11.recommendation_reason,
+        game: GAME_ENUM[selectedGame] || 'CLASSIC',
+        output_gate_mode: selectedGame === 'logic_gated' ? 'OR' : null,
+        zone: {
+          load: stateRatings.load,
+          drift: stateRatings.drift,
+          mismatch: stateRatings.mismatch,
+          recommendation: zoneMode === 'reset' ? 'RESET' : (zoneMode === 'light' ? 'LIGHT' : 'FULL')
+        },
+        plan: {
+          baseline: {
+            speed: speedPreset.toUpperCase() === 'CALM' ? 'NORMAL' : 'FAST',
+            interference: interferencePreset.toUpperCase(),
+            mode: 'ADAPTIVE',
+            fixed_n: null
+          },
+          pulse: null,
+          end_hold_block: settingsV11.defaults.end_hold_block
+        },
+        log: {
+          n_trace: null,
+          no_response_blocks: [],
+          fixed_n_blocks: [],
+          block_done: [],
+          plan_confirmed: false
+        },
+        derived: null,
+        data_quality: 'PENDING',
+        probe: {
+          probe_radius: recommendationV11.probe_radius,
+          probe_target_game: recommendationV11.probe_target_game,
+          pass: null
+        },
+        recheck: {
+          of_session_id: null,
+          pass: null
+        },
+        bridge: {
+          what_changed: bridgeObs.trim(),
+          how_ill_use_it: bridgeMove.trim()
+        }
+      };
+      setSessionsV11((prev) => [...prev, trainingEntry]);
+      setProgramV11((prev) => ({
+        ...prev,
+        program_day_completed: Math.min(PROGRAM_TARGET, (prev.program_day_completed || 0) + 1),
+        program_session_index: Math.min(PROGRAM_TARGET, (prev.program_session_index || 0) + 1),
+        calendar_entry_count: (prev.calendar_entry_count || 0) + 1,
+        consecutive_rest_count: 0
+      }));
+
+      const wantsMission = window.confirm('Set a tiny cue-fired mission now? (Recommended)');
+      if (wantsMission) {
+        const cue = window.prompt('Mission cue (when/where it should fire):', '') || '';
+        const successSignal = window.prompt('Mission success signal (binary):', '') || '';
+        const valueTag = (window.prompt('Optional value tag (risk/opportunity/urgency/social_cost):', '') || '').trim();
+        if (cue.trim() && successSignal.trim()) {
+          // Mission records are stored separately in iqmw.capacity.missions.v1.
+          const missionObj = {
+            id: uid(),
+            created_ts: nowIso,
+            created_from_session_id: trainingEntry.id,
+            cue: cue.trim(),
+            success_signal: successSignal.trim(),
+            value_tag: valueTag || null,
+            outcome: null
+          };
+          setMissionsV11((prev) => [...prev, missionObj]);
+        }
+      }
 
       setScreen('home');
       setBridgeObs('');
@@ -280,7 +592,76 @@
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
             <p style={{ margin: 0, fontWeight: 900 }}>Progress</p>
-            <p style={{ marginTop: '8px' }}>{progress.totalSessionsCompleted}/{PROGRAM_TARGET} complete | {sessionsRemaining} remaining</p>
+            <p style={{ marginTop: '8px' }}>{programV11.program_session_index}/{PROGRAM_TARGET} complete | {sessionsRemaining} remaining</p>
+            <p style={{ marginTop: '6px', fontSize: '13px', color: '#555555' }}>
+              Calendar entries: {programV11.calendar_entry_count} | Consecutive rests: {programV11.consecutive_rest_count}
+            </p>
+          </section>
+
+          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+            <p style={{ margin: 0, fontWeight: 900 }}>Flow recommendation</p>
+            <p style={{ marginTop: '8px' }}>
+              Session type: <b>{recommendationV11.recommended_session_type}</b> | Game: <b>{GAME_LABEL[GAME_ID_FROM_ENUM[recommendationV11.recommended_game]] || recommendationV11.recommended_game}</b>
+            </p>
+            <p style={{ marginTop: '4px', fontSize: '13px', color: '#555555' }}>{recommendationV11.recommendation_reason}</p>
+            {recommendationV11.probe_radius ? (
+              <p style={{ marginTop: '4px', fontSize: '13px', color: '#555555' }}>
+                Probe radius: {recommendationV11.probe_radius} | Target: {recommendationV11.probe_target_game}
+              </p>
+            ) : null}
+            {pendingMission ? (
+              <p style={{ marginTop: '8px', fontSize: '13px', color: '#2764B7', fontWeight: 700 }}>
+                Pending mission outcome should be logged before next session.
+              </p>
+            ) : null}
+            <div className="btnRow">
+              <button className="btn" style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }} onClick={saveRestDay}>
+                Take rest day
+              </button>
+              {pendingMission ? (
+                <button
+                  className="btn"
+                  style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }}
+                  onClick={() => {
+                    const cueFired = window.prompt('Mission outcome: cue fired? (YES/NO)', 'YES');
+                    const successMet = window.prompt('Mission outcome: success met? (YES/PARTLY/NO)', 'PARTLY');
+                    const blocker = window.prompt('Main blocker? (state/capacity/context/unsure)', 'unsure');
+                    const payload = {
+                      cue_fired: (cueFired || 'YES').toUpperCase(),
+                      success_met: (successMet || 'PARTLY').toUpperCase(),
+                      blocker: (blocker || 'unsure').toLowerCase(),
+                      value_tag: null
+                    };
+                    setMissionsV11((prev) =>
+                      prev.map((m) =>
+                        m.id === pendingMission.id
+                          ? { ...m, outcome: payload, outcome_ts: new Date().toISOString() }
+                          : m
+                      )
+                    );
+                  }}
+                >
+                  Log mission outcome
+                </button>
+              ) : null}
+            </div>
+            {programV11.consecutive_rest_count >= 2 ? (
+              <div style={{ marginTop: '10px' }}>
+                <p style={{ margin: 0, color: '#9a5b00', fontWeight: 700 }}>
+                  Reset recommended: 2+ consecutive rest logs.
+                </p>
+                <label style={{ display: 'block', marginTop: '6px', fontSize: '13px' }}>
+                  <input type="checkbox" checked={restConfirm} onChange={(e) => setRestConfirm(e.target.checked)} /> Confirm another rest day
+                </label>
+                <input
+                  type="text"
+                  value={restReason}
+                  onChange={(e) => setRestReason(e.target.value)}
+                  placeholder="Optional reason"
+                  style={{ marginTop: '6px' }}
+                />
+              </div>
+            ) : null}
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
