@@ -124,8 +124,9 @@
   const saveJson = (key, value) => {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch {}
   };
+  const asObject = (value) => (value && typeof value === 'object' && !Array.isArray(value) ? value : {});
   const loadProgramV11 = () => {
-    const raw = safeParse(localStorage.getItem(STORAGE.PROGRAM_V11), {});
+    const raw = asObject(safeParse(localStorage.getItem(STORAGE.PROGRAM_V11), {}));
     return {
       ...DEFAULT_PROGRAM_V11,
       ...raw,
@@ -142,12 +143,12 @@
     return Array.isArray(rows) ? rows : [];
   };
   const loadSettingsV11 = () => {
-    const raw = safeParse(localStorage.getItem(STORAGE.SETTINGS_V11), {});
+    const raw = asObject(safeParse(localStorage.getItem(STORAGE.SETTINGS_V11), {}));
     return {
       ...DEFAULT_SETTINGS_V11,
       ...raw,
-      thresholds: { ...DEFAULT_SETTINGS_V11.thresholds, ...(raw.thresholds || {}) },
-      defaults: { ...DEFAULT_SETTINGS_V11.defaults, ...(raw.defaults || {}) }
+      thresholds: { ...DEFAULT_SETTINGS_V11.thresholds, ...asObject(raw.thresholds) },
+      defaults: { ...DEFAULT_SETTINGS_V11.defaults, ...asObject(raw.defaults) }
     };
   };
   const getTrainingSessions = (rows) => rows.filter((x) => x.entry_type === 'TRAINING');
