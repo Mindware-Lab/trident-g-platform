@@ -137,6 +137,11 @@
     };
   };
   const getTrainingSessions = (rows) => rows.filter((x) => x.entry_type === 'TRAINING');
+  const isEvidenceEligible = (s) => (
+    Boolean(s && s.derived) &&
+    s.data_quality === 'OK' &&
+    (s.log?.plan_confirmed ?? true)
+  );
   const nextProbeRadius = (lastPassed) => {
     if (!lastPassed) return 'NEAR';
     if (lastPassed === 'NEAR') return 'MID';
@@ -169,7 +174,8 @@
     };
   };
   const trendFlags = (sameLaneSessions, epsilon = 0.25) => {
-    const last3 = sameLaneSessions.slice(-3);
+    const eligible = sameLaneSessions.filter((s) => isEvidenceEligible(s));
+    const last3 = eligible.slice(-3);
     if (last3.length < 3) return { plateau: false, churn: false, breakthrough: false };
     const [a, b, c] = last3.map((s) => s.derived || {});
     const plateau = (Number(c.mean_n || 0) - Number(a.mean_n || 0)) < epsilon && mean([a.volatility || 0, b.volatility || 0, c.volatility || 0]) <= 2;
@@ -255,7 +261,7 @@
       const tf = trendFlags(sameLane, settingsV11.thresholds.plateau_epsilon);
       const row = programV11.scaffold[Math.max(0, programV11.program_session_index)] || { probe_slot: false, recheck_slot: false };
       const latestTraining = [...trainingSessionsV11].reverse().find(Boolean);
-      const dataQualityAllowsProbe = !latestTraining || latestTraining.data_quality !== 'COMPROMISED';
+      const dataQualityAllowsProbe = !latestTraining || latestTraining.data_quality === 'OK';
       let session_type = 'TUNE';
       let reason = 'Stable training day.';
       let game = lane;
@@ -280,11 +286,13 @@
         game = probe_target_game;
         reason = tf.breakthrough ? 'Breakthrough cue detected; run state-gated probe.' : 'Planned probe opportunity.';
       }
+      let recheck_target_session_id = null;
       if (row.recheck_slot && zoneRecommendation === 'FULL' && dataQualityAllowsProbe) {
-        const lastCleanTune = [...trainingSessionsV11].reverse().find((s) => s.session_type === 'TUNE' && s.data_quality !== 'COMPROMISED');
+        const lastCleanTune = [...trainingSessionsV11].reverse().find((s) => s.session_type === 'TUNE' && isEvidenceEligible(s) && s.game === lane);
         if (lastCleanTune) {
           session_type = 'RECHECK';
           game = lastCleanTune.game;
+          recheck_target_session_id = lastCleanTune.id;
           reason = 'Planned delay re-check opportunity.';
         }
       }
@@ -293,7 +301,14 @@
         game = lane === 'CLASSIC' ? 'EMOTIONAL' : 'CLASSIC';
         reason = 'Plateau + drift signal; controlled explore day.';
       }
-      return { recommended_session_type: session_type, recommendation_reason: reason, recommended_game: game, probe_radius, probe_target_game };
+      return {
+        recommended_session_type: session_type,
+        recommendation_reason: reason,
+        recommended_game: game,
+        probe_radius,
+        probe_target_game,
+        recheck_target_session_id
+      };
     }, [zoneMode, programV11, trainingSessionsV11, settingsV11, stateRatings]);
 
     const computePlanType = (zone) => {
@@ -464,19 +479,30 @@
 
       const recoveryBlocks = parseRecoveryBlocks();
       const derived = computeDerivedFromNTrace(nTrace, { block_index: Number(pulseBlockIndex), recovery_blocks: recoveryBlocks });
-      const dataQuality = noResponseBlocks.length ? 'COMPROMISED' : 'OK';
+      const dataQuality = noResponseBlocks.length ? 'COMPROMISED' : (planConfirmed ? 'OK' : 'UNCONFIRMED_PLAN');
       const anchorLane = programV11.anchor_lane || 'CLASSIC';
-      const lastCleanAnchor = [...trainingSessionsV11].reverse().find((s) => s.game === anchorLane && s.derived && s.data_quality !== 'COMPROMISED');
-      const swapCost = lastCleanAnchor ? Number((derived.baseline_mean - lastCleanAnchor.derived.baseline_mean).toFixed(2)) : null;
-      const probePass = sessionType === 'PROBE' && dataQuality !== 'COMPROMISED' && swapCost !== null
+      const probeTargetSession = [...trainingSessionsV11].reverse().find((s) => s.game === anchorLane && isEvidenceEligible(s));
+      const swapCost = probeTargetSession ? Number((derived.baseline_mean - probeTargetSession.derived.baseline_mean).toFixed(2)) : null;
+      const probePass = sessionType === 'PROBE' && dataQuality === 'OK' && swapCost !== null
         ? swapCost >= settingsV11.thresholds.probe_swap_cost_min
           && derived.recovery_delta >= settingsV11.thresholds.probe_recovery_delta_min
           && derived.end_hold_delta >= settingsV11.thresholds.probe_end_hold_min
         : null;
 
-      const recheckTarget = [...trainingSessionsV11].reverse().find((s) => s.session_type === 'TUNE' && s.data_quality !== 'COMPROMISED');
-      const recheckPass = sessionType === 'RECHECK' && recheckTarget && dataQuality !== 'COMPROMISED'
+      const recommendedRecheckTarget = recommendationV11.recheck_target_session_id
+        ? trainingSessionsV11.find((s) => s.id === recommendationV11.recheck_target_session_id)
+        : null;
+      const sameGamePlanTarget = [...trainingSessionsV11].reverse().find((s) =>
+        isEvidenceEligible(s)
+        && s.game === (GAME_ENUM[selectedGame] || 'CLASSIC')
+        && s.plan?.baseline?.mode === baselineMode
+        && s.plan?.baseline?.speed === speedPreset.toUpperCase()
+        && s.plan?.baseline?.interference === interferencePreset.toUpperCase()
+      );
+      const recheckTarget = recommendedRecheckTarget || sameGamePlanTarget || null;
+      const recheckPass = sessionType === 'RECHECK' && recheckTarget && dataQuality === 'OK'
         ? derived.mean_n >= (recheckTarget.derived.mean_n - settingsV11.thresholds.recheck_mean_tolerance)
+          && derived.volatility <= ((recheckTarget.derived.volatility ?? 0) + 2)
           && derived.end_hold_delta >= (recheckTarget.derived.end_hold_delta - 1)
         : null;
 
@@ -545,6 +571,7 @@
         probe: {
           probe_radius: recommendationV11.probe_radius,
           probe_target_game: recommendationV11.probe_target_game,
+          target_session_id: probeTargetSession ? probeTargetSession.id : null,
           swap_cost: swapCost,
           pass: probePass
         },
