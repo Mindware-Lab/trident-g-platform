@@ -77,7 +77,7 @@
   };
 
   const GAMES = [
-    { id: 'classic', label: 'Classic n-back', note: 'Default start for Type-1 stability.' },
+    { id: 'classic', label: 'Classic n-back', note: 'Good default starting point.' },
     { id: 'emotional', label: 'Emotional n-back', note: 'Add salience control under load.' },
     { id: 'non_categorical', label: 'Non-categorical n-back', note: 'Train broad runtime control.' },
     { id: 'logic_gated', label: 'Logic-gated n-back', note: 'Rule discipline and clean updating.' }
@@ -375,13 +375,13 @@
       const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
       const peak = Math.max(...vals);
       let nextZone = 'in_band';
-      let reason = 'Low volatility and manageable load.';
+      let reason = 'State looks manageable for normal training.';
       if (peak >= 8 || avg >= 7) {
         nextZone = 'reset';
-        reason = 'High strain detected. Downshift before hard training.';
+        reason = 'You look overloaded right now, so use easier settings today.';
       } else if (avg >= 5) {
         nextZone = 'light';
-        reason = 'Moderate instability. Keep session light and clean.';
+        reason = 'You look a bit stretched, so keep this session lighter.';
       }
       setZoneMode(nextZone);
       setPlanType(computePlanType(nextZone));
@@ -528,7 +528,7 @@
     const completeSession = () => {
       const nTrace = getNTraceOrNull();
       if (!nTrace) {
-        alert('Enter all 10 n-trace values first.');
+        alert('Enter all 10 block levels first.');
         return;
       }
       if (!bridgeObs.trim() || !bridgeMove.trim()) {
@@ -704,12 +704,12 @@
         ? computeDerivedFromNTrace(parsed, { block_index: Number(pulseBlockIndex), recovery_blocks: parseRecoveryBlocks() })
         : null;
       const badgePreview = sessionType === 'PROBE'
-        ? ((derivedPreview && derivedPreview.recovery_delta >= -0.5 && derivedPreview.end_hold_delta >= -1) ? 'probe likely pass' : 'probe needs consolidation')
+        ? ((derivedPreview && derivedPreview.recovery_delta >= -0.5 && derivedPreview.end_hold_delta >= -1) ? 'Switch test likely passed' : 'Switch test needs another try')
         : (sessionType === 'TIGHTEN'
-          ? ((derivedPreview && derivedPreview.volatility <= 4) ? 'volatility down' : 'tighten in progress')
+          ? ((derivedPreview && derivedPreview.volatility <= 4) ? 'More steady today' : 'Still getting steadier')
           : (sessionType === 'RECHECK'
-            ? 'delay hold test'
-            : (sessionType === 'RESET' ? 'protected learning day' : 'stable + recovered')));
+            ? 'Checking if gains still hold'
+            : (sessionType === 'RESET' ? 'Protected learning day' : 'Stable and recovered')));
       const steadyLabel = derivedPreview
         ? (derivedPreview.volatility <= 4 ? 'Steady' : 'Up and down today')
         : '';
@@ -726,7 +726,7 @@
               <div className="icon"><span className="iconText">T</span></div>
               <div>
                 <p className="title">Capacity Training Coach</p>
-                <p className="subtitle">Type-1 transfer session</p>
+                <p className="subtitle">Session review</p>
               </div>
             </div>
             <span className="chip">{progress.totalSessionsCompleted}/{PROGRAM_TARGET}</span>
@@ -740,14 +740,14 @@
             </section>
 
             <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-              <p style={{ margin: '0 0 10px 0', fontWeight: 900 }}>Session plan (override allowed)</p>
+              <p style={{ margin: '0 0 10px 0', fontWeight: 900 }}>Today's settings (you can change these)</p>
               <div className="btnRow" style={{ marginTop: 0 }}>
                 <select value={sessionType} onChange={(e) => setSessionType(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                  {SESSION_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                  {SESSION_TYPES.map((t) => <option key={t} value={t}>{SESSION_LABELS[t] || t}</option>)}
                 </select>
                 <select value={baselineMode} onChange={(e) => setBaselineMode(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                  <option value="ADAPTIVE">Adaptive n</option>
-                  <option value="FIXED">Fixed n</option>
+                  <option value="ADAPTIVE">Auto level change</option>
+                  <option value="FIXED">Fixed level</option>
                 </select>
                 {baselineMode === 'FIXED' ? (
                   <input type="number" min="1" max="9" value={fixedN} onChange={(e) => setFixedN(Number(e.target.value || 1))} style={{ width: '88px', padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }} />
@@ -760,14 +760,14 @@
                   <option value="fast">Speed: Fast</option>
                 </select>
                 <select value={interferencePreset} onChange={(e) => setInterferencePreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                  <option value="low">Interference: Low</option>
-                  <option value="normal">Interference: Normal</option>
-                  <option value="high">Interference: High</option>
+                  <option value="low">Distraction level: Low</option>
+                  <option value="normal">Distraction level: Normal</option>
+                  <option value="high">Distraction level: High</option>
                 </select>
                 <select value={pulseType} onChange={(e) => setPulseType(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                  <option value="">Pulse: None</option>
-                  <option value="SPEED">Pulse: Speed</option>
-                  <option value="INTERFERENCE">Pulse: Interference</option>
+                  <option value="">Challenge block: None</option>
+                  <option value="SPEED">Challenge block: Faster speed</option>
+                  <option value="INTERFERENCE">Challenge block: More distraction</option>
                 </select>
               </div>
               <div className="btnRow" style={{ marginTop: '10px' }}>
@@ -787,7 +787,7 @@
             </section>
 
             <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-              <p style={{ margin: '0 0 8px 0', fontWeight: 900 }}>Fast n-trace grid (10 blocks)</p>
+              <p style={{ margin: '0 0 8px 0', fontWeight: 900 }}>10-block level log</p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,minmax(0,1fr))', gap: '8px' }}>
                 {nTraceInput.map((v, idx) => (
                   <input
@@ -836,7 +836,7 @@
                   <details style={{ marginTop: '6px' }}>
                     <summary>Details</summary>
                     <p style={{ margin: '6px 0 0 0' }}>
-                      mean_n {derivedPreview.mean_n} | volatility {derivedPreview.volatility} | end_hold_delta {derivedPreview.end_hold_delta} | recovery_delta {derivedPreview.recovery_delta}
+                      Average level {derivedPreview.mean_n} | Level changes {derivedPreview.volatility} | End strength {derivedPreview.end_hold_delta} | Recovery shift {derivedPreview.recovery_delta}
                     </p>
                   </details>
                 </div>
@@ -984,7 +984,7 @@
 
         <main className="content">
           <section className="card">
-            <h1 className="h1">Type-1 Program</h1>
+            <h1 className="h1">Training Program</h1>
             <p className="p">24 sessions total. No anchor wheel. Choose any of the 4 n-back variants each session.</p>
           </section>
 
@@ -1029,7 +1029,7 @@
             {programV11.consecutive_rest_count >= 2 ? (
               <div style={{ marginTop: '10px' }}>
                 <p style={{ margin: 0, color: '#9a5b00', fontWeight: 700 }}>
-                  Reset recommended: 2+ consecutive rest logs.
+                  Reset day recommended: 2 or more rest days in a row.
                 </p>
                 <label style={{ display: 'block', marginTop: '6px', fontSize: '13px' }}>
                   <input type="checkbox" checked={restConfirm} onChange={(e) => setRestConfirm(e.target.checked)} /> Confirm another rest day
@@ -1062,14 +1062,17 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>State gate</p>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Quick state check</p>
             <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333333' }}>
-              Estimate state from quick ratings, then optionally override manually.
+              Quick self-check before training. These are simple readiness sliders.
+            </p>
+            <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#555555' }}>
+              Pressure/load = how overloaded you feel. Focus slips = mind wandering. Task fit = how well today's plan fits your current state.
             </p>
             {[
-              ['load', 'Load'],
-              ['drift', 'Drift'],
-              ['mismatch', 'Mismatch']
+              ['load', 'Pressure / load'],
+              ['drift', 'Focus slips (mind-wandering)'],
+              ['mismatch', 'Task fit (how well today\'s plan fits)']
             ].map(([k, label]) => (
               <div key={k} style={{ marginBottom: '10px' }}>
                 <label style={{ fontWeight: 700 }}>{label}: {stateRatings[k]}</label>
@@ -1085,7 +1088,7 @@
             ))}
             <div className="btnRow" style={{ marginTop: 8 }}>
               <button className="btn" style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }} onClick={estimateZoneFromRatings}>
-                Estimate state
+                Check state
               </button>
             </div>
             {lastStateReason ? (
@@ -1095,9 +1098,9 @@
             ) : null}
             <div className="btnRow">
               {[
-                { id: 'in_band', label: 'In-band (Full)' },
-                { id: 'light', label: 'Light' },
-                { id: 'reset', label: 'Reset' }
+                { id: 'in_band', label: 'Ready for full session' },
+                { id: 'light', label: 'Go lighter today' },
+                { id: 'reset', label: 'Reset day' }
               ].map((z) => (
                 <button
                   key={z.id}
@@ -1119,7 +1122,7 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Optional breathing reset</p>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Optional breathing routine</p>
             <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333333' }}>
               Simplified from Zone Coach (no HR capture).
             </p>
@@ -1167,7 +1170,7 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Preset controls</p>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Session settings</p>
             <div className="btnRow">
               <select value={speedPreset} onChange={(e) => setSpeedPreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
                 <option value="slow">Speed: Slow</option>
@@ -1175,9 +1178,9 @@
                 <option value="fast">Speed: Fast</option>
               </select>
               <select value={interferencePreset} onChange={(e) => setInterferencePreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                <option value="low">Interference: Low</option>
-                <option value="normal">Interference: Normal</option>
-                <option value="high">Interference: High</option>
+                <option value="low">Distraction level: Low</option>
+                <option value="normal">Distraction level: Normal</option>
+                <option value="high">Distraction level: High</option>
               </select>
             </div>
           </section>
