@@ -73,6 +73,9 @@
     consecutive_rest_count: 0,
     anchor_lane: 'CLASSIC',
     last_probe_radius_passed: null,
+    last_probe_game: null,
+    last_probe_radius: null,
+    last_passed_probe_signature: null,
     scaffold: makeScaffold()
   };
 
@@ -145,6 +148,11 @@
       ...DEFAULT_PROGRAM_V11,
       ...raw,
       program_session_index: Number(raw.program_session_index ?? raw.program_day_completed ?? 0),
+      last_probe_game: raw.last_probe_game || null,
+      last_probe_radius: raw.last_probe_radius || null,
+      last_passed_probe_signature: raw.last_passed_probe_signature && Object.keys(asObject(raw.last_passed_probe_signature)).length
+        ? asObject(raw.last_passed_probe_signature)
+        : null,
       scaffold: Array.isArray(raw.scaffold) && raw.scaffold.length === PROGRAM_TARGET ? raw.scaffold : makeScaffold()
     };
   };
@@ -168,6 +176,7 @@
   const getTrainingSessions = (rows) => rows.filter((x) => x.entry_type === 'TRAINING');
   const isEvidenceEligible = (s) => (
     Boolean(s && s.derived) &&
+    !s.ended_early &&
     s.data_quality === 'OK' &&
     (s.log?.plan_confirmed ?? true)
   );
@@ -176,14 +185,55 @@
     if (lastPassed === 'NEAR') return 'MID';
     return 'FAR';
   };
-  const probeTargetFor = (anchor, radius) => {
-    const map = {
-      CLASSIC: { NEAR: 'EMOTIONAL', MID: 'NONCAT', FAR: 'OUTPUT_GATED' },
-      EMOTIONAL: { NEAR: 'CLASSIC', MID: 'OUTPUT_GATED', FAR: 'NONCAT' },
-      NONCAT: { NEAR: 'CLASSIC', MID: 'OUTPUT_GATED', FAR: 'EMOTIONAL' },
-      OUTPUT_GATED: { NEAR: 'CLASSIC', MID: 'NONCAT', FAR: 'EMOTIONAL' }
+  const PROBE_ROTATION = {
+    CLASSIC: {
+      NEAR: ['EMOTIONAL', 'NONCAT'],
+      MID: ['NONCAT', 'OUTPUT_GATED'],
+      FAR: ['OUTPUT_GATED', 'EMOTIONAL']
+    },
+    EMOTIONAL: {
+      NEAR: ['CLASSIC', 'NONCAT'],
+      MID: ['OUTPUT_GATED', 'CLASSIC'],
+      FAR: ['NONCAT', 'OUTPUT_GATED']
+    },
+    NONCAT: {
+      NEAR: ['CLASSIC', 'EMOTIONAL'],
+      MID: ['OUTPUT_GATED', 'CLASSIC'],
+      FAR: ['EMOTIONAL', 'OUTPUT_GATED']
+    },
+    OUTPUT_GATED: {
+      NEAR: ['CLASSIC', 'NONCAT'],
+      MID: ['NONCAT', 'EMOTIONAL'],
+      FAR: ['EMOTIONAL', 'CLASSIC']
+    }
+  };
+  const resolveProbeTarget = (anchor, radius, lastProbeGame) => {
+    const candidates = PROBE_ROTATION[anchor]?.[radius] || ['CLASSIC'];
+    if (!lastProbeGame) return candidates[0];
+    return candidates.find((g) => g !== lastProbeGame) || candidates[0];
+  };
+  const chooseExploreGame = (anchorLane, ratings) => {
+    if ((ratings?.drift ?? 0) >= 6) return anchorLane === 'NONCAT' ? 'CLASSIC' : 'NONCAT';
+    if ((ratings?.load ?? 0) >= 7) return anchorLane === 'EMOTIONAL' ? 'CLASSIC' : 'EMOTIONAL';
+    if ((ratings?.mismatch ?? 0) >= 6) return anchorLane === 'OUTPUT_GATED' ? 'NONCAT' : 'OUTPUT_GATED';
+    const fallback = {
+      CLASSIC: 'EMOTIONAL',
+      EMOTIONAL: 'CLASSIC',
+      NONCAT: 'CLASSIC',
+      OUTPUT_GATED: 'CLASSIC'
     };
-    return map[anchor]?.[radius] || 'CLASSIC';
+    return fallback[anchorLane] || 'CLASSIC';
+  };
+  const cleanBreakthroughSignal = (session) => {
+    if (!session || session.data_quality !== 'OK') return false;
+    if (Array.isArray(session.block_logs) && session.block_logs.length) {
+      const hasBadBlock = session.block_logs.some((b) =>
+        b.felt_difficulty === 'hard' || b.state_drift === 'lost_thread' || b.engagement === 'flat'
+      );
+      return !hasBadBlock;
+    }
+    const d = session.derived || {};
+    return (d.drop_count ?? 99) <= 2 && (d.end_hold_delta ?? -99) >= -1 && (d.volatility ?? 99) <= 4;
   };
   const computeDerivedFromNTrace = (nTrace, pulseCfg = { block_index: 4, recovery_blocks: [5, 6] }) => {
     const n = nTrace.map((x) => Number(x));
@@ -203,8 +253,8 @@
     };
   };
   const trendFlags = (sameLaneSessions, epsilon = 0.25) => {
-    const eligible = sameLaneSessions.filter((s) => isEvidenceEligible(s));
-    const last3 = eligible.slice(-3);
+    const withDerived = sameLaneSessions.filter((s) => Boolean(s?.derived) && !s?.ended_early);
+    const last3 = withDerived.slice(-3);
     if (last3.length < 3) return { plateau: false, churn: false, breakthrough: false };
     const [a, b, c] = last3.map((s) => s.derived || {});
     const plateau = (Number(c.mean_n || 0) - Number(a.mean_n || 0)) < epsilon && mean([a.volatility || 0, b.volatility || 0, c.volatility || 0]) <= 2;
@@ -342,12 +392,18 @@
       const tf = trendFlags(sameLane, settingsV11.thresholds.plateau_epsilon);
       const row = programV11.scaffold[Math.max(0, programV11.program_session_index)] || { probe_slot: false, recheck_slot: false };
       const latestTraining = [...trainingSessionsV11].reverse().find(Boolean);
-      const dataQualityAllowsProbe = !latestTraining || latestTraining.data_quality === 'OK';
+      const latestLaneSession = [...sameLane].reverse().find(Boolean);
+      const lastSessionIsClean = !latestTraining || latestTraining.data_quality === 'OK';
+      const lastProbeSession = [...trainingSessionsV11].reverse().find((s) => s.session_type === 'PROBE');
+      const lastProbeGame = programV11.last_probe_game || lastProbeSession?.game || null;
       let session_type = 'TUNE';
       let reason = 'Stable training day.';
       let game = lane;
       let probe_radius = null;
       let probe_target_game = null;
+      let recheck_target_session_id = null;
+      let probe_pending_reason = null;
+      let recommended_plan = null;
 
       if (zoneRecommendation === 'RESET') {
         session_type = 'RESET';
@@ -360,26 +416,55 @@
         session_type = 'TIGHTEN';
         reason = 'Recent sessions were up and down, so stabilise first.';
       }
-      if ((tf.breakthrough || row.probe_slot) && zoneRecommendation === 'FULL' && dataQualityAllowsProbe) {
-        session_type = 'PROBE';
-        probe_radius = nextProbeRadius(programV11.last_probe_radius_passed);
-        probe_target_game = probeTargetFor(lane, probe_radius);
-        game = probe_target_game;
-        reason = tf.breakthrough ? 'Recent progress suggests trying a small switch test.' : 'Today is a planned switch-test day.';
-      }
-      let recheck_target_session_id = null;
-      if (row.recheck_slot && zoneRecommendation === 'FULL' && dataQualityAllowsProbe) {
-        const lastCleanTune = [...trainingSessionsV11].reverse().find((s) => s.session_type === 'TUNE' && isEvidenceEligible(s) && s.game === lane);
-        if (lastCleanTune) {
+      if (session_type === 'TUNE' && row.recheck_slot && zoneRecommendation === 'FULL' && lastSessionIsClean) {
+        const sig = programV11.last_passed_probe_signature && programV11.last_passed_probe_signature.probe_game
+          ? programV11.last_passed_probe_signature
+          : null;
+        if (sig) {
           session_type = 'RECHECK';
-          game = lastCleanTune.game;
-          recheck_target_session_id = lastCleanTune.id;
-          reason = 'Today is a planned later-check day.';
+          game = sig.probe_game;
+          probe_radius = sig.probe_radius || null;
+          probe_target_game = sig.probe_game;
+          recheck_target_session_id = sig.target_session_id || null;
+          recommended_plan = {
+            speed: (sig.speed || 'DEFAULT').toLowerCase(),
+            distraction: (sig.distraction || 'DEFAULT').toLowerCase(),
+            baseline_mode: (sig.level_mode || 'ADAPTIVE').toUpperCase(),
+            fixed_n: sig.hold_level ?? null,
+            pulse_type: sig.pulse_type || '',
+            pulse_block_index: sig.pulse_block_index || settingsV11.defaults.pulse_block_index,
+            recovery_blocks: sig.recovery_blocks || settingsV11.defaults.recovery_blocks,
+            end_hold_block: sig.end_hold_block || settingsV11.defaults.end_hold_block
+          };
+          reason = 'Planned later-check day: replaying your last passed switch signature.';
+        } else {
+          session_type = 'PROBE';
+          probe_radius = 'NEAR';
+          probe_target_game = resolveProbeTarget(lane, 'NEAR', lastProbeGame);
+          game = probe_target_game;
+          probe_pending_reason = 'recheck_fallback';
+          reason = 'No passed switch signature yet, so a small switch test is suggested first.';
         }
       }
-      if (tf.plateau && zoneRecommendation === 'FULL' && stateRatings.drift >= 6) {
+      const cleanBreakthrough = tf.breakthrough && cleanBreakthroughSignal(latestLaneSession);
+      if (session_type === 'TUNE' && cleanBreakthrough && zoneRecommendation === 'FULL' && lastSessionIsClean) {
+        session_type = 'PROBE';
+        probe_radius = 'NEAR';
+        probe_target_game = resolveProbeTarget(lane, 'NEAR', lastProbeGame);
+        game = probe_target_game;
+        probe_pending_reason = 'breakthrough';
+        reason = 'Recent clean breakthrough detected: run a small switch test next.';
+      } else if (session_type === 'TUNE' && row.probe_slot && zoneRecommendation === 'FULL' && lastSessionIsClean) {
+        session_type = 'PROBE';
+        probe_radius = nextProbeRadius(programV11.last_probe_radius_passed);
+        probe_target_game = resolveProbeTarget(lane, probe_radius, lastProbeGame);
+        game = probe_target_game;
+        probe_pending_reason = 'planned_slot';
+        reason = 'Today is a planned switch-test opportunity.';
+      }
+      if (session_type === 'TUNE' && tf.plateau && zoneRecommendation !== 'RESET') {
         session_type = 'EXPLORE';
-        game = lane === 'CLASSIC' ? 'EMOTIONAL' : 'CLASSIC';
+        game = chooseExploreGame(lane, stateRatings);
         reason = 'You look flat or stuck, so a controlled explore day is suggested.';
       }
       return {
@@ -388,7 +473,9 @@
         recommended_game: game,
         probe_radius,
         probe_target_game,
-        recheck_target_session_id
+        recheck_target_session_id,
+        probe_pending_reason,
+        recommended_plan
       };
     }, [zoneMode, programV11, trainingSessionsV11, settingsV11, stateRatings]);
 
@@ -475,6 +562,21 @@
     }, [recommendationV11.recommended_session_type]);
 
     useEffect(() => {
+      const plan = recommendationV11.recommended_plan;
+      if (!plan) return;
+      if (plan.speed) setSpeedPreset(plan.speed === 'fast' ? 'fast' : 'default');
+      if (plan.distraction) setInterferencePreset(plan.distraction === 'high' ? 'high' : 'default');
+      if (plan.baseline_mode) setBaselineMode(plan.baseline_mode === 'FIXED' ? 'FIXED' : 'ADAPTIVE');
+      if (Number.isFinite(Number(plan.fixed_n)) && Number(plan.fixed_n) > 0) setFixedN(Number(plan.fixed_n));
+      setPulseType(plan.pulse_type || '');
+      if (Number.isFinite(Number(plan.pulse_block_index))) setPulseBlockIndex(Number(plan.pulse_block_index));
+      if (Array.isArray(plan.recovery_blocks) && plan.recovery_blocks.length) {
+        setRecoveryBlocksCsv(plan.recovery_blocks.join(','));
+      }
+      if (Number.isFinite(Number(plan.end_hold_block))) setEndHoldBlock(Number(plan.end_hold_block));
+    }, [recommendationV11.recommended_plan]);
+
+    useEffect(() => {
       saveJson(STORAGE.SETTINGS_V11, settingsV11);
     }, [settingsV11]);
 
@@ -517,6 +619,32 @@
       if (parsed.some((x) => !Number.isFinite(x) || x < 0)) return null;
       return parsed;
     };
+    const buildProbeSignature = ({
+      anchorLane,
+      probeGame,
+      probeRadius,
+      baseline,
+      pulseType,
+      pulseBlockIndex,
+      recoveryBlocks,
+      endHoldBlock,
+      targetSessionId,
+      timestamp
+    }) => ({
+      anchor_lane: anchorLane,
+      probe_game: probeGame,
+      probe_radius: probeRadius,
+      speed: baseline.speed,
+      distraction: baseline.interference,
+      level_mode: baseline.mode,
+      hold_level: baseline.fixed_n ?? null,
+      pulse_type: pulseType || null,
+      pulse_block_index: Number(pulseBlockIndex),
+      recovery_blocks: recoveryBlocks.slice(),
+      end_hold_block: Number(endHoldBlock),
+      target_session_id: targetSessionId || null,
+      ts: timestamp
+    });
 
     const toggleBlockTag = (current, blockIndex) => (
       current.includes(blockIndex)
@@ -733,9 +861,32 @@
             { block_index: Number(pulseBlockIndex), recovery_blocks: parseRecoveryBlocks() }
           )
         : null;
+      const recoveryBlocks = parseRecoveryBlocks();
       const dataQuality = sessionRun.blocks.some((b) => b.state_drift === 'lost_thread' && b.felt_difficulty === 'hard')
         ? 'UNCONFIRMED_PLAN'
         : 'OK';
+      const anchorLane = programV11.anchor_lane || 'CLASSIC';
+      const probeTargetSession = [...trainingSessionsV11].reverse().find((s) => s.game === anchorLane && isEvidenceEligible(s));
+      const swapCost = sessionRun.session_style === 'PROBE' && dataQuality === 'OK' && derived && probeTargetSession?.derived
+        ? Number((derived.baseline_mean - probeTargetSession.derived.baseline_mean).toFixed(2))
+        : null;
+      const probePass = sessionRun.session_style === 'PROBE' && dataQuality === 'OK' && swapCost !== null && derived
+        ? swapCost >= settingsV11.thresholds.probe_swap_cost_min
+          && derived.recovery_delta >= settingsV11.thresholds.probe_recovery_delta_min
+          && derived.end_hold_delta >= settingsV11.thresholds.probe_end_hold_min
+        : null;
+      const recheckTarget = recommendationV11.recheck_target_session_id
+        ? trainingSessionsV11.find((s) => s.id === recommendationV11.recheck_target_session_id)
+        : null;
+      const recheckPass = sessionRun.session_style === 'RECHECK' && recheckTarget && dataQuality === 'OK' && derived
+        ? derived.mean_n >= (recheckTarget.derived.mean_n - settingsV11.thresholds.recheck_mean_tolerance)
+          && derived.volatility <= ((recheckTarget.derived.volatility ?? 0) + 2)
+          && derived.end_hold_delta >= (recheckTarget.derived.end_hold_delta - 1)
+        : null;
+      const firstPulseBlock = sessionRun.blocks.find((b) => b.pulse_used && b.pulse_used !== 'none');
+      const guidedPulseType = firstPulseBlock
+        ? (firstPulseBlock.pulse_used === 'speed' ? 'SPEED' : 'INTERFERENCE')
+        : null;
 
       const trainingEntry = {
         id: uid(),
@@ -745,6 +896,7 @@
         program_day: (programV11.program_session_index || 0) + 1,
         recommended_session_type: sessionRun.recommended_session_type,
         session_type: sessionRun.session_style,
+        ended_early: null,
         recommendation_reason: recommendationV11.recommendation_reason,
         game: sessionRun.game,
         output_gate_mode: selectedGame === 'logic_gated' ? outputGateMode : null,
@@ -761,7 +913,7 @@
             mode: sessionRun.baseline_plan.level_mode === 'hold' ? 'FIXED' : 'ADAPTIVE',
             fixed_n: sessionRun.baseline_plan.level_mode === 'hold' ? Number(sessionRun.baseline_plan.hold_at) : null
           },
-          pulse: null,
+          pulse: guidedPulseType ? { type: guidedPulseType, block_index: firstPulseBlock.block_index, recovery_blocks: recoveryBlocks } : null,
           end_hold_block: 10
         },
         log: {
@@ -778,13 +930,14 @@
         probe: {
           probe_radius: recommendationV11.probe_radius,
           probe_target_game: recommendationV11.probe_target_game,
-          target_session_id: null,
-          swap_cost: null,
-          pass: null
+          target_session_id: probeTargetSession ? probeTargetSession.id : null,
+          swap_cost: swapCost,
+          pass: probePass,
+          probe_pending_reason: recommendationV11.probe_pending_reason || null
         },
         recheck: {
           of_session_id: recommendationV11.recheck_target_session_id || null,
-          pass: null
+          pass: recheckPass
         },
         bridge: {
           what_changed: bridgeObs.trim(),
@@ -798,7 +951,29 @@
         program_day_completed: Math.min(PROGRAM_TARGET, (prev.program_day_completed || 0) + 1),
         program_session_index: Math.min(PROGRAM_TARGET, (prev.program_session_index || 0) + 1),
         calendar_entry_count: (prev.calendar_entry_count || 0) + 1,
-        consecutive_rest_count: 0
+        consecutive_rest_count: 0,
+        last_probe_game: sessionRun.session_style === 'PROBE' ? (sessionRun.game || prev.last_probe_game) : prev.last_probe_game,
+        last_probe_radius: sessionRun.session_style === 'PROBE' ? (recommendationV11.probe_radius || prev.last_probe_radius) : prev.last_probe_radius,
+        last_probe_radius_passed: probePass === true ? recommendationV11.probe_radius : prev.last_probe_radius_passed,
+        last_passed_probe_signature: probePass === true
+          ? buildProbeSignature({
+              anchorLane,
+              probeGame: sessionRun.game,
+              probeRadius: recommendationV11.probe_radius,
+              baseline: {
+                speed: sessionRun.baseline_plan.speed.toUpperCase(),
+                interference: sessionRun.baseline_plan.distraction.toUpperCase(),
+                mode: sessionRun.baseline_plan.level_mode === 'hold' ? 'FIXED' : 'ADAPTIVE',
+                fixed_n: sessionRun.baseline_plan.level_mode === 'hold' ? Number(sessionRun.baseline_plan.hold_at) : null
+              },
+              pulseType: guidedPulseType,
+              pulseBlockIndex: firstPulseBlock ? firstPulseBlock.block_index : settingsV11.defaults.pulse_block_index,
+              recoveryBlocks,
+              endHoldBlock: 10,
+              targetSessionId: probeTargetSession ? probeTargetSession.id : null,
+              timestamp: nowIso
+            })
+          : prev.last_passed_probe_signature
       }));
 
       if (missionCue.trim() && missionSignal.trim()) {
@@ -865,6 +1040,9 @@
       const recommendedRecheckTarget = recommendationV11.recheck_target_session_id
         ? trainingSessionsV11.find((s) => s.id === recommendationV11.recheck_target_session_id)
         : null;
+      const signatureTarget = programV11.last_passed_probe_signature?.target_session_id
+        ? trainingSessionsV11.find((s) => s.id === programV11.last_passed_probe_signature.target_session_id)
+        : null;
       const sameGamePlanTarget = [...trainingSessionsV11].reverse().find((s) =>
         isEvidenceEligible(s)
         && s.game === (GAME_ENUM[selectedGame] || 'CLASSIC')
@@ -872,7 +1050,7 @@
         && s.plan?.baseline?.speed === speedPreset.toUpperCase()
         && s.plan?.baseline?.interference === interferencePreset.toUpperCase()
       );
-      const recheckTarget = recommendedRecheckTarget || sameGamePlanTarget || null;
+      const recheckTarget = recommendedRecheckTarget || signatureTarget || sameGamePlanTarget || null;
       const recheckPass = sessionType === 'RECHECK' && recheckTarget && dataQuality === 'OK'
         ? derived.mean_n >= (recheckTarget.derived.mean_n - settingsV11.thresholds.recheck_mean_tolerance)
           && derived.volatility <= ((recheckTarget.derived.volatility ?? 0) + 2)
@@ -912,6 +1090,7 @@
         program_day: (programV11.program_session_index || 0) + 1,
         recommended_session_type: recommendationV11.recommended_session_type,
         session_type: sessionType,
+        ended_early: null,
         recommendation_reason: recommendationV11.recommendation_reason,
         game: GAME_ENUM[selectedGame] || 'CLASSIC',
         output_gate_mode: selectedGame === 'logic_gated' ? outputGateMode : null,
@@ -946,7 +1125,8 @@
           probe_target_game: recommendationV11.probe_target_game,
           target_session_id: probeTargetSession ? probeTargetSession.id : null,
           swap_cost: swapCost,
-          pass: probePass
+          pass: probePass,
+          probe_pending_reason: recommendationV11.probe_pending_reason || null
         },
         recheck: {
           of_session_id: recheckTarget ? recheckTarget.id : null,
@@ -964,7 +1144,28 @@
         program_session_index: Math.min(PROGRAM_TARGET, (prev.program_session_index || 0) + 1),
         calendar_entry_count: (prev.calendar_entry_count || 0) + 1,
         consecutive_rest_count: 0,
-        last_probe_radius_passed: probePass === true ? recommendationV11.probe_radius : prev.last_probe_radius_passed
+        last_probe_game: sessionType === 'PROBE' ? ((GAME_ENUM[selectedGame] || 'CLASSIC') || prev.last_probe_game) : prev.last_probe_game,
+        last_probe_radius: sessionType === 'PROBE' ? (recommendationV11.probe_radius || prev.last_probe_radius) : prev.last_probe_radius,
+        last_probe_radius_passed: probePass === true ? recommendationV11.probe_radius : prev.last_probe_radius_passed,
+        last_passed_probe_signature: probePass === true
+          ? buildProbeSignature({
+              anchorLane,
+              probeGame: GAME_ENUM[selectedGame] || 'CLASSIC',
+              probeRadius: recommendationV11.probe_radius,
+              baseline: {
+                speed: speedPreset.toUpperCase(),
+                interference: interferencePreset.toUpperCase(),
+                mode: baselineMode,
+                fixed_n: baselineMode === 'FIXED' ? Number(fixedN) : null
+              },
+              pulseType: pulseType || null,
+              pulseBlockIndex: Number(pulseBlockIndex),
+              recoveryBlocks,
+              endHoldBlock: Number(endHoldBlock),
+              targetSessionId: probeTargetSession ? probeTargetSession.id : null,
+              timestamp: nowIso
+            })
+          : prev.last_passed_probe_signature
       }));
 
       if (missionCue.trim() && missionSignal.trim()) {
@@ -1222,7 +1423,7 @@
                 </select>
                 <select value={interferencePreset} onChange={(e) => setInterferencePreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
                   <option value="default">Distraction level: Default</option>
-                  <option value="high">Distraction level: High</option>
+                  <option value="high">Distraction: High</option>
                 </select>
                 <select value={pulseType} onChange={(e) => setPulseType(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
                   <option value="">Pulse block: None</option>
@@ -1479,9 +1680,6 @@
               </p>
             ) : null}
             <div className="btnRow">
-              <button className="btn" style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }} onClick={saveRestDay}>
-                Take rest day
-              </button>
               {pendingMission ? (
                 <button
                   className="btn"
@@ -1512,33 +1710,17 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: 0, fontWeight: 900 }}>Progress checks</p>
-            <p style={{ marginTop: '8px' }}>
-              Switch tests passed: Small <b>{proofCounters.near ? 'Yes' : 'No'}</b> | Medium <b>{proofCounters.mid ? 'Yes' : 'No'}</b> | Big <b>{proofCounters.far ? 'Yes' : 'No'}</b>
-            </p>
-            <p style={{ marginTop: '6px' }}>
-              Still holds later: <b>{proofCounters.delay_holds}</b> | Real-life cue wins: <b>{proofCounters.mission_successes}</b>
-            </p>
-            <p style={{ marginTop: '6px' }}>
-              Steady sessions in a row: <b>{proofCounters.stability_streak}</b>
-            </p>
-            {notCountedNote ? (
-              <p style={{ marginTop: '8px', fontSize: '13px', color: '#555555' }}>{notCountedNote}</p>
-            ) : null}
-          </section>
-
-          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Quick state check</p>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>1) Quick readiness check</p>
             <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333333' }}>
               Quick self-check before training. These are simple readiness sliders.
             </p>
             <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#555555' }}>
-              Pressure/load = how overloaded you feel. Focus slips = mind wandering. Task fit = how well today's plan fits your current state.
+              Use these to choose full, light, or rest for today.
             </p>
             {[
-              ['load', 'Pressure / load'],
-              ['drift', 'Focus slips (mind-wandering)'],
-              ['mismatch', 'Task fit (how well today\'s plan fits)']
+              ['load', 'How overloaded do you feel?'],
+              ['drift', 'How steady is your focus today?'],
+              ['mismatch', 'Does today\'s plan feel doable?']
             ].map(([k, label]) => (
               <div key={k} style={{ marginBottom: '10px' }}>
                 <label style={{ fontWeight: 700 }}>{label}: {stateRatings[k]}</label>
@@ -1550,11 +1732,12 @@
                   onChange={(e) => setStateRatings((prev) => ({ ...prev, [k]: Number(e.target.value) }))}
                   style={{ width: '100%' }}
                 />
+                <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#777777' }}>Low &lt;-&gt; High</p>
               </div>
             ))}
             <div className="btnRow" style={{ marginTop: 8 }}>
               <button className="btn" style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }} onClick={estimateZoneFromRatings}>
-                Check state
+                Auto-suggest readiness
               </button>
             </div>
             {lastStateReason ? (
@@ -1564,20 +1747,24 @@
             ) : null}
             <div className="btnRow">
               {[
-                { id: 'in_band', label: 'Ready for full session' },
-                { id: 'light', label: 'Go lighter today' },
-                { id: 'reset', label: 'Reset day' }
+                { id: 'in_band', label: 'Full session (10 blocks, normal plan)', action: 'zone' },
+                { id: 'light', label: 'Light session (10 blocks, easier settings, no challenge tests)', action: 'zone' },
+                { id: 'rest', label: 'Rest day (no blocks today, optional 90-second reset)', action: 'rest' }
               ].map((z) => (
                 <button
                   key={z.id}
                   className="btn"
                   onClick={() => {
+                    if (z.action === 'rest') {
+                      saveRestDay();
+                      return;
+                    }
                     setZoneMode(z.id);
                     setPlanType(computePlanType(z.id));
                   }}
                   style={{
-                    background: zoneMode === z.id ? '#E8F4FF' : '#FFFFFF',
-                    border: '1px solid ' + (zoneMode === z.id ? '#2764B7' : '#E0E0E0'),
+                    background: zoneMode === z.id && z.action === 'zone' ? '#E8F4FF' : '#FFFFFF',
+                    border: '1px solid ' + (zoneMode === z.id && z.action === 'zone' ? '#2764B7' : '#E0E0E0'),
                     color: '#111111'
                   }}
                 >
@@ -1588,7 +1775,7 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Optional breathing routine</p>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>2) Optional: 90-second reset</p>
             <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333333' }}>
               Simplified from Zone Coach (no HR capture).
             </p>
@@ -1657,21 +1844,21 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Session settings</p>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Baseline settings</p>
             <div className="btnRow">
               <select value={speedPreset} onChange={(e) => setSpeedPreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                <option value="default">Speed: Default</option>
+                <option value="default">Speed: Baseline</option>
                 <option value="fast">Speed: Fast</option>
               </select>
               <select value={interferencePreset} onChange={(e) => setInterferencePreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                <option value="default">Distraction level: Default</option>
-                <option value="high">Distraction level: High</option>
+                <option value="default">Distraction: Baseline</option>
+                <option value="high">Distraction: High</option>
               </select>
             </div>
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Choose today's i3 Mindware game</p>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>3) Choose today's i3 Mindware game</p>
             <div style={{ display: 'grid', gap: '10px' }}>
               {GAMES.map((g) => (
                 <button
@@ -1694,12 +1881,31 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: 0, fontWeight: 900 }}>Today's plan: {planLabel}</p>
+            <p style={{ margin: 0, fontWeight: 900 }}>4) Start session</p>
+            <p style={{ marginTop: '6px', fontSize: '13px', color: '#555555' }}>Plan: {planLabel}</p>
             <p style={{ marginTop: '8px' }}>Use the coach between each block. It tells you the next block settings based on your quick check.</p>
             <div className="btnRow">
               <button className="btn btnPrimary" onClick={startGuidedSession}>Start guided session</button>
               <button className="btn btnSecondary" onClick={() => setScreen('results')}>Use post-session entry instead</button>
             </div>
+          </section>
+
+          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+            <details>
+              <summary style={{ cursor: 'pointer', fontWeight: 900 }}>View progress checks</summary>
+              <p style={{ marginTop: '8px' }}>
+                Transfer checks: Small <b>{proofCounters.near ? 'passed' : 'not yet'}</b> | Medium <b>{proofCounters.mid ? 'passed' : 'not yet'}</b> | Big <b>{proofCounters.far ? 'passed' : 'not yet'}</b>
+              </p>
+              <p style={{ marginTop: '6px' }}>
+                Still holds later: <b>{proofCounters.delay_holds > 0 ? proofCounters.delay_holds : 'not checked yet'}</b> | Real-life cue wins: <b>{proofCounters.mission_successes > 0 ? proofCounters.mission_successes : 'not logged yet'}</b>
+              </p>
+              <p style={{ marginTop: '6px' }}>
+                Steady sessions in a row: <b>{proofCounters.stability_streak}</b>
+              </p>
+              {notCountedNote ? (
+                <p style={{ marginTop: '8px', fontSize: '13px', color: '#555555' }}>{notCountedNote}</p>
+              ) : null}
+            </details>
           </section>
         </main>
       </div>
