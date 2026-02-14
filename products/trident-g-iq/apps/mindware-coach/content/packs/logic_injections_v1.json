@@ -1,86 +1,1410 @@
 {
-  "pack_id": "logic_injections_v1",
-  "version": 1,
-  "licence": "proprietary",
-  "attribution": null,
-  "source_url": null,
-  "created_at": "2026-02-14T00:00:00.000Z",
-  "items": [
-    {
-      "id": "inj_0001",
-      "context": "work",
-      "frame": "decide",
-      "wrapper": "quick_check",
-      "script": "Y1",
-      "polarity": "tighten",
-      "lens_target": "moves",
-      "kind": "mini_logic",
-      "is_boundary": false,
-      "near_miss_tag": "no_counterexample",
-      "prompt": "One result supports your plan. Best one-line check?",
-      "options": ["What would I expect to see if I were wrong?", "How can I defend this now?", "Who agrees with me?", "Can I skip testing?"],
-      "answer_index": 0,
-      "why_right": "Disconfirming checks reduce brittle confidence.",
-      "why_traps": ["Social agreement is not a discriminating test."],
-      "difficulty": 1,
-      "time_limit_s": 25
-    },
-    {
-      "id": "inj_0002",
-      "context": "learning",
-      "frame": "understand",
-      "wrapper": "quick_check",
-      "script": "Y7",
-      "polarity": "tighten",
-      "lens_target": "meaning",
-      "kind": "choose_check",
-      "is_boundary": false,
-      "near_miss_tag": "base_rate_ignored",
-      "prompt": "Before trust, what should be explicit?",
-      "options": ["Observable success signal", "Good intention", "Long explanation", "Familiar topic"],
-      "answer_index": 0,
-      "why_right": "Operational definitions enable update loops.",
-      "why_traps": ["Intent and familiarity are weak evidence."],
-      "difficulty": 1,
-      "time_limit_s": 25
-    },
-    {
-      "id": "inj_0003",
-      "context": "work",
-      "frame": "argue",
-      "wrapper": "quick_check",
-      "script": "Y4",
-      "polarity": "tighten",
-      "lens_target": "meaning",
-      "kind": "spot_trap",
-      "is_boundary": false,
-      "near_miss_tag": "invalid_conditional",
-      "prompt": "If a policy is effective, complaints drop. Complaints dropped. Trap?",
-      "options": ["Affirming the consequent", "Checking counterexample", "Using measured outcomes", "Timeboxing discussion"],
-      "answer_index": 0,
-      "why_right": "The conclusion does not follow uniquely.",
-      "why_traps": ["Other options are quality moves."],
-      "difficulty": 1,
-      "time_limit_s": 25
-    },
-    {
-      "id": "inj_0004",
-      "context": "learning",
-      "frame": "plan_do",
-      "wrapper": "quick_check",
-      "script": "Y8",
-      "polarity": "tighten",
-      "lens_target": "moves",
-      "kind": "mcq",
-      "is_boundary": false,
-      "near_miss_tag": "surface_over_structure",
-      "prompt": "Overloaded plan. Best immediate simplification?",
-      "options": ["Keep core constraints and one testable next step", "Add substeps first", "Change app first", "Wait for motivation"],
-      "answer_index": 0,
-      "why_right": "Structure-preserving simplification keeps action alive.",
-      "why_traps": ["More detail can increase noise."],
-      "difficulty": 1,
-      "time_limit_s": 25
-    }
-  ]
+    "pack_id":  "logic_injections_v1",
+    "version":  1,
+    "licence":  "proprietary",
+    "attribution":  null,
+    "source_url":  null,
+    "created_at":  "2026-02-14T00:00:00.000Z",
+    "items":  [
+                  {
+                      "id":  "inj_0001",
+                      "context":  "work",
+                      "frame":  "argue",
+                      "wrapper":  "quick_check",
+                      "script":  "Y1",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  25
+                  },
+                  {
+                      "id":  "inj_0002",
+                      "context":  "work",
+                      "frame":  "decide",
+                      "wrapper":  "quick_check",
+                      "script":  "Y2",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  26
+                  },
+                  {
+                      "id":  "inj_0003",
+                      "context":  "work",
+                      "frame":  "plan_do",
+                      "wrapper":  "quick_check",
+                      "script":  "Y3",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  27
+                  },
+                  {
+                      "id":  "inj_0004",
+                      "context":  "work",
+                      "frame":  "understand",
+                      "wrapper":  "quick_check",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  24
+                  },
+                  {
+                      "id":  "inj_0005",
+                      "context":  "work",
+                      "frame":  "argue",
+                      "wrapper":  "quick_check",
+                      "script":  "Y5",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  25
+                  },
+                  {
+                      "id":  "inj_0006",
+                      "context":  "work",
+                      "frame":  "decide",
+                      "wrapper":  "quick_check",
+                      "script":  "Y6",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  26
+                  },
+                  {
+                      "id":  "inj_0007",
+                      "context":  "work",
+                      "frame":  "plan_do",
+                      "wrapper":  "quick_check",
+                      "script":  "Y7",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  27
+                  },
+                  {
+                      "id":  "inj_0008",
+                      "context":  "work",
+                      "frame":  "understand",
+                      "wrapper":  "quick_check",
+                      "script":  "Y8",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  24
+                  },
+                  {
+                      "id":  "inj_0009",
+                      "context":  "work",
+                      "frame":  "argue",
+                      "wrapper":  "quick_check",
+                      "script":  "Y9",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  25
+                  },
+                  {
+                      "id":  "inj_0010",
+                      "context":  "work",
+                      "frame":  "decide",
+                      "wrapper":  "quick_check",
+                      "script":  "Y10",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  26
+                  },
+                  {
+                      "id":  "inj_0011",
+                      "context":  "work",
+                      "frame":  "plan_do",
+                      "wrapper":  "quick_check",
+                      "script":  "Y0",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  27
+                  },
+                  {
+                      "id":  "inj_0012",
+                      "context":  "work",
+                      "frame":  "understand",
+                      "wrapper":  "quick_check",
+                      "script":  "Y1",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  24
+                  },
+                  {
+                      "id":  "inj_0013",
+                      "context":  "work",
+                      "frame":  "argue",
+                      "wrapper":  "quick_check",
+                      "script":  "Y2",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  25
+                  },
+                  {
+                      "id":  "inj_0014",
+                      "context":  "work",
+                      "frame":  "decide",
+                      "wrapper":  "quick_check",
+                      "script":  "Y3",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  26
+                  },
+                  {
+                      "id":  "inj_0015",
+                      "context":  "work",
+                      "frame":  "plan_do",
+                      "wrapper":  "quick_check",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  27
+                  },
+                  {
+                      "id":  "inj_0016",
+                      "context":  "work",
+                      "frame":  "understand",
+                      "wrapper":  "quick_check",
+                      "script":  "Y5",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  24
+                  },
+                  {
+                      "id":  "inj_0017",
+                      "context":  "work",
+                      "frame":  "argue",
+                      "wrapper":  "quick_check",
+                      "script":  "Y6",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  25
+                  },
+                  {
+                      "id":  "inj_0018",
+                      "context":  "work",
+                      "frame":  "decide",
+                      "wrapper":  "quick_check",
+                      "script":  "Y7",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  26
+                  },
+                  {
+                      "id":  "inj_0019",
+                      "context":  "work",
+                      "frame":  "plan_do",
+                      "wrapper":  "quick_check",
+                      "script":  "Y8",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  27
+                  },
+                  {
+                      "id":  "inj_0020",
+                      "context":  "work",
+                      "frame":  "understand",
+                      "wrapper":  "quick_check",
+                      "script":  "Y9",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  24
+                  },
+                  {
+                      "id":  "inj_0021",
+                      "context":  "work",
+                      "frame":  "argue",
+                      "wrapper":  "quick_check",
+                      "script":  "Y10",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  25
+                  },
+                  {
+                      "id":  "inj_0022",
+                      "context":  "work",
+                      "frame":  "decide",
+                      "wrapper":  "quick_check",
+                      "script":  "Y0",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  26
+                  },
+                  {
+                      "id":  "inj_0023",
+                      "context":  "work",
+                      "frame":  "plan_do",
+                      "wrapper":  "quick_check",
+                      "script":  "Y1",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  27
+                  },
+                  {
+                      "id":  "inj_0024",
+                      "context":  "work",
+                      "frame":  "understand",
+                      "wrapper":  "quick_check",
+                      "script":  "Y2",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  24
+                  },
+                  {
+                      "id":  "inj_0025",
+                      "context":  "work",
+                      "frame":  "argue",
+                      "wrapper":  "quick_check",
+                      "script":  "Y3",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  25
+                  },
+                  {
+                      "id":  "inj_0026",
+                      "context":  "learning",
+                      "frame":  "decide",
+                      "wrapper":  "quick_check",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  26
+                  },
+                  {
+                      "id":  "inj_0027",
+                      "context":  "learning",
+                      "frame":  "plan_do",
+                      "wrapper":  "quick_check",
+                      "script":  "Y5",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  27
+                  },
+                  {
+                      "id":  "inj_0028",
+                      "context":  "learning",
+                      "frame":  "understand",
+                      "wrapper":  "quick_check",
+                      "script":  "Y6",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  24
+                  },
+                  {
+                      "id":  "inj_0029",
+                      "context":  "learning",
+                      "frame":  "argue",
+                      "wrapper":  "quick_check",
+                      "script":  "Y7",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  25
+                  },
+                  {
+                      "id":  "inj_0030",
+                      "context":  "learning",
+                      "frame":  "decide",
+                      "wrapper":  "quick_check",
+                      "script":  "Y8",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  26
+                  },
+                  {
+                      "id":  "inj_0031",
+                      "context":  "learning",
+                      "frame":  "plan_do",
+                      "wrapper":  "quick_check",
+                      "script":  "Y9",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  27
+                  },
+                  {
+                      "id":  "inj_0032",
+                      "context":  "learning",
+                      "frame":  "understand",
+                      "wrapper":  "quick_check",
+                      "script":  "Y10",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  24
+                  },
+                  {
+                      "id":  "inj_0033",
+                      "context":  "learning",
+                      "frame":  "argue",
+                      "wrapper":  "quick_check",
+                      "script":  "Y0",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  25
+                  },
+                  {
+                      "id":  "inj_0034",
+                      "context":  "learning",
+                      "frame":  "decide",
+                      "wrapper":  "quick_check",
+                      "script":  "Y1",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  26
+                  },
+                  {
+                      "id":  "inj_0035",
+                      "context":  "learning",
+                      "frame":  "plan_do",
+                      "wrapper":  "quick_check",
+                      "script":  "Y2",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  27
+                  },
+                  {
+                      "id":  "inj_0036",
+                      "context":  "learning",
+                      "frame":  "understand",
+                      "wrapper":  "quick_check",
+                      "script":  "Y3",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  24
+                  },
+                  {
+                      "id":  "inj_0037",
+                      "context":  "learning",
+                      "frame":  "argue",
+                      "wrapper":  "quick_check",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  25
+                  },
+                  {
+                      "id":  "inj_0038",
+                      "context":  "learning",
+                      "frame":  "decide",
+                      "wrapper":  "quick_check",
+                      "script":  "Y5",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  26
+                  },
+                  {
+                      "id":  "inj_0039",
+                      "context":  "learning",
+                      "frame":  "plan_do",
+                      "wrapper":  "quick_check",
+                      "script":  "Y6",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  27
+                  },
+                  {
+                      "id":  "inj_0040",
+                      "context":  "learning",
+                      "frame":  "understand",
+                      "wrapper":  "quick_check",
+                      "script":  "Y7",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  24
+                  },
+                  {
+                      "id":  "inj_0041",
+                      "context":  "learning",
+                      "frame":  "argue",
+                      "wrapper":  "quick_check",
+                      "script":  "Y8",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  25
+                  },
+                  {
+                      "id":  "inj_0042",
+                      "context":  "learning",
+                      "frame":  "decide",
+                      "wrapper":  "quick_check",
+                      "script":  "Y9",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  26
+                  },
+                  {
+                      "id":  "inj_0043",
+                      "context":  "learning",
+                      "frame":  "plan_do",
+                      "wrapper":  "quick_check",
+                      "script":  "Y10",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  27
+                  },
+                  {
+                      "id":  "inj_0044",
+                      "context":  "learning",
+                      "frame":  "understand",
+                      "wrapper":  "quick_check",
+                      "script":  "Y0",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  24
+                  },
+                  {
+                      "id":  "inj_0045",
+                      "context":  "learning",
+                      "frame":  "argue",
+                      "wrapper":  "quick_check",
+                      "script":  "Y1",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  25
+                  },
+                  {
+                      "id":  "inj_0046",
+                      "context":  "learning",
+                      "frame":  "decide",
+                      "wrapper":  "quick_check",
+                      "script":  "Y2",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  26
+                  },
+                  {
+                      "id":  "inj_0047",
+                      "context":  "learning",
+                      "frame":  "plan_do",
+                      "wrapper":  "quick_check",
+                      "script":  "Y3",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  27
+                  },
+                  {
+                      "id":  "inj_0048",
+                      "context":  "learning",
+                      "frame":  "understand",
+                      "wrapper":  "quick_check",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  24
+                  },
+                  {
+                      "id":  "inj_0049",
+                      "context":  "learning",
+                      "frame":  "argue",
+                      "wrapper":  "quick_check",
+                      "script":  "Y5",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  25
+                  },
+                  {
+                      "id":  "inj_0050",
+                      "context":  "learning",
+                      "frame":  "decide",
+                      "wrapper":  "quick_check",
+                      "script":  "Y6",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "prompt":  "One-step reliability check: what should you do before committing?",
+                      "options":  [
+                                      "Run one concrete check that could change the next move",
+                                      "Commit immediately on familiarity",
+                                      "Delay and gather unrelated examples",
+                                      "Skip the check under pressure"
+                                  ],
+                      "answer_index":  0,
+                      "why_right":  "A concrete check keeps decisions reliable under changing wrappers.",
+                      "why_traps":  [
+                                        "Familiarity does not guarantee correctness.",
+                                        "Unrelated examples increase noise.",
+                                        "Skipping checks increases thin automation risk."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  26
+                  }
+              ]
 }
