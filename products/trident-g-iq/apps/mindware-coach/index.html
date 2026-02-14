@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IQ Mindware Coach v1</title>
+  <link rel="stylesheet" href="../../../../branding/brand.css">
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <style>
+    .mindwareNarrow { width: clamp(340px, 34vw, 640px); margin: 0 auto; }
+    @media (max-width: 980px) { .mindwareNarrow { width: 100%; } }
+    .appIcon { width: 28px; height: 28px; object-fit: contain; display: block; margin: 0 auto; }
+    .field { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #E0E0E0; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .optBtn { width: 100%; text-align: left; background: #FFFFFF; border: 1px solid #E0E0E0; color: #111; }
+    .hint { margin: 6px 0 0 0; font-size: 13px; color: #555; }
+    .timer { font-weight: 900; color: #143a73; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+<script type="text/babel" data-presets="env,react">
+  const { useEffect, useMemo, useState } = React;
+  const APP_ICON = "../../../../branding/Trident-G-Icon.svg";
+  const APP_NAME = "IQ Mindware Coach v1";
+
+  const LS = {
+    SHARED: "tg_shared_state_v1",
+    STATE: "tg_mindware_state_v1",
+    EVENTS: "tg_mindware_events_v1",
+    CACHE: "tg_mindware_content_cache_v1"
+  };
+  const FRAME_LABEL = { understand: "Understand", argue: "Argue", decide: "Decide", plan_do: "Plan & Do" };
+  const FRAMES = Object.keys(FRAME_LABEL);
+  const SCRIPTS = ["Y0","Y1","Y2","Y3","Y4","Y5","Y6","Y7","Y8","Y9","Y10"];
+  const PACKS = [
+    "./content/packs/core_v1.json",
+    "./content/packs/reasoning_gym_v1.json",
+    "./content/packs/logic_injections_v1.json"
+  ];
+  const TIMEBOX_TO_ITEMS = { 2: 5, 4: 8, 6: 12, 8: 16 };
+  const REQUIRED = ["id","frame","wrapper","script","polarity","lens_target","kind","is_boundary","near_miss_tag","prompt","options","answer_index","why_right"];
+
+  const parse = (raw, fb) => { try { return JSON.parse(raw); } catch { return fb; } };
+  const asObj = (v) => (v && typeof v === "object" && !Array.isArray(v) ? v : {});
+  const uid = () => "mw_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36);
+  const nowIso = () => new Date().toISOString();
+  const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+  const defaultShared = () => ({
+    schema_version: "tg_shared_state_v1",
+    today: {
+      readiness: "full",
+      data_quality: "ok",
+      capacity: { sessions_completed: 0 },
+      mindware: { sessions_completed: 0, last_session_ts: null, missions_pending: 0 }
+    },
+    last: { mindware_session: { summary: null } }
+  });
+  const defaultState = () => ({
+    schema_version: "tg_mindware_state_v1",
+    defaults: { frame: "understand", script: "Y1", rigour: "standard", timebox_min: 4 },
+    scripts: {},
+    seen_items: {},
+    missions: [],
+    probe: {
+      next_distance: "near",
+      pending_probe: null,
+      pending_recheck: null,
+      last_passed_probe_signature: null,
+      next_microset_tag: null
+    }
+  });
+  const loadShared = () => {
+    const raw = asObj(parse(localStorage.getItem(LS.SHARED), {}));
+    const d = defaultShared();
+    return {
+      ...d,
+      ...raw,
+      today: {
+        ...d.today,
+        ...asObj(raw.today),
+        capacity: { ...d.today.capacity, ...asObj(raw.today?.capacity) },
+        mindware: { ...d.today.mindware, ...asObj(raw.today?.mindware) }
+      },
+      last: { ...d.last, ...asObj(raw.last), mindware_session: { summary: raw.last?.mindware_session?.summary || null } }
+    };
+  };
+  const loadState = () => {
+    const raw = asObj(parse(localStorage.getItem(LS.STATE), {}));
+    const d = defaultState();
+    return {
+      ...d,
+      ...raw,
+      defaults: { ...d.defaults, ...asObj(raw.defaults) },
+      scripts: asObj(raw.scripts),
+      seen_items: asObj(raw.seen_items),
+      missions: Array.isArray(raw.missions) ? raw.missions : [],
+      probe: { ...d.probe, ...asObj(raw.probe) }
+    };
+  };
+
+  function App() {
+    const [screen, setScreen] = useState("home");
+    const [shared, setShared] = useState(() => loadShared());
+    const [mwState, setMwState] = useState(() => loadState());
+    const [events, setEvents] = useState(() => (Array.isArray(parse(localStorage.getItem(LS.EVENTS), [])) ? parse(localStorage.getItem(LS.EVENTS), []) : []));
+    const [packs, setPacks] = useState([]);
+    const [packError, setPackError] = useState("");
+    const [loadingPacks, setLoadingPacks] = useState(true);
+    const [timerSec, setTimerSec] = useState(0);
+    const [plan, setPlan] = useState(() => ({
+      mode: "practice",
+      frame: mwState.defaults.frame,
+      script: mwState.defaults.script,
+      rigour: mwState.defaults.rigour,
+      timebox_min: mwState.defaults.timebox_min
+    }));
+    const [session, setSession] = useState(null);
+    const [missionDraft, setMissionDraft] = useState({ cue: "", success_signal: "", stop_flip_rule: "", value_tag: "" });
+    const [missionOutcome, setMissionOutcome] = useState({ cue_fired: "YES", success_met: "PARTLY", blocker: "", note: "" });
+
+    const pendingMission = useMemo(() => mwState.missions.find((m) => m.status === "pending") || null, [mwState.missions]);
+    const allItems = useMemo(() => packs.flatMap((p) => p.items || []), [packs]);
+
+    useEffect(() => save(LS.STATE, mwState), [mwState]);
+    useEffect(() => save(LS.SHARED, shared), [shared]);
+    useEffect(() => save(LS.EVENTS, events.slice(-800)), [events]);
+
+    useEffect(() => {
+      let cancelled = false;
+      const load = async () => {
+        setLoadingPacks(true);
+        const cache = asObj(parse(localStorage.getItem(LS.CACHE), {}));
+        const loaded = [];
+        const ids = new Set();
+        for (const url of PACKS) {
+          try {
+            const res = await fetch(url, { cache: "no-store" });
+            if (!res.ok) throw new Error(url);
+            const pack = await res.json();
+            if (!pack || !Array.isArray(pack.items)) throw new Error("pack format");
+            for (const item of pack.items) {
+              for (const f of REQUIRED) if (!(f in item)) throw new Error("missing " + f);
+              if (!FRAMES.includes(item.frame)) throw new Error("frame");
+              if (ids.has(item.id)) throw new Error("duplicate " + item.id);
+              ids.add(item.id);
+            }
+            loaded.push(pack);
+            cache[pack.pack_id + "@" + pack.version] = { count: pack.items.length, last_loaded_ts: nowIso() };
+          } catch (e) {
+            console.error(e);
+            setPackError("Content did not load. Check your connection or reload the page.");
+          }
+        }
+        if (!cancelled) {
+          setPacks(loaded);
+          setLoadingPacks(false);
+          save(LS.CACHE, cache);
+        }
+      };
+      load();
+      return () => { cancelled = true; };
+    }, []);
+
+    useEffect(() => {
+      if (!session || session.phase !== "question") return;
+      if (timerSec <= 0) {
+        handleAnswer(-1);
+        return;
+      }
+      const id = setTimeout(() => setTimerSec((v) => v - 1), 1000);
+      return () => clearTimeout(id);
+    }, [timerSec, session]);
+
+    const pushEvent = (type, payload) => setEvents((prev) => [...prev, { ts: nowIso(), app: "mindware", type, payload }].slice(-800));
+    const seenRecently = (id) => {
+      const ts = mwState.seen_items[id];
+      if (!ts) return false;
+      return (Date.now() - new Date(ts).getTime()) < (7 * 24 * 60 * 60 * 1000);
+    };
+    const mapTag = (tag) => {
+      const tags = ["invalid_conditional","no_counterexample","base_rate_ignored","correlation_not_cause","surface_over_structure"];
+      return tags.includes(tag) ? tag : "surface_over_structure";
+    };
+    const recommended = useMemo(() => {
+      const readiness = String(shared.today.readiness || "full").toLowerCase();
+      const noisy = String(shared.today.data_quality || "ok").toLowerCase() !== "ok";
+      if (mwState.probe.pending_recheck && readiness === "full") return { mode: "recheck", note: "Re-check due: replay last passed probe signature." };
+      if (mwState.probe.pending_probe && readiness === "full" && !noisy) return { mode: "probe", note: "Probe due: " + String(mwState.probe.pending_probe.distance || "near").toUpperCase() + " distance." };
+      if (mwState.probe.next_microset_tag) return { mode: "gym", note: "Reasoning Gym suggested for " + mwState.probe.next_microset_tag.replaceAll("_"," ") + "." };
+      return { mode: "practice", note: "Standard practice day." };
+    }, [mwState.probe, shared]);
+
+    const pickItems = ({ mode, signature, microTag }) => {
+      const targetN = TIMEBOX_TO_ITEMS[plan.timebox_min] || 8;
+      let pool = [];
+      if (mode === "gym") {
+        pool = allItems.filter((it) => it.near_miss_tag === microTag);
+      } else if (mode === "recheck" && signature) {
+        pool = allItems.filter((it) => it.frame === signature.frame && it.wrapper === signature.wrapper && it.script === signature.script);
+      } else if (mode === "probe" && signature) {
+        if (signature.distance === "near") {
+          pool = allItems.filter((it) => it.frame === signature.frame && it.wrapper !== signature.wrapper && it.script === signature.script);
+        } else if (signature.distance === "mid") {
+          pool = allItems.filter((it) => it.frame !== signature.frame && (it.polarity === signature.polarity || it.lens_target === signature.lens_target) && it.script === signature.script);
+        } else {
+          pool = allItems.filter((it) => it.frame !== signature.frame && (it.polarity !== signature.polarity || it.lens_target !== signature.lens_target) && it.script === signature.script);
+        }
+      } else {
+        pool = allItems.filter((it) => it.frame === plan.frame && (it.script === plan.script || it.script === "Y0"));
+      }
+      const fresh = pool.filter((it) => !seenRecently(it.id));
+      const src = fresh.length >= targetN ? fresh : pool;
+      let picked = src.slice().sort(() => Math.random() - 0.5).slice(0, targetN);
+      if (picked.length && !picked.some((x) => x.is_boundary)) {
+        const boundary = src.find((x) => x.is_boundary);
+        if (boundary) picked[picked.length - 1] = boundary;
+      }
+      if ((picked.some((x) => x.script === "Y0" || x.script === "Y1" || x.script === "Y10")) && !picked.some((x) => x.kind === "choose_check")) {
+        const check = src.find((x) => x.kind === "choose_check");
+        if (check) picked[Math.max(0, picked.length - 2)] = check;
+      }
+      return picked;
+    };
+
+    const startSession = () => {
+      const mode = recommended.mode === "practice" ? "practice" : recommended.mode;
+      const signature = mode === "recheck" ? mwState.probe.pending_recheck : (mode === "probe" ? mwState.probe.pending_probe : null);
+      const microTag = mode === "gym" ? mwState.probe.next_microset_tag : null;
+      const items = pickItems({ mode, signature, microTag });
+      if (!items.length) {
+        alert("No items available for this mode.");
+        return;
+      }
+      const q = items[0];
+      setSession({
+        id: uid(),
+        started_at: nowIso(),
+        mode,
+        frame: signature?.frame || plan.frame,
+        script: signature?.script || plan.script,
+        rigour: signature?.rigour || plan.rigour,
+        signature,
+        items,
+        index: 0,
+        phase: "question",
+        answers: [],
+        current: q,
+        qStartedAt: Date.now()
+      });
+      setTimerSec(Number(q.time_limit_s || 35));
+      setScreen("session");
+    };
+
+    const handleAnswer = (selectedIndex) => {
+      setSession((prev) => {
+        if (!prev || prev.phase !== "question") return prev;
+        const item = prev.current;
+        const answer = {
+          item_id: item.id,
+          selected_index: selectedIndex,
+          correct: selectedIndex === item.answer_index,
+          rt_ms: Date.now() - prev.qStartedAt,
+          near_miss_tag: item.near_miss_tag,
+          is_boundary: item.is_boundary
+        };
+        setMwState((s) => ({ ...s, seen_items: { ...s.seen_items, [item.id]: nowIso() } }));
+        return { ...prev, answers: [...prev.answers, answer], phase: "feedback", lastCorrect: answer.correct };
+      });
+    };
+
+    const nextQuestion = () => {
+      setSession((prev) => {
+        if (!prev) return prev;
+        const nextIdx = prev.index + 1;
+        if (nextIdx >= prev.items.length) return { ...prev, phase: "complete", completed_at: nowIso() };
+        const q = prev.items[nextIdx];
+        setTimerSec(Number(q.time_limit_s || 35));
+        return { ...prev, index: nextIdx, current: q, phase: "question", qStartedAt: Date.now() };
+      });
+    };
+
+    const finishSession = () => {
+      if (!session || session.phase !== "complete") return;
+      const total = session.answers.length;
+      const correct = session.answers.filter((a) => a.correct).length;
+      const accuracy = total ? correct / total : 0;
+      const boundaryAnswers = session.answers.filter((a) => a.is_boundary);
+      const boundaryPass = boundaryAnswers.length ? boundaryAnswers.every((a) => a.correct) : false;
+      const missCounts = session.answers.reduce((acc, a) => ({ ...acc, [a.near_miss_tag]: (acc[a.near_miss_tag] || 0) + (a.correct ? 0 : 1) }), {});
+      const topMiss = Object.entries(missCounts).sort((a, b) => b[1] - a[1])[0] || null;
+      const summary = {
+        session_id: session.id,
+        mode: session.mode,
+        frame: session.frame,
+        script: session.script,
+        accuracy: Number(accuracy.toFixed(2)),
+        boundary_pass: boundaryPass,
+        top_near_miss: topMiss ? topMiss[0] : null,
+        top_near_miss_count: topMiss ? topMiss[1] : 0,
+        completed_at: nowIso()
+      };
+      pushEvent("practice_completed", summary);
+
+      setMwState((prev) => {
+        const next = { ...prev, scripts: { ...prev.scripts }, probe: { ...prev.probe } };
+        const cur = next.scripts[session.script] || { attempts: 0, accuracy_avg: 0, status: "learning" };
+        const attempts = cur.attempts + 1;
+        const avg = ((cur.accuracy_avg * cur.attempts) + accuracy) / attempts;
+        next.scripts[session.script] = { attempts, accuracy_avg: Number(avg.toFixed(2)), status: avg >= 0.75 ? "stable" : "learning", last_session_ts: summary.completed_at };
+
+        if (session.mode === "probe") {
+          if (accuracy >= 0.7 && boundaryPass) {
+            const dist = session.signature?.distance || "near";
+            const sig = {
+              script: session.script,
+              frame: session.frame,
+              distance: dist,
+              wrapper: session.items[0]?.wrapper,
+              rigour: session.rigour,
+              time_limit_s: session.items[0]?.time_limit_s || 35,
+              polarity: session.items[0]?.polarity,
+              lens_target: session.items[0]?.lens_target,
+              ts: summary.completed_at
+            };
+            next.probe.last_passed_probe_signature = sig;
+            next.probe.pending_recheck = { ...sig, due_after_ts: summary.completed_at };
+            next.probe.pending_probe = null;
+            next.probe.next_distance = dist === "near" ? "mid" : (dist === "mid" ? "far" : "far");
+            pushEvent("probe_passed", { session_id: session.id, distance: dist });
+          } else {
+            next.probe.next_microset_tag = mapTag(topMiss ? topMiss[0] : next.probe.next_microset_tag);
+            pushEvent("probe_failed", { session_id: session.id, distance: session.signature?.distance || "near" });
+          }
+        } else if (session.mode === "recheck") {
+          next.probe.pending_recheck = null;
+          if (accuracy >= 0.7 && boundaryPass) pushEvent("recheck_passed", { session_id: session.id });
+          else {
+            next.probe.next_microset_tag = mapTag(topMiss ? topMiss[0] : next.probe.next_microset_tag);
+            pushEvent("recheck_failed", { session_id: session.id });
+          }
+        } else {
+          if (accuracy >= 0.7 && boundaryPass && !next.probe.pending_probe && !next.probe.pending_recheck) {
+            next.probe.pending_probe = {
+              script: session.script,
+              frame: session.frame,
+              distance: next.probe.next_distance || "near",
+              wrapper: session.items[0]?.wrapper,
+              rigour: session.rigour,
+              time_limit_s: session.items[0]?.time_limit_s || 35,
+              polarity: session.items[0]?.polarity,
+              lens_target: session.items[0]?.lens_target
+            };
+          }
+          if (topMiss && topMiss[1] >= 2) next.probe.next_microset_tag = mapTag(topMiss[0]);
+        }
+        return next;
+      });
+
+      setShared((prev) => ({
+        ...prev,
+        today: {
+          ...prev.today,
+          mindware: {
+            ...prev.today.mindware,
+            sessions_completed: Number(prev.today.mindware?.sessions_completed || 0) + 1,
+            last_session_ts: summary.completed_at,
+            missions_pending: mwState.missions.filter((m) => m.status === "pending").length
+          }
+        },
+        last: { ...prev.last, mindware_session: { summary } }
+      }));
+      setScreen("post");
+    };
+
+    const saveMission = () => {
+      if (!missionDraft.cue.trim() || !missionDraft.success_signal.trim()) {
+        alert("Cue and success signal are required.");
+        return;
+      }
+      const mission = {
+        id: uid(),
+        status: "pending",
+        created_ts: nowIso(),
+        cue: missionDraft.cue.trim(),
+        success_signal: missionDraft.success_signal.trim(),
+        stop_flip_rule: missionDraft.stop_flip_rule.trim() || null,
+        value_tag: missionDraft.value_tag.trim() || null,
+        created_from_session_id: session?.id || null
+      };
+      setMwState((prev) => ({ ...prev, missions: [...prev.missions, mission] }));
+      setShared((prev) => ({
+        ...prev,
+        today: { ...prev.today, mindware: { ...prev.today.mindware, missions_pending: Number(prev.today.mindware?.missions_pending || 0) + 1 } }
+      }));
+      pushEvent("mission_planned", { mission_id: mission.id });
+      setScreen("home");
+    };
+
+    const saveMissionOutcome = () => {
+      if (!pendingMission) { setScreen("home"); return; }
+      setMwState((prev) => ({
+        ...prev,
+        missions: prev.missions.map((m) => m.id === pendingMission.id ? { ...m, status: "done", outcome_ts: nowIso(), outcome: { ...missionOutcome } } : m),
+        probe: { ...prev.probe, next_microset_tag: missionOutcome.blocker === "operator" ? (prev.probe.next_microset_tag || "surface_over_structure") : prev.probe.next_microset_tag }
+      }));
+      setShared((prev) => ({
+        ...prev,
+        today: { ...prev.today, mindware: { ...prev.today.mindware, missions_pending: Math.max(0, Number(prev.today.mindware?.missions_pending || 0) - 1) } }
+      }));
+      pushEvent("mission_completed", { mission_id: pendingMission.id, outcome: missionOutcome.success_met });
+      setMissionOutcome({ cue_fired: "YES", success_met: "PARTLY", blocker: "", note: "" });
+      setScreen("home");
+    };
+
+    const Frame = ({ chip, subtitle, children }) => (
+      <div className="screen">
+        <div className="topbar">
+          <div className="brandleft">
+            <div className="icon"><img className="appIcon" src={APP_ICON} alt="Trident G" /></div>
+            <div>
+              <p className="title">{APP_NAME}</p>
+              <p className="subtitle">{subtitle}</p>
+            </div>
+          </div>
+          <span className="chip">{chip}</span>
+        </div>
+        <main className="content mindwareNarrow">{children}</main>
+      </div>
+    );
+
+    if (loadingPacks) return <Frame chip="Loading" subtitle="Mindware session coordinator"><section className="card"><h1 className="h1">Loading content packs...</h1><p className="p">Preparing scenarios and drills.</p></section></Frame>;
+
+    if (screen === "session" && session) {
+      if (session.phase === "feedback") {
+        const q = session.current;
+        return (
+          <Frame chip={`${session.index + 1}/${session.items.length}`} subtitle="Timed practice">
+            <section className="card"><h1 className="h1">{session.lastCorrect ? "Correct" : "Not this time"}</h1><p className="p">{q.why_right}</p></section>
+            <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
+              <p style={{ margin:0, fontWeight:900 }}>Why the trap fails</p>
+              {(q.why_traps || []).slice(0,2).map((t, i) => <p key={i} className="hint">{t}</p>)}
+              <div className="btnRow"><button className="btn btnPrimary" onClick={nextQuestion}>{session.index + 1 >= session.items.length ? "Finish session" : "Next item"}</button></div>
+            </section>
+          </Frame>
+        );
+      }
+      if (session.phase === "complete") {
+        const total = session.answers.length;
+        const correct = session.answers.filter((a) => a.correct).length;
+        const acc = total ? Math.round((correct / total) * 100) : 0;
+        return (
+          <Frame chip="Complete" subtitle="Session finished">
+            <section className="card"><h1 className="h1">Session complete</h1><p className="p">Accuracy: {acc}% ({correct}/{total})</p></section>
+            <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
+              <p style={{ margin:0, fontWeight:900 }}>Next step</p>
+              <p className="hint">Set a tiny cue-fired mission so this practice shows up in real life.</p>
+              <div className="btnRow"><button className="btn btnPrimary" onClick={finishSession}>Continue</button></div>
+            </section>
+          </Frame>
+        );
+      }
+      const q = session.current;
+      return (
+        <Frame chip={`${session.index + 1}/${session.items.length}`} subtitle={`${FRAME_LABEL[session.frame]} • ${session.script}`}>
+          <section className="card"><h1 className="h1">Timed item</h1><p className="p">{q.prompt}</p><p className="p"><span className="timer">{timerSec}s</span> remaining</p></section>
+          <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
+            <div style={{ display:"grid", gap:"10px" }}>
+              {q.options.map((op, i) => <button key={i} className="btn optBtn" onClick={() => handleAnswer(i)}>{op}</button>)}
+            </div>
+          </section>
+        </Frame>
+      );
+    }
+
+    if (screen === "post") {
+      return (
+        <Frame chip="Mission" subtitle="Bridge to real-world use">
+          <section className="card"><h1 className="h1">Plan your mission</h1><p className="p">Keep it tiny: one cue, one yes/no success signal.</p></section>
+          <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
+            <label style={{ fontWeight:900 }}>Cue</label><input className="field" value={missionDraft.cue} onChange={(e)=>setMissionDraft((p)=>({...p,cue:e.target.value}))} />
+            <label style={{ fontWeight:900, display:"block", marginTop:"10px" }}>Success signal</label><input className="field" value={missionDraft.success_signal} onChange={(e)=>setMissionDraft((p)=>({...p,success_signal:e.target.value}))} />
+            <label style={{ fontWeight:900, display:"block", marginTop:"10px" }}>Stop/flip rule (optional)</label><input className="field" value={missionDraft.stop_flip_rule} onChange={(e)=>setMissionDraft((p)=>({...p,stop_flip_rule:e.target.value}))} />
+            <label style={{ fontWeight:900, display:"block", marginTop:"10px" }}>Value tag (optional)</label><input className="field" value={missionDraft.value_tag} onChange={(e)=>setMissionDraft((p)=>({...p,value_tag:e.target.value}))} />
+            <div className="btnRow"><button className="btn btnPrimary" onClick={saveMission}>Save mission</button><button className="btn btnSecondary" onClick={()=>setScreen("home")}>Skip</button></div>
+          </section>
+        </Frame>
+      );
+    }
+
+    if (screen === "mission_outcome") {
+      return (
+        <Frame chip="Check-in" subtitle="Mission result">
+          <section className="card"><h1 className="h1">Mission check-in</h1><p className="p">{pendingMission ? pendingMission.cue : "No pending mission."}</p></section>
+          {!pendingMission ? <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}><div className="btnRow"><button className="btn btnPrimary" onClick={()=>setScreen("home")}>Back home</button></div></section> : (
+            <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
+              <div className="grid2">
+                <select className="field" value={missionOutcome.cue_fired} onChange={(e)=>setMissionOutcome((p)=>({...p,cue_fired:e.target.value}))}><option value="YES">Cue fired: Yes</option><option value="NO">Cue fired: No</option></select>
+                <select className="field" value={missionOutcome.success_met} onChange={(e)=>setMissionOutcome((p)=>({...p,success_met:e.target.value}))}><option value="YES">Success: Yes</option><option value="PARTLY">Success: Partly</option><option value="NO">Success: No</option></select>
+              </div>
+              <select className="field" style={{ marginTop:"10px" }} value={missionOutcome.blocker} onChange={(e)=>setMissionOutcome((p)=>({...p,blocker:e.target.value}))}>
+                <option value="">Main blocker (optional)</option><option value="state">state</option><option value="capacity">capacity</option><option value="context">context</option><option value="operator">operator</option><option value="unsure">unsure</option>
+              </select>
+              <input className="field" style={{ marginTop:"10px" }} value={missionOutcome.note} onChange={(e)=>setMissionOutcome((p)=>({...p,note:e.target.value}))} placeholder="Optional note" />
+              <div className="btnRow"><button className="btn btnPrimary" onClick={saveMissionOutcome}>Save check-in</button></div>
+            </section>
+          )}
+        </Frame>
+      );
+    }
+
+    return (
+      <Frame chip={`${Number(shared.today.mindware?.sessions_completed || 0)} today`} subtitle="Understand • Argue • Decide • Plan & Do">
+        <section className="card"><h1 className="h1">Mindware loop</h1><p className="p">Pick mode, run timed items, then set a tiny mission.</p></section>
+        <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
+          <p style={{ margin:0, fontWeight:900 }}>Today</p>
+          <p className="hint">Suggested day type from earlier training: <b>{String(shared.today.readiness || "full").toUpperCase()}</b> (change)</p>
+          <p className="hint">Capacity sessions completed today: <b>{Number(shared.today.capacity?.sessions_completed || 0)}</b></p>
+          {(String(shared.today.data_quality || "ok").toLowerCase() !== "ok") ? <p className="hint">Today looks noisy. Consider Light or Reset.</p> : null}
+          <p className="hint">{recommended.note}</p>
+          {pendingMission ? <div className="btnRow"><button className="btn btnSecondary" onClick={() => setScreen("mission_outcome")}>Log mission outcome</button></div> : null}
+        </section>
+        <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
+          <p style={{ margin:"0 0 10px 0", fontWeight:900 }}>Session plan</p>
+          <div className="grid2">
+            <select className="field" value={plan.frame} onChange={(e)=>setPlan((p)=>({...p,frame:e.target.value}))}>{FRAMES.map((f) => <option key={f} value={f}>Frame: {FRAME_LABEL[f]}</option>)}</select>
+            <select className="field" value={plan.script} onChange={(e)=>setPlan((p)=>({...p,script:e.target.value}))}>{SCRIPTS.map((s) => <option key={s} value={s}>Script: {s}</option>)}</select>
+            <select className="field" value={plan.rigour} onChange={(e)=>setPlan((p)=>({...p,rigour:e.target.value}))}><option value="light">Rigour: light</option><option value="standard">Rigour: standard</option><option value="deep">Rigour: deep</option></select>
+            <select className="field" value={plan.timebox_min} onChange={(e)=>setPlan((p)=>({...p,timebox_min:Number(e.target.value)}))}> {[2,4,6,8].map((m)=><option key={m} value={m}>Timebox: {m} min</option>)} </select>
+          </div>
+          <div className="btnRow"><button className="btn btnPrimary" onClick={startSession}>Start session</button></div>
+        </section>
+        <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
+          <details>
+            <summary style={{ cursor:"pointer", fontWeight:900 }}>Content + status</summary>
+            {packError ? <p className="hint" style={{ color:"#9a1b1b" }}>{packError}</p> : null}
+            <p className="hint">Loaded items: <b>{allItems.length}</b></p>
+            <p className="hint">Pending probe: <b>{mwState.probe.pending_probe ? "Yes" : "No"}</b> | Pending re-check: <b>{mwState.probe.pending_recheck ? "Yes" : "No"}</b></p>
+            <p className="hint">Reasoning Gym next: <b>{mwState.probe.next_microset_tag || "none"}</b></p>
+            <p className="hint">Missions pending: <b>{mwState.missions.filter((m)=>m.status==="pending").length}</b></p>
+          </details>
+        </section>
+      </Frame>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
