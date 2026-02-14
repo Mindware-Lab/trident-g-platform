@@ -251,8 +251,8 @@
     const [stateRatings, setStateRatings] = useState({ load: 4, drift: 4, mismatch: 4 });
     const [lastStateReason, setLastStateReason] = useState('');
     const [selectedGame, setSelectedGame] = useState('classic');
-    const [speedPreset, setSpeedPreset] = useState('calm');
-    const [interferencePreset, setInterferencePreset] = useState('low');
+    const [speedPreset, setSpeedPreset] = useState('default');
+    const [interferencePreset, setInterferencePreset] = useState('default');
     const [bridgeObs, setBridgeObs] = useState('');
     const [bridgeMove, setBridgeMove] = useState('');
     const [breathRoutine, setBreathRoutine] = useState('amplify');
@@ -287,6 +287,13 @@
       success_met: 'PARTLY',
       blocker: '',
       value_tag: ''
+    });
+    const [sessionRun, setSessionRun] = useState(null);
+    const [quickCheck, setQuickCheck] = useState({
+      level_played: '',
+      felt_difficulty: 'ok',
+      engagement: 'ok',
+      state_drift: 'clean'
     });
 
     const selectedGameObj = useMemo(
@@ -492,7 +499,10 @@
       saveJson(STORAGE.MISSIONS_V11, missionsV11);
     }, [missionsV11]);
 
-    const planLabel = (SESSION_LABELS[recommendationV11.recommended_session_type] || 'Build') + ' session';
+    const firstSession = (programV11.program_session_index || 0) === 0;
+    const planLabel = firstSession
+      ? 'No session-style suggestion yet (first session)'
+      : (SESSION_LABELS[recommendationV11.recommended_session_type] || 'Build') + ' session';
 
     const parseRecoveryBlocks = () => {
       const parsed = recoveryBlocksCsv
@@ -513,6 +523,133 @@
         ? current.filter((x) => x !== blockIndex)
         : [...current, blockIndex].sort((a, b) => a - b)
     );
+
+    const createInitialPlan = () => ({
+      level_mode: baselineMode === 'FIXED' ? 'hold' : 'auto',
+      hold_at: baselineMode === 'FIXED' ? Number(fixedN) : null,
+      speed: speedPreset === 'fast' ? 'fast' : 'default',
+      distraction: interferencePreset === 'high' ? 'high' : 'default',
+      pulse_used: 'none'
+    });
+
+    // Stable = not hard AND not lost-thread (if drift is collected).
+    const isStableBlock = (b) => b.felt_difficulty !== 'hard' && (!b.state_drift || b.state_drift !== 'lost_thread');
+
+    const startGuidedSession = () => {
+      const nowIso = new Date().toISOString();
+      const firstSession = (programV11.program_session_index || 0) === 0;
+      const initialPlan = createInitialPlan();
+      const selectedStyle = firstSession ? sessionType : (sessionType || recommendationV11.recommended_session_type);
+      setSessionRun({
+        id: uid(),
+        started_at: nowIso,
+        game: GAME_ENUM[selectedGame] || 'CLASSIC',
+        session_style: selectedStyle,
+        recommended_session_type: firstSession ? null : recommendationV11.recommended_session_type,
+        baseline_plan: initialPlan,
+        next_block_plan: initialPlan,
+        next_block_index: 1,
+        blocks: [],
+        coach_note: firstSession ? 'First session baseline: start simple and learn your rhythm.' : 'Start with baseline settings.',
+        ended_early: null
+      });
+      setQuickCheck({ level_played: '', felt_difficulty: 'ok', engagement: 'ok', state_drift: 'clean' });
+      setScreen('during_session');
+    };
+
+    const computeNextPlansFromBlock = (currentRun, blockLog) => {
+      const blocks = [...currentRun.blocks, blockLog];
+      const recentStable = blocks.slice(-2).filter(isStableBlock).length === 2;
+      let nextBaseline = { ...currentRun.baseline_plan };
+      let nextPlan = { ...nextBaseline, pulse_used: 'none' };
+      let note = 'Hold baseline.';
+
+      if (blockLog.felt_difficulty === 'hard' || blockLog.state_drift === 'lost_thread') {
+        if (nextBaseline.level_mode === 'hold' && Number(nextBaseline.hold_at || 1) > 1) {
+          nextBaseline.hold_at = Number(nextBaseline.hold_at) - 1;
+          note = 'Downshift: hold level reduced by 1.';
+        } else if (nextBaseline.speed === 'fast') {
+          nextBaseline.speed = 'default';
+          note = 'Downshift: speed returned to default.';
+        } else if (nextBaseline.distraction === 'high') {
+          nextBaseline.distraction = 'default';
+          note = 'Downshift: distraction returned to default.';
+        } else {
+          note = 'Hold steady on easy settings.';
+        }
+        nextPlan = { ...nextBaseline, pulse_used: 'none' };
+        return { nextBaseline, nextPlan, note };
+      }
+
+      if (blockLog.felt_difficulty === 'easy' && blockLog.engagement === 'flat') {
+        if (nextBaseline.speed !== 'fast') {
+          nextBaseline.speed = 'fast';
+          note = 'Upshift: speed increased to re-engage.';
+        } else if (nextBaseline.distraction !== 'high') {
+          nextBaseline.distraction = 'high';
+          note = 'Upshift: distraction increased to re-engage.';
+        } else if (recentStable && nextBaseline.level_mode === 'hold') {
+          nextBaseline.hold_at = Number(nextBaseline.hold_at || 1) + 1;
+          note = 'Upshift: hold level increased by 1.';
+        }
+        nextPlan = { ...nextBaseline, pulse_used: 'none' };
+        return { nextBaseline, nextPlan, note };
+      }
+
+      if (recentStable && blockLog.felt_difficulty === 'ok') {
+        const pulseTypeNext = blockLog.engagement === 'flat' ? 'speed' : 'distraction';
+        nextPlan = {
+          ...nextBaseline,
+          pulse_used: pulseTypeNext,
+          speed: pulseTypeNext === 'speed' ? 'fast' : nextBaseline.speed,
+          distraction: pulseTypeNext === 'distraction' ? 'high' : nextBaseline.distraction
+        };
+        note = pulseTypeNext === 'speed'
+          ? 'Pulse eligible: one fast-speed block next.'
+          : 'Pulse eligible: one high-distraction block next.';
+        return { nextBaseline, nextPlan, note };
+      }
+
+      return { nextBaseline, nextPlan, note: 'Hold baseline and continue.' };
+    };
+
+    const openBlockQuickCheck = () => {
+      setQuickCheck({ level_played: '', felt_difficulty: 'ok', engagement: 'ok', state_drift: 'clean' });
+      setScreen('quick_check');
+    };
+
+    const submitBlockQuickCheck = () => {
+      if (!sessionRun) return;
+      const lvl = Number(quickCheck.level_played);
+      if (!Number.isFinite(lvl) || lvl < 0) {
+        alert('Enter the level played for this block.');
+        return;
+      }
+      const blockLog = {
+        block_index: sessionRun.next_block_index,
+        level_played: lvl,
+        level_mode: sessionRun.next_block_plan.level_mode,
+        level_target: sessionRun.next_block_plan.level_mode === 'hold' ? sessionRun.next_block_plan.hold_at : null,
+        speed: sessionRun.next_block_plan.speed,
+        distraction: sessionRun.next_block_plan.distraction,
+        pulse_used: sessionRun.next_block_plan.pulse_used || 'none',
+        felt_difficulty: quickCheck.felt_difficulty,
+        engagement: quickCheck.engagement,
+        state_drift: quickCheck.state_drift,
+        ts_end: new Date().toISOString()
+      };
+      const { nextBaseline, nextPlan, note } = computeNextPlansFromBlock(sessionRun, blockLog);
+      const nextIndex = sessionRun.next_block_index + 1;
+      setSessionRun((prev) => ({
+        ...prev,
+        baseline_plan: nextBaseline,
+        next_block_plan: nextPlan,
+        next_block_index: nextIndex,
+        blocks: [...prev.blocks, blockLog],
+        coach_note: note
+      }));
+      setScreen(nextIndex > 10 ? 'session_summary' : 'during_session');
+    };
 
     const launchExternalGame = () => {
       const handoff = {
@@ -579,6 +716,109 @@
         )
       );
       setMissionOutcome({ cue_fired: 'YES', success_met: 'PARTLY', blocker: '', value_tag: '' });
+      setScreen('home');
+    };
+
+    const saveGuidedSession = () => {
+      if (!sessionRun) return;
+      if (!bridgeObs.trim() || !bridgeMove.trim()) {
+        alert('Bridge fields are required.');
+        return;
+      }
+      const nTrace = sessionRun.blocks.map((b) => Number(b.level_played));
+      const nowIso = new Date().toISOString();
+      const derived = nTrace.length >= 2
+        ? computeDerivedFromNTrace(
+            nTrace.length >= 10 ? nTrace.slice(0, 10) : [...nTrace, ...Array.from({ length: 10 - nTrace.length }, () => nTrace[nTrace.length - 1] || 0)],
+            { block_index: Number(pulseBlockIndex), recovery_blocks: parseRecoveryBlocks() }
+          )
+        : null;
+      const dataQuality = sessionRun.blocks.some((b) => b.state_drift === 'lost_thread' && b.felt_difficulty === 'hard')
+        ? 'UNCONFIRMED_PLAN'
+        : 'OK';
+
+      const trainingEntry = {
+        id: uid(),
+        ts: nowIso,
+        entry_type: 'TRAINING',
+        is_training: true,
+        program_day: (programV11.program_session_index || 0) + 1,
+        recommended_session_type: sessionRun.recommended_session_type,
+        session_type: sessionRun.session_style,
+        recommendation_reason: recommendationV11.recommendation_reason,
+        game: sessionRun.game,
+        output_gate_mode: selectedGame === 'logic_gated' ? outputGateMode : null,
+        zone: {
+          load: stateRatings.load,
+          drift: stateRatings.drift,
+          mismatch: stateRatings.mismatch,
+          recommendation: zoneMode === 'reset' ? 'RESET' : (zoneMode === 'light' ? 'LIGHT' : 'FULL')
+        },
+        plan: {
+          baseline: {
+            speed: sessionRun.baseline_plan.speed.toUpperCase(),
+            interference: sessionRun.baseline_plan.distraction.toUpperCase(),
+            mode: sessionRun.baseline_plan.level_mode === 'hold' ? 'FIXED' : 'ADAPTIVE',
+            fixed_n: sessionRun.baseline_plan.level_mode === 'hold' ? Number(sessionRun.baseline_plan.hold_at) : null
+          },
+          pulse: null,
+          end_hold_block: 10
+        },
+        log: {
+          n_trace: nTrace,
+          no_response_blocks: [],
+          fixed_n_blocks: sessionRun.blocks.filter((b) => b.level_mode === 'hold').map((b) => b.block_index),
+          block_done: sessionRun.blocks.map(() => true),
+          plan_confirmed: true,
+          temptation_pressure: null
+        },
+        block_logs: sessionRun.blocks,
+        derived,
+        data_quality: dataQuality,
+        probe: {
+          probe_radius: recommendationV11.probe_radius,
+          probe_target_game: recommendationV11.probe_target_game,
+          target_session_id: null,
+          swap_cost: null,
+          pass: null
+        },
+        recheck: {
+          of_session_id: recommendationV11.recheck_target_session_id || null,
+          pass: null
+        },
+        bridge: {
+          what_changed: bridgeObs.trim(),
+          how_ill_use_it: bridgeMove.trim()
+        }
+      };
+
+      setSessionsV11((prev) => [...prev, trainingEntry]);
+      setProgramV11((prev) => ({
+        ...prev,
+        program_day_completed: Math.min(PROGRAM_TARGET, (prev.program_day_completed || 0) + 1),
+        program_session_index: Math.min(PROGRAM_TARGET, (prev.program_session_index || 0) + 1),
+        calendar_entry_count: (prev.calendar_entry_count || 0) + 1,
+        consecutive_rest_count: 0
+      }));
+
+      if (missionCue.trim() && missionSignal.trim()) {
+        setMissionsV11((prev) => [...prev, {
+          id: uid(),
+          created_ts: nowIso,
+          created_from_session_id: trainingEntry.id,
+          cue: missionCue.trim(),
+          success_signal: missionSignal.trim(),
+          value_tag: missionValueTag || null,
+          outcome: null
+        }]);
+      }
+
+      setSessionRun(null);
+      setBridgeObs('');
+      setBridgeMove('');
+      setMissionCue('');
+      setMissionSignal('');
+      setMissionValueTag('');
       setScreen('home');
     };
 
@@ -754,6 +994,165 @@
       setTemptationPressure('');
     };
 
+    if (screen === 'during_session' && sessionRun) {
+      const p = sessionRun.next_block_plan;
+      return (
+        <div className="screen">
+          <div className="topbar">
+            <div className="brandleft">
+              <div className="icon"><span className="iconText">T</span></div>
+              <div>
+                <p className="title">Capacity Training Coach</p>
+                <p className="subtitle">During session coach</p>
+              </div>
+            </div>
+            <span className="chip">Block {Math.min(10, sessionRun.next_block_index)}/10</span>
+          </div>
+          <main className="content">
+            <section className="card">
+              <h1 className="h1">Next Block</h1>
+              <p className="p">Current block: {Math.min(10, sessionRun.next_block_index)} of 10</p>
+              <p className="p" style={{ marginTop: '8px' }}>{sessionRun.coach_note}</p>
+            </section>
+            <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+              <p style={{ margin: 0, fontWeight: 900 }}>Next block settings</p>
+              <p style={{ marginTop: '8px' }}>
+                Level mode: <b>{p.level_mode === 'hold' ? 'Hold level' : 'Auto'}</b>
+                {p.level_mode === 'hold' ? <> at <b>{p.hold_at}</b></> : null}
+              </p>
+              <p style={{ marginTop: '4px' }}>Speed: <b>{p.speed === 'fast' ? 'Fast' : 'Default'}</b></p>
+              <p style={{ marginTop: '4px' }}>Distraction: <b>{p.distraction === 'high' ? 'High' : 'Default'}</b></p>
+              <p style={{ marginTop: '4px' }}>Pulse this block: <b>{p.pulse_used === 'none' ? 'None' : p.pulse_used}</b></p>
+              <div style={{ marginTop: '10px', padding: '10px', borderRadius: '12px', background: '#F7FBFF', border: '1px solid #D9EAFB' }}>
+                <p style={{ margin: 0, fontWeight: 900, fontSize: '13px', color: '#143a73' }}>Rule checks</p>
+                <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: '#333333' }}>
+                  Stable = not too hard and not lost-thread.
+                </p>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#333333' }}>
+                  Pulse only after two stable blocks in a row.
+                </p>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#333333' }}>
+                  Hold level is used on stabilise/reset days and stays on until you change it (coach can still move hold level up/down).
+                </p>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#333333' }}>
+                  If a block felt easy and flat, the coach increases speed/distraction before level.
+                </p>
+              </div>
+              <p style={{ marginTop: '10px', fontSize: '13px', color: '#555555' }}>
+                Bottom row fields in summary are markers for where hold-level, faster speed, or higher distraction were applied.
+              </p>
+              <div className="btnRow">
+                <button className="btn btnPrimary" onClick={openBlockQuickCheck}>Log block result</button>
+                <button className="btn btnSecondary" onClick={launchExternalGame}>Open external game</button>
+              </div>
+            </section>
+          </main>
+        </div>
+      );
+    }
+
+    if (screen === 'quick_check' && sessionRun) {
+      return (
+        <div className="screen">
+          <div className="topbar">
+            <div className="brandleft">
+              <div className="icon"><span className="iconText">T</span></div>
+              <div>
+                <p className="title">Capacity Training Coach</p>
+                <p className="subtitle">Quick check</p>
+              </div>
+            </div>
+            <span className="chip">Block {Math.min(10, sessionRun.next_block_index)}/10</span>
+          </div>
+          <main className="content">
+            <section className="card">
+              <h1 className="h1">After This Block</h1>
+              <p className="p">Fast check: level, difficulty, engagement, and focus steadiness.</p>
+            </section>
+            <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+              <label style={{ display: 'block', fontWeight: 900 }}>Level you played</label>
+              <input type="number" min="0" max="12" value={quickCheck.level_played} onChange={(e) => setQuickCheck((q) => ({ ...q, level_played: e.target.value }))} style={{ width: '100%', marginTop: '6px', padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }} />
+              <div className="btnRow" style={{ marginTop: '10px' }}>
+                <select value={quickCheck.felt_difficulty} onChange={(e) => setQuickCheck((q) => ({ ...q, felt_difficulty: e.target.value }))} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                  <option value="easy">How did it feel? Easy</option>
+                  <option value="ok">How did it feel? About right</option>
+                  <option value="hard">How did it feel? Too hard</option>
+                </select>
+                <select value={quickCheck.engagement} onChange={(e) => setQuickCheck((q) => ({ ...q, engagement: e.target.value }))} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                  <option value="flat">Engagement: Flat</option>
+                  <option value="ok">Engagement: OK</option>
+                  <option value="locked_in">Engagement: Locked in</option>
+                </select>
+              </div>
+              <div className="btnRow">
+                <select value={quickCheck.state_drift} onChange={(e) => setQuickCheck((q) => ({ ...q, state_drift: e.target.value }))} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                  <option value="clean">Focus steadiness: Clean</option>
+                  <option value="slips">Focus steadiness: A few slips</option>
+                  <option value="lost_thread">Focus steadiness: Lost the thread</option>
+                </select>
+              </div>
+              <div className="btnRow">
+                <button className="btn btnPrimary" onClick={submitBlockQuickCheck}>Set next block</button>
+                <button className="btn btnSecondary" onClick={() => setScreen('during_session')}>Back</button>
+              </div>
+            </section>
+          </main>
+        </div>
+      );
+    }
+
+    if (screen === 'session_summary' && sessionRun) {
+      const stableBlocks = sessionRun.blocks.filter(isStableBlock).length;
+      const pulseAttempts = sessionRun.blocks.filter((b) => b.pulse_used !== 'none').length;
+      const recoveryMoments = sessionRun.blocks.reduce((acc, b, idx, arr) => {
+        if (idx === 0) return acc;
+        const prevUnstable = !isStableBlock(arr[idx - 1]);
+        return prevUnstable && isStableBlock(b) ? acc + 1 : acc;
+      }, 0);
+      const badge = stableBlocks >= 7 ? 'Stable session' : (recoveryMoments >= 1 ? 'Stable and recovered' : 'Needs consolidation');
+      return (
+        <div className="screen">
+          <div className="topbar">
+            <div className="brandleft">
+              <div className="icon"><span className="iconText">T</span></div>
+              <div>
+                <p className="title">Capacity Training Coach</p>
+                <p className="subtitle">Post-session review</p>
+              </div>
+            </div>
+            <span className="chip">Review</span>
+          </div>
+          <main className="content">
+            <section className="card">
+              <h1 className="h1">{badge}</h1>
+              <p className="p">Stability streak: {stableBlocks}/10 stable blocks</p>
+              <p className="p" style={{ marginTop: '8px' }}>Recovery moments: {recoveryMoments} | Pulses attempted: {pulseAttempts}</p>
+            </section>
+            <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+              <p style={{ margin: 0, fontWeight: 900 }}>Tomorrow start</p>
+              <p style={{ marginTop: '8px' }}>
+                Level mode: <b>{sessionRun.baseline_plan.level_mode === 'hold' ? `Hold ${sessionRun.baseline_plan.hold_at}` : 'Auto'}</b> | Speed: <b>{sessionRun.baseline_plan.speed}</b> | Distraction: <b>{sessionRun.baseline_plan.distraction}</b>
+              </p>
+            </section>
+            <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+              <label style={{ display: 'block', fontWeight: 900, marginBottom: '8px' }}>In the game it looked like...</label>
+              <input type="text" value={bridgeObs} onChange={(e) => setBridgeObs(e.target.value)} placeholder="One concise observation" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0', marginBottom: '12px' }} />
+              <label style={{ display: 'block', fontWeight: 900, marginBottom: '8px' }}>In the next task I will use it by...</label>
+              <input type="text" value={bridgeMove} onChange={(e) => setBridgeMove(e.target.value)} placeholder="One concrete transfer move" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0' }} />
+              <p style={{ margin: '14px 0 8px 0', fontWeight: 900 }}>Set a tiny cue-fired mission (recommended, optional)</p>
+              <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#333333' }}>Keep it tiny: one cue, one yes/no success signal.</p>
+              <input type="text" value={missionCue} onChange={(e) => setMissionCue(e.target.value)} placeholder="Cue (when/where this should fire)" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0', marginBottom: '10px' }} />
+              <input type="text" value={missionSignal} onChange={(e) => setMissionSignal(e.target.value)} placeholder="Success signal (binary)" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0', marginBottom: '10px' }} />
+              <div className="btnRow">
+                <button className="btn btnPrimary" onClick={saveGuidedSession}>Save session</button>
+                <button className="btn btnSecondary" onClick={() => setScreen('during_session')}>Back</button>
+              </div>
+            </section>
+          </main>
+        </div>
+      );
+    }
+
     if (screen === 'results') {
       const bridgeReady = bridgeObs.trim() && bridgeMove.trim();
       const parsed = getNTraceOrNull();
@@ -792,7 +1191,9 @@
           <main className="content">
             <section className="card">
               <h1 className="h1">Post-Session Review</h1>
-              <p className="p">Played: {selectedGameObj.label} | Session style: {SESSION_LABELS[sessionType] || 'Build'}</p>
+              <p className="p">
+                Played: {selectedGameObj.label} | Session style: {firstSession ? 'First session (no style suggested)' : (SESSION_LABELS[sessionType] || 'Build')}
+              </p>
               <p className="p" style={{ marginTop: '8px' }}>Outcome badge: {badgePreview}</p>
             </section>
 
@@ -803,8 +1204,8 @@
                   {SESSION_TYPES.map((t) => <option key={t} value={t}>{SESSION_LABELS[t] || t}</option>)}
                 </select>
                 <select value={baselineMode} onChange={(e) => setBaselineMode(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                  <option value="ADAPTIVE">Auto level change</option>
-                  <option value="FIXED">Fixed level</option>
+                  <option value="ADAPTIVE">Level mode: Auto</option>
+                  <option value="FIXED">Level mode: Hold level</option>
                 </select>
                 {baselineMode === 'FIXED' ? (
                   <input type="number" min="1" max="9" value={fixedN} onChange={(e) => setFixedN(Number(e.target.value || 1))} style={{ width: '88px', padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }} />
@@ -812,19 +1213,17 @@
               </div>
               <div className="btnRow" style={{ marginTop: '10px' }}>
                 <select value={speedPreset} onChange={(e) => setSpeedPreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                  <option value="slow">Speed: Slow</option>
-                  <option value="normal">Speed: Normal</option>
+                  <option value="default">Speed: Default</option>
                   <option value="fast">Speed: Fast</option>
                 </select>
                 <select value={interferencePreset} onChange={(e) => setInterferencePreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                  <option value="low">Distraction level: Low</option>
-                  <option value="normal">Distraction level: Normal</option>
+                  <option value="default">Distraction level: Default</option>
                   <option value="high">Distraction level: High</option>
                 </select>
                 <select value={pulseType} onChange={(e) => setPulseType(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                  <option value="">Challenge block: None</option>
-                  <option value="SPEED">Challenge block: Faster speed</option>
-                  <option value="INTERFERENCE">Challenge block: More distraction</option>
+                  <option value="">Pulse block: None</option>
+                  <option value="SPEED">Pulse block: Faster speed</option>
+                  <option value="INTERFERENCE">Pulse block: Higher distraction</option>
                 </select>
               </div>
               <div className="btnRow" style={{ marginTop: '10px' }}>
@@ -1055,9 +1454,15 @@
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
             <p style={{ margin: 0, fontWeight: 900 }}>Today's suggestion</p>
-            <p style={{ marginTop: '8px' }}>
-              Session style: <b>{SESSION_LABELS[recommendationV11.recommended_session_type] || 'Build'}</b> | Game: <b>{GAME_LABEL[GAME_ID_FROM_ENUM[recommendationV11.recommended_game]] || recommendationV11.recommended_game}</b>
-            </p>
+            {firstSession ? (
+              <p style={{ marginTop: '8px' }}>
+                First session: no session style is suggested yet. Start simple with <b>Classic n-back</b>.
+              </p>
+            ) : (
+              <p style={{ marginTop: '8px' }}>
+                Session style: <b>{SESSION_LABELS[recommendationV11.recommended_session_type] || 'Build'}</b> | Game: <b>{GAME_LABEL[GAME_ID_FROM_ENUM[recommendationV11.recommended_game]] || recommendationV11.recommended_game}</b>
+              </p>
+            )}
             <p style={{ marginTop: '4px', fontSize: '13px', color: '#555555' }}>{recommendationV11.recommendation_reason}</p>
             {recommendationV11.probe_radius ? (
               <p style={{ marginTop: '4px', fontSize: '13px', color: '#555555' }}>
@@ -1251,13 +1656,11 @@
             <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Session settings</p>
             <div className="btnRow">
               <select value={speedPreset} onChange={(e) => setSpeedPreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                <option value="slow">Speed: Slow</option>
-                <option value="normal">Speed: Normal</option>
+                <option value="default">Speed: Default</option>
                 <option value="fast">Speed: Fast</option>
               </select>
               <select value={interferencePreset} onChange={(e) => setInterferencePreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                <option value="low">Distraction level: Low</option>
-                <option value="normal">Distraction level: Normal</option>
+                <option value="default">Distraction level: Default</option>
                 <option value="high">Distraction level: High</option>
               </select>
             </div>
@@ -1288,10 +1691,10 @@
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
             <p style={{ margin: 0, fontWeight: 900 }}>Today's plan: {planLabel}</p>
-            <p style={{ marginTop: '8px' }}>Open i3 Mindware, run {selectedGameObj.label}, then return for wrap-up.</p>
+            <p style={{ marginTop: '8px' }}>Use the coach between each block. It tells you the next block settings based on your quick check.</p>
             <div className="btnRow">
-              <button className="btn btnPrimary" onClick={launchExternalGame}>Launch external app flow</button>
-              <button className="btn btnSecondary" onClick={() => setScreen('results')}>I already ran it</button>
+              <button className="btn btnPrimary" onClick={startGuidedSession}>Start guided session</button>
+              <button className="btn btnSecondary" onClick={() => setScreen('results')}>Use post-session entry instead</button>
             </div>
           </section>
         </main>
