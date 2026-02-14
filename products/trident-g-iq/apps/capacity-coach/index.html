@@ -84,6 +84,19 @@
   ];
   const GAME_LABEL = GAMES.reduce((acc, g) => ({ ...acc, [g.id]: g.label }), {});
   const VALUE_TAGS = ['risk', 'opportunity', 'urgency', 'social_cost'];
+  const SESSION_LABELS = {
+    TUNE: 'Build',
+    EXPLORE: 'Explore',
+    TIGHTEN: 'Stabilise',
+    PROBE: 'Switch test',
+    RECHECK: 'Later check',
+    RESET: 'Reset day'
+  };
+  const SWITCH_SIZE_LABELS = {
+    NEAR: 'Small switch',
+    MID: 'Medium switch',
+    FAR: 'Big switch'
+  };
 
   const BREATH_ROUTINES = {
     upshift: {
@@ -252,7 +265,7 @@
     const [missionOutcome, setMissionOutcome] = useState({
       cue_fired: 'YES',
       success_met: 'PARTLY',
-      blocker: 'unsure',
+      blocker: '',
       value_tag: ''
     });
 
@@ -287,6 +300,14 @@
         stability_streak: stabilityStreak
       };
     }, [evidenceSessions, missionsV11]);
+    const notCountedNote = useMemo(() => {
+      const last = [...trainingSessionsV11].reverse().find(Boolean);
+      if (!last) return '';
+      if (last.data_quality === 'UNCONFIRMED_PLAN') return 'Not counted: you did not follow today\'s plan settings.';
+      if (last.data_quality === 'COMPROMISED') return 'Not counted: some blocks had no responses.';
+      if (last.session_type === 'RECHECK' && !last.recheck?.of_session_id) return 'Not counted: this check was not matched to a previous session.';
+      return '';
+    }, [trainingSessionsV11]);
     const recommendationV11 = useMemo(() => {
       const zoneRecommendation = zoneMode === 'reset' ? 'RESET' : (zoneMode === 'light' ? 'LIGHT' : 'FULL');
       const lane = programV11.anchor_lane || 'CLASSIC';
@@ -303,21 +324,21 @@
 
       if (zoneRecommendation === 'RESET') {
         session_type = 'RESET';
-        reason = 'Zone gate recommends reset conditions.';
+        reason = 'Your state is overloaded today, so easier settings are recommended.';
       } else if (zoneRecommendation === 'LIGHT') {
         session_type = 'TIGHTEN';
-        reason = 'Zone gate recommends lighter stabilisation.';
+        reason = 'A lighter stabilising session is recommended today.';
       }
       if (tf.churn && zoneRecommendation !== 'RESET') {
         session_type = 'TIGHTEN';
-        reason = 'Recent churn signal. Stabilise before pushing.';
+        reason = 'Recent sessions were up and down, so stabilise first.';
       }
       if ((tf.breakthrough || row.probe_slot) && zoneRecommendation === 'FULL' && dataQualityAllowsProbe) {
         session_type = 'PROBE';
         probe_radius = nextProbeRadius(programV11.last_probe_radius_passed);
         probe_target_game = probeTargetFor(lane, probe_radius);
         game = probe_target_game;
-        reason = tf.breakthrough ? 'Breakthrough cue detected; run state-gated probe.' : 'Planned probe opportunity.';
+        reason = tf.breakthrough ? 'Recent progress suggests trying a small switch test.' : 'Today is a planned switch-test day.';
       }
       let recheck_target_session_id = null;
       if (row.recheck_slot && zoneRecommendation === 'FULL' && dataQualityAllowsProbe) {
@@ -326,13 +347,13 @@
           session_type = 'RECHECK';
           game = lastCleanTune.game;
           recheck_target_session_id = lastCleanTune.id;
-          reason = 'Planned delay re-check opportunity.';
+          reason = 'Today is a planned later-check day.';
         }
       }
       if (tf.plateau && zoneRecommendation === 'FULL' && stateRatings.drift >= 6) {
         session_type = 'EXPLORE';
         game = lane === 'CLASSIC' ? 'EMOTIONAL' : 'CLASSIC';
-        reason = 'Plateau + drift signal; controlled explore day.';
+        reason = 'You look flat or stuck, so a controlled explore day is suggested.';
       }
       return {
         recommended_session_type: session_type,
@@ -414,7 +435,7 @@
       saveJson(STORAGE.MISSIONS_V11, missionsV11);
     }, [missionsV11]);
 
-    const planLabel = recommendationV11.recommended_session_type + ' session';
+    const planLabel = (SESSION_LABELS[recommendationV11.recommended_session_type] || 'Build') + ' session';
 
     const parseRecoveryBlocks = () => {
       const parsed = recoveryBlocksCsv
@@ -490,7 +511,7 @@
       const payload = {
         cue_fired: missionOutcome.cue_fired,
         success_met: missionOutcome.success_met,
-        blocker: missionOutcome.blocker,
+        blocker: missionOutcome.blocker || 'unsure',
         value_tag: missionOutcome.value_tag || null
       };
       setMissionsV11((prev) =>
@@ -500,7 +521,7 @@
             : m
         )
       );
-      setMissionOutcome({ cue_fired: 'YES', success_met: 'PARTLY', blocker: 'unsure', value_tag: '' });
+      setMissionOutcome({ cue_fired: 'YES', success_met: 'PARTLY', blocker: '', value_tag: '' });
       setScreen('home');
     };
 
@@ -515,7 +536,7 @@
         return;
       }
       if (sessionType === 'PROBE' && !pulseType) {
-        alert('PROBE sessions require one boundary probe pulse.');
+        alert('Switch-test sessions need one challenge pulse block.');
         return;
       }
 
@@ -689,6 +710,15 @@
           : (sessionType === 'RECHECK'
             ? 'delay hold test'
             : (sessionType === 'RESET' ? 'protected learning day' : 'stable + recovered')));
+      const steadyLabel = derivedPreview
+        ? (derivedPreview.volatility <= 4 ? 'Steady' : 'Up and down today')
+        : '';
+      const recoveryLabel = derivedPreview
+        ? (derivedPreview.recovery_delta >= -0.5 ? 'Recovered quickly' : 'Recovery was slow')
+        : '';
+      const finishLabel = derivedPreview
+        ? (derivedPreview.end_hold_delta >= -1 ? 'Finished strong' : 'Faded by the end')
+        : '';
       return (
         <div className="screen">
           <div className="topbar">
@@ -705,7 +735,7 @@
           <main className="content">
             <section className="card">
               <h1 className="h1">Post-Session Review</h1>
-              <p className="p">Played: {selectedGameObj.label} | Session type: {sessionType}</p>
+              <p className="p">Played: {selectedGameObj.label} | Session style: {SESSION_LABELS[sessionType] || 'Build'}</p>
               <p className="p" style={{ marginTop: '8px' }}>Outcome badge: {badgePreview}</p>
             </section>
 
@@ -801,9 +831,15 @@
                 </select>
               </div>
               {derivedPreview ? (
-                <p style={{ margin: '10px 0 0 0', fontSize: '13px', color: '#333333' }}>
-                  mean_n {derivedPreview.mean_n} | volatility {derivedPreview.volatility} | end_hold_delta {derivedPreview.end_hold_delta} | recovery_delta {derivedPreview.recovery_delta}
-                </p>
+                <div style={{ marginTop: '10px', fontSize: '13px', color: '#333333' }}>
+                  <p style={{ margin: 0 }}>{steadyLabel} | {recoveryLabel} | {finishLabel}</p>
+                  <details style={{ marginTop: '6px' }}>
+                    <summary>Details</summary>
+                    <p style={{ margin: '6px 0 0 0' }}>
+                      mean_n {derivedPreview.mean_n} | volatility {derivedPreview.volatility} | end_hold_delta {derivedPreview.end_hold_delta} | recovery_delta {derivedPreview.recovery_delta}
+                    </p>
+                  </details>
+                </div>
               ) : null}
             </section>
 
@@ -827,6 +863,7 @@
               />
 
               <p style={{ margin: '14px 0 8px 0', fontWeight: 900 }}>Set a tiny cue-fired mission (recommended, optional)</p>
+              <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#333333' }}>Keep it tiny: one cue, one yes/no success signal.</p>
               <input
                 type="text"
                 value={missionCue}
@@ -872,38 +909,47 @@
               <div className="icon"><span className="iconText">T</span></div>
               <div>
                 <p className="title">Capacity Training Coach</p>
-                <p className="subtitle">Mission outcome check</p>
+                <p className="subtitle">Mission check-in</p>
               </div>
             </div>
             <span className="chip">{progress.totalSessionsCompleted}/{PROGRAM_TARGET}</span>
           </div>
           <main className="content">
             <section className="card">
-              <h1 className="h1">Pending Mission</h1>
-              <p className="p">Log cue-fired outcome before the next training session.</p>
+              <h1 className="h1">Mission Check-In</h1>
+              <p className="p">This helps the app suggest the right kind of session next time.</p>
             </section>
+            {!pendingMission ? (
+              <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+                <p style={{ margin: '0 0 10px 0' }}>You don't have a mission to check in on yet.</p>
+                <div className="btnRow">
+                  <button className="btn btnPrimary" onClick={() => setScreen('home')}>Back to Home</button>
+                </div>
+              </section>
+            ) : (
             <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-              <p style={{ margin: '0 0 6px 0', fontWeight: 900 }}>Cue</p>
+              <p style={{ margin: '0 0 6px 0', fontWeight: 900 }}>Your cue</p>
               <p style={{ margin: '0 0 10px 0' }}>{pendingMission?.cue || '-'}</p>
-              <p style={{ margin: '0 0 6px 0', fontWeight: 900 }}>Success signal</p>
+              <p style={{ margin: '0 0 6px 0', fontWeight: 900 }}>Your success signal</p>
               <p style={{ margin: '0 0 10px 0' }}>{pendingMission?.success_signal || '-'}</p>
               <div className="btnRow" style={{ marginTop: 0 }}>
                 <select value={missionOutcome.cue_fired} onChange={(e) => setMissionOutcome((p) => ({ ...p, cue_fired: e.target.value }))} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                  <option value="YES">Cue fired: Yes</option>
-                  <option value="NO">Cue fired: No</option>
+                  <option value="YES">Did your cue happen? Yes</option>
+                  <option value="NO">Did your cue happen? No</option>
                 </select>
                 <select value={missionOutcome.success_met} onChange={(e) => setMissionOutcome((p) => ({ ...p, success_met: e.target.value }))} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                  <option value="YES">Success: Yes</option>
-                  <option value="PARTLY">Success: Partly</option>
-                  <option value="NO">Success: No</option>
+                  <option value="YES">Did you complete it? Yes</option>
+                  <option value="PARTLY">Did you complete it? Partly</option>
+                  <option value="NO">Did you complete it? No</option>
                 </select>
               </div>
               <div className="btnRow">
                 <select value={missionOutcome.blocker} onChange={(e) => setMissionOutcome((p) => ({ ...p, blocker: e.target.value }))} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                  <option value="state">Blocker: state</option>
-                  <option value="capacity">Blocker: capacity</option>
-                  <option value="context">Blocker: context</option>
-                  <option value="unsure">Blocker: unsure</option>
+                  <option value="">What mainly got in the way? (Optional)</option>
+                  <option value="state">State (hot/scattered/flat)</option>
+                  <option value="capacity">Training (could not hold the rule)</option>
+                  <option value="context">Time and context</option>
+                  <option value="unsure">Not sure</option>
                 </select>
                 <select value={missionOutcome.value_tag} onChange={(e) => setMissionOutcome((p) => ({ ...p, value_tag: e.target.value }))} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
                   <option value="">Value tag: none</option>
@@ -913,10 +959,11 @@
                 </select>
               </div>
               <div className="btnRow">
-                <button className="btn btnPrimary" onClick={saveMissionOutcome}>Save mission outcome</button>
+                <button className="btn btnPrimary" onClick={saveMissionOutcome}>Save check-in</button>
                 <button className="btn btnSecondary" onClick={() => setScreen('home')}>Back</button>
               </div>
             </section>
+            )}
           </main>
         </div>
       );
@@ -950,19 +997,19 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: 0, fontWeight: 900 }}>Flow recommendation</p>
+            <p style={{ margin: 0, fontWeight: 900 }}>Today's suggestion</p>
             <p style={{ marginTop: '8px' }}>
-              Session type: <b>{recommendationV11.recommended_session_type}</b> | Game: <b>{GAME_LABEL[GAME_ID_FROM_ENUM[recommendationV11.recommended_game]] || recommendationV11.recommended_game}</b>
+              Session style: <b>{SESSION_LABELS[recommendationV11.recommended_session_type] || 'Build'}</b> | Game: <b>{GAME_LABEL[GAME_ID_FROM_ENUM[recommendationV11.recommended_game]] || recommendationV11.recommended_game}</b>
             </p>
             <p style={{ marginTop: '4px', fontSize: '13px', color: '#555555' }}>{recommendationV11.recommendation_reason}</p>
             {recommendationV11.probe_radius ? (
               <p style={{ marginTop: '4px', fontSize: '13px', color: '#555555' }}>
-                Probe radius: {recommendationV11.probe_radius} | Target: {recommendationV11.probe_target_game}
+                Switch test: {SWITCH_SIZE_LABELS[recommendationV11.probe_radius] || recommendationV11.probe_radius} | Target game: {recommendationV11.probe_target_game}
               </p>
             ) : null}
             {pendingMission ? (
               <p style={{ marginTop: '8px', fontSize: '13px', color: '#2764B7', fontWeight: 700 }}>
-                Pending mission outcome should be logged before next session.
+                You have a mission to check in on before your next session.
               </p>
             ) : null}
             <div className="btnRow">
@@ -975,7 +1022,7 @@
                   style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }}
                   onClick={() => setScreen('mission_outcome')}
                 >
-                  Log mission outcome
+                  Mission check-in
                 </button>
               ) : null}
             </div>
@@ -999,16 +1046,19 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: 0, fontWeight: 900 }}>Proof counters (evidence-eligible only)</p>
+            <p style={{ margin: 0, fontWeight: 900 }}>Progress checks</p>
             <p style={{ marginTop: '8px' }}>
-              Probe passes: Near <b>{proofCounters.near ? 'Yes' : 'No'}</b> | Mid <b>{proofCounters.mid ? 'Yes' : 'No'}</b> | Far <b>{proofCounters.far ? 'Yes' : 'No'}</b>
+              Switch tests passed: Small <b>{proofCounters.near ? 'Yes' : 'No'}</b> | Medium <b>{proofCounters.mid ? 'Yes' : 'No'}</b> | Big <b>{proofCounters.far ? 'Yes' : 'No'}</b>
             </p>
             <p style={{ marginTop: '6px' }}>
-              Delay holds: <b>{proofCounters.delay_holds}</b> | Mission cue-fired successes: <b>{proofCounters.mission_successes}</b>
+              Still holds later: <b>{proofCounters.delay_holds}</b> | Real-life cue wins: <b>{proofCounters.mission_successes}</b>
             </p>
             <p style={{ marginTop: '6px' }}>
-              Stability streak: <b>{proofCounters.stability_streak}</b>
+              Steady sessions in a row: <b>{proofCounters.stability_streak}</b>
             </p>
+            {notCountedNote ? (
+              <p style={{ marginTop: '8px', fontSize: '13px', color: '#555555' }}>{notCountedNote}</p>
+            ) : null}
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
