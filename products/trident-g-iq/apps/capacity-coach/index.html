@@ -8,12 +8,31 @@
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <style>
+    .capacityNarrow {
+      width: clamp(340px, 34vw, 620px);
+      margin: 0 auto;
+    }
+    @media (max-width: 980px) {
+      .capacityNarrow {
+        width: 100%;
+      }
+    }
+    .appIcon {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
 
 <script type="text/babel" data-presets="env,react">
   const { useEffect, useMemo, useRef, useState } = React;
+  const APP_ICON = '../../../../branding/Trident-G-Icon.svg';
 
   const STORAGE = {
     PROGRESS: 'iqmw.progress.v1',
@@ -1214,7 +1233,7 @@
         <div className="screen">
           <div className="topbar">
             <div className="brandleft">
-              <div className="icon"><span className="iconText">T</span></div>
+              <div className="icon"><img className="appIcon" src={APP_ICON} alt="Trident G" /></div>
               <div>
                 <p className="title">Capacity Training Coach</p>
                 <p className="subtitle">During session coach</p>
@@ -1222,7 +1241,7 @@
             </div>
             <span className="chip">Block {Math.min(10, sessionRun.next_block_index)}/10</span>
           </div>
-          <main className="content">
+          <main className="content capacityNarrow">
             <section className="card">
               <h1 className="h1">Up next: Block {currentBlock} of 10</h1>
               <p className="p">{sessionRun.coach_note}</p>
@@ -1261,7 +1280,7 @@
         <div className="screen">
           <div className="topbar">
             <div className="brandleft">
-              <div className="icon"><span className="iconText">T</span></div>
+              <div className="icon"><img className="appIcon" src={APP_ICON} alt="Trident G" /></div>
               <div>
                 <p className="title">Capacity Training Coach</p>
                 <p className="subtitle">Quick check</p>
@@ -1269,7 +1288,7 @@
             </div>
             <span className="chip">Block {Math.min(10, sessionRun.next_block_index)}/10</span>
           </div>
-          <main className="content">
+          <main className="content capacityNarrow">
             <section className="card">
               <h1 className="h1">After This Block</h1>
               <p className="p">Fast check: level, difficulty, switched-on feeling, and focus track.</p>
@@ -1319,7 +1338,7 @@
         <div className="screen">
           <div className="topbar">
             <div className="brandleft">
-              <div className="icon"><span className="iconText">T</span></div>
+              <div className="icon"><img className="appIcon" src={APP_ICON} alt="Trident G" /></div>
               <div>
                 <p className="title">Capacity Training Coach</p>
                 <p className="subtitle">Post-session review</p>
@@ -1327,7 +1346,7 @@
             </div>
             <span className="chip">Review</span>
           </div>
-          <main className="content">
+          <main className="content capacityNarrow">
             <section className="card">
               <h1 className="h1">{badge}</h1>
               <p className="p">Stability streak: {stableBlocks}/10 stable blocks</p>
@@ -1384,7 +1403,7 @@
         <div className="screen">
           <div className="topbar">
             <div className="brandleft">
-              <div className="icon"><span className="iconText">T</span></div>
+              <div className="icon"><img className="appIcon" src={APP_ICON} alt="Trident G" /></div>
               <div>
                 <p className="title">Capacity Training Coach</p>
                 <p className="subtitle">Session review</p>
@@ -1393,7 +1412,7 @@
             <span className="chip">{progress.totalSessionsCompleted}/{PROGRAM_TARGET}</span>
           </div>
 
-          <main className="content">
+          <main className="content capacityNarrow">
             <section className="card">
               <h1 className="h1">Post-Session Review</h1>
               <p className="p">
@@ -1567,7 +1586,7 @@
         <div className="screen">
           <div className="topbar">
             <div className="brandleft">
-              <div className="icon"><span className="iconText">T</span></div>
+              <div className="icon"><img className="appIcon" src={APP_ICON} alt="Trident G" /></div>
               <div>
                 <p className="title">Capacity Training Coach</p>
                 <p className="subtitle">Mission check-in</p>
@@ -1575,7 +1594,7 @@
             </div>
             <span className="chip">{progress.totalSessionsCompleted}/{PROGRAM_TARGET}</span>
           </div>
-          <main className="content">
+          <main className="content capacityNarrow">
             <section className="card">
               <h1 className="h1">Mission Check-In</h1>
               <p className="p">This helps the app suggest the right kind of session next time.</p>
@@ -1634,7 +1653,7 @@
       <div className="screen">
         <div className="topbar">
           <div className="brandleft">
-            <div className="icon"><span className="iconText">T</span></div>
+            <div className="icon"><img className="appIcon" src={APP_ICON} alt="Trident G" /></div>
             <div>
               <p className="title">Capacity Training Coach</p>
               <p className="subtitle">i3 Mindware session coordinator</p>
@@ -1643,7 +1662,7 @@
           <span className="chip">{progress.totalSessionsCompleted}/{PROGRAM_TARGET}</span>
         </div>
 
-        <main className="content">
+        <main className="content capacityNarrow">
           <section className="card">
             <h1 className="h1">Training Program</h1>
             <p className="p">24 sessions total. No anchor wheel. Choose any of the 4 n-back variants each session.</p>
@@ -1917,3 +1936,4 @@
 </script>
 </body>
 </html>
+
