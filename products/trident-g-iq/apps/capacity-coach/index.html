@@ -562,7 +562,7 @@
       const recentStable = blocks.slice(-2).filter(isStableBlock).length === 2;
       let nextBaseline = { ...currentRun.baseline_plan };
       let nextPlan = { ...nextBaseline, pulse_used: 'none' };
-      let note = 'Hold baseline.';
+      let note = 'Recommendation: Keep your baseline settings for this block.';
 
       if (blockLog.felt_difficulty === 'hard' || blockLog.state_drift === 'lost_thread') {
         if (nextBaseline.level_mode === 'hold' && Number(nextBaseline.hold_at || 1) > 1) {
@@ -610,7 +610,7 @@
         return { nextBaseline, nextPlan, note };
       }
 
-      return { nextBaseline, nextPlan, note: 'Hold baseline and continue.' };
+      return { nextBaseline, nextPlan, note: 'Recommendation: Keep your baseline settings for this block.' };
     };
 
     const openBlockQuickCheck = () => {
@@ -996,6 +996,19 @@
 
     if (screen === 'during_session' && sessionRun) {
       const p = sessionRun.next_block_plan;
+      const currentBlock = Math.min(10, sessionRun.next_block_index);
+      const whyText = (() => {
+        if (sessionRun.coach_note.includes('Downshift')) {
+          return 'Last block looked overloaded, so the coach reduced pressure for the next block.';
+        }
+        if (sessionRun.coach_note.includes('Pulse eligible')) {
+          return 'You were steady for two blocks, so a one-block challenge test is suggested.';
+        }
+        if (sessionRun.coach_note.includes('Upshift')) {
+          return 'The block looked easy and flat, so the coach increased challenge slightly to re-engage.';
+        }
+        return 'You were steady last block, so we are holding the same settings.';
+      })();
       return (
         <div className="screen">
           <div className="topbar">
@@ -1010,39 +1023,30 @@
           </div>
           <main className="content">
             <section className="card">
-              <h1 className="h1">Next Block</h1>
-              <p className="p">Current block: {Math.min(10, sessionRun.next_block_index)} of 10</p>
-              <p className="p" style={{ marginTop: '8px' }}>{sessionRun.coach_note}</p>
+              <h1 className="h1">Up next: Block {currentBlock} of 10</h1>
+              <p className="p">{sessionRun.coach_note}</p>
             </section>
             <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-              <p style={{ margin: 0, fontWeight: 900 }}>Next block settings</p>
+              <p style={{ margin: 0, fontWeight: 900 }}>Settings to use</p>
               <p style={{ marginTop: '8px' }}>
-                Level mode: <b>{p.level_mode === 'hold' ? 'Hold level' : 'Auto'}</b>
+                Level: <b>{p.level_mode === 'hold' ? 'Hold level' : 'Auto (let the game choose)'}</b>
                 {p.level_mode === 'hold' ? <> at <b>{p.hold_at}</b></> : null}
               </p>
-              <p style={{ marginTop: '4px' }}>Speed: <b>{p.speed === 'fast' ? 'Fast' : 'Default'}</b></p>
-              <p style={{ marginTop: '4px' }}>Distraction: <b>{p.distraction === 'high' ? 'High' : 'Default'}</b></p>
-              <p style={{ marginTop: '4px' }}>Pulse this block: <b>{p.pulse_used === 'none' ? 'None' : p.pulse_used}</b></p>
-              <div style={{ marginTop: '10px', padding: '10px', borderRadius: '12px', background: '#F7FBFF', border: '1px solid #D9EAFB' }}>
-                <p style={{ margin: 0, fontWeight: 900, fontSize: '13px', color: '#143a73' }}>Rule checks</p>
-                <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: '#333333' }}>
-                  Stable = not too hard and not lost-thread.
-                </p>
-                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#333333' }}>
-                  Pulse only after two stable blocks in a row.
-                </p>
-                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#333333' }}>
-                  Hold level is used on stabilise/reset days and stays on until you change it (coach can still move hold level up/down).
-                </p>
-                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#333333' }}>
-                  If a block felt easy and flat, the coach increases speed/distraction before level.
-                </p>
-              </div>
-              <p style={{ marginTop: '10px', fontSize: '13px', color: '#555555' }}>
-                Bottom row fields in summary are markers for where hold-level, faster speed, or higher distraction were applied.
+              <p style={{ marginTop: '4px' }}>Speed: <b>{p.speed === 'fast' ? 'Fast' : 'Baseline'}</b></p>
+              <p style={{ marginTop: '4px' }}>Distraction: <b>{p.distraction === 'high' ? 'High' : 'Baseline'}</b></p>
+              <p style={{ marginTop: '4px' }}>Challenge test (pulse): <b>{p.pulse_used === 'none' ? 'Off' : p.pulse_used === 'speed' ? 'Speed' : 'Distraction'}</b></p>
+              <p style={{ marginTop: '10px', fontSize: '13px', color: '#333333' }}>
+                Do this now: Play Block {currentBlock} in the desktop app, then tap Log Block {currentBlock}.
               </p>
+              <details style={{ marginTop: '10px' }}>
+                <summary style={{ cursor: 'pointer', fontWeight: 900 }}>Why this recommendation?</summary>
+                <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>{whyText}</p>
+                <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#333333' }}>
+                  Pulses only happen after two steady blocks in a row.
+                </p>
+              </details>
               <div className="btnRow">
-                <button className="btn btnPrimary" onClick={openBlockQuickCheck}>Log block result</button>
+                <button className="btn btnPrimary" onClick={openBlockQuickCheck}>Log Block {currentBlock}</button>
                 <button className="btn btnSecondary" onClick={launchExternalGame}>Open external game</button>
               </div>
             </section>
@@ -1067,7 +1071,7 @@
           <main className="content">
             <section className="card">
               <h1 className="h1">After This Block</h1>
-              <p className="p">Fast check: level, difficulty, engagement, and focus steadiness.</p>
+              <p className="p">Fast check: level, difficulty, switched-on feeling, and focus track.</p>
             </section>
             <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
               <label style={{ display: 'block', fontWeight: 900 }}>Level you played</label>
@@ -1079,16 +1083,16 @@
                   <option value="hard">How did it feel? Too hard</option>
                 </select>
                 <select value={quickCheck.engagement} onChange={(e) => setQuickCheck((q) => ({ ...q, engagement: e.target.value }))} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                  <option value="flat">Engagement: Flat</option>
-                  <option value="ok">Engagement: OK</option>
-                  <option value="locked_in">Engagement: Locked in</option>
+                  <option value="flat">How switched on did you feel? Flat</option>
+                  <option value="ok">How switched on did you feel? OK</option>
+                  <option value="locked_in">How switched on did you feel? Fully switched on</option>
                 </select>
               </div>
               <div className="btnRow">
                 <select value={quickCheck.state_drift} onChange={(e) => setQuickCheck((q) => ({ ...q, state_drift: e.target.value }))} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                  <option value="clean">Focus steadiness: Clean</option>
-                  <option value="slips">Focus steadiness: A few slips</option>
-                  <option value="lost_thread">Focus steadiness: Lost the thread</option>
+                  <option value="clean">Did your focus stay on track? Steady</option>
+                  <option value="slips">Did your focus stay on track? A few slips</option>
+                  <option value="lost_thread">Did your focus stay on track? Lost the thread</option>
                 </select>
               </div>
               <div className="btnRow">
