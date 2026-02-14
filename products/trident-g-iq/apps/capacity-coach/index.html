@@ -83,6 +83,7 @@
     { id: 'logic_gated', label: 'Logic-gated n-back', note: 'Rule discipline and clean updating.' }
   ];
   const GAME_LABEL = GAMES.reduce((acc, g) => ({ ...acc, [g.id]: g.label }), {});
+  const VALUE_TAGS = ['risk', 'opportunity', 'urgency', 'social_cost'];
 
   const BREATH_ROUTINES = {
     upshift: {
@@ -245,6 +246,15 @@
     const [fixedNBlocks, setFixedNBlocks] = useState([]);
     const [planConfirmed, setPlanConfirmed] = useState(false);
     const [temptationPressure, setTemptationPressure] = useState('');
+    const [missionCue, setMissionCue] = useState('');
+    const [missionSignal, setMissionSignal] = useState('');
+    const [missionValueTag, setMissionValueTag] = useState('');
+    const [missionOutcome, setMissionOutcome] = useState({
+      cue_fired: 'YES',
+      success_met: 'PARTLY',
+      blocker: 'unsure',
+      value_tag: ''
+    });
 
     const selectedGameObj = useMemo(
       () => GAMES.find((g) => g.id === selectedGame) || GAMES[0],
@@ -254,6 +264,29 @@
     const trainingSessionsV11 = useMemo(() => getTrainingSessions(sessionsV11), [sessionsV11]);
     const sessionsRemaining = Math.max(0, PROGRAM_TARGET - (programV11.program_session_index || 0));
     const pendingMission = useMemo(() => missionsV11.find((m) => !m.outcome) || null, [missionsV11]);
+    const evidenceSessions = useMemo(() => trainingSessionsV11.filter((s) => isEvidenceEligible(s)), [trainingSessionsV11]);
+    const proofCounters = useMemo(() => {
+      const probes = evidenceSessions.filter((s) => s.session_type === 'PROBE' && s.probe?.pass === true);
+      const rechecks = evidenceSessions.filter((s) => s.session_type === 'RECHECK' && s.recheck?.pass === true).length;
+      const stabilityStreak = (() => {
+        let streak = 0;
+        for (let i = evidenceSessions.length - 1; i >= 0; i -= 1) {
+          const d = evidenceSessions[i].derived;
+          if (d && d.drop_count <= 2 && d.end_hold_delta >= -1) streak += 1;
+          else break;
+        }
+        return streak;
+      })();
+      const missionSuccesses = missionsV11.filter((m) => m.outcome && m.outcome.cue_fired === 'YES' && m.outcome.success_met === 'YES').length;
+      return {
+        near: probes.some((s) => s.probe?.probe_radius === 'NEAR'),
+        mid: probes.some((s) => s.probe?.probe_radius === 'MID'),
+        far: probes.some((s) => s.probe?.probe_radius === 'FAR'),
+        delay_holds: rechecks,
+        mission_successes: missionSuccesses,
+        stability_streak: stabilityStreak
+      };
+    }, [evidenceSessions, missionsV11]);
     const recommendationV11 = useMemo(() => {
       const zoneRecommendation = zoneMode === 'reset' ? 'RESET' : (zoneMode === 'light' ? 'LIGHT' : 'FULL');
       const lane = programV11.anchor_lane || 'CLASSIC';
@@ -449,6 +482,28 @@
       setRestReason('');
     };
 
+    const saveMissionOutcome = () => {
+      if (!pendingMission) {
+        setScreen('home');
+        return;
+      }
+      const payload = {
+        cue_fired: missionOutcome.cue_fired,
+        success_met: missionOutcome.success_met,
+        blocker: missionOutcome.blocker,
+        value_tag: missionOutcome.value_tag || null
+      };
+      setMissionsV11((prev) =>
+        prev.map((m) =>
+          m.id === pendingMission.id
+            ? { ...m, outcome: payload, outcome_ts: new Date().toISOString() }
+            : m
+        )
+      );
+      setMissionOutcome({ cue_fired: 'YES', success_met: 'PARTLY', blocker: 'unsure', value_tag: '' });
+      setScreen('home');
+    };
+
     const completeSession = () => {
       const nTrace = getNTraceOrNull();
       if (!nTrace) {
@@ -594,28 +649,25 @@
         last_probe_radius_passed: probePass === true ? recommendationV11.probe_radius : prev.last_probe_radius_passed
       }));
 
-      const wantsMission = window.confirm('Set a tiny cue-fired mission now? (Recommended)');
-      if (wantsMission) {
-        const cue = window.prompt('Mission cue (when/where it should fire):', '') || '';
-        const successSignal = window.prompt('Mission success signal (binary):', '') || '';
-        const valueTag = (window.prompt('Optional value tag (risk/opportunity/urgency/social_cost):', '') || '').trim();
-        if (cue.trim() && successSignal.trim()) {
-          const missionObj = {
-            id: uid(),
-            created_ts: nowIso,
-            created_from_session_id: trainingEntry.id,
-            cue: cue.trim(),
-            success_signal: successSignal.trim(),
-            value_tag: valueTag || null,
-            outcome: null
-          };
-          setMissionsV11((prev) => [...prev, missionObj]);
-        }
+      if (missionCue.trim() && missionSignal.trim()) {
+        const missionObj = {
+          id: uid(),
+          created_ts: nowIso,
+          created_from_session_id: trainingEntry.id,
+          cue: missionCue.trim(),
+          success_signal: missionSignal.trim(),
+          value_tag: missionValueTag || null,
+          outcome: null
+        };
+        setMissionsV11((prev) => [...prev, missionObj]);
       }
 
       setScreen('home');
       setBridgeObs('');
       setBridgeMove('');
+      setMissionCue('');
+      setMissionSignal('');
+      setMissionValueTag('');
       setNTraceInput(Array.from({ length: 10 }, () => ''));
       setBlockDone(Array.from({ length: 10 }, () => false));
       setNoResponseBlocks([]);
@@ -774,10 +826,94 @@
                 style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0' }}
               />
 
+              <p style={{ margin: '14px 0 8px 0', fontWeight: 900 }}>Set a tiny cue-fired mission (recommended, optional)</p>
+              <input
+                type="text"
+                value={missionCue}
+                onChange={(e) => setMissionCue(e.target.value)}
+                placeholder="Cue (when/where this should fire)"
+                style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0', marginBottom: '10px' }}
+              />
+              <input
+                type="text"
+                value={missionSignal}
+                onChange={(e) => setMissionSignal(e.target.value)}
+                placeholder="Success signal (binary)"
+                style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0', marginBottom: '10px' }}
+              />
+              <select
+                value={missionValueTag}
+                onChange={(e) => setMissionValueTag(e.target.value)}
+                style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0', marginBottom: '8px' }}
+              >
+                <option value="">Value tag (optional)</option>
+                {VALUE_TAGS.map((v) => (
+                  <option key={v} value={v}>{v}</option>
+                ))}
+              </select>
+
               <div className="btnRow">
                 <button className="btn btnPrimary" onClick={completeSession} disabled={!bridgeReady}>
                   Complete session ({Math.min(PROGRAM_TARGET, progress.totalSessionsCompleted + 1)}/{PROGRAM_TARGET})
                 </button>
+                <button className="btn btnSecondary" onClick={() => setScreen('home')}>Back</button>
+              </div>
+            </section>
+          </main>
+        </div>
+      );
+    }
+
+    if (screen === 'mission_outcome') {
+      return (
+        <div className="screen">
+          <div className="topbar">
+            <div className="brandleft">
+              <div className="icon"><span className="iconText">T</span></div>
+              <div>
+                <p className="title">Capacity Training Coach</p>
+                <p className="subtitle">Mission outcome check</p>
+              </div>
+            </div>
+            <span className="chip">{progress.totalSessionsCompleted}/{PROGRAM_TARGET}</span>
+          </div>
+          <main className="content">
+            <section className="card">
+              <h1 className="h1">Pending Mission</h1>
+              <p className="p">Log cue-fired outcome before the next training session.</p>
+            </section>
+            <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+              <p style={{ margin: '0 0 6px 0', fontWeight: 900 }}>Cue</p>
+              <p style={{ margin: '0 0 10px 0' }}>{pendingMission?.cue || '-'}</p>
+              <p style={{ margin: '0 0 6px 0', fontWeight: 900 }}>Success signal</p>
+              <p style={{ margin: '0 0 10px 0' }}>{pendingMission?.success_signal || '-'}</p>
+              <div className="btnRow" style={{ marginTop: 0 }}>
+                <select value={missionOutcome.cue_fired} onChange={(e) => setMissionOutcome((p) => ({ ...p, cue_fired: e.target.value }))} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                  <option value="YES">Cue fired: Yes</option>
+                  <option value="NO">Cue fired: No</option>
+                </select>
+                <select value={missionOutcome.success_met} onChange={(e) => setMissionOutcome((p) => ({ ...p, success_met: e.target.value }))} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                  <option value="YES">Success: Yes</option>
+                  <option value="PARTLY">Success: Partly</option>
+                  <option value="NO">Success: No</option>
+                </select>
+              </div>
+              <div className="btnRow">
+                <select value={missionOutcome.blocker} onChange={(e) => setMissionOutcome((p) => ({ ...p, blocker: e.target.value }))} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                  <option value="state">Blocker: state</option>
+                  <option value="capacity">Blocker: capacity</option>
+                  <option value="context">Blocker: context</option>
+                  <option value="unsure">Blocker: unsure</option>
+                </select>
+                <select value={missionOutcome.value_tag} onChange={(e) => setMissionOutcome((p) => ({ ...p, value_tag: e.target.value }))} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                  <option value="">Value tag: none</option>
+                  {VALUE_TAGS.map((v) => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="btnRow">
+                <button className="btn btnPrimary" onClick={saveMissionOutcome}>Save mission outcome</button>
                 <button className="btn btnSecondary" onClick={() => setScreen('home')}>Back</button>
               </div>
             </section>
@@ -837,24 +973,7 @@
                 <button
                   className="btn"
                   style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }}
-                  onClick={() => {
-                    const cueFired = window.prompt('Mission outcome: cue fired? (YES/NO)', 'YES');
-                    const successMet = window.prompt('Mission outcome: success met? (YES/PARTLY/NO)', 'PARTLY');
-                    const blocker = window.prompt('Main blocker? (state/capacity/context/unsure)', 'unsure');
-                    const payload = {
-                      cue_fired: (cueFired || 'YES').toUpperCase(),
-                      success_met: (successMet || 'PARTLY').toUpperCase(),
-                      blocker: (blocker || 'unsure').toLowerCase(),
-                      value_tag: null
-                    };
-                    setMissionsV11((prev) =>
-                      prev.map((m) =>
-                        m.id === pendingMission.id
-                          ? { ...m, outcome: payload, outcome_ts: new Date().toISOString() }
-                          : m
-                      )
-                    );
-                  }}
+                  onClick={() => setScreen('mission_outcome')}
                 >
                   Log mission outcome
                 </button>
@@ -877,6 +996,19 @@
                 />
               </div>
             ) : null}
+          </section>
+
+          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+            <p style={{ margin: 0, fontWeight: 900 }}>Proof counters (evidence-eligible only)</p>
+            <p style={{ marginTop: '8px' }}>
+              Probe passes: Near <b>{proofCounters.near ? 'Yes' : 'No'}</b> | Mid <b>{proofCounters.mid ? 'Yes' : 'No'}</b> | Far <b>{proofCounters.far ? 'Yes' : 'No'}</b>
+            </p>
+            <p style={{ marginTop: '6px' }}>
+              Delay holds: <b>{proofCounters.delay_holds}</b> | Mission cue-fired successes: <b>{proofCounters.mission_successes}</b>
+            </p>
+            <p style={{ marginTop: '6px' }}>
+              Stability streak: <b>{proofCounters.stability_streak}</b>
+            </p>
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
