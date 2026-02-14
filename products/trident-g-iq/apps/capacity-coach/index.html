@@ -82,6 +82,7 @@
     { id: 'non_categorical', label: 'Non-categorical n-back', note: 'Train broad runtime control.' },
     { id: 'logic_gated', label: 'Logic-gated n-back', note: 'Rule discipline and clean updating.' }
   ];
+  const GAME_LABEL = GAMES.reduce((acc, g) => ({ ...acc, [g.id]: g.label }), {});
 
   const BREATH_ROUTINES = {
     upshift: {
@@ -224,6 +225,20 @@
     const [breathRemaining, setBreathRemaining] = useState(0);
     const [restConfirm, setRestConfirm] = useState(false);
     const [restReason, setRestReason] = useState('');
+    const [sessionType, setSessionType] = useState('TUNE');
+    const [baselineMode, setBaselineMode] = useState('ADAPTIVE');
+    const [fixedN, setFixedN] = useState(2);
+    const [pulseType, setPulseType] = useState('');
+    const [pulseBlockIndex, setPulseBlockIndex] = useState(4);
+    const [recoveryBlocksCsv, setRecoveryBlocksCsv] = useState('5,6');
+    const [endHoldBlock, setEndHoldBlock] = useState(10);
+    const [outputGateMode, setOutputGateMode] = useState('OR');
+    const [nTraceInput, setNTraceInput] = useState(Array.from({ length: 10 }, () => ''));
+    const [blockDone, setBlockDone] = useState(Array.from({ length: 10 }, () => false));
+    const [noResponseBlocks, setNoResponseBlocks] = useState([]);
+    const [fixedNBlocks, setFixedNBlocks] = useState([]);
+    const [planConfirmed, setPlanConfirmed] = useState(false);
+    const [temptationPressure, setTemptationPressure] = useState('');
 
     const selectedGameObj = useMemo(
       () => GAMES.find((g) => g.id === selectedGame) || GAMES[0],
@@ -323,6 +338,10 @@
     }, [recommendationV11.recommended_game]);
 
     useEffect(() => {
+      setSessionType(recommendationV11.recommended_session_type);
+    }, [recommendationV11.recommended_session_type]);
+
+    useEffect(() => {
       saveJson(STORAGE.SETTINGS_V11, settingsV11);
     }, [settingsV11]);
 
@@ -348,6 +367,26 @@
     }, [missionsV11]);
 
     const planLabel = recommendationV11.recommended_session_type + ' session';
+
+    const parseRecoveryBlocks = () => {
+      const parsed = recoveryBlocksCsv
+        .split(',')
+        .map((x) => Number(x.trim()))
+        .filter((x) => Number.isFinite(x) && x >= 1 && x <= 10);
+      return parsed.length ? parsed : [5, 6];
+    };
+
+    const getNTraceOrNull = () => {
+      const parsed = nTraceInput.map((x) => Number(x));
+      if (parsed.some((x) => !Number.isFinite(x) || x < 0)) return null;
+      return parsed;
+    };
+
+    const toggleBlockTag = (current, blockIndex) => (
+      current.includes(blockIndex)
+        ? current.filter((x) => x !== blockIndex)
+        : [...current, blockIndex].sort((a, b) => a - b)
+    );
 
     const launchExternalGame = () => {
       const handoff = {
@@ -396,6 +435,20 @@
     };
 
     const completeSession = () => {
+      const nTrace = getNTraceOrNull();
+      if (!nTrace) {
+        alert('Enter all 10 n-trace values first.');
+        return;
+      }
+      if (!bridgeObs.trim() || !bridgeMove.trim()) {
+        alert('Bridge fields are required.');
+        return;
+      }
+      if (sessionType === 'PROBE' && !pulseType) {
+        alert('PROBE sessions require one boundary probe pulse.');
+        return;
+      }
+
       const nextCompleted = Math.min(PROGRAM_TARGET, (progress.totalSessionsCompleted || 0) + 1);
       const nowIso = new Date().toISOString();
       const next = {
@@ -409,24 +462,41 @@
       saveProgress(next);
       setProgress(next);
 
+      const recoveryBlocks = parseRecoveryBlocks();
+      const derived = computeDerivedFromNTrace(nTrace, { block_index: Number(pulseBlockIndex), recovery_blocks: recoveryBlocks });
+      const dataQuality = noResponseBlocks.length ? 'COMPROMISED' : 'OK';
+      const anchorLane = programV11.anchor_lane || 'CLASSIC';
+      const lastCleanAnchor = [...trainingSessionsV11].reverse().find((s) => s.game === anchorLane && s.derived && s.data_quality !== 'COMPROMISED');
+      const swapCost = lastCleanAnchor ? Number((derived.baseline_mean - lastCleanAnchor.derived.baseline_mean).toFixed(2)) : null;
+      const probePass = sessionType === 'PROBE' && dataQuality !== 'COMPROMISED' && swapCost !== null
+        ? swapCost >= settingsV11.thresholds.probe_swap_cost_min
+          && derived.recovery_delta >= settingsV11.thresholds.probe_recovery_delta_min
+          && derived.end_hold_delta >= settingsV11.thresholds.probe_end_hold_min
+        : null;
+
+      const recheckTarget = [...trainingSessionsV11].reverse().find((s) => s.session_type === 'TUNE' && s.data_quality !== 'COMPROMISED');
+      const recheckPass = sessionType === 'RECHECK' && recheckTarget && dataQuality !== 'COMPROMISED'
+        ? derived.mean_n >= (recheckTarget.derived.mean_n - settingsV11.thresholds.recheck_mean_tolerance)
+          && derived.end_hold_delta >= (recheckTarget.derived.end_hold_delta - 1)
+        : null;
+
       const handoff = {
         localDate: nowIso.slice(0, 10),
         timestamp: Date.now(),
-        planType: recommendationV11.recommended_session_type,
+        planType: sessionType,
         recommended_session_type: recommendationV11.recommended_session_type,
-        session_type: recommendationV11.recommended_session_type,
+        session_type: sessionType,
         gameId: selectedGame,
         gameLabel: selectedGameObj.label,
         game_enum: GAME_ENUM[selectedGame] || 'CLASSIC',
         zoneMode,
         settings: {
           speedPreset,
-          interferencePreset
+          interferencePreset,
+          baselineMode,
+          fixedN: baselineMode === 'FIXED' ? Number(fixedN) : null
         },
-        breathing: {
-          routineId: breathRoutine,
-          routineName: BREATH_ROUTINES[breathRoutine].name
-        },
+        pulse: pulseType ? { type: pulseType, block_index: Number(pulseBlockIndex), recovery_blocks: recoveryBlocks } : null,
         bridge: {
           observation: bridgeObs.trim(),
           move: bridgeMove.trim()
@@ -442,10 +512,10 @@
         is_training: true,
         program_day: (programV11.program_session_index || 0) + 1,
         recommended_session_type: recommendationV11.recommended_session_type,
-        session_type: recommendationV11.recommended_session_type,
+        session_type: sessionType,
         recommendation_reason: recommendationV11.recommendation_reason,
         game: GAME_ENUM[selectedGame] || 'CLASSIC',
-        output_gate_mode: selectedGame === 'logic_gated' ? 'OR' : null,
+        output_gate_mode: selectedGame === 'logic_gated' ? outputGateMode : null,
         zone: {
           load: stateRatings.load,
           drift: stateRatings.drift,
@@ -454,31 +524,33 @@
         },
         plan: {
           baseline: {
-            speed: speedPreset.toUpperCase() === 'CALM' ? 'NORMAL' : 'FAST',
+            speed: speedPreset.toUpperCase(),
             interference: interferencePreset.toUpperCase(),
-            mode: 'ADAPTIVE',
-            fixed_n: null
+            mode: baselineMode,
+            fixed_n: baselineMode === 'FIXED' ? Number(fixedN) : null
           },
-          pulse: null,
-          end_hold_block: settingsV11.defaults.end_hold_block
+          pulse: pulseType ? { type: pulseType, block_index: Number(pulseBlockIndex), recovery_blocks: recoveryBlocks } : null,
+          end_hold_block: Number(endHoldBlock)
         },
         log: {
-          n_trace: null,
-          no_response_blocks: [],
-          fixed_n_blocks: [],
-          block_done: [],
-          plan_confirmed: false
+          n_trace: nTrace,
+          no_response_blocks: noResponseBlocks.slice(),
+          fixed_n_blocks: fixedNBlocks.slice(),
+          block_done: blockDone.slice(),
+          plan_confirmed: Boolean(planConfirmed),
+          temptation_pressure: temptationPressure === '' ? null : Number(temptationPressure)
         },
-        derived: null,
-        data_quality: 'PENDING',
+        derived,
+        data_quality: dataQuality,
         probe: {
           probe_radius: recommendationV11.probe_radius,
           probe_target_game: recommendationV11.probe_target_game,
-          pass: null
+          swap_cost: swapCost,
+          pass: probePass
         },
         recheck: {
-          of_session_id: null,
-          pass: null
+          of_session_id: recheckTarget ? recheckTarget.id : null,
+          pass: recheckPass
         },
         bridge: {
           what_changed: bridgeObs.trim(),
@@ -491,7 +563,8 @@
         program_day_completed: Math.min(PROGRAM_TARGET, (prev.program_day_completed || 0) + 1),
         program_session_index: Math.min(PROGRAM_TARGET, (prev.program_session_index || 0) + 1),
         calendar_entry_count: (prev.calendar_entry_count || 0) + 1,
-        consecutive_rest_count: 0
+        consecutive_rest_count: 0,
+        last_probe_radius_passed: probePass === true ? recommendationV11.probe_radius : prev.last_probe_radius_passed
       }));
 
       const wantsMission = window.confirm('Set a tiny cue-fired mission now? (Recommended)');
@@ -500,7 +573,6 @@
         const successSignal = window.prompt('Mission success signal (binary):', '') || '';
         const valueTag = (window.prompt('Optional value tag (risk/opportunity/urgency/social_cost):', '') || '').trim();
         if (cue.trim() && successSignal.trim()) {
-          // Mission records are stored separately in iqmw.capacity.missions.v1.
           const missionObj = {
             id: uid(),
             created_ts: nowIso,
@@ -517,10 +589,27 @@
       setScreen('home');
       setBridgeObs('');
       setBridgeMove('');
+      setNTraceInput(Array.from({ length: 10 }, () => ''));
+      setBlockDone(Array.from({ length: 10 }, () => false));
+      setNoResponseBlocks([]);
+      setFixedNBlocks([]);
+      setPlanConfirmed(false);
+      setTemptationPressure('');
     };
 
     if (screen === 'results') {
       const bridgeReady = bridgeObs.trim() && bridgeMove.trim();
+      const parsed = getNTraceOrNull();
+      const derivedPreview = parsed
+        ? computeDerivedFromNTrace(parsed, { block_index: Number(pulseBlockIndex), recovery_blocks: parseRecoveryBlocks() })
+        : null;
+      const badgePreview = sessionType === 'PROBE'
+        ? ((derivedPreview && derivedPreview.recovery_delta >= -0.5 && derivedPreview.end_hold_delta >= -1) ? 'probe likely pass' : 'probe needs consolidation')
+        : (sessionType === 'TIGHTEN'
+          ? ((derivedPreview && derivedPreview.volatility <= 4) ? 'volatility down' : 'tighten in progress')
+          : (sessionType === 'RECHECK'
+            ? 'delay hold test'
+            : (sessionType === 'RESET' ? 'protected learning day' : 'stable + recovered')));
       return (
         <div className="screen">
           <div className="topbar">
@@ -536,8 +625,107 @@
 
           <main className="content">
             <section className="card">
-              <h1 className="h1">Session Wrap-Up</h1>
-              <p className="p">Played: {selectedGameObj.label} | Plan: {planLabel}</p>
+              <h1 className="h1">Post-Session Review</h1>
+              <p className="p">Played: {selectedGameObj.label} | Session type: {sessionType}</p>
+              <p className="p" style={{ marginTop: '8px' }}>Outcome badge: {badgePreview}</p>
+            </section>
+
+            <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+              <p style={{ margin: '0 0 10px 0', fontWeight: 900 }}>Session plan (override allowed)</p>
+              <div className="btnRow" style={{ marginTop: 0 }}>
+                <select value={sessionType} onChange={(e) => setSessionType(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                  {SESSION_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+                <select value={baselineMode} onChange={(e) => setBaselineMode(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                  <option value="ADAPTIVE">Adaptive n</option>
+                  <option value="FIXED">Fixed n</option>
+                </select>
+                {baselineMode === 'FIXED' ? (
+                  <input type="number" min="1" max="9" value={fixedN} onChange={(e) => setFixedN(Number(e.target.value || 1))} style={{ width: '88px', padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }} />
+                ) : null}
+              </div>
+              <div className="btnRow" style={{ marginTop: '10px' }}>
+                <select value={speedPreset} onChange={(e) => setSpeedPreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                  <option value="slow">Speed: Slow</option>
+                  <option value="normal">Speed: Normal</option>
+                  <option value="fast">Speed: Fast</option>
+                </select>
+                <select value={interferencePreset} onChange={(e) => setInterferencePreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                  <option value="low">Interference: Low</option>
+                  <option value="normal">Interference: Normal</option>
+                  <option value="high">Interference: High</option>
+                </select>
+                <select value={pulseType} onChange={(e) => setPulseType(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                  <option value="">Pulse: None</option>
+                  <option value="SPEED">Pulse: Speed</option>
+                  <option value="INTERFERENCE">Pulse: Interference</option>
+                </select>
+              </div>
+              <div className="btnRow" style={{ marginTop: '10px' }}>
+                <input type="number" min="1" max="10" value={pulseBlockIndex} onChange={(e) => setPulseBlockIndex(Number(e.target.value || 4))} style={{ width: '90px', padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }} />
+                <input type="text" value={recoveryBlocksCsv} onChange={(e) => setRecoveryBlocksCsv(e.target.value)} placeholder="Recovery blocks e.g. 5,6" style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }} />
+                <input type="number" min="1" max="10" value={endHoldBlock} onChange={(e) => setEndHoldBlock(Number(e.target.value || 10))} style={{ width: '90px', padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }} />
+              </div>
+              {selectedGame === 'logic_gated' ? (
+                <div className="btnRow" style={{ marginTop: '10px' }}>
+                  <select value={outputGateMode} onChange={(e) => setOutputGateMode(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                    <option value="OR">Output gate: OR</option>
+                    <option value="XOR">Output gate: XOR</option>
+                    <option value="AND">Output gate: AND</option>
+                  </select>
+                </div>
+              ) : null}
+            </section>
+
+            <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+              <p style={{ margin: '0 0 8px 0', fontWeight: 900 }}>Fast n-trace grid (10 blocks)</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,minmax(0,1fr))', gap: '8px' }}>
+                {nTraceInput.map((v, idx) => (
+                  <input
+                    key={idx}
+                    type="number"
+                    min="0"
+                    max="9"
+                    value={v}
+                    onChange={(e) => {
+                      const next = nTraceInput.slice();
+                      next[idx] = e.target.value;
+                      setNTraceInput(next);
+                    }}
+                    placeholder={'B' + (idx + 1)}
+                    style={{ padding: '10px', borderRadius: '10px', border: '1px solid #E0E0E0' }}
+                  />
+                ))}
+              </div>
+              <label style={{ display: 'block', marginTop: '10px', fontSize: '13px' }}>
+                <input type="checkbox" checked={planConfirmed} onChange={(e) => setPlanConfirmed(e.target.checked)} /> Plan confirmed for this session
+              </label>
+              <div style={{ display: 'grid', gap: '6px', marginTop: '8px' }}>
+                {Array.from({ length: 10 }, (_, i) => (
+                  <div key={i} style={{ fontSize: '13px' }}>
+                    <b>Block {i + 1}:</b>
+                    <label style={{ marginLeft: '8px' }}><input type="checkbox" checked={blockDone[i]} onChange={(e) => {
+                      const next = blockDone.slice(); next[i] = e.target.checked; setBlockDone(next);
+                    }} /> done</label>
+                    <label style={{ marginLeft: '8px' }}><input type="checkbox" checked={noResponseBlocks.includes(i + 1)} onChange={() => setNoResponseBlocks((p) => toggleBlockTag(p, i + 1))} /> no response</label>
+                    <label style={{ marginLeft: '8px' }}><input type="checkbox" checked={fixedNBlocks.includes(i + 1)} onChange={() => setFixedNBlocks((p) => toggleBlockTag(p, i + 1))} /> fixed n</label>
+                  </div>
+                ))}
+              </div>
+              <div className="btnRow" style={{ marginTop: '10px' }}>
+                <select value={temptationPressure} onChange={(e) => setTemptationPressure(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                  <option value="">Temptation pressure: not logged</option>
+                  <option value="0">Temptation pressure: 0</option>
+                  <option value="1">Temptation pressure: 1</option>
+                  <option value="2">Temptation pressure: 2</option>
+                  <option value="3">Temptation pressure: 3</option>
+                </select>
+              </div>
+              {derivedPreview ? (
+                <p style={{ margin: '10px 0 0 0', fontSize: '13px', color: '#333333' }}>
+                  mean_n {derivedPreview.mean_n} | volatility {derivedPreview.volatility} | end_hold_delta {derivedPreview.end_hold_delta} | recovery_delta {derivedPreview.recovery_delta}
+                </p>
+              ) : null}
             </section>
 
             <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
@@ -773,11 +961,13 @@
             <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Preset controls</p>
             <div className="btnRow">
               <select value={speedPreset} onChange={(e) => setSpeedPreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                <option value="calm">Speed: Calm</option>
+                <option value="slow">Speed: Slow</option>
+                <option value="normal">Speed: Normal</option>
                 <option value="fast">Speed: Fast</option>
               </select>
               <select value={interferencePreset} onChange={(e) => setInterferencePreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
                 <option value="low">Interference: Low</option>
+                <option value="normal">Interference: Normal</option>
                 <option value="high">Interference: High</option>
               </select>
             </div>
