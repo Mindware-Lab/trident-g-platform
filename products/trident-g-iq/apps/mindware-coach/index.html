@@ -1470,20 +1470,21 @@
       const row = transferCheckRatings.find((r) => r.id === id);
       return row ? row.label : "";
     };
+    const homeCardTitleStyle = { margin:"0 0 6px 0", fontWeight:900, fontSize:"22px", lineHeight:1.2 };
 
     return (
       <Frame chip={`${Number(shared.today.mindware?.sessions_completed || 0)} today`} subtitle="Understand • Argue • Decide • Plan & Do">
+        <section className="card"><h1 className="h1">Mindware loop</h1><p className="p"><b>Teach &gt; Worked example &gt; Timed practice &gt; Try it in real life &gt; Hardwire it as new mindware (crystallised intelligence)</b></p></section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"12px" }}>
-          <p style={{ margin:"0 0 6px 0", fontWeight:900, fontSize:"22px", lineHeight:1.2 }}>{COPY.home_help_strip.title}</p>
+          <p style={homeCardTitleStyle}>{COPY.home_help_strip.title}</p>
           <p className="hint">{COPY.home_help_strip.lines[0]}</p>
           <p className="hint">{COPY.home_help_strip.lines[1]}</p>
           <p className="hint" style={{ marginTop:"8px" }}>
             <button className="plainLink" onClick={openHowItWorks}>{COPY.home_help_strip.links.learn_more}</button>
           </p>
         </section>
-        <section className="card"><h1 className="h1">Mindware loop</h1><p className="p"><b>Teach &gt; Worked example &gt; Timed practice &gt; Try it in real life &gt; Hardwire it as new mindware (crystallised intelligence)</b></p></section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
-          <p style={{ margin:0, fontWeight:900 }}>Real-life check-in</p>
+          <p style={homeCardTitleStyle}>Real-life check-in</p>
           {!hasPreviousSession ? (
             <p className="hint">After your first session, this will ask how well using the script worked in real life.</p>
           ) : (
@@ -1522,7 +1523,7 @@
           ) : null}
         </section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
-          <p style={{ margin:"0 0 6px 0", fontWeight:900 }}>Reasoning Gym</p>
+          <p style={homeCardTitleStyle}>Reasoning Gym</p>
           {recommended.mode === "gym" ? (
             <section style={{ marginTop:"4px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
               <p style={{ margin:"0 0 4px 0", fontWeight:900 }}>Quick repair suggested</p>
@@ -1545,7 +1546,7 @@
           </section>
         </section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
-          <p style={{ margin:"0 0 10px 0", fontWeight:900 }}>Choose a mindware script</p>
+          <p style={homeCardTitleStyle}>Choose a mindware script</p>
           <p className="hint">Choose what to practise.</p>
           <p className="hint">Frame = the kind of thinking task. Script = the routine you'll use inside it.</p>
           <p className="hint">Example: Decide + Trade-offs means make a decision using a quick trade-off check.</p>
@@ -1562,7 +1563,7 @@
           </p>
           {getLessonByScript(plan.script) ? (
             <section style={{ marginTop:"8px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
-              <p style={{ margin:"0 0 4px 0", fontWeight:900 }}>What you're practising</p>
+              <p style={homeCardTitleStyle}>What you're practising</p>
               <p className="hint">{scriptOneLiner(plan.script)}</p>
               <p className="hint"><b>Use it when:</b> {plan.script === "Y1" ? "you're gathering info but nothing is changing what you'll do next." : ((getLessonByScript(plan.script).when_to_use || [])[0] || "A decision needs a clear next move.")}</p>
               <p className="hint"><b>Quick steps:</b></p>
