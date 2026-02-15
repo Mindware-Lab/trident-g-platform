@@ -1441,10 +1441,10 @@
           <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
             <label style={{ fontWeight:900 }}>Cue (When will I do it?)</label><input className="field" value={missionDraft.cue} onChange={(e)=>setMissionDraft((p)=>({...p,cue:e.target.value}))} />
             <label style={{ fontWeight:900, display:"block", marginTop:"10px" }}>Success signal (How will I know it worked?)</label><input className="field" value={missionDraft.success_signal} onChange={(e)=>setMissionDraft((p)=>({...p,success_signal:e.target.value}))} />
-            <label style={{ fontWeight:900, display:"block", marginTop:"10px" }}>Stop/switch rule (optional)</label><input className="field" value={missionDraft.stop_flip_rule} onChange={(e)=>setMissionDraft((p)=>({...p,stop_flip_rule:e.target.value}))} />
-            <label style={{ fontWeight:900, display:"block", marginTop:"10px" }}>Value tag (optional)</label><input className="field" value={missionDraft.value_tag} onChange={(e)=>setMissionDraft((p)=>({...p,value_tag:e.target.value}))} />
+            <label style={{ fontWeight:900, display:"block", marginTop:"10px" }}>Stop/switch rule (When will you stop this approach or switch to a different one?)</label><input className="field" value={missionDraft.stop_flip_rule} onChange={(e)=>setMissionDraft((p)=>({...p,stop_flip_rule:e.target.value}))} />
+            <label style={{ fontWeight:900, display:"block", marginTop:"10px" }}>Value tag (What is this mission mainly for, for example speed, quality, focus, or risk?)</label><input className="field" value={missionDraft.value_tag} onChange={(e)=>setMissionDraft((p)=>({...p,value_tag:e.target.value}))} />
             <div className="btnRow">
-              <button className="btn btnSecondary" onClick={useSimpleMissionPreset}>Use a simple mission (recommended)</button>
+              <button className="btn btnSecondary" onClick={useSimpleMissionPreset}>Generate a simple mission automatically.</button>
             </div>
             <div className="btnRow"><button className="btn btnPrimary" onClick={saveMission}>Save mission</button><button className="btn btnSecondary" onClick={()=>setScreen("home")}>Skip</button></div>
           </section>
