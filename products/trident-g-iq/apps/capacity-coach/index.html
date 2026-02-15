@@ -1723,15 +1723,24 @@
 
     if (screen === 'splash') {
       return (
-        <div className="screen" style={{ background: '#E8F4FF' }}>
+        <div className="screen" style={{ background: '#EFF3F8' }}>
           <main className="content capacityNarrow" style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
-            <section style={{ width: '100%', background: '#E8F4FF', border: '1px solid #BFDFFF', borderRadius: '18px', padding: '28px', textAlign: 'center' }}>
-              <img src={APP_ICON} alt="Trident G" style={{ width: '56px', height: '56px', objectFit: 'contain', margin: '0 auto 10px auto', display: 'block' }} />
-              <h1 className="h1" style={{ margin: '0 0 6px 0', fontWeight: 900 }}>IQ Capacity Coach v1</h1>
-              <p className="p" style={{ margin: 0 }}>Building steadier focus and control under load.</p>
-              <div className="btnRow" style={{ justifyContent: 'center' }}>
-                <button className="btn btnPrimary" onClick={() => setScreen('home')}>Continue</button>
+            <section style={{ width: '100%', background: '#4EA0E8', border: '1px solid #4EA0E8', borderRadius: '22px', padding: '30px 28px', textAlign: 'center', boxShadow: '0 8px 24px rgba(20,58,115,0.16)' }}>
+              <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: '#BEEF4E', display: 'grid', placeItems: 'center', margin: '0 auto 12px auto', border: '4px solid rgba(255,255,255,0.5)' }}>
+                <img src={APP_ICON} alt="Trident G" style={{ width: '34px', height: '34px', objectFit: 'contain', display: 'block' }} />
               </div>
+              <h1 className="h1" style={{ margin: '0 0 8px 0', fontWeight: 900, color: '#FFFFFF' }}>IQ Capacity Coach v1</h1>
+              <p className="p" style={{ margin: '0 0 18px 0', color: '#F4FAFF' }}>Build steadier focus and follow-through under load.</p>
+              <div className="btnRow" style={{ justifyContent: 'center', marginBottom: '8px' }}>
+                <button
+                  className="btn"
+                  style={{ background: '#BEEF4E', border: '1px solid #BEEF4E', color: '#111111', fontWeight: 900, minWidth: '220px', boxShadow: '0 4px 16px rgba(190,239,78,0.35)' }}
+                  onClick={() => setScreen('home')}
+                >
+                  Continue
+                </button>
+              </div>
+              <p style={{ margin: 0, color: '#EAF5FF', fontSize: '16px' }}>Mindware Lab - IQ Capacity</p>
             </section>
           </main>
         </div>
