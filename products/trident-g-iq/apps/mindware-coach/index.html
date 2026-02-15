@@ -1145,12 +1145,17 @@
         <Frame chip={`${session.index + 1}/${session.items.length}`} subtitle="Timed practice">
           <section className="card">
             <p className="p" style={{ marginBottom:"8px", fontSize:"13px", color:"#334" }}>
-              <b>{FRAME_LABEL[session.frame]}</b> • <b>MS: {lesson ? scriptTitle(q.script) : "Script"}</b> • <b>{prettyContext(q.context)}</b> • <b>{timerSec}s left</b>
+              <b>{FRAME_LABEL[session.frame]}</b> • <b>MS: {lesson ? scriptTitle(q.script) : "Script"}</b> • <b>{prettyContext(q.context)}</b>
             </p>
             <p className="hint" style={{ marginTop:0 }}>
               <button className="plainLink" onClick={() => setLessonModalScript(q.script)}>What is this script?</button>
             </p>
-            <h1 className="h1">Timed item</h1>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", gap:"10px", marginTop:"4px" }}>
+              <h1 className="h1" style={{ margin:0 }}>Timed item</h1>
+              <p style={{ margin:0, fontWeight:900, fontSize:"28px", lineHeight:1.1, color: timerSec <= 5 ? "#B42318" : "#FFFFFF" }}>
+                {timerSec > 0 ? `${timerSec}s left` : "Time's up"}
+              </p>
+            </div>
             {(q.is_switch === true && q.switch_type === "wrong_tool") ? <p className="hint"><b>Is this the right approach?</b></p> : null}
             {(q.is_switch === true && q.switch_type === "flip_trigger") ? <p className="hint"><b>What would change your mind?</b></p> : null}
             <p className="p">{stripPromptTags(q.prompt)}</p>
