@@ -11,15 +11,15 @@
                           "title":  "Commit or park",
                           "one_liner":  "Decide if this is worth attention right now, then set a timebox and what good enough means.",
                           "when_to_use":  [
-                                              "You feel rushed or overloaded.",
-                                              "You keep looping and not acting.",
-                                              "You are unsure whether this is worth doing today."
+                                              "You feel overloaded and need a clear next move.",
+                                              "You keep thinking but are not taking action.",
+                                              "You are not sure this task deserves attention right now."
                                           ],
                           "steps":  [
-                                        "Choose: commit now or park it.",
-                                        "Set a timebox.",
-                                        "Define good enough in one sentence.",
-                                        "Set a stop or switch rule."
+                                        "Decide: do this now, or park it for later.",
+                                        "Set a time limit you will stick to.",
+                                        "Write what good enough looks like in one sentence.",
+                                        "Set a stop or switch rule if you get stuck."
                                     ],
                           "common_traps":  [
                                                "Starting without a time limit, so you keep thinking and drift.",
@@ -43,15 +43,15 @@
                           "title":  "The one test",
                           "one_liner":  "Pick the single check that would most change what you do next, and do that first.",
                           "when_to_use":  [
-                                              "You are stuck in research mode.",
-                                              "One uncertainty blocks the plan.",
-                                              "You need to decide what to verify quickly."
+                                              "You keep researching but your next action is still unclear.",
+                                              "One unknown is blocking the whole plan.",
+                                              "You need to decide quickly what to check first."
                                           ],
                           "steps":  [
-                                        "Name 2 to 3 options.",
-                                        "Ask what test separates them fastest.",
-                                        "Pick the smallest useful test.",
-                                        "Write what would change your mind."
+                                        "List 2 or 3 realistic options.",
+                                        "Ask which quick check would separate them fastest.",
+                                        "Run the smallest useful check first.",
+                                        "Write what result would make you change direction."
                                     ],
                           "common_traps":  [
                                                "Reading more before deciding what test you will run.",
@@ -77,15 +77,15 @@
                           "title":  "Trade-off choice",
                           "one_liner":  "Choose with a few criteria and a flip check, not by vibe.",
                           "when_to_use":  [
-                                              "Options compete across goals.",
-                                              "You keep changing your mind.",
-                                              "You need a defensible choice quickly."
+                                              "You need to choose between options with different pros and cons.",
+                                              "You keep changing your mind between options.",
+                                              "You need a clear, defensible choice under time pressure."
                                           ],
                           "steps":  [
-                                        "Pick 3 to 5 criteria.",
-                                        "Score options quickly.",
-                                        "Ask what uncertainty could flip the winner.",
-                                        "Run one small check if needed."
+                                        "Pick 3 to 5 criteria that actually matter.",
+                                        "Score each option quickly and honestly.",
+                                        "Ask what unknown could change the winning option.",
+                                        "If needed, run one small check on that unknown."
                                     ],
                           "common_traps":  [
                                                "Using too many criteria, so the choice gets muddy.",
@@ -111,15 +111,15 @@
                           "title":  "Expected value choice",
                           "one_liner":  "Compare rough value times chance, then tighten only the estimate that could flip your choice.",
                           "when_to_use":  [
-                                              "Outcomes are uncertain.",
-                                              "You are tempted to over-precision.",
-                                              "A small check could change the winner."
+                                              "The outcome is uncertain and you can only estimate roughly.",
+                                              "You are tempted to overthink numbers that are still rough.",
+                                              "One estimate might change which option is best."
                                           ],
                           "steps":  [
-                                        "List key outcomes.",
-                                        "Use rough values and chances.",
-                                        "Compare rough totals.",
-                                        "Timebox one check on the flip estimate."
+                                        "List the main outcomes for each option.",
+                                        "Use rough value and likelihood estimates.",
+                                        "Compare rough totals to see the likely winner.",
+                                        "Timebox one check on the estimate that could flip the result."
                                     ],
                           "common_traps":  [
                                                "Using very precise numbers you cannot really justify.",
@@ -146,15 +146,15 @@
                           "title":  "Claim to support",
                           "one_liner":  "Make the claim clear, list support, and state the link so the conclusion follows.",
                           "when_to_use":  [
-                                              "You are evaluating arguments.",
-                                              "People talk past each other.",
-                                              "Evidence is listed but feels jumpy."
+                                              "You need to evaluate a claim or make a case clearly.",
+                                              "People are talking past each other.",
+                                              "Evidence is listed, but the conclusion still feels like a jump."
                                           ],
                           "steps":  [
-                                        "Write the claim in one sentence.",
-                                        "List support.",
-                                        "State why support links to claim.",
-                                        "Tighten scope to match support."
+                                        "Write the main claim in one sentence.",
+                                        "List the key supporting evidence or reasons.",
+                                        "State clearly why that support backs the claim.",
+                                        "Narrow the claim so it matches the strength of the evidence."
                                     ],
                           "common_traps":  [
                                                "Changing what key words mean mid-conversation.",
@@ -180,15 +180,15 @@
                           "title":  "Cause chain",
                           "one_liner":  "Name a mechanism, predict what you would see, then run one check.",
                           "when_to_use":  [
-                                              "Labels replace explanation.",
-                                              "You need to intervene in a system.",
-                                              "You want to avoid correlation errors."
+                                              "People are using labels instead of real explanations.",
+                                              "You need to change a system, not just describe it.",
+                                              "You want to avoid confusing coincidence with cause."
                                           ],
                           "steps":  [
-                                        "State key driver.",
-                                        "Write the chain.",
-                                        "Make one prediction.",
-                                        "Run one disconfirming or supporting check."
+                                        "Name the main driver you think is causing the outcome.",
+                                        "Write the cause chain from driver to outcome.",
+                                        "Make one prediction you would expect if the chain is true.",
+                                        "Run one check that could support or disprove that chain."
                                     ],
                           "common_traps":  [
                                                "Using labels instead of explaining how the cause works.",
@@ -215,15 +215,15 @@
                           "title":  "Bottleneck first",
                           "one_liner":  "Find the limiting constraint and move it before optimizing anything else.",
                           "when_to_use":  [
-                                              "You are busy but not moving.",
-                                              "Polish work is replacing progress.",
-                                              "One constraint likely blocks everything."
+                                              "You are busy all day but key progress is not moving.",
+                                              "You are polishing work that does not change the result.",
+                                              "One constraint is likely blocking everything else."
                                           ],
                           "steps":  [
-                                        "Name this-week outcome.",
-                                        "List likely constraints.",
-                                        "Pick the main bottleneck.",
-                                        "Do one relief action and re-check flow."
+                                        "Name the one outcome you need this week.",
+                                        "List the likely constraints slowing you down.",
+                                        "Pick the single biggest bottleneck.",
+                                        "Take one action to relieve it, then check whether flow improved."
                                     ],
                           "common_traps":  [
                                                "Improving busywork instead of the real bottleneck.",
@@ -249,15 +249,15 @@
                           "title":  "Make it measurable",
                           "one_liner":  "Turn a vague goal into one observable success signal.",
                           "when_to_use":  [
-                                              "Done is fuzzy.",
-                                              "You cannot tell if you improved.",
-                                              "You need an honest stop rule."
+                                              "Done is vague and keeps moving.",
+                                              "You cannot tell whether you are improving.",
+                                              "You need a clear signal for stop or continue."
                                           ],
                           "steps":  [
-                                        "Write goal plainly.",
-                                        "Ask what you would observe if working.",
-                                        "Pick one signal.",
-                                        "Set stop rule."
+                                        "Write the goal in plain words.",
+                                        "Ask what you would observe if this is working.",
+                                        "Pick one clear success signal.",
+                                        "Set a stop rule so you know when enough is enough."
                                     ],
                           "common_traps":  [
                                                "Choosing a metric you will not track in real life.",
@@ -284,15 +284,15 @@
                           "title":  "Simplify under constraints",
                           "one_liner":  "Keep the smallest useful model that still supports a real next step.",
                           "when_to_use":  [
-                                              "Complexity causes freeze.",
-                                              "Maps keep growing but no action.",
-                                              "You need a minimal plan that survives reality."
+                                              "The problem feels too complex and you freeze.",
+                                              "Your notes keep growing but no action happens.",
+                                              "You need a small plan that still works in real conditions."
                                           ],
                           "steps":  [
-                                        "Name hard constraint.",
-                                        "Name flip uncertainty.",
-                                        "Keep only 3 to 5 key parts.",
-                                        "Pick one check or one next step."
+                                        "Name the hard constraint you cannot ignore.",
+                                        "Name the one uncertainty that could change your plan.",
+                                        "Keep only 3 to 5 parts that truly drive the outcome.",
+                                        "Choose one next check or one concrete next step."
                                     ],
                           "common_traps":  [
                                                "Simplifying so much that you drop the key constraint.",
@@ -319,15 +319,15 @@
                           "title":  "Strategic experiment",
                           "one_liner":  "Run a time-boxed trial with one metric and a keep or switch rule.",
                           "when_to_use":  [
-                                              "Learning by doing is possible.",
-                                              "Planning is replacing execution.",
-                                              "You need evidence between plausible strategies."
+                                              "You can learn by trying something safely.",
+                                              "You are planning a lot but not executing.",
+                                              "You need evidence to choose between two plausible approaches."
                                           ],
                           "steps":  [
-                                        "State what you test.",
-                                        "Define trial and duration.",
-                                        "Pick one metric.",
-                                        "Set keep or switch rule."
+                                        "State clearly what you are testing.",
+                                        "Define the trial and how long it will run.",
+                                        "Pick one main metric to track.",
+                                        "Set a keep-or-switch rule before you start."
                                     ],
                           "common_traps":  [
                                                "Changing multiple things at once, so results are unclear.",
@@ -354,15 +354,15 @@
                           "title":  "Evidence update",
                           "one_liner":  "Update confidence in line with evidence, then state what changes in behavior.",
                           "when_to_use":  [
-                                              "New data arrives from a check.",
-                                              "You feel confirmation pull.",
-                                              "You must revise without overreacting."
+                                              "You have new evidence from a check or trial.",
+                                              "You notice you are tempted to defend your old view.",
+                                              "You need to adjust your plan without overreacting."
                                           ],
                           "steps":  [
-                                        "State what evidence says.",
-                                        "Consider alternative explanation.",
-                                        "Update proportionally.",
-                                        "Change plan explicitly or hold explicitly."
+                                        "State what the new evidence actually says.",
+                                        "Consider one alternative explanation.",
+                                        "Adjust confidence in proportion to evidence strength.",
+                                        "State clearly what you will change, or clearly keep the same."
                                     ],
                           "common_traps":  [
                                                "Ignoring evidence that goes against your preferred view.",
