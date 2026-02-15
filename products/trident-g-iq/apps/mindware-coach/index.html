@@ -38,7 +38,7 @@
     home_help_strip: {
       title: "How this helps",
       lines: [
-        "You're building mindware scripts: short, repeatable pieces of a smart-thinking algebra you can run under pressure.",
+        "You're building mindware scripts: short, repeatable thinking steps you can run under pressure.",
         "You practise one here, then deploy it on a real work task and prove it carries over - even when you're busy, interrupted, or using AI."
       ],
       links: { learn_more: "Learn more >" }
@@ -77,7 +77,7 @@
       why_line: "Why: Practice makes it familiar. Real tasks make it reliable."
     },
     mission_bridge_banner: {
-      no_mission: "After this session: set one tiny real-world mission (up to 30 minutes) to use the script once.",
+      no_mission: "After this session: set one small work task (5-15 minutes) to try this script once.",
       pending_title: "Mission pending",
       pending_body: "Log what happened before your next session (recommended).",
       buttons: { log_outcome: "Log outcome", skip_for_now: "Skip for now" }
@@ -508,7 +508,7 @@
           tag
         };
       }
-      return { mode: "practice", note: "Standard practice day." };
+      return { mode: "practice", note: "" };
     }, [mwState.probe, shared]);
 
     const pickItems = ({ mode, signature, microTag, script }) => {
@@ -1273,6 +1273,9 @@
       }
       return { mode, script, signature };
     })();
+    const readinessKey = String(shared.today.readiness || "full").toLowerCase();
+    const readinessLabel = readinessKey === "light" ? "Light" : (readinessKey === "reset" ? "Reset" : "Full");
+    const capacityDoneToday = Number(shared.today.capacity?.sessions_completed || 0);
 
     return (
       <Frame chip={`${Number(shared.today.mindware?.sessions_completed || 0)} today`} subtitle="Understand • Argue • Decide • Plan & Do">
@@ -1287,13 +1290,15 @@
         <section className="card"><h1 className="h1">Mindware loop</h1><p className="p"><b>Teach &gt; Worked example &gt; Timed practice &gt; Try it in real life &gt; Hardwire it as new mindware (crystallised intelligence)</b></p></section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
           <p style={{ margin:0, fontWeight:900 }}>Today</p>
-          <p className="hint">Suggested day type from earlier training: <b>{String(shared.today.readiness || "full").toUpperCase()}</b> (change)</p>
-          <p className="hint">Capacity sessions completed today: <b>{Number(shared.today.capacity?.sessions_completed || 0)}</b></p>
+          <p className="hint"><b>Recommended intensity today:</b> <b>{readinessLabel}</b> (change)</p>
+          <p className="hint">Full = normal practice. Light = shorter. Reset = mission only.</p>
+          {capacityDoneToday >= 1 ? <p className="hint"><b>Capacity training done today:</b> {capacityDoneToday} session{capacityDoneToday === 1 ? "" : "s"}</p> : null}
+          {capacityDoneToday >= 2 ? <p className="hint">You've already done a lot today. Consider a short mindware session or mission-only.</p> : null}
           {(String(shared.today.data_quality || "ok").toLowerCase() !== "ok") ? <p className="hint">Today looks noisy. Consider Light or Reset.</p> : null}
-          <p className="hint">{recommended.note}</p>
+          {recommended.note ? <p className="hint">{recommended.note}</p> : null}
           {recommended.mode === "probe" ? <p className="hint">Transfer check = Same script, different situation.</p> : null}
           {recommended.mode === "recheck" ? <p className="hint">Transfer re-check = Try it again later to see if it sticks.</p> : null}
-          {!pendingMission ? <p className="hint">{COPY.mission_bridge_banner.no_mission}</p> : null}
+          {!pendingMission ? <p className="hint"><b>After this session:</b> set one small work task (5-15 minutes) to try this script once. <button className="plainLink" onClick={openHowItWorks}>Why?</button></p> : null}
           {pendingMission ? (
             <>
               <p className="hint"><b>{COPY.mission_bridge_banner.pending_title}:</b> {COPY.mission_bridge_banner.pending_body}</p>
@@ -1314,6 +1319,9 @@
         </section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
           <p style={{ margin:"0 0 10px 0", fontWeight:900 }}>Choose a mindware script</p>
+          <p className="hint">Choose what to practise.</p>
+          <p className="hint">Frame = the kind of thinking task. Script = the routine you'll use inside it.</p>
+          <p className="hint">Example: Decide + Trade-offs means make a decision using a quick trade-off check.</p>
           <div className="grid2">
             <select className="field" value={plan.frame} onChange={(e)=>setPlan((p)=>({...p,frame:e.target.value}))}>{FRAMES.map((f) => <option key={f} value={f}>Frame: {FRAME_LABEL[f]}</option>)}</select>
             <select className="field" value={plan.script} onChange={(e)=>setPlan((p)=>({...p,script:e.target.value}))}>
@@ -1323,19 +1331,27 @@
             <select className="field" value={plan.timebox_min} onChange={(e)=>setPlan((p)=>({...p,timebox_min:Number(e.target.value)}))}> {[2,4,6,8].map((m)=><option key={m} value={m}>Timebox: {m} min</option>)} </select>
           </div>
           <p className="hint" style={{ marginTop:"10px" }}>
-            Selected: <b>{FRAME_LABEL[plan.frame]}</b> • <b>Script: {scriptTitle(plan.script)}</b> •{" "}
-            <button className="plainLink" onClick={() => setLessonModalScript(plan.script)}>What is this script?</button>
+            Selected: <b>{FRAME_LABEL[plan.frame]}</b> • <b>Script: {scriptTitle(plan.script)}</b>
           </p>
           {getLessonByScript(plan.script) ? (
             <section style={{ marginTop:"8px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
               <p style={{ margin:"0 0 4px 0", fontWeight:900 }}>What you're practising</p>
               <p className="hint">{scriptOneLiner(plan.script)}</p>
-              <p className="hint"><b>Use it when:</b> {(getLessonByScript(plan.script).when_to_use || [])[0] || "A decision needs a clear next move."}</p>
-              <p className="hint"><b>Steps:</b> {(getLessonByScript(plan.script).steps || []).slice(0, 3).join(" -> ")}</p>
+              <p className="hint"><b>Use it when:</b> {plan.script === "Y1" ? "you're gathering info but nothing is changing what you'll do next." : ((getLessonByScript(plan.script).when_to_use || [])[0] || "A decision needs a clear next move.")}</p>
+              <p className="hint"><b>Quick steps:</b></p>
+              <ol style={{ margin:"0 0 0 18px", padding:0 }}>
+                {(getLessonByScript(plan.script).steps || []).slice(0, 3).map((s, i) => <li key={i} className="hint">{s}</li>)}
+              </ol>
               {Array.isArray(OPERATOR_GLOSSARY[plan.script]) ? (
                 <p className="hint"><b>Terms:</b> {OPERATOR_GLOSSARY[plan.script].map(([term, meaning]) => `${term} = ${meaning}`).join(" | ")}</p>
               ) : null}
               <div className="btnRow">
+                <button
+                  className="btn btnPrimary"
+                  onClick={openTeachForPlan}
+                >
+                  Open script guide (quick teach)
+                </button>
                 <button
                   className="btn btnSecondary"
                   style={{ background:"#EAF5FF", border:"1px solid #2764B7", color:"#143A73", fontWeight:900, opacity:1 }}
@@ -1352,21 +1368,14 @@
                 </button>
               </div>
               <p className="hint" style={{ marginTop:"6px" }}>
+                Use the script guide first if this routine is new. Then preview one worked example before timed practice.
+              </p>
+              <p className="hint" style={{ marginTop:"6px" }}>
                 Use this to see one full question and feedback before you start timed practice.
               </p>
             </section>
           ) : null}
           {needsTeach(plan.script) ? <p className="hint"><b>First run:</b> Teach and a worked example will appear before timed items.</p> : null}
-          <div className="btnRow">
-            <button
-              className="btn btnSecondary"
-              style={{ background:"#EAF5FF", border:"1px solid #2764B7", color:"#143A73", fontWeight:900, opacity:1 }}
-              onClick={openTeachForPlan}
-            >
-              Open script guide (quick teach)
-            </button>
-          </div>
-          <p className="hint">Use this to learn when to use this script, the quick steps, and common traps.</p>
           {refresherLesson ? (
             <details style={{ marginTop:"8px" }}>
               <summary style={{ cursor:"pointer", fontWeight:900 }}>Quick reminder</summary>
