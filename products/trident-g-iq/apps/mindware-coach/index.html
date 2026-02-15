@@ -1378,7 +1378,7 @@
         <section className="card"><h1 className="h1">Mindware loop</h1><p className="p"><b>Teach &gt; Worked example &gt; Timed practice &gt; Try it in real life &gt; Hardwire it as new mindware (crystallised intelligence)</b></p></section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
           <p style={{ margin:0, fontWeight:900 }}>Today</p>
-          <p className="hint"><b>Recommended intensity today:</b> <b>{readinessLabel}</b> (change) • <button className="plainLink" onClick={() => setShowTodayHelp((v) => !v)}>{showTodayHelp ? "Hide explanation" : "How is this decided?"}</button></p>
+          <p className="hint"><b>Recommended intensity today:</b> <b>{readinessLabel}</b> (change) • <button className="plainLink" style={{ fontWeight:900, color:"#0F3A73", textDecoration:"underline" }} onClick={() => setShowTodayHelp((v) => !v)}>{showTodayHelp ? "Hide explanation" : "How is this decided?"}</button></p>
           <p className="hint">Full = normal practice. Light = shorter. Reset = mission only.</p>
           {showTodayHelp ? (
             <section style={{ marginTop:"8px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
@@ -1395,7 +1395,7 @@
           {recommended.note ? <p className="hint">{recommended.note}</p> : null}
           {recommended.mode === "probe" ? <p className="hint">Transfer check = Same script, different situation.</p> : null}
           {recommended.mode === "recheck" ? <p className="hint">Transfer re-check = Try it again later to see if it sticks.</p> : null}
-          {!pendingMission ? <p className="hint"><b>After this session:</b> set one small work task (5-15 minutes) to try this script once. <button className="plainLink" onClick={openHowItWorks}>Why?</button></p> : null}
+          {!pendingMission ? <p className="hint"><b>After this session:</b> set one small work task (5-15 minutes) to try this script once. <button className="plainLink" style={{ fontWeight:900, color:"#0F3A73", textDecoration:"underline" }} onClick={openHowItWorks}>Why?</button></p> : null}
           {pendingMission ? (
             <>
               <p className="hint"><b>{COPY.mission_bridge_banner.pending_title}:</b> {COPY.mission_bridge_banner.pending_body}</p>
