@@ -38,7 +38,7 @@
   };
   const COPY = {
     home_help_strip: {
-      title: "How this helps",
+      title: "How this training app helps your IQ",
       lines: [
         "You're building mindware scripts: short, repeatable thinking steps you can run under pressure.",
         "You practise one here, then deploy it on a real work task and prove it carries over - even when you're busy, interrupted, or using AI."
@@ -1446,7 +1446,7 @@
     return (
       <Frame chip={`${Number(shared.today.mindware?.sessions_completed || 0)} today`} subtitle="Understand • Argue • Decide • Plan & Do">
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"12px" }}>
-          <p style={{ margin:"0 0 6px 0", fontWeight:900 }}>{COPY.home_help_strip.title}</p>
+          <p style={{ margin:"0 0 6px 0", fontWeight:900, fontSize:"22px", lineHeight:1.2 }}>{COPY.home_help_strip.title}</p>
           <p className="hint">{COPY.home_help_strip.lines[0]}</p>
           <p className="hint">{COPY.home_help_strip.lines[1]}</p>
           <p className="hint" style={{ marginTop:"8px" }}>
