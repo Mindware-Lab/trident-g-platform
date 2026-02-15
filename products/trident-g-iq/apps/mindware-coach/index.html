@@ -23,7 +23,7 @@
 <body>
   <div id="root"></div>
 <script type="text/babel" data-presets="env,react">
-  const { useEffect, useMemo, useState } = React;
+  const { useEffect, useMemo, useRef, useState } = React;
   const APP_ICON = "../../../../branding/Trident-G-Icon.svg";
   const APP_NAME = "IQ Mindware Coach v1";
   const BUILD_ID = "2026-02-15.2";
@@ -260,6 +260,8 @@
     const [packError, setPackError] = useState("");
     const [loadingPacks, setLoadingPacks] = useState(true);
     const [timerSec, setTimerSec] = useState(0);
+    const timeoutAdvanceRef = useRef(null);
+    const audioCtxRef = useRef(null);
     const [plan, setPlan] = useState(() => ({
       mode: "practice",
       frame: mwState.defaults.frame,
@@ -455,6 +457,63 @@
       return () => clearTimeout(id);
     }, [timerSec, session, lessonModalScript]);
 
+    const playTimeUpBuzzer = () => {
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        if (!audioCtxRef.current) audioCtxRef.current = new Ctx();
+        const ctx = audioCtxRef.current;
+        const now = ctx.currentTime;
+        const beep = (freq, start, dur) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "square";
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.0001, start);
+          gain.gain.exponentialRampToValueAtTime(0.16, start + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start(start);
+          osc.stop(start + dur);
+        };
+        beep(880, now, 0.12);
+        beep(660, now + 0.15, 0.16);
+      } catch {}
+    };
+
+    useEffect(() => {
+      if (!session || session.phase !== "question") return;
+      if (lessonModalScript) return;
+      if (timerSec > 0) return;
+      if (timeoutAdvanceRef.current) return;
+
+      playTimeUpBuzzer();
+      setSession((prev) => {
+        if (!prev || prev.phase !== "question" || prev.auto_timeout_handled) return prev;
+        const item = prev.current;
+        const answer = {
+          item_id: item.id,
+          selected_index: null,
+          correct: false,
+          late: true,
+          timed_out: true,
+          rt_ms: Date.now() - prev.qStartedAt,
+          near_miss_tag: item.near_miss_tag,
+          is_boundary: item.is_boundary
+        };
+        setMwState((s) => ({ ...s, seen_items: { ...s.seen_items, [item.id]: nowIso() } }));
+        return { ...prev, answers: [...prev.answers, answer], auto_timeout_handled: true };
+      });
+      timeoutAdvanceRef.current = setTimeout(() => {
+        timeoutAdvanceRef.current = null;
+        nextQuestion();
+      }, 850);
+    }, [timerSec, session, lessonModalScript]);
+
+    useEffect(() => () => {
+      if (timeoutAdvanceRef.current) clearTimeout(timeoutAdvanceRef.current);
+    }, []);
+
     const pushEvent = (type, payload) => setEvents((prev) => [...prev, { ts: nowIso(), app: "mindware", type, payload }].slice(-800));
     const seenRecently = (id) => {
       const ts = mwState.seen_items[id];
@@ -577,7 +636,8 @@
         phase: "question",
         answers: [],
         current: q,
-        qStartedAt: Date.now()
+        qStartedAt: Date.now(),
+        auto_timeout_handled: false
       });
       setTimerSec(Number(q.time_limit_s || 35));
       setScreen("session");
@@ -682,8 +742,12 @@
     const openTeachForPlan = () => startTeachForScript(plan.script, "practice", null, null);
 
     const handleAnswer = (selectedIndex) => {
+      if (timeoutAdvanceRef.current) {
+        clearTimeout(timeoutAdvanceRef.current);
+        timeoutAdvanceRef.current = null;
+      }
       setSession((prev) => {
-        if (!prev || prev.phase !== "question") return prev;
+        if (!prev || prev.phase !== "question" || prev.auto_timeout_handled) return prev;
         const item = prev.current;
         const late = Number(item.time_limit_s || 35) > 0 && timerSec <= 0;
         const answer = {
@@ -696,7 +760,7 @@
           is_boundary: item.is_boundary
         };
         setMwState((s) => ({ ...s, seen_items: { ...s.seen_items, [item.id]: nowIso() } }));
-        return { ...prev, answers: [...prev.answers, answer], phase: "feedback", lastCorrect: answer.correct };
+        return { ...prev, answers: [...prev.answers, answer], phase: "feedback", lastCorrect: answer.correct, auto_timeout_handled: false };
       });
     };
 
@@ -707,7 +771,7 @@
         if (nextIdx >= prev.items.length) return { ...prev, phase: "complete", completed_at: nowIso() };
         const q = prev.items[nextIdx];
         setTimerSec(Number(q.time_limit_s || 35));
-        return { ...prev, index: nextIdx, current: q, phase: "question", qStartedAt: Date.now() };
+        return { ...prev, index: nextIdx, current: q, phase: "question", qStartedAt: Date.now(), auto_timeout_handled: false };
       });
     };
 
@@ -882,6 +946,16 @@
       }));
       pushEvent("mission_completed", { mission_id: pendingMission.id, outcome: missionOutcome.success_met });
       setMissionOutcome({ cue_fired: "YES", success_met: "PARTLY", blocker: "", improved: "", note: "" });
+      setScreen("home");
+    };
+
+    const returnToMenu = () => {
+      if (timeoutAdvanceRef.current) {
+        clearTimeout(timeoutAdvanceRef.current);
+        timeoutAdvanceRef.current = null;
+      }
+      setSession(null);
+      setTimerSec(0);
       setScreen("home");
     };
 
@@ -1159,11 +1233,29 @@
             {(q.is_switch === true && q.switch_type === "wrong_tool") ? <p className="hint"><b>Is this the right approach?</b></p> : null}
             {(q.is_switch === true && q.switch_type === "flip_trigger") ? <p className="hint"><b>What would change your mind?</b></p> : null}
             <p className="p">{stripPromptTags(q.prompt)}</p>
-            {timerSec <= 0 ? <p className="hint"><b>Time is up.</b> You can still answer.</p> : null}
+            {timerSec <= 0 ? <p className="hint"><b>Time is up.</b> Moving to the next item...</p> : null}
           </section>
           <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
             <div style={{ display:"grid", gap:"10px" }}>
-              {q.options.map((op, i) => <button key={i} className="btn optBtn" onClick={() => handleAnswer(i)}>{op}</button>)}
+              {q.options.map((op, i) => (
+                <button
+                  key={i}
+                  className="btn optBtn"
+                  disabled={timerSec <= 0 || session.auto_timeout_handled}
+                  onClick={() => handleAnswer(i)}
+                >
+                  {op}
+                </button>
+              ))}
+            </div>
+            <div className="btnRow" style={{ marginTop:"12px" }}>
+              <button
+                className="btn btnSecondary"
+                style={{ background:"#EAF5FF", border:"1px solid #2764B7", color:"#143A73", fontWeight:900, opacity:1 }}
+                onClick={returnToMenu}
+              >
+                Return to menu
+              </button>
             </div>
           </section>
         </Frame>
