@@ -114,6 +114,66 @@
     RECHECK: 'Later check',
     RESET: 'Reset day'
   };
+  const COPY = {
+    home_help_strip: {
+      title: 'How this helps',
+      lines: [
+        "You're building capacity habits: short, repeatable thinking steps you can run under pressure.",
+        "You practise here, then use it on a real work task so it still holds up when you're busy or using AI."
+      ],
+      links: {
+        learn_more: 'Learn more',
+        why_missions: 'Why missions?'
+      },
+      expanded_loop: 'Readiness -> Guided training -> Quick checks -> Results -> Mission -> Check-in'
+    },
+    how_it_works_modal: {
+      title: 'How it works',
+      sections: [
+        {
+          title: 'The point of this app',
+          body: 'Build reliable focus and control habits that improve performance under time pressure, high-stakes decisions, and AI-assisted workflows.'
+        },
+        {
+          title: 'What is a thinking step?',
+          body: 'A thinking step is one repeatable action in your workflow, such as: stay with one rule for this block, or pause and reset before overload.'
+        },
+        {
+          title: 'The Capacity Loop',
+          list: [
+            'Readiness: pick full, light, or reset',
+            'Guided session: run 10 blocks with clear settings',
+            'Quick checks: log drift, load, and what changed',
+            'Switch test (optional): test whether gains hold when the task changes',
+            'Try it in real life: apply one small mission',
+            'Save: check-in next time and adjust'
+          ]
+        },
+        {
+          title: 'Why try it in real life?',
+          body: 'Practice makes control familiar. Real tasks make it reliable. Missions test whether training still holds when context-switching, interruptions, and AI suggestions are present.'
+        }
+      ],
+      footer_small: "This app supports better habits and clearer thinking. It is not medical advice. If you're concerned about health or mental health, speak to your GP."
+    },
+    start_session: {
+      why_line: 'Why: Practice builds stability. Real tasks build reliability.'
+    },
+    mission_bridge_banner: {
+      no_mission: 'After this session: set one tiny real-world mission (2-10 minutes) to use the habit once.',
+      pending_title: 'Mission pending',
+      pending_body: 'Log what happened before your next session (recommended).',
+      buttons: {
+        log_outcome: 'Log outcome',
+        skip_for_now: 'Skip for now'
+      }
+    },
+    why_missions_modal: {
+      title: 'Why missions?',
+      body: "A mission is a small real task you already need to do. It turns training into performance. Without missions, it's easy to improve in app but not in work.\n\nA good mission is:\n- Small (2-10 minutes)\n- Real (something you genuinely need to do)\n- Measurable (you can tell if it worked)\n\nThat is why the app prompts you to try one mission before your next session.",
+      cta: 'Got it'
+    }
+  };
   const SWITCH_SIZE_LABELS = {
     NEAR: 'Small switch',
     MID: 'Medium switch',
@@ -358,6 +418,9 @@
       value_tag: ''
     });
     const [sessionRun, setSessionRun] = useState(null);
+    const [homeHelpExpanded, setHomeHelpExpanded] = useState(false);
+    const [showHowItWorks, setShowHowItWorks] = useState(false);
+    const [showWhyMissions, setShowWhyMissions] = useState(false);
     const [quickCheck, setQuickCheck] = useState({
       level_played: '',
       felt_difficulty: 'ok',
@@ -1669,6 +1732,29 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+            <p style={{ margin: 0, fontWeight: 900 }}>{COPY.home_help_strip.title}</p>
+            <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>{COPY.home_help_strip.lines[0]}</p>
+            <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: '#333333' }}>{COPY.home_help_strip.lines[1]}</p>
+            {homeHelpExpanded ? (
+              <>
+                <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>
+                  <b>Capacity loop:</b> {COPY.home_help_strip.expanded_loop}
+                </p>
+                <div className="btnRow">
+                  <button className="btn btnSecondary" onClick={() => setShowHowItWorks(true)}>Open guide</button>
+                </div>
+              </>
+            ) : null}
+            <p style={{ margin: '8px 0 0 0', fontSize: '13px' }}>
+              <button style={{ border: 'none', background: 'none', color: '#2764B7', cursor: 'pointer', padding: 0, font: 'inherit' }} onClick={() => setShowHowItWorks(true)}>{COPY.home_help_strip.links.learn_more}</button>
+              {' • '}
+              <button style={{ border: 'none', background: 'none', color: '#2764B7', cursor: 'pointer', padding: 0, font: 'inherit' }} onClick={() => setShowWhyMissions(true)}>{COPY.home_help_strip.links.why_missions}</button>
+              {' • '}
+              <button style={{ border: 'none', background: 'none', color: '#2764B7', cursor: 'pointer', padding: 0, font: 'inherit' }} onClick={() => setHomeHelpExpanded((v) => !v)}>{homeHelpExpanded ? 'Less' : 'Expand'}</button>
+            </p>
+          </section>
+
+          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
             <p style={{ margin: 0, fontWeight: 900 }}>Progress</p>
             <p style={{ marginTop: '8px' }}>{programV11.program_session_index}/{PROGRAM_TARGET} complete | {sessionsRemaining} remaining</p>
             <p style={{ marginTop: '6px', fontSize: '13px', color: '#555555' }}>
@@ -1693,9 +1779,14 @@
                 Switch test: {SWITCH_SIZE_LABELS[recommendationV11.probe_radius] || recommendationV11.probe_radius} | Target game: {recommendationV11.probe_target_game}
               </p>
             ) : null}
+            {!pendingMission ? (
+              <p style={{ marginTop: '8px', fontSize: '13px', color: '#555555' }}>
+                {COPY.mission_bridge_banner.no_mission}
+              </p>
+            ) : null}
             {pendingMission ? (
               <p style={{ marginTop: '8px', fontSize: '13px', color: '#2764B7', fontWeight: 700 }}>
-                You have a mission to check in on before your next session.
+                {COPY.mission_bridge_banner.pending_title}: {COPY.mission_bridge_banner.pending_body}
               </p>
             ) : null}
             <div className="btnRow">
@@ -1705,8 +1796,11 @@
                   style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }}
                   onClick={() => setScreen('mission_outcome')}
                 >
-                  Mission check-in
+                  {COPY.mission_bridge_banner.buttons.log_outcome}
                 </button>
+              ) : null}
+              {pendingMission ? (
+                <button className="btn btnSecondary" onClick={() => setScreen('home')}>{COPY.mission_bridge_banner.buttons.skip_for_now}</button>
               ) : null}
             </div>
             {programV11.consecutive_rest_count >= 2 ? (
@@ -1907,6 +2001,7 @@
               <button className="btn btnPrimary" onClick={startGuidedSession}>Start guided session</button>
               <button className="btn btnSecondary" onClick={() => setScreen('results')}>Use post-session entry instead</button>
             </div>
+            <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333', fontWeight: 700 }}>{COPY.start_session.why_line}</p>
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
@@ -1926,6 +2021,34 @@
               ) : null}
             </details>
           </section>
+          {showHowItWorks ? (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'grid', placeItems: 'center', padding: '12px', zIndex: 20 }}>
+              <section style={{ width: 'min(720px, 100%)', maxHeight: '85vh', overflow: 'auto', background: '#fff', borderRadius: '16px', border: '1px solid #ddd', padding: '16px' }}>
+                <h2 className="h1" style={{ marginTop: 0 }}>{COPY.how_it_works_modal.title}</h2>
+                <p style={{ margin: '8px 0', fontWeight: 900 }}>{COPY.how_it_works_modal.sections[0].title}</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#333333' }}>{COPY.how_it_works_modal.sections[0].body}</p>
+                <p style={{ margin: '8px 0', fontWeight: 900 }}>{COPY.how_it_works_modal.sections[1].title}</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#333333' }}>{COPY.how_it_works_modal.sections[1].body}</p>
+                <p style={{ margin: '8px 0', fontWeight: 900 }}>{COPY.how_it_works_modal.sections[2].title}</p>
+                <ol style={{ margin: '0 0 0 18px', padding: 0 }}>
+                  {COPY.how_it_works_modal.sections[2].list.map((row, i) => <li key={i} style={{ fontSize: '13px', color: '#333333', marginTop: '4px' }}>{row}</li>)}
+                </ol>
+                <p style={{ margin: '8px 0', fontWeight: 900 }}>{COPY.how_it_works_modal.sections[3].title}</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#333333' }}>{COPY.how_it_works_modal.sections[3].body}</p>
+                <p style={{ margin: '10px 0 0 0', fontSize: '12px', color: '#555555' }}>{COPY.how_it_works_modal.footer_small}</p>
+                <div className="btnRow"><button className="btn btnPrimary" onClick={() => setShowHowItWorks(false)}>Close</button></div>
+              </section>
+            </div>
+          ) : null}
+          {showWhyMissions ? (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'grid', placeItems: 'center', padding: '12px', zIndex: 20 }}>
+              <section style={{ width: 'min(640px, 100%)', maxHeight: '80vh', overflow: 'auto', background: '#fff', borderRadius: '16px', border: '1px solid #ddd', padding: '16px' }}>
+                <h2 className="h1" style={{ marginTop: 0 }}>{COPY.why_missions_modal.title}</h2>
+                <p style={{ margin: 0, fontSize: '13px', color: '#333333', whiteSpace: 'pre-line' }}>{COPY.why_missions_modal.body}</p>
+                <div className="btnRow"><button className="btn btnPrimary" onClick={() => setShowWhyMissions(false)}>{COPY.why_missions_modal.cta}</button></div>
+              </section>
+            </div>
+          ) : null}
         </main>
       </div>
     );
