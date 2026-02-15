@@ -1564,6 +1564,7 @@
           {getLessonByScript(plan.script) ? (
             <section style={{ marginTop:"8px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
               <p style={homeCardTitleStyle}>What you're practising</p>
+              <p className="hint"><b>Script:</b> {scriptTitle(plan.script)}</p>
               <p className="hint">{scriptOneLiner(plan.script)}</p>
               <p className="hint"><b>Use it when:</b> {plan.script === "Y1" ? "you're gathering info but nothing is changing what you'll do next." : ((getLessonByScript(plan.script).when_to_use || [])[0] || "A decision needs a clear next move.")}</p>
               <p className="hint"><b>Quick steps:</b></p>
