@@ -27,7 +27,7 @@
   const APP_ICON = "../../../../branding/Trident-G-Icon.svg";
   const APP_NAME = "IQ Mindware Coach v1";
   const BUILD_ID = "2026-02-15.2";
-  const TIME_UP_SOUND = "../../../siren.mp3";
+  const TIME_WARNING_SOUND = "../../../time%20running%20out.mp3";
 
   const LS = {
     SHARED: "tg_shared_state_v1",
@@ -262,7 +262,8 @@
     const [loadingPacks, setLoadingPacks] = useState(true);
     const [timerSec, setTimerSec] = useState(0);
     const timeoutAdvanceRef = useRef(null);
-    const timeoutSoundRef = useRef(null);
+    const warningSoundRef = useRef(null);
+    const warningPlayedKeyRef = useRef("");
     const audioCtxRef = useRef(null);
     const [plan, setPlan] = useState(() => ({
       mode: "practice",
@@ -462,13 +463,22 @@
 
     useEffect(() => {
       try {
-        const audio = new Audio(TIME_UP_SOUND);
+        const audio = new Audio(TIME_WARNING_SOUND);
         audio.preload = "auto";
-        timeoutSoundRef.current = audio;
+        warningSoundRef.current = audio;
       } catch {}
     }, []);
 
-    const playTimeUpBuzzer = () => {
+    const stopTimeWarningSound = () => {
+      const fileSound = warningSoundRef.current;
+      if (!fileSound) return;
+      try {
+        fileSound.pause();
+        fileSound.currentTime = 0;
+      } catch {}
+    };
+
+    const playTimeWarningSound = () => {
       const playFallbackSynth = () => {
         try {
           const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -498,7 +508,7 @@
         } catch {}
       };
 
-      const fileSound = timeoutSoundRef.current;
+      const fileSound = warningSoundRef.current;
       if (fileSound) {
         try {
           fileSound.pause();
@@ -518,10 +528,19 @@
     useEffect(() => {
       if (!session || session.phase !== "question") return;
       if (lessonModalScript) return;
+      if (timerSec !== 3) return;
+      const questionKey = `${session.id}:${session.index}`;
+      if (warningPlayedKeyRef.current === questionKey) return;
+      warningPlayedKeyRef.current = questionKey;
+      playTimeWarningSound();
+    }, [timerSec, session, lessonModalScript]);
+
+    useEffect(() => {
+      if (!session || session.phase !== "question") return;
+      if (lessonModalScript) return;
       if (timerSec > 0) return;
       if (timeoutAdvanceRef.current) return;
 
-      playTimeUpBuzzer();
       setSession((prev) => {
         if (!prev || prev.phase !== "question" || prev.auto_timeout_handled) return prev;
         const item = prev.current;
@@ -780,6 +799,7 @@
         clearTimeout(timeoutAdvanceRef.current);
         timeoutAdvanceRef.current = null;
       }
+      stopTimeWarningSound();
       setSession((prev) => {
         if (!prev || prev.phase !== "question" || prev.auto_timeout_handled) return prev;
         const item = prev.current;
@@ -799,6 +819,7 @@
     };
 
     const nextQuestion = () => {
+      stopTimeWarningSound();
       setSession((prev) => {
         if (!prev) return prev;
         const nextIdx = prev.index + 1;
@@ -988,6 +1009,7 @@
         clearTimeout(timeoutAdvanceRef.current);
         timeoutAdvanceRef.current = null;
       }
+      stopTimeWarningSound();
       setSession(null);
       setTimerSec(0);
       setScreen("home");
@@ -1265,7 +1287,7 @@
                 <p style={{ margin:0, fontWeight:900, fontSize:"18px", lineHeight:1.1, color:"#FFFFFF" }}>
                   {remainingAfterThis} remaining
                 </p>
-                <p style={{ margin:0, fontWeight:900, fontSize:"28px", lineHeight:1.1, color: timerSec <= 5 ? "#B42318" : "#FFFFFF" }}>
+                <p style={{ margin:0, fontWeight:900, fontSize:"28px", lineHeight:1.1, color: timerSec <= 3 ? "#B42318" : "#FFFFFF" }}>
                   {timerSec > 0 ? `${timerSec}s left` : "Time's up"}
                 </p>
               </div>
