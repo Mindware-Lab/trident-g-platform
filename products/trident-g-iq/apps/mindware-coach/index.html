@@ -1485,17 +1485,20 @@
               </div>
             </>
           ) : null}
+        </section>
+        <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
+          <p style={{ margin:"0 0 6px 0", fontWeight:900 }}>Reasoning Gym</p>
           {recommended.mode === "gym" ? (
-            <section style={{ marginTop:"8px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
-              <p style={{ margin:"0 0 4px 0", fontWeight:900 }}>Reasoning Gym (quick repair)</p>
+            <section style={{ marginTop:"4px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
+              <p style={{ margin:"0 0 4px 0", fontWeight:900 }}>Quick repair suggested</p>
               <p className="hint"><b>{gymFamilyLabel(recommended.tag)}:</b> {gymFamilyDef(recommended.tag)}</p>
               <p className="hint">Optional warm-up: 3-5 items, about 2 minutes, then back to your script.</p>
               <div className="btnRow"><button className="btn btnSecondary" style={{ background:"#EAF5FF", border:"1px solid #2764B7", color:"#143A73", fontWeight:900, opacity:1 }} onClick={startQuickRepair}>Start quick repair</button></div>
             </section>
           ) : null}
           <section style={{ marginTop:"8px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
-            <p style={{ margin:"0 0 4px 0", fontWeight:900 }}>Reasoning Gym</p>
             <p className="hint">Optional: train one reasoning weakness directly (3-5 items).</p>
+            <div style={{ height:"10px" }} />
             <select className="field" value={menuGymTag} onChange={(e) => setMenuGymTag(mapTag(e.target.value))}>
               {Object.keys(GYM_FAMILY_LABEL).map((tag) => (
                 <option key={tag} value={tag}>Focus: {gymFamilyLabel(tag)}</option>
