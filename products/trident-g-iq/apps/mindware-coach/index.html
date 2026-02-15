@@ -623,6 +623,12 @@
       return { mode: "practice", note: "" };
     }, [mwState.probe, shared]);
 
+    const getQuestionTimeSecForToday = () => {
+      const readiness = String(shared.today.readiness || "full").toLowerCase();
+      const noisy = String(shared.today.data_quality || "ok").toLowerCase() !== "ok";
+      return (readiness === "full" && !noisy) ? 20 : 30;
+    };
+
     const pickItems = ({ mode, signature, microTag, script }) => {
       const targetN = mode === "gym" ? 5 : (TIMEBOX_TO_ITEMS[plan.timebox_min] || 8);
       let pool = [];
@@ -676,6 +682,7 @@
         return;
       }
       const q = items[0];
+      const questionTimeSec = getQuestionTimeSecForToday();
       setSession({
         id: uid(),
         started_at: nowIso(),
@@ -684,6 +691,7 @@
         script: signature?.script || script,
         rigour: signature?.rigour || plan.rigour,
         signature,
+        question_time_s: questionTimeSec,
         items,
         index: 0,
         phase: "question",
@@ -692,7 +700,7 @@
         qStartedAt: Date.now(),
         auto_timeout_handled: false
       });
-      setTimerSec(Number(q.time_limit_s || 35));
+      setTimerSec(questionTimeSec);
       setScreen("session");
     };
 
@@ -803,7 +811,7 @@
       setSession((prev) => {
         if (!prev || prev.phase !== "question" || prev.auto_timeout_handled) return prev;
         const item = prev.current;
-        const late = Number(item.time_limit_s || 35) > 0 && timerSec <= 0;
+        const late = Number(prev.question_time_s || 30) > 0 && timerSec <= 0;
         const answer = {
           item_id: item.id,
           selected_index: selectedIndex,
@@ -825,7 +833,7 @@
         const nextIdx = prev.index + 1;
         if (nextIdx >= prev.items.length) return { ...prev, phase: "complete", completed_at: nowIso() };
         const q = prev.items[nextIdx];
-        setTimerSec(Number(q.time_limit_s || 35));
+        setTimerSec(Number(prev.question_time_s || 30));
         return { ...prev, index: nextIdx, current: q, phase: "question", qStartedAt: Date.now(), auto_timeout_handled: false };
       });
     };
@@ -846,6 +854,7 @@
         mode: session.mode,
         frame: session.frame,
         script: session.script,
+        question_time_s: Number(session.question_time_s || 30),
         accuracy: Number(accuracy.toFixed(2)),
         boundary_pass: boundaryPass,
         top_near_miss: topMiss ? topMiss[0] : null,
@@ -877,7 +886,7 @@
               distance: dist,
               wrapper: session.items[0]?.wrapper,
               rigour: session.rigour,
-              time_limit_s: session.items[0]?.time_limit_s || 35,
+              time_limit_s: Number(session.question_time_s || 30),
               polarity: session.items[0]?.polarity,
               lens_target: session.items[0]?.lens_target,
               ts: summary.completed_at
@@ -927,7 +936,7 @@
               distance: next.probe.next_distance || "near",
               wrapper: session.items[0]?.wrapper,
               rigour: session.rigour,
-              time_limit_s: session.items[0]?.time_limit_s || 35,
+              time_limit_s: Number(session.question_time_s || 30),
               polarity: session.items[0]?.polarity,
               lens_target: session.items[0]?.lens_target
             };
@@ -1386,6 +1395,7 @@
     const readinessKey = String(shared.today.readiness || "full").toLowerCase();
     const readinessLabel = readinessKey === "light" ? "Light" : (readinessKey === "reset" ? "Reset" : "Full");
     const capacityDoneToday = Number(shared.today.capacity?.sessions_completed || 0);
+    const questionTimeSecToday = getQuestionTimeSecForToday();
 
     return (
       <Frame chip={`${Number(shared.today.mindware?.sessions_completed || 0)} today`} subtitle="Understand • Argue • Decide • Plan & Do">
@@ -1402,13 +1412,15 @@
           <p style={{ margin:0, fontWeight:900 }}>Today</p>
           <p className="hint"><b>Recommended intensity today:</b> <b>{readinessLabel}</b> (change) • <button className="plainLink" style={{ fontWeight:900, color:"#0F3A73", textDecoration:"underline" }} onClick={() => setShowTodayHelp((v) => !v)}>{showTodayHelp ? "Hide explanation" : "How is this decided?"}</button></p>
           <p className="hint">Full = normal practice. Light = shorter. Reset = mission only.</p>
+          <p className="hint"><b>Question timer today:</b> {questionTimeSecToday} seconds per item.</p>
           {showTodayHelp ? (
             <section style={{ marginTop:"8px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
               <p className="hint"><b>What decides this recommendation:</b></p>
               <p className="hint">1) Today&apos;s readiness from Capacity Coach (`full`, `light`, `reset`).</p>
               <p className="hint">2) Data quality today (if noisy, we nudge Light/Reset).</p>
               <p className="hint">3) Transfer checks (probe/re-check only run on Full days).</p>
-              <p className="hint"><b>What changes in Mindware:</b> it adjusts nudges and transfer mode suggestions. You can still choose your own rigour and timebox.</p>
+              <p className="hint"><b>Timer rule:</b> Full + clean data = 20s per question. Otherwise = 30s per question.</p>
+              <p className="hint"><b>What changes in Mindware:</b> it adjusts nudges, transfer mode suggestions, and per-question timer. You can still choose your own rigour and timebox.</p>
             </section>
           ) : null}
           {capacityDoneToday >= 1 ? <p className="hint"><b>Capacity training done today:</b> {capacityDoneToday} session{capacityDoneToday === 1 ? "" : "s"}</p> : null}
