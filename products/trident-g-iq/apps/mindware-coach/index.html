@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -17,6 +17,7 @@
     .optBtn { width: 100%; text-align: left; background: #FFFFFF; border: 1px solid #E0E0E0; color: #111; }
     .hint { margin: 6px 0 0 0; font-size: 13px; color: #555; }
     .timer { font-weight: 900; color: #143a73; }
+    .plainLink { padding: 0; border: none; background: none; color: #143a73; cursor: pointer; font: inherit; }
   </style>
 </head>
 <body>
@@ -25,6 +26,7 @@
   const { useEffect, useMemo, useState } = React;
   const APP_ICON = "../../../../branding/Trident-G-Icon.svg";
   const APP_NAME = "IQ Mindware Coach v1";
+  const BUILD_ID = "2026-02-15.2";
 
   const LS = {
     SHARED: "tg_shared_state_v1",
@@ -35,23 +37,90 @@
   const FRAME_LABEL = { understand: "Understand", argue: "Argue", decide: "Decide", plan_do: "Plan & Do" };
   const FRAMES = Object.keys(FRAME_LABEL);
   const SCRIPTS = ["Y0","Y1","Y2","Y3","Y4","Y5","Y6","Y7","Y8","Y9","Y10"];
-  const PACKS = [
+  const OPERATOR_GLOSSARY = {
+    Y0: [
+      ["Commit or park", "Decide to do it now, or schedule it for later on purpose."],
+      ["Timebox", "A fixed amount of time you agree to stop at."],
+      ["Good enough", "A clear minimum result that is enough to move forward."]
+    ],
+    Y1: [
+      ["Discriminating check", "A quick test that tells options apart."],
+      ["Flip rule", "What result would make you change your next step."]
+    ],
+    Y2: [
+      ["Trade-off", "Choosing between options where each has pros and cons."],
+      ["Criteria", "The few things that matter most for this choice."],
+      ["Flip check", "The uncertainty that could change the winner."]
+    ],
+    Y3: [
+      ["Value x chance", "Rough benefit multiplied by rough likelihood."],
+      ["Ballpark estimate", "A rough number that is good enough to decide."],
+      ["Driver estimate", "The single estimate most likely to flip your choice."]
+    ],
+    Y4: [
+      ["Claim", "The main point being argued."],
+      ["Support", "Evidence or reasons used for the claim."],
+      ["Link", "Why the support actually backs the claim."]
+    ],
+    Y5: [
+      ["Mechanism", "How one thing causes another step by step."],
+      ["Cause chain", "Driver -> intermediate steps -> outcome."],
+      ["Alternative cause", "Another explanation that could also fit the result."]
+    ],
+    Y6: [
+      ["Bottleneck", "The main constraint limiting progress right now."],
+      ["Constraint relief", "A specific action that loosens that limit."],
+      ["Shift check", "Verify whether the bottleneck actually moved."]
+    ],
+    Y7: [
+      ["Success signal", "One observable sign you can track."],
+      ["Measurable goal", "A goal stated so progress can be seen."],
+      ["Stop rule", "A clear point where you stop or switch."]
+    ],
+    Y8: [
+      ["Minimum useful model", "The simplest model that still supports a good next move."],
+      ["Hard constraint", "A limit you cannot ignore, like time or budget."],
+      ["Flip uncertainty", "The unknown that could change your plan."]
+    ],
+    Y9: [
+      ["Time-boxed trial", "A test with a fixed start and end."],
+      ["Metric", "The one number or signal you use to judge the trial."],
+      ["Keep or switch rule", "A pre-set rule for what you do after results."]
+    ],
+    Y10: [
+      ["Evidence update", "Adjust confidence to match what new evidence supports."],
+      ["Proportional update", "Strong evidence changes confidence more than weak evidence."],
+      ["Plan change", "A concrete behavior change based on the update."]
+    ]
+  };
+  const TIMED_PACKS = [
     "./content/packs/core_v1.json",
     "./content/packs/reasoning_gym_v1.json",
     "./content/packs/logic_injections_v1.json"
   ];
+  const LESSON_PACK = "./content/packs/lessons_v1.json";
+  const MANIFEST_PACK = "./content/packs/manifest_v1.json";
   const TIMEBOX_TO_ITEMS = { 2: 5, 4: 8, 6: 12, 8: 16 };
-  const REQUIRED = ["id","frame","wrapper","script","polarity","lens_target","kind","is_boundary","near_miss_tag","prompt","options","answer_index","why_right"];
+  const REQUIRED = ["id","context","frame","wrapper","script","polarity","lens_target","kind","is_boundary","near_miss_tag","prompt","options","answer_index","why_right"];
 
   const parse = (raw, fb) => { try { return JSON.parse(raw); } catch { return fb; } };
   const asObj = (v) => (v && typeof v === "object" && !Array.isArray(v) ? v : {});
   const uid = () => "mw_" + Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36);
   const nowIso = () => new Date().toISOString();
   const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+  const prettyContext = (v) => String(v || "").charAt(0).toUpperCase() + String(v || "").slice(1);
+  const stripPromptTags = (prompt) => String(prompt || "").replace(/^(\[[^\]]+\]\s*)+/, "").trim();
+  const localDateKey = (d = new Date()) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
 
   const defaultShared = () => ({
     schema_version: "tg_shared_state_v1",
     today: {
+      date_local: localDateKey(),
       readiness: "full",
       data_quality: "ok",
       capacity: { sessions_completed: 0 },
@@ -63,6 +132,7 @@
     schema_version: "tg_mindware_state_v1",
     defaults: { frame: "understand", script: "Y1", rigour: "standard", timebox_min: 4 },
     scripts: {},
+    operator_intro: {},
     seen_items: {},
     missions: [],
     probe: {
@@ -70,21 +140,31 @@
       pending_probe: null,
       pending_recheck: null,
       last_passed_probe_signature: null,
-      next_microset_tag: null
+      next_microset_tag: null,
+      next_microset_source_session_id: null
     }
   });
   const loadShared = () => {
     const raw = asObj(parse(localStorage.getItem(LS.SHARED), {}));
     const d = defaultShared();
+    const todayKey = localDateKey();
+    const rawToday = asObj(raw.today);
+    const today = rawToday.date_local === todayKey
+      ? {
+        ...d.today,
+        ...rawToday,
+        capacity: { ...d.today.capacity, ...asObj(rawToday.capacity) },
+        mindware: { ...d.today.mindware, ...asObj(rawToday.mindware) },
+        date_local: todayKey
+      }
+      : {
+        ...d.today,
+        date_local: todayKey
+      };
     return {
       ...d,
       ...raw,
-      today: {
-        ...d.today,
-        ...asObj(raw.today),
-        capacity: { ...d.today.capacity, ...asObj(raw.today?.capacity) },
-        mindware: { ...d.today.mindware, ...asObj(raw.today?.mindware) }
-      },
+      today,
       last: { ...d.last, ...asObj(raw.last), mindware_session: { summary: raw.last?.mindware_session?.summary || null } }
     };
   };
@@ -96,6 +176,7 @@
       ...raw,
       defaults: { ...d.defaults, ...asObj(raw.defaults) },
       scripts: asObj(raw.scripts),
+      operator_intro: asObj(raw.operator_intro),
       seen_items: asObj(raw.seen_items),
       missions: Array.isArray(raw.missions) ? raw.missions : [],
       probe: { ...d.probe, ...asObj(raw.probe) }
@@ -107,7 +188,8 @@
     const [shared, setShared] = useState(() => loadShared());
     const [mwState, setMwState] = useState(() => loadState());
     const [events, setEvents] = useState(() => (Array.isArray(parse(localStorage.getItem(LS.EVENTS), [])) ? parse(localStorage.getItem(LS.EVENTS), []) : []));
-    const [packs, setPacks] = useState([]);
+    const [timedPacks, setTimedPacks] = useState([]);
+    const [lessonsPack, setLessonsPack] = useState(null);
     const [packError, setPackError] = useState("");
     const [loadingPacks, setLoadingPacks] = useState(true);
     const [timerSec, setTimerSec] = useState(0);
@@ -119,15 +201,81 @@
       timebox_min: mwState.defaults.timebox_min
     }));
     const [session, setSession] = useState(null);
+    const [lessonRun, setLessonRun] = useState(null);
+    const [guidedFeedback, setGuidedFeedback] = useState(null);
+    const [lessonModalScript, setLessonModalScript] = useState(null);
     const [missionDraft, setMissionDraft] = useState({ cue: "", success_signal: "", stop_flip_rule: "", value_tag: "" });
     const [missionOutcome, setMissionOutcome] = useState({ cue_fired: "YES", success_met: "PARTLY", blocker: "", note: "" });
 
     const pendingMission = useMemo(() => mwState.missions.find((m) => m.status === "pending") || null, [mwState.missions]);
-    const allItems = useMemo(() => packs.flatMap((p) => p.items || []), [packs]);
+    const allItems = useMemo(() => timedPacks.flatMap((p) => p.items || []), [timedPacks]);
+    const getLessonByScript = (script) => (lessonsPack?.operators || []).find((op) => op.script === script) || null;
+    const getGuidedItemByScript = (script) => {
+      const lesson = getLessonByScript(script);
+      if (!lesson) return null;
+      return (lessonsPack?.items || []).find((it) => it.id === lesson.guided_item_id) || null;
+    };
+    const getOperatorIntro = (script) => asObj(mwState.operator_intro?.[script]);
+    const needsTeach = (script) => {
+      const intro = getOperatorIntro(script);
+      const lesson = getLessonByScript(script);
+      const targetVersion = Number(lesson?.operator_version || lessonsPack?.version || 1);
+      if (intro.seen !== true) return true;
+      const seenVersion = Number(intro.operator_version || intro.lesson_version || 0);
+      return seenVersion !== targetVersion;
+    };
+    const scriptTitle = (script) => {
+      const lesson = getLessonByScript(script);
+      return lesson?.display_name || lesson?.title || "Script";
+    };
+    const scriptOneLiner = (script) => {
+      const lesson = getLessonByScript(script);
+      return lesson?.display_subtitle || lesson?.one_liner || "";
+    };
+    const needsRefresher = (script) => {
+      if (!lessonsPack || needsTeach(script)) return false;
+      const intro = getOperatorIntro(script);
+      const seenTs = intro.seen_ts ? new Date(intro.seen_ts).getTime() : 0;
+      const stale = !seenTs || (Date.now() - seenTs) > (14 * 24 * 60 * 60 * 1000);
+      const recent = Array.isArray(mwState.scripts?.[script]?.recent_accuracy) ? mwState.scripts[script].recent_accuracy : [];
+      const low = recent.length >= 3 && recent.slice(-3).every((x) => Number(x) < 0.6);
+      return stale || low;
+    };
+    const markIntroSeen = (script) => {
+      const lesson = getLessonByScript(script);
+      const targetVersion = Number(lesson?.operator_version || lessonsPack?.version || 1);
+      setMwState((prev) => ({
+        ...prev,
+        operator_intro: {
+          ...prev.operator_intro,
+          [script]: {
+            seen: true,
+            seen_ts: nowIso(),
+            operator_version: targetVersion,
+            lesson_version: Number(lessonsPack?.version || 1)
+          }
+        }
+      }));
+    };
 
     useEffect(() => save(LS.STATE, mwState), [mwState]);
     useEffect(() => save(LS.SHARED, shared), [shared]);
     useEffect(() => save(LS.EVENTS, events.slice(-800)), [events]);
+
+    useEffect(() => {
+      // Do not persist a forced Gym suggestion across reloads.
+      setMwState((prev) => {
+        if (!prev.probe?.next_microset_tag) return prev;
+        return {
+          ...prev,
+          probe: {
+            ...prev.probe,
+            next_microset_tag: null,
+            next_microset_source_session_id: null
+          }
+        };
+      });
+    }, []);
 
     useEffect(() => {
       let cancelled = false;
@@ -136,8 +284,24 @@
         const cache = asObj(parse(localStorage.getItem(LS.CACHE), {}));
         const loaded = [];
         const ids = new Set();
-        for (const url of PACKS) {
+        try {
+          let timedUrls = [...TIMED_PACKS];
+          let lessonUrl = LESSON_PACK;
           try {
+            const manifestRes = await fetch(MANIFEST_PACK, { cache: "no-store" });
+            if (manifestRes.ok) {
+              const manifest = await manifestRes.json();
+              const packs = Array.isArray(manifest?.packs) ? manifest.packs : [];
+              const timed = packs.filter((p) => p?.type === "timed" || p?.id === "core_v1" || p?.id === "reasoning_gym_v1" || p?.id === "logic_injections_v1");
+              const lessons = packs.find((p) => p?.type === "lessons" || p?.id === "lessons_v1");
+              if (timed.length) timedUrls = timed.map((p) => p.path);
+              if (lessons?.path) lessonUrl = lessons.path;
+            }
+          } catch (manifestErr) {
+            console.warn("Mindware manifest not loaded; using default pack paths.", manifestErr);
+          }
+
+          for (const url of timedUrls) {
             const res = await fetch(url, { cache: "no-store" });
             if (!res.ok) throw new Error(url);
             const pack = await res.json();
@@ -150,15 +314,65 @@
             }
             loaded.push(pack);
             cache[pack.pack_id + "@" + pack.version] = { count: pack.items.length, last_loaded_ts: nowIso() };
-          } catch (e) {
-            console.error(e);
-            setPackError("Content did not load. Check your connection or reload the page.");
           }
-        }
-        if (!cancelled) {
-          setPacks(loaded);
-          setLoadingPacks(false);
-          save(LS.CACHE, cache);
+
+          const lessonRes = await fetch(lessonUrl, { cache: "no-store" });
+          if (!lessonRes.ok) throw new Error(lessonUrl);
+          const lessonPack = await lessonRes.json();
+          if (!lessonPack || !Array.isArray(lessonPack.items) || !Array.isArray(lessonPack.operators)) throw new Error("lesson format");
+          if (lessonPack.items.length !== 11) throw new Error("lesson items must be 11");
+          for (const op of lessonPack.operators) {
+            if (!op.script || !op.guided_item_id || !op.one_liner || !Array.isArray(op.steps)) throw new Error("lesson operator");
+            if (!op.display_name || !op.display_subtitle) throw new Error("lesson display fields");
+            if (typeof op.operator_version !== "number") throw new Error("lesson operator_version");
+          }
+          for (const item of lessonPack.items) {
+            for (const f of REQUIRED) if (!(f in item)) throw new Error("missing lesson " + f);
+            if (!FRAMES.includes(item.frame)) throw new Error("lesson frame");
+            if (item.time_limit_s !== null && typeof item.time_limit_s !== "number") throw new Error("lesson untimed");
+            if (ids.has(item.id)) throw new Error("duplicate " + item.id);
+            ids.add(item.id);
+          }
+          cache[lessonPack.pack_id + "@" + lessonPack.version] = { count: lessonPack.items.length, last_loaded_ts: nowIso() };
+
+          const warnSkew = (label, rows, key, expectedMin = 0) => {
+            const counts = rows.reduce((acc, row) => ({ ...acc, [row[key]]: (acc[row[key]] || 0) + 1 }), {});
+            Object.entries(counts).forEach(([k, count]) => {
+              if (count < expectedMin) console.warn(`${label}: ${k} has low coverage (${count})`);
+            });
+            return counts;
+          };
+          const core = loaded.find((p) => p.pack_id === "core_v1");
+          if (core) {
+            warnSkew("core_v1 script coverage", core.items || [], "script", 8);
+            const frameCounts = warnSkew("core_v1 frame coverage", core.items || [], "frame");
+            Object.entries(frameCounts).forEach(([frame, count]) => {
+              if (Math.abs(count - 30) > 8) console.warn(`core_v1 frame distribution skew: ${frame}=${count}`);
+            });
+          }
+          const gym = loaded.find((p) => p.pack_id === "reasoning_gym_v1");
+          if (gym) {
+            const tagCounts = warnSkew("reasoning_gym_v1 near-miss coverage", gym.items || [], "near_miss_tag", 20);
+            Object.entries(tagCounts).forEach(([tag, count]) => {
+              if (Math.abs(count - 20) > 6) console.warn(`reasoning_gym_v1 tag distribution skew: ${tag}=${count}`);
+              const rows = (gym.items || []).filter((it) => it.near_miss_tag === tag);
+              const frameCounts = warnSkew(`reasoning_gym_v1 frame mix for ${tag}`, rows, "frame");
+              if (Object.keys(frameCounts).length < 2) console.warn(`reasoning_gym_v1 frame mix too narrow for ${tag}`);
+            });
+          }
+
+          if (!cancelled) {
+            setTimedPacks(loaded);
+            setLessonsPack(lessonPack);
+            setLoadingPacks(false);
+            save(LS.CACHE, cache);
+          }
+        } catch (e) {
+          console.error(e);
+          if (!cancelled) {
+            setPackError("Content did not load. Check your connection or reload the page.");
+            setLoadingPacks(false);
+          }
         }
       };
       load();
@@ -167,13 +381,11 @@
 
     useEffect(() => {
       if (!session || session.phase !== "question") return;
-      if (timerSec <= 0) {
-        handleAnswer(-1);
-        return;
-      }
+      if (lessonModalScript) return;
+      if (timerSec <= 0) return;
       const id = setTimeout(() => setTimerSec((v) => v - 1), 1000);
       return () => clearTimeout(id);
-    }, [timerSec, session]);
+    }, [timerSec, session, lessonModalScript]);
 
     const pushEvent = (type, payload) => setEvents((prev) => [...prev, { ts: nowIso(), app: "mindware", type, payload }].slice(-800));
     const seenRecently = (id) => {
@@ -190,11 +402,17 @@
       const noisy = String(shared.today.data_quality || "ok").toLowerCase() !== "ok";
       if (mwState.probe.pending_recheck && readiness === "full") return { mode: "recheck", note: "Re-check due: replay last passed probe signature." };
       if (mwState.probe.pending_probe && readiness === "full" && !noisy) return { mode: "probe", note: "Probe due: " + String(mwState.probe.pending_probe.distance || "near").toUpperCase() + " distance." };
-      if (mwState.probe.next_microset_tag) return { mode: "gym", note: "Reasoning Gym suggested for " + mwState.probe.next_microset_tag.replaceAll("_"," ") + "." };
+      if (
+        mwState.probe.next_microset_tag &&
+        mwState.probe.next_microset_source_session_id &&
+        mwState.probe.next_microset_source_session_id === shared.last?.mindware_session?.summary?.session_id
+      ) {
+        return { mode: "gym", note: "Reasoning Gym suggested for " + mwState.probe.next_microset_tag.replaceAll("_"," ") + "." };
+      }
       return { mode: "practice", note: "Standard practice day." };
     }, [mwState.probe, shared]);
 
-    const pickItems = ({ mode, signature, microTag }) => {
+    const pickItems = ({ mode, signature, microTag, script }) => {
       const targetN = TIMEBOX_TO_ITEMS[plan.timebox_min] || 8;
       let pool = [];
       if (mode === "gym") {
@@ -210,7 +428,7 @@
           pool = allItems.filter((it) => it.frame !== signature.frame && (it.polarity !== signature.polarity || it.lens_target !== signature.lens_target) && it.script === signature.script);
         }
       } else {
-        pool = allItems.filter((it) => it.frame === plan.frame && (it.script === plan.script || it.script === "Y0"));
+        pool = allItems.filter((it) => it.frame === plan.frame && (it.script === script || it.script === "Y0"));
       }
       const fresh = pool.filter((it) => !seenRecently(it.id));
       const src = fresh.length >= targetN ? fresh : pool;
@@ -226,11 +444,8 @@
       return picked;
     };
 
-    const startSession = () => {
-      const mode = recommended.mode === "practice" ? "practice" : recommended.mode;
-      const signature = mode === "recheck" ? mwState.probe.pending_recheck : (mode === "probe" ? mwState.probe.pending_probe : null);
-      const microTag = mode === "gym" ? mwState.probe.next_microset_tag : null;
-      const items = pickItems({ mode, signature, microTag });
+    const beginTimedSession = ({ mode, signature, microTag, script }) => {
+      const items = pickItems({ mode, signature, microTag, script });
       if (!items.length) {
         alert("No items available for this mode.");
         return;
@@ -241,7 +456,7 @@
         started_at: nowIso(),
         mode,
         frame: signature?.frame || plan.frame,
-        script: signature?.script || plan.script,
+        script: signature?.script || script,
         rigour: signature?.rigour || plan.rigour,
         signature,
         items,
@@ -255,14 +470,90 @@
       setScreen("session");
     };
 
+    const startSession = () => {
+      let mode = recommended.mode === "practice" ? "practice" : recommended.mode;
+      let signature = mode === "recheck" ? mwState.probe.pending_recheck : (mode === "probe" ? mwState.probe.pending_probe : null);
+      let microTag = mode === "gym" ? mwState.probe.next_microset_tag : null;
+      let script = signature?.script || plan.script;
+
+      // Respect explicit script selection for manual starts.
+      if (mode === "gym" || ((mode === "probe" || mode === "recheck") && signature?.script && signature.script !== plan.script)) {
+        mode = "practice";
+        signature = null;
+        microTag = null;
+        script = plan.script;
+      }
+
+      if (mode === "gym") {
+        // Consume suggestion at entry so backing out does not keep forcing Gym.
+        setMwState((prev) => ({
+          ...prev,
+          probe: {
+            ...prev.probe,
+            next_microset_tag: null,
+            next_microset_source_session_id: null
+          }
+        }));
+      }
+
+      if (!lessonsPack) {
+        alert("Lessons are required but not loaded.");
+        return;
+      }
+      if (needsTeach(script)) {
+        const lesson = getLessonByScript(script);
+        const guided = getGuidedItemByScript(script);
+        if (!lesson || !guided) {
+          alert("Lesson content for this script is missing.");
+          return;
+        }
+        setLessonRun({ script, lesson, guided, mode, signature, microTag });
+        setGuidedFeedback(null);
+        setScreen("teach");
+        return;
+      }
+      beginTimedSession({ mode, signature, microTag, script });
+    };
+
+    const resetLearningState = () => {
+      setMwState((prev) => {
+        const nextScripts = Object.fromEntries(
+          Object.entries(prev.scripts || {}).map(([k, v]) => {
+            const row = asObj(v);
+            const { recent_accuracy, ...rest } = row;
+            return [k, rest];
+          })
+        );
+        return {
+          ...prev,
+          operator_intro: {},
+          scripts: nextScripts
+        };
+      });
+    };
+
+    const openTeachForPlan = () => {
+      const lesson = getLessonByScript(plan.script);
+      const guided = getGuidedItemByScript(plan.script);
+      if (!lesson || !guided) {
+        alert("Lesson content for this script is missing.");
+        return;
+      }
+      setLessonRun({ script: plan.script, lesson, guided, mode: "practice", signature: null, microTag: null });
+      setGuidedFeedback(null);
+      setScreen("teach");
+    };
+
     const handleAnswer = (selectedIndex) => {
       setSession((prev) => {
         if (!prev || prev.phase !== "question") return prev;
         const item = prev.current;
+        const late = Number(item.time_limit_s || 35) > 0 && timerSec <= 0;
         const answer = {
           item_id: item.id,
           selected_index: selectedIndex,
           correct: selectedIndex === item.answer_index,
+          late,
           rt_ms: Date.now() - prev.qStartedAt,
           near_miss_tag: item.near_miss_tag,
           is_boundary: item.is_boundary
@@ -307,10 +598,17 @@
 
       setMwState((prev) => {
         const next = { ...prev, scripts: { ...prev.scripts }, probe: { ...prev.probe } };
-        const cur = next.scripts[session.script] || { attempts: 0, accuracy_avg: 0, status: "learning" };
-        const attempts = cur.attempts + 1;
-        const avg = ((cur.accuracy_avg * cur.attempts) + accuracy) / attempts;
-        next.scripts[session.script] = { attempts, accuracy_avg: Number(avg.toFixed(2)), status: avg >= 0.75 ? "stable" : "learning", last_session_ts: summary.completed_at };
+        const cur = next.scripts[session.script] || { attempts: 0, accuracy_avg: 0, status: "learning", recent_accuracy: [] };
+        const attempts = Number(cur.attempts || 0) + 1;
+        const avg = ((Number(cur.accuracy_avg || 0) * Number(cur.attempts || 0)) + accuracy) / attempts;
+        const recent = [...(Array.isArray(cur.recent_accuracy) ? cur.recent_accuracy : []), Number(accuracy.toFixed(2))].slice(-3);
+        next.scripts[session.script] = {
+          attempts,
+          accuracy_avg: Number(avg.toFixed(2)),
+          status: avg >= 0.75 ? "stable" : "learning",
+          last_session_ts: summary.completed_at,
+          recent_accuracy: recent
+        };
 
         if (session.mode === "probe") {
           if (accuracy >= 0.7 && boundaryPass) {
@@ -330,18 +628,29 @@
             next.probe.pending_recheck = { ...sig, due_after_ts: summary.completed_at };
             next.probe.pending_probe = null;
             next.probe.next_distance = dist === "near" ? "mid" : (dist === "mid" ? "far" : "far");
+            next.probe.next_microset_tag = null;
+            next.probe.next_microset_source_session_id = null;
             pushEvent("probe_passed", { session_id: session.id, distance: dist });
           } else {
             next.probe.next_microset_tag = mapTag(topMiss ? topMiss[0] : next.probe.next_microset_tag);
+            next.probe.next_microset_source_session_id = session.id;
             pushEvent("probe_failed", { session_id: session.id, distance: session.signature?.distance || "near" });
           }
         } else if (session.mode === "recheck") {
           next.probe.pending_recheck = null;
-          if (accuracy >= 0.7 && boundaryPass) pushEvent("recheck_passed", { session_id: session.id });
+          if (accuracy >= 0.7 && boundaryPass) {
+            next.probe.next_microset_tag = null;
+            next.probe.next_microset_source_session_id = null;
+            pushEvent("recheck_passed", { session_id: session.id });
+          }
           else {
             next.probe.next_microset_tag = mapTag(topMiss ? topMiss[0] : next.probe.next_microset_tag);
+            next.probe.next_microset_source_session_id = session.id;
             pushEvent("recheck_failed", { session_id: session.id });
           }
+        } else if (session.mode === "gym") {
+          next.probe.next_microset_tag = null;
+          next.probe.next_microset_source_session_id = null;
         } else {
           if (accuracy >= 0.7 && boundaryPass && !next.probe.pending_probe && !next.probe.pending_recheck) {
             next.probe.pending_probe = {
@@ -355,7 +664,13 @@
               lens_target: session.items[0]?.lens_target
             };
           }
-          if (topMiss && topMiss[1] >= 2) next.probe.next_microset_tag = mapTag(topMiss[0]);
+          if (topMiss && topMiss[1] >= 2) {
+            next.probe.next_microset_tag = mapTag(topMiss[0]);
+            next.probe.next_microset_source_session_id = session.id;
+          } else {
+            next.probe.next_microset_tag = null;
+            next.probe.next_microset_source_session_id = null;
+          }
         }
         return next;
       });
@@ -416,31 +731,184 @@
       setScreen("home");
     };
 
-    const Frame = ({ chip, subtitle, children }) => (
-      <div className="screen">
-        <div className="topbar">
-          <div className="brandleft">
-            <div className="icon"><img className="appIcon" src={APP_ICON} alt="Trident G" /></div>
-            <div>
-              <p className="title">{APP_NAME}</p>
-              <p className="subtitle">{subtitle}</p>
+    const Frame = ({ chip, subtitle, children }) => {
+      const modalLesson = lessonModalScript ? getLessonByScript(lessonModalScript) : null;
+      return (
+        <>
+          <div className="screen">
+            <div className="topbar">
+              <div className="brandleft">
+                <div className="icon"><img className="appIcon" src={APP_ICON} alt="Trident G" /></div>
+                <div>
+                  <p className="title">{APP_NAME}</p>
+                  <p className="subtitle">{subtitle}</p>
+                </div>
+              </div>
+              <span className="chip">{chip}</span>
             </div>
+            <main className="content mindwareNarrow">{children}</main>
           </div>
-          <span className="chip">{chip}</span>
-        </div>
-        <main className="content mindwareNarrow">{children}</main>
-      </div>
-    );
+          {modalLesson ? (
+            <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.35)", display:"grid", placeItems:"center", padding:"12px", zIndex:20 }}>
+              <section style={{ width:"min(640px, 100%)", maxHeight:"80vh", overflow:"auto", background:"#fff", borderRadius:"16px", border:"1px solid #ddd", padding:"16px" }}>
+                <h2 className="h1" style={{ marginTop:0 }}>Script: {scriptTitle(lessonModalScript)}</h2>
+                <p className="p">{scriptOneLiner(lessonModalScript)}</p>
+                <p style={{ margin:"8px 0", fontWeight:900 }}>Quick reminder</p>
+                <ol style={{ margin:"0 0 0 18px", padding:0 }}>
+                  {(modalLesson.steps || []).slice(0, 3).map((s, i) => <li key={i} className="hint">{s}</li>)}
+                </ol>
+                {Array.isArray(OPERATOR_GLOSSARY[lessonModalScript]) ? (
+                  <>
+                    <p style={{ margin:"8px 0", fontWeight:900 }}>Plain-language terms</p>
+                    <ul style={{ margin:"0 0 0 18px", padding:0 }}>
+                      {OPERATOR_GLOSSARY[lessonModalScript].map(([term, meaning], i) => <li key={i} className="hint"><b>{term}:</b> {meaning}</li>)}
+                    </ul>
+                  </>
+                ) : null}
+                <div className="btnRow"><button className="btn btnPrimary" onClick={() => setLessonModalScript(null)}>Close</button></div>
+              </section>
+            </div>
+          ) : null}
+        </>
+      );
+    };
 
     if (loadingPacks) return <Frame chip="Loading" subtitle="Mindware session coordinator"><section className="card"><h1 className="h1">Loading content packs...</h1><p className="p">Preparing scenarios and drills.</p></section></Frame>;
+
+    if (screen === "teach" && lessonRun) {
+      const lesson = lessonRun.lesson;
+      return (
+        <Frame chip="Teach" subtitle="Teach once before timed practice">
+          <section className="card">
+            <h1 className="h1">Teach mindware script: {scriptTitle(lessonRun.script)}</h1>
+            <p className="p">{scriptOneLiner(lessonRun.script)}</p>
+            <p className="hint"><b>Quick view:</b> use this once, then move to the worked example.</p>
+          </section>
+          <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
+            <p style={{ margin:"0 0 6px 0", fontWeight:900 }}>When to use it (quick)</p>
+            <ul style={{ margin:"0 0 12px 18px", padding:0 }}>
+              {(lesson.when_to_use || []).slice(0, 2).map((row, i) => <li key={i} className="hint">{row}</li>)}
+            </ul>
+            <p style={{ margin:"0 0 6px 0", fontWeight:900 }}>How to do it (quick)</p>
+            <ol style={{ margin:"0 0 12px 18px", padding:0 }}>
+              {(lesson.steps || []).slice(0, 3).map((row, i) => <li key={i} className="hint">{row}</li>)}
+            </ol>
+            <p style={{ margin:"0 0 6px 0", fontWeight:900 }}>Common traps (quick)</p>
+            <ul style={{ margin:"0 0 12px 18px", padding:0 }}>
+              {(lesson.common_traps || []).slice(0, 2).map((row, i) => <li key={i} className="hint">{row}</li>)}
+            </ul>
+            <details>
+              <summary style={{ cursor:"pointer", fontWeight:900 }}>More detail</summary>
+              <p className="hint"><b>When to use it:</b></p>
+              <ul style={{ margin:"0 0 8px 18px", padding:0 }}>
+                {(lesson.when_to_use || []).map((row, i) => <li key={i} className="hint">{row}</li>)}
+              </ul>
+              <p className="hint"><b>All steps:</b></p>
+              <ol style={{ margin:"0 0 8px 18px", padding:0 }}>
+                {(lesson.steps || []).map((row, i) => <li key={i} className="hint">{row}</li>)}
+              </ol>
+              <p className="hint"><b>All traps:</b></p>
+              <ul style={{ margin:"0 0 8px 18px", padding:0 }}>
+                {(lesson.common_traps || []).map((row, i) => <li key={i} className="hint">{row}</li>)}
+              </ul>
+              {lessonRun.script === "Y8" ? (
+                <>
+                  <p className="hint"><b>Zoom-out note:</b> Sometimes simplifying means zooming out so details do not swamp the plan.</p>
+                  <p className="hint">Keep what matters (goal), what blocks you (constraint), what could change your plan (key uncertainty), and one next check or step.</p>
+                </>
+              ) : null}
+              {lessonRun.script === "Y0" ? (
+                <p className="hint"><b>Tip:</b> If you feel swamped, run Simplify under constraints for 30 seconds, then continue.</p>
+              ) : null}
+              {Array.isArray(OPERATOR_GLOSSARY[lessonRun.script]) ? (
+                <>
+                  <p className="hint"><b>Plain-language terms:</b></p>
+                  <ul style={{ margin:"0 0 8px 18px", padding:0 }}>
+                    {OPERATOR_GLOSSARY[lessonRun.script].map(([term, meaning], i) => <li key={i} className="hint"><b>{term}:</b> {meaning}</li>)}
+                  </ul>
+                </>
+              ) : null}
+            </details>
+            <div className="btnRow">
+              <button className="btn btnPrimary" onClick={() => setScreen("guided")}>Try a worked example</button>
+              <button className="btn btnSecondary" onClick={() => setScreen("guided")}>Skip for now</button>
+            </div>
+          </section>
+        </Frame>
+      );
+    }
+
+    if (screen === "guided" && lessonRun) {
+      const item = lessonRun.guided;
+      const lesson = lessonRun.lesson;
+      if (!guidedFeedback) {
+        return (
+          <Frame chip="Worked example" subtitle={`${FRAME_LABEL[item.frame]} • ${scriptTitle(item.script)} • ${prettyContext(item.context)}`}>
+            <section className="card">
+              <h1 className="h1">Worked example (no timer)</h1>
+              <p className="p">{stripPromptTags(item.prompt)}</p>
+            </section>
+            <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
+              <div style={{ display:"grid", gap:"10px" }}>
+                {item.options.map((op, i) => (
+                  <button
+                    key={i}
+                    className="btn optBtn"
+                    onClick={() => {
+                      markIntroSeen(lessonRun.script);
+                      pushEvent("lesson_completed", {
+                        script: lessonRun.script,
+                        lesson_version: lessonsPack?.version || 1,
+                        operator_version: Number(lesson?.operator_version || lessonsPack?.version || 1)
+                      });
+                      setGuidedFeedback({ selected: i, correct: i === item.answer_index });
+                    }}
+                  >
+                    {op}
+                  </button>
+                ))}
+              </div>
+            </section>
+          </Frame>
+        );
+      }
+      return (
+        <Frame chip="Guided feedback" subtitle={`Script: ${scriptTitle(lessonRun.script)}`}>
+          <section className="card">
+            <h1 className="h1">{guidedFeedback.correct ? "Correct" : "Review"}</h1>
+            <p className="p"><b>Why this is best:</b> {item.why_right}</p>
+          </section>
+          <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
+            <p style={{ margin:0, fontWeight:900 }}>Why the tempting options fail</p>
+            {(item.why_traps || []).map((t, i) => <p key={i} className="hint">{t}</p>)}
+            <p style={{ margin:"8px 0 0 0", fontWeight:900 }}>What to do in real life</p>
+            <p className="hint">{scriptOneLiner(lessonRun.script)}</p>
+            <div className="btnRow">
+              <button
+                className="btn btnPrimary"
+                onClick={() => {
+                  beginTimedSession({ mode: lessonRun.mode, signature: lessonRun.signature, microTag: lessonRun.microTag, script: lessonRun.script });
+                  setLessonRun(null);
+                  setGuidedFeedback(null);
+                }}
+              >
+                Start timed practice
+              </button>
+            </div>
+          </section>
+        </Frame>
+      );
+    }
 
     if (screen === "session" && session) {
       if (session.phase === "feedback") {
         const q = session.current;
+        const last = session.answers[session.answers.length - 1];
         return (
           <Frame chip={`${session.index + 1}/${session.items.length}`} subtitle="Timed practice">
-            <section className="card"><h1 className="h1">{session.lastCorrect ? "Correct" : "Not this time"}</h1><p className="p">{q.why_right}</p></section>
+            <section className="card"><h1 className="h1">{last?.late ? "Time's up" : (session.lastCorrect ? "Correct" : "Not this time")}</h1><p className="p">{q.why_right}</p></section>
             <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
+              {last?.late ? <p className="hint"><b>Answered after time.</b></p> : null}
               <p style={{ margin:0, fontWeight:900 }}>Why the trap fails</p>
               {(q.why_traps || []).slice(0,2).map((t, i) => <p key={i} className="hint">{t}</p>)}
               <div className="btnRow"><button className="btn btnPrimary" onClick={nextQuestion}>{session.index + 1 >= session.items.length ? "Finish session" : "Next item"}</button></div>
@@ -464,9 +932,20 @@
         );
       }
       const q = session.current;
+      const lesson = getLessonByScript(q.script);
       return (
-        <Frame chip={`${session.index + 1}/${session.items.length}`} subtitle={`${FRAME_LABEL[session.frame]} • ${session.script}`}>
-          <section className="card"><h1 className="h1">Timed item</h1><p className="p">{q.prompt}</p><p className="p"><span className="timer">{timerSec}s</span> remaining</p></section>
+        <Frame chip={`${session.index + 1}/${session.items.length}`} subtitle="Timed practice">
+          <section className="card">
+            <p className="p" style={{ marginBottom:"8px", fontSize:"13px", color:"#334" }}>
+              <b>{FRAME_LABEL[session.frame]}</b> • <b>MS: {lesson ? scriptTitle(q.script) : "Script"}</b> • <b>{prettyContext(q.context)}</b> • <b>{timerSec}s left</b>
+            </p>
+            <p className="hint" style={{ marginTop:0 }}>
+              <button className="plainLink" onClick={() => setLessonModalScript(q.script)}>What is this script?</button>
+            </p>
+            <h1 className="h1">Timed item</h1>
+            <p className="p">{stripPromptTags(q.prompt)}</p>
+            {timerSec <= 0 ? <p className="hint"><b>Time is up.</b> You can still answer.</p> : null}
+          </section>
           <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
             <div style={{ display:"grid", gap:"10px" }}>
               {q.options.map((op, i) => <button key={i} className="btn optBtn" onClick={() => handleAnswer(i)}>{op}</button>)}
@@ -502,7 +981,7 @@
                 <select className="field" value={missionOutcome.success_met} onChange={(e)=>setMissionOutcome((p)=>({...p,success_met:e.target.value}))}><option value="YES">Success: Yes</option><option value="PARTLY">Success: Partly</option><option value="NO">Success: No</option></select>
               </div>
               <select className="field" style={{ marginTop:"10px" }} value={missionOutcome.blocker} onChange={(e)=>setMissionOutcome((p)=>({...p,blocker:e.target.value}))}>
-                <option value="">Main blocker (optional)</option><option value="state">state</option><option value="capacity">capacity</option><option value="context">context</option><option value="operator">operator</option><option value="unsure">unsure</option>
+                <option value="">Main blocker (optional)</option><option value="state">state</option><option value="capacity">capacity</option><option value="context">context</option><option value="operator">script</option><option value="unsure">unsure</option>
               </select>
               <input className="field" style={{ marginTop:"10px" }} value={missionOutcome.note} onChange={(e)=>setMissionOutcome((p)=>({...p,note:e.target.value}))} placeholder="Optional note" />
               <div className="btnRow"><button className="btn btnPrimary" onClick={saveMissionOutcome}>Save check-in</button></div>
@@ -512,9 +991,22 @@
       );
     }
 
+    const refresherLesson = needsRefresher(plan.script) ? getLessonByScript(plan.script) : null;
+    const previewSession = (() => {
+      let mode = recommended.mode === "practice" ? "practice" : recommended.mode;
+      let signature = mode === "recheck" ? mwState.probe.pending_recheck : (mode === "probe" ? mwState.probe.pending_probe : null);
+      let script = signature?.script || plan.script;
+      if (mode === "gym" || ((mode === "probe" || mode === "recheck") && signature?.script && signature.script !== plan.script)) {
+        mode = "practice";
+        signature = null;
+        script = plan.script;
+      }
+      return { mode, script, signature };
+    })();
+
     return (
       <Frame chip={`${Number(shared.today.mindware?.sessions_completed || 0)} today`} subtitle="Understand • Argue • Decide • Plan & Do">
-        <section className="card"><h1 className="h1">Mindware loop</h1><p className="p">Pick mode, run timed items, then set a tiny mission.</p></section>
+        <section className="card"><h1 className="h1">Mindware loop</h1><p className="p">Teach once, then worked example, timed set, results, and mission.</p></section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
           <p style={{ margin:0, fontWeight:900 }}>Today</p>
           <p className="hint">Suggested day type from earlier training: <b>{String(shared.today.readiness || "full").toUpperCase()}</b> (change)</p>
@@ -524,23 +1016,75 @@
           {pendingMission ? <div className="btnRow"><button className="btn btnSecondary" onClick={() => setScreen("mission_outcome")}>Log mission outcome</button></div> : null}
         </section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
-          <p style={{ margin:"0 0 10px 0", fontWeight:900 }}>Session plan</p>
+          <p style={{ margin:"0 0 10px 0", fontWeight:900 }}>Choose a mindware script</p>
           <div className="grid2">
             <select className="field" value={plan.frame} onChange={(e)=>setPlan((p)=>({...p,frame:e.target.value}))}>{FRAMES.map((f) => <option key={f} value={f}>Frame: {FRAME_LABEL[f]}</option>)}</select>
-            <select className="field" value={plan.script} onChange={(e)=>setPlan((p)=>({...p,script:e.target.value}))}>{SCRIPTS.map((s) => <option key={s} value={s}>Script: {s}</option>)}</select>
+            <select className="field" value={plan.script} onChange={(e)=>setPlan((p)=>({...p,script:e.target.value}))}>
+              {SCRIPTS.map((s) => <option key={s} value={s}>Script: {scriptTitle(s)}</option>)}
+            </select>
             <select className="field" value={plan.rigour} onChange={(e)=>setPlan((p)=>({...p,rigour:e.target.value}))}><option value="light">Rigour: light</option><option value="standard">Rigour: standard</option><option value="deep">Rigour: deep</option></select>
             <select className="field" value={plan.timebox_min} onChange={(e)=>setPlan((p)=>({...p,timebox_min:Number(e.target.value)}))}> {[2,4,6,8].map((m)=><option key={m} value={m}>Timebox: {m} min</option>)} </select>
           </div>
+          <p className="hint" style={{ marginTop:"10px" }}>
+            Selected: <b>{FRAME_LABEL[plan.frame]}</b> • <b>Script: {scriptTitle(plan.script)}</b> •{" "}
+            <button className="plainLink" onClick={() => setLessonModalScript(plan.script)}>What is this script?</button>
+          </p>
+          {getLessonByScript(plan.script) ? (
+            <section style={{ marginTop:"8px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
+              <p style={{ margin:"0 0 4px 0", fontWeight:900 }}>What you're practising</p>
+              <p className="hint">{scriptOneLiner(plan.script)}</p>
+              <p className="hint"><b>Use it when:</b> {(getLessonByScript(plan.script).when_to_use || [])[0] || "A decision needs a clear next move."}</p>
+              <p className="hint"><b>Steps:</b> {(getLessonByScript(plan.script).steps || []).slice(0, 3).join(" -> ")}</p>
+              {Array.isArray(OPERATOR_GLOSSARY[plan.script]) ? (
+                <p className="hint"><b>Terms:</b> {OPERATOR_GLOSSARY[plan.script].map(([term, meaning]) => `${term} = ${meaning}`).join(" | ")}</p>
+              ) : null}
+              <div className="btnRow">
+                <button
+                  className="btn btnSecondary"
+                  onClick={() => {
+                    const lesson = getLessonByScript(plan.script);
+                    const guided = getGuidedItemByScript(plan.script);
+                    if (!lesson || !guided) return;
+                    setLessonRun({ script: plan.script, lesson, guided, mode: "practice", signature: null, microTag: null });
+                    setGuidedFeedback(null);
+                    setScreen("guided");
+                  }}
+                >
+                  See example (no timer)
+                </button>
+              </div>
+            </section>
+          ) : null}
+          {needsTeach(plan.script) ? <p className="hint"><b>First run:</b> Teach and a worked example will appear before timed items.</p> : null}
+          <div className="btnRow">
+            <button className="btn btnSecondary" onClick={openTeachForPlan}>Teach this script now</button>
+          </div>
+          {refresherLesson ? (
+            <details style={{ marginTop:"8px" }}>
+              <summary style={{ cursor:"pointer", fontWeight:900 }}>Quick reminder</summary>
+              <p className="hint">{refresherLesson.one_liner}</p>
+              <ol style={{ margin:"0 0 0 18px", padding:0 }}>
+                {(refresherLesson.steps || []).slice(0, 3).map((s, i) => <li key={i} className="hint">{s}</li>)}
+              </ol>
+            </details>
+          ) : null}
           <div className="btnRow"><button className="btn btnPrimary" onClick={startSession}>Start session</button></div>
         </section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
           <details>
             <summary style={{ cursor:"pointer", fontWeight:900 }}>Content + status</summary>
             {packError ? <p className="hint" style={{ color:"#9a1b1b" }}>{packError}</p> : null}
-            <p className="hint">Loaded items: <b>{allItems.length}</b></p>
+            <p className="hint">Timed items loaded: <b>{allItems.length}</b></p>
+            <p className="hint">Lessons loaded: <b>{(lessonsPack?.operators || []).length}</b></p>
+            <p className="hint">Build: <b>{BUILD_ID}</b></p>
+            <p className="hint">Selected script: <b>{scriptTitle(plan.script)}</b></p>
+            <p className="hint">Deck script: <b>{previewSession.script ? scriptTitle(previewSession.script) : "mixed"}</b> ({previewSession.mode})</p>
             <p className="hint">Pending probe: <b>{mwState.probe.pending_probe ? "Yes" : "No"}</b> | Pending re-check: <b>{mwState.probe.pending_recheck ? "Yes" : "No"}</b></p>
             <p className="hint">Reasoning Gym next: <b>{mwState.probe.next_microset_tag || "none"}</b></p>
             <p className="hint">Missions pending: <b>{mwState.missions.filter((m)=>m.status==="pending").length}</b></p>
+            <div className="btnRow">
+              <button className="btn btnSecondary" onClick={resetLearningState}>Reset learning</button>
+            </div>
           </details>
         </section>
       </Frame>
@@ -551,3 +1095,4 @@
 </script>
 </body>
 </html>
+

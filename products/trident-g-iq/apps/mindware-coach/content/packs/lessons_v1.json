@@ -1,0 +1,595 @@
+﻿{
+    "pack_id":  "lessons_v1",
+    "version":  1,
+    "licence":  "proprietary",
+    "attribution":  null,
+    "source_url":  null,
+    "created_at":  "2026-02-15T00:00:00.000Z",
+    "operators":  [
+                      {
+                          "script":  "Y0",
+                          "title":  "Commit or park",
+                          "one_liner":  "Decide if this is worth attention right now, then set a timebox and what good enough means.",
+                          "when_to_use":  [
+                                              "You feel rushed or overloaded.",
+                                              "You keep looping and not acting.",
+                                              "You are unsure whether this is worth doing today."
+                                          ],
+                          "steps":  [
+                                        "Choose: commit now or park it.",
+                                        "Set a timebox.",
+                                        "Define good enough in one sentence.",
+                                        "Set a stop or switch rule."
+                                    ],
+                          "common_traps":  [
+                                               "No timebox, so thinking drifts.",
+                                               "No good enough, so nothing finishes.",
+                                               "You keep collecting information without deciding."
+                                           ],
+                          "guided_item_id":  "lesson_y0_guided_0001",
+                          "operator_version":  1,
+                          "display_name":  "Commit or park (meta)",
+                          "display_subtitle":  "Decide if this is worth attention now. Set a timebox, define \"good enough\", add a stop or switch rule, then pick the next script."
+                      },
+                      {
+                          "script":  "Y1",
+                          "title":  "The one test",
+                          "one_liner":  "Pick the single check that would most change what you do next, and do that first.",
+                          "when_to_use":  [
+                                              "You are stuck in research mode.",
+                                              "One uncertainty blocks the plan.",
+                                              "You need to decide what to verify quickly."
+                                          ],
+                          "steps":  [
+                                        "Name 2 to 3 options.",
+                                        "Ask what test separates them fastest.",
+                                        "Pick the smallest useful test.",
+                                        "Write what would change your mind."
+                                    ],
+                          "common_traps":  [
+                                               "Reading without a clear test.",
+                                               "Picking nice-to-know checks.",
+                                               "Not writing a flip condition."
+                                           ],
+                          "guided_item_id":  "lesson_y1_guided_0001",
+                          "operator_version":  1,
+                          "display_name":  "The one test",
+                          "display_subtitle":  "Pick the single check that would most change what you do next, and do that first."
+                      },
+                      {
+                          "script":  "Y2",
+                          "title":  "Trade-off choice",
+                          "one_liner":  "Choose with a few criteria and a flip check, not by vibe.",
+                          "when_to_use":  [
+                                              "Options compete across goals.",
+                                              "You keep changing your mind.",
+                                              "You need a defensible choice quickly."
+                                          ],
+                          "steps":  [
+                                        "Pick 3 to 5 criteria.",
+                                        "Score options quickly.",
+                                        "Ask what uncertainty could flip the winner.",
+                                        "Run one small check if needed."
+                                    ],
+                          "common_traps":  [
+                                               "Too many criteria.",
+                                               "Scores that hide storytelling.",
+                                               "No flip check."
+                                           ],
+                          "guided_item_id":  "lesson_y2_guided_0001",
+                          "operator_version":  1,
+                          "display_name":  "Trade-offs",
+                          "display_subtitle":  "Choose using a few criteria (time, cost, quality, risk, etc.). Score options quickly, then ask what uncertainty could flip the winner."
+                      },
+                      {
+                          "script":  "Y3",
+                          "title":  "Expected value choice",
+                          "one_liner":  "Compare rough value times chance, then tighten only the estimate that could flip your choice.",
+                          "when_to_use":  [
+                                              "Outcomes are uncertain.",
+                                              "You are tempted to over-precision.",
+                                              "A small check could change the winner."
+                                          ],
+                          "steps":  [
+                                        "List key outcomes.",
+                                        "Use rough values and chances.",
+                                        "Compare rough totals.",
+                                        "Timebox one check on the flip estimate."
+                                    ],
+                          "common_traps":  [
+                                               "Fake precision.",
+                                               "Ignoring the key driver estimate.",
+                                               "Checking forever when result will not flip."
+                                           ],
+                          "guided_item_id":  "lesson_y3_guided_0001",
+                          "operator_version":  1,
+                          "display_name":  "Value × chance",
+                          "display_subtitle":  "When outcomes are uncertain, compare rough value × likelihood. Tighten only the one estimate that could change your choice."
+                      },
+                      {
+                          "script":  "Y4",
+                          "title":  "Claim to support",
+                          "one_liner":  "Make the claim clear, list support, and state the link so the conclusion follows.",
+                          "when_to_use":  [
+                                              "You are evaluating arguments.",
+                                              "People talk past each other.",
+                                              "Evidence is listed but feels jumpy."
+                                          ],
+                          "steps":  [
+                                        "Write the claim in one sentence.",
+                                        "List support.",
+                                        "State why support links to claim.",
+                                        "Tighten scope to match support."
+                                    ],
+                          "common_traps":  [
+                                               "Definition drift.",
+                                               "Evidence with no link.",
+                                               "Overstated conclusion."
+                                           ],
+                          "guided_item_id":  "lesson_y4_guided_0001",
+                          "operator_version":  1,
+                          "display_name":  "Claim → support",
+                          "display_subtitle":  "Make the claim clear, list what supports it, and state the link between them so the conclusion actually follows."
+                      },
+                      {
+                          "script":  "Y5",
+                          "title":  "Cause chain",
+                          "one_liner":  "Name a mechanism, predict what you would see, then run one check.",
+                          "when_to_use":  [
+                                              "Labels replace explanation.",
+                                              "You need to intervene in a system.",
+                                              "You want to avoid correlation errors."
+                                          ],
+                          "steps":  [
+                                        "State key driver.",
+                                        "Write the chain.",
+                                        "Make one prediction.",
+                                        "Run one disconfirming or supporting check."
+                                    ],
+                          "common_traps":  [
+                                               "Label instead of mechanism.",
+                                               "Uncheckable story.",
+                                               "Ignoring alternative causes."
+                                           ],
+                          "guided_item_id":  "lesson_y5_guided_0001",
+                          "operator_version":  1,
+                          "display_name":  "Cause chain",
+                          "display_subtitle":  "Explain with a simple mechanism (driver → steps → outcome). Predict what you would see if it\u0027s true, then check."
+                      },
+                      {
+                          "script":  "Y6",
+                          "title":  "Bottleneck first",
+                          "one_liner":  "Find the limiting constraint and move it before optimizing anything else.",
+                          "when_to_use":  [
+                                              "You are busy but not moving.",
+                                              "Polish work is replacing progress.",
+                                              "One constraint likely blocks everything."
+                                          ],
+                          "steps":  [
+                                        "Name this-week outcome.",
+                                        "List likely constraints.",
+                                        "Pick the main bottleneck.",
+                                        "Do one relief action and re-check flow."
+                                    ],
+                          "common_traps":  [
+                                               "Optimizing non-bottlenecks.",
+                                               "Confusing symptoms with constraints.",
+                                               "Not verifying the bottleneck moved."
+                                           ],
+                          "guided_item_id":  "lesson_y6_guided_0001",
+                          "operator_version":  1,
+                          "display_name":  "Bottleneck first",
+                          "display_subtitle":  "Find the limiting constraint and move it before optimising anything else."
+                      },
+                      {
+                          "script":  "Y7",
+                          "title":  "Make it measurable",
+                          "one_liner":  "Turn a vague goal into one observable success signal.",
+                          "when_to_use":  [
+                                              "Done is fuzzy.",
+                                              "You cannot tell if you improved.",
+                                              "You need an honest stop rule."
+                                          ],
+                          "steps":  [
+                                        "Write goal plainly.",
+                                        "Ask what you would observe if working.",
+                                        "Pick one signal.",
+                                        "Set stop rule."
+                                    ],
+                          "common_traps":  [
+                                               "Measure you will not track.",
+                                               "Too many measures.",
+                                               "Keeping goals abstract."
+                                           ],
+                          "guided_item_id":  "lesson_y7_guided_0001",
+                          "operator_version":  1,
+                          "display_name":  "Make it measurable",
+                          "display_subtitle":  "Turn a vague goal into a clear success signal you can actually observe."
+                      },
+                      {
+                          "script":  "Y8",
+                          "title":  "Simplify under constraints",
+                          "one_liner":  "Keep the smallest useful model that still supports a real next step.",
+                          "when_to_use":  [
+                                              "Complexity causes freeze.",
+                                              "Maps keep growing but no action.",
+                                              "You need a minimal plan that survives reality."
+                                          ],
+                          "steps":  [
+                                        "Name hard constraint.",
+                                        "Name flip uncertainty.",
+                                        "Keep only 3 to 5 key parts.",
+                                        "Pick one check or one next step."
+                                    ],
+                          "common_traps":  [
+                                               "Dropping the key constraint.",
+                                               "Keeping everything for comfort.",
+                                               "No testable next move."
+                                           ],
+                          "guided_item_id":  "lesson_y8_guided_0001",
+                          "operator_version":  1,
+                          "display_name":  "Simplify under constraints",
+                          "display_subtitle":  "Build the smallest useful model that keeps the key constraint and the one uncertainty that could change your plan, then take one check or step."
+                      },
+                      {
+                          "script":  "Y9",
+                          "title":  "Strategic experiment",
+                          "one_liner":  "Run a time-boxed trial with one metric and a keep or switch rule.",
+                          "when_to_use":  [
+                                              "Learning by doing is possible.",
+                                              "Planning is replacing execution.",
+                                              "You need evidence between plausible strategies."
+                                          ],
+                          "steps":  [
+                                        "State what you test.",
+                                        "Define trial and duration.",
+                                        "Pick one metric.",
+                                        "Set keep or switch rule."
+                                    ],
+                          "common_traps":  [
+                                               "Changing too many variables.",
+                                               "No metric.",
+                                               "No end date."
+                                           ],
+                          "guided_item_id":  "lesson_y9_guided_0001",
+                          "operator_version":  1,
+                          "display_name":  "Strategic experiment",
+                          "display_subtitle":  "Run a time-boxed trial with a metric and a keep/switch rule, then update based on what happened."
+                      },
+                      {
+                          "script":  "Y10",
+                          "title":  "Evidence update",
+                          "one_liner":  "Update confidence in line with evidence, then state what changes in behavior.",
+                          "when_to_use":  [
+                                              "New data arrives from a check.",
+                                              "You feel confirmation pull.",
+                                              "You must revise without overreacting."
+                                          ],
+                          "steps":  [
+                                        "State what evidence says.",
+                                        "Consider alternative explanation.",
+                                        "Update proportionally.",
+                                        "Change plan explicitly or hold explicitly."
+                                    ],
+                          "common_traps":  [
+                                               "Ignoring disconfirming data.",
+                                               "Over-updating weak evidence.",
+                                               "Belief update without behavior update."
+                                           ],
+                          "guided_item_id":  "lesson_y10_guided_0001",
+                          "operator_version":  1,
+                          "display_name":  "Evidence update",
+                          "display_subtitle":  "Update confidence in line with the evidence, then say clearly what you will do differently (or not) and whether another check is worth it."
+                      }
+                  ],
+    "items":  [
+                  {
+                      "id":  "lesson_y0_guided_0001",
+                      "frame":  "plan_do",
+                      "context":  "work",
+                      "wrapper":  "meeting_countdown",
+                      "script":  "Y0",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "mcq",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_timebox_no_threshold",
+                      "prompt":  "You have 10 minutes before a meeting and a messy issue is pulling you into a spiral. What is the best next move?",
+                      "options":  [
+                                      "Keep thinking until you feel confident",
+                                      "Set a 6-minute timebox, define good enough, then pick one next step",
+                                      "Open more tabs and collect information",
+                                      "Park it with no return plan"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Y0 prevents drift with a timebox, a threshold, and one concrete next move.",
+                      "why_traps":  [
+                                        "Waiting for confidence loops.",
+                                        "More input without a stop rule increases drift.",
+                                        "Parking needs a return cue."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  null
+                  },
+                  {
+                      "id":  "lesson_y1_guided_0001",
+                      "frame":  "understand",
+                      "context":  "learning",
+                      "wrapper":  "lecture_reading",
+                      "script":  "Y1",
+                      "polarity":  "tighten",
+                      "lens_target":  "meaning",
+                      "kind":  "mcq",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_discriminating_test",
+                      "prompt":  "You keep reading notes but still cannot predict exam answers. What is the best next move?",
+                      "options":  [
+                                      "Read more sources",
+                                      "Pick one check question and answer without notes",
+                                      "Rewrite notes beautifully",
+                                      "Watch another long summary"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Y1 uses a discriminating check that changes what to do next.",
+                      "why_traps":  [
+                                        "More sources can be avoidance.",
+                                        "Formatting does not expose gaps.",
+                                        "Summary is weaker than direct checking."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  null
+                  },
+                  {
+                      "id":  "lesson_y2_guided_0001",
+                      "frame":  "decide",
+                      "context":  "work",
+                      "wrapper":  "tool_choice",
+                      "script":  "Y2",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "mcq",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_flip_check",
+                      "prompt":  "You must pick between two software tools by tomorrow. What is the best next move?",
+                      "options":  [
+                                      "Choose by gut",
+                                      "Copy team majority",
+                                      "Score options on a few criteria, then run a flip check",
+                                      "Delay for perfect information"
+                                  ],
+                      "answer_index":  2,
+                      "why_right":  "Y2 makes trade-offs explicit and focuses on uncertainty that can flip the choice.",
+                      "why_traps":  [
+                                        "Vibe is not a decision rule.",
+                                        "Opinions without criteria can mislead.",
+                                        "Perfect information is rarely needed."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  null
+                  },
+                  {
+                      "id":  "lesson_y3_guided_0001",
+                      "frame":  "decide",
+                      "context":  "learning",
+                      "wrapper":  "study_strategy_choice",
+                      "script":  "Y3",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "mcq",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "fake_precision_or_no_driver",
+                      "prompt":  "You have 3 hours to revise and two imperfect options. What is the best next move?",
+                      "options":  [
+                                      "Pick easiest option",
+                                      "Use rough value x chance and test one flip estimate",
+                                      "Flip a coin",
+                                      "Search one hour for perfect method"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Y3 compares uncertain outcomes quickly and checks the estimate that matters most.",
+                      "why_traps":  [
+                                        "Ease now can hurt retention.",
+                                        "Coin flip ignores known information.",
+                                        "Searching can become avoidance."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  null
+                  },
+                  {
+                      "id":  "lesson_y4_guided_0001",
+                      "frame":  "argue",
+                      "context":  "work",
+                      "wrapper":  "email_reply",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "meaning",
+                      "kind":  "mcq",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "missing_warrant_or_definition_drift",
+                      "prompt":  "A colleague says a project is failing because the team is not committed. Best next move?",
+                      "options":  [
+                                      "Reply I disagree",
+                                      "Clarify terms and evidence, then test the support-claim link",
+                                      "Ignore message",
+                                      "Send more facts without linking to claim"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Y4 starts with claim clarity and checks whether evidence carries the conclusion.",
+                      "why_traps":  [
+                                        "Bare disagreement creates talking past.",
+                                        "Avoidance leaves claim untested.",
+                                        "Fact list without warrant does not resolve argument."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  null
+                  },
+                  {
+                      "id":  "lesson_y5_guided_0001",
+                      "frame":  "understand",
+                      "context":  "learning",
+                      "wrapper":  "study_headline",
+                      "script":  "Y5",
+                      "polarity":  "tighten",
+                      "lens_target":  "meaning",
+                      "kind":  "choose_check",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "label_instead_of_mechanism",
+                      "prompt":  "Headline: students who drink coffee get higher grades. Best next move?",
+                      "options":  [
+                                      "Assume coffee causes grades",
+                                      "Write mechanism chain and run one cause-vs-correlation check",
+                                      "Ignore headline always",
+                                      "Collect anecdotes only"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Y5 requires a mechanism and a check that can separate alternatives.",
+                      "why_traps":  [
+                                        "Correlation is not causation.",
+                                        "Ignoring throws away a modeling chance.",
+                                        "Anecdotes do not separate causes."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  null
+                  },
+                  {
+                      "id":  "lesson_y6_guided_0001",
+                      "frame":  "plan_do",
+                      "context":  "work",
+                      "wrapper":  "project_delay",
+                      "script":  "Y6",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "mcq",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "optimising_non_bottleneck",
+                      "prompt":  "Project delivery is stuck while teams polish slides. Best next move?",
+                      "options":  [
+                                      "Push everyone harder",
+                                      "Polish slides further",
+                                      "Relieve the main bottleneck and verify flow moved",
+                                      "Start three new tasks"
+                                  ],
+                      "answer_index":  2,
+                      "why_right":  "Y6 moves the limiting constraint first to unlock progress.",
+                      "why_traps":  [
+                                        "More effort on wrong target fails.",
+                                        "Polish is often non-bottleneck work.",
+                                        "More tasks can add coordination drag."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  null
+                  },
+                  {
+                      "id":  "lesson_y7_guided_0001",
+                      "frame":  "plan_do",
+                      "context":  "learning",
+                      "wrapper":  "study_goal",
+                      "script":  "Y7",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "mcq",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "vague_success_signal",
+                      "prompt":  "Goal: understand this topic better. What is the best next move?",
+                      "options":  [
+                                      "Keep goal vague",
+                                      "Define one observable success signal for today",
+                                      "Wait for confidence first",
+                                      "Add many more goals"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Y7 turns vague intent into a measurable loop.",
+                      "why_traps":  [
+                                        "Vagueness blocks calibration.",
+                                        "Confidence is noisy.",
+                                        "More goals reduce focus."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  null
+                  },
+                  {
+                      "id":  "lesson_y8_guided_0001",
+                      "frame":  "understand",
+                      "context":  "work",
+                      "wrapper":  "messy_problem",
+                      "script":  "Y8",
+                      "polarity":  "tighten",
+                      "lens_target":  "meaning",
+                      "kind":  "mcq",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "overcomplex_map_no_action",
+                      "prompt":  "A problem feels complex and notes keep growing without action. Best next move?",
+                      "options":  [
+                                      "Keep adding details",
+                                      "Build a small model with key constraint and flip uncertainty, then choose one check",
+                                      "Ask someone else to decide",
+                                      "Pick first option immediately"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Y8 keeps complexity manageable while preserving decision-critical structure.",
+                      "why_traps":  [
+                                        "Detail can become avoidance.",
+                                        "Delegation still needs your model.",
+                                        "First option is often surface familiar."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  null
+                  },
+                  {
+                      "id":  "lesson_y9_guided_0001",
+                      "frame":  "plan_do",
+                      "context":  "learning",
+                      "wrapper":  "revision_trial",
+                      "script":  "Y9",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "kind":  "mcq",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_metric_no_horizon",
+                      "prompt":  "You are unsure if a new revision routine will help. Best next move?",
+                      "options":  [
+                                      "Try randomly and see",
+                                      "Run a 7-day trial with one metric and a keep or switch rule",
+                                      "Perfect the plan before starting",
+                                      "Switch routines every day"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Y9 turns uncertainty into measurable learning with a fixed horizon.",
+                      "why_traps":  [
+                                        "Feel-only evaluation is noisy.",
+                                        "Perfect planning delays evidence.",
+                                        "Daily switching prevents attribution."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  null
+                  },
+                  {
+                      "id":  "lesson_y10_guided_0001",
+                      "frame":  "decide",
+                      "context":  "work",
+                      "wrapper":  "probe_result",
+                      "script":  "Y10",
+                      "polarity":  "tighten",
+                      "lens_target":  "meaning",
+                      "kind":  "mcq",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "ignore_or_overreact_to_evidence",
+                      "prompt":  "A quick check gives mixed evidence. What is the best next move?",
+                      "options":  [
+                                      "Treat as full proof",
+                                      "Ignore because imperfect",
+                                      "Update confidence a little and state next behavior",
+                                      "Keep checking until preferred result"
+                                  ],
+                      "answer_index":  2,
+                      "why_right":  "Y10 updates proportionally and links belief updates to explicit actions.",
+                      "why_traps":  [
+                                        "Over-commitment from weak evidence is risky.",
+                                        "Ignoring all imperfect evidence blocks learning.",
+                                        "Preference-seeking checks bias decisions."
+                                    ],
+                      "difficulty":  3,
+                      "time_limit_s":  null
+                  }
+              ]
+}

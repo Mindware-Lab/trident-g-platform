@@ -1,4 +1,4 @@
-{
+﻿{
     "pack_id":  "reasoning_gym_v1",
     "version":  1,
     "licence":  "proprietary",
@@ -18,7 +18,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "At work, A colleague says, \"If launch quality is high, QA pass rate rises. QA pass rate rose, so launch quality must be high.\" What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -47,7 +47,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "At work, Your team concludes a dashboard is reliable because one success indicator appeared. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -76,7 +76,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "At work, A colleague says, \"If launch quality is high, QA pass rate rises. QA pass rate rose, so launch quality must be high.\" What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -105,7 +105,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "At work, Your team concludes a dashboard is reliable because one success indicator appeared. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -134,7 +134,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "At work, A colleague says, \"If launch quality is high, QA pass rate rises. QA pass rate rose, so launch quality must be high.\" What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -163,7 +163,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "At work, Your team concludes a dashboard is reliable because one success indicator appeared. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -192,7 +192,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "At work, A colleague says, \"If launch quality is high, QA pass rate rises. QA pass rate rose, so launch quality must be high.\" What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -221,7 +221,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "At work, Your team concludes a dashboard is reliable because one success indicator appeared. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -250,7 +250,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "At work, A colleague says, \"If launch quality is high, QA pass rate rises. QA pass rate rose, so launch quality must be high.\" What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -279,7 +279,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  true,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "At work, Your team concludes a dashboard is reliable because one success indicator appeared. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -308,7 +308,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "In a study context, A colleague says, \"If launch quality is high, QA pass rate rises. QA pass rate rose, so launch quality must be high.\" What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -337,7 +337,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "In a study context, Your team concludes a dashboard is reliable because one success indicator appeared. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -366,7 +366,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "In a study context, A colleague says, \"If launch quality is high, QA pass rate rises. QA pass rate rose, so launch quality must be high.\" What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -395,7 +395,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "In a study context, Your team concludes a dashboard is reliable because one success indicator appeared. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -424,7 +424,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "In a study context, A colleague says, \"If launch quality is high, QA pass rate rises. QA pass rate rose, so launch quality must be high.\" What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -453,7 +453,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "In a study context, Your team concludes a dashboard is reliable because one success indicator appeared. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -482,7 +482,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "In a study context, A colleague says, \"If launch quality is high, QA pass rate rises. QA pass rate rose, so launch quality must be high.\" What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -511,7 +511,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "In a study context, Your team concludes a dashboard is reliable because one success indicator appeared. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -540,7 +540,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "In a study context, A colleague says, \"If launch quality is high, QA pass rate rises. QA pass rate rose, so launch quality must be high.\" What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -569,7 +569,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  true,
                       "near_miss_tag":  "invalid_conditional",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027invalid_conditional\u0027 trap?",
+                      "prompt":  "In a study context, Your team concludes a dashboard is reliable because one success indicator appeared. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -598,7 +598,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "At work, A proposal sounds strong, but no one has tested where it fails. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -627,7 +627,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "At work, A teammate claims a method always works from two wins. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -656,7 +656,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "At work, A proposal sounds strong, but no one has tested where it fails. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -685,7 +685,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "At work, A teammate claims a method always works from two wins. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -714,7 +714,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "At work, A proposal sounds strong, but no one has tested where it fails. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -743,7 +743,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "At work, A teammate claims a method always works from two wins. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -772,7 +772,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "At work, A proposal sounds strong, but no one has tested where it fails. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -801,7 +801,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "At work, A teammate claims a method always works from two wins. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -830,7 +830,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "At work, A proposal sounds strong, but no one has tested where it fails. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -859,7 +859,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  true,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "At work, A teammate claims a method always works from two wins. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -888,7 +888,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "In a study context, A proposal sounds strong, but no one has tested where it fails. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -917,7 +917,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "In a study context, A teammate claims a method always works from two wins. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -946,7 +946,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "In a study context, A proposal sounds strong, but no one has tested where it fails. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -975,7 +975,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "In a study context, A teammate claims a method always works from two wins. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1004,7 +1004,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "In a study context, A proposal sounds strong, but no one has tested where it fails. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1033,7 +1033,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "In a study context, A teammate claims a method always works from two wins. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1062,7 +1062,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "In a study context, A proposal sounds strong, but no one has tested where it fails. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1091,7 +1091,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "In a study context, A teammate claims a method always works from two wins. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1120,7 +1120,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "In a study context, A proposal sounds strong, but no one has tested where it fails. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1149,7 +1149,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  true,
                       "near_miss_tag":  "no_counterexample",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027no_counterexample\u0027 trap?",
+                      "prompt":  "In a study context, A teammate claims a method always works from two wins. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1178,7 +1178,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "At work, A vendor highlights a 90% success claim, but you do not know the base rate. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1207,7 +1207,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "At work, A study headline sounds impressive, but prevalence is missing. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1236,7 +1236,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "At work, A vendor highlights a 90% success claim, but you do not know the base rate. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1265,7 +1265,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "At work, A study headline sounds impressive, but prevalence is missing. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1294,7 +1294,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "At work, A vendor highlights a 90% success claim, but you do not know the base rate. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1323,7 +1323,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "At work, A study headline sounds impressive, but prevalence is missing. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1352,7 +1352,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "At work, A vendor highlights a 90% success claim, but you do not know the base rate. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1381,7 +1381,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "At work, A study headline sounds impressive, but prevalence is missing. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1410,7 +1410,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "At work, A vendor highlights a 90% success claim, but you do not know the base rate. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1439,7 +1439,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  true,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "At work, A study headline sounds impressive, but prevalence is missing. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1468,7 +1468,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "In a study context, A vendor highlights a 90% success claim, but you do not know the base rate. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1497,7 +1497,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "In a study context, A study headline sounds impressive, but prevalence is missing. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1526,7 +1526,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "In a study context, A vendor highlights a 90% success claim, but you do not know the base rate. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1555,7 +1555,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "In a study context, A study headline sounds impressive, but prevalence is missing. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1584,7 +1584,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "In a study context, A vendor highlights a 90% success claim, but you do not know the base rate. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1613,7 +1613,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "In a study context, A study headline sounds impressive, but prevalence is missing. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1642,7 +1642,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "In a study context, A vendor highlights a 90% success claim, but you do not know the base rate. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1671,7 +1671,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "In a study context, A study headline sounds impressive, but prevalence is missing. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1700,7 +1700,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "In a study context, A vendor highlights a 90% success claim, but you do not know the base rate. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1729,7 +1729,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  true,
                       "near_miss_tag":  "base_rate_ignored",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027base_rate_ignored\u0027 trap?",
+                      "prompt":  "In a study context, A study headline sounds impressive, but prevalence is missing. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1758,7 +1758,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "At work, Two metrics moved together after a process change. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1787,7 +1787,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "At work, A manager says the new ritual caused better outcomes because both rose this month. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1816,7 +1816,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "At work, Two metrics moved together after a process change. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1845,7 +1845,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "At work, A manager says the new ritual caused better outcomes because both rose this month. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1874,7 +1874,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "At work, Two metrics moved together after a process change. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1903,7 +1903,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "At work, A manager says the new ritual caused better outcomes because both rose this month. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1932,7 +1932,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "At work, Two metrics moved together after a process change. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1961,7 +1961,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "At work, A manager says the new ritual caused better outcomes because both rose this month. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -1990,7 +1990,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "At work, Two metrics moved together after a process change. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2019,7 +2019,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  true,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "At work, A manager says the new ritual caused better outcomes because both rose this month. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2048,7 +2048,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "In a study context, Two metrics moved together after a process change. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2077,7 +2077,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "In a study context, A manager says the new ritual caused better outcomes because both rose this month. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2106,7 +2106,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "In a study context, Two metrics moved together after a process change. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2135,7 +2135,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "In a study context, A manager says the new ritual caused better outcomes because both rose this month. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2164,7 +2164,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "In a study context, Two metrics moved together after a process change. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2193,7 +2193,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "In a study context, A manager says the new ritual caused better outcomes because both rose this month. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2222,7 +2222,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "In a study context, Two metrics moved together after a process change. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2251,7 +2251,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "In a study context, A manager says the new ritual caused better outcomes because both rose this month. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2280,7 +2280,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "In a study context, Two metrics moved together after a process change. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2309,7 +2309,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  true,
                       "near_miss_tag":  "correlation_not_cause",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027correlation_not_cause\u0027 trap?",
+                      "prompt":  "In a study context, A manager says the new ritual caused better outcomes because both rose this month. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2338,7 +2338,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "At work, Two cases look similar on the surface, and someone wants to copy the same decision. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2367,7 +2367,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "At work, You are asked to transfer a tactic from one project to another that only looks similar. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2396,7 +2396,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "At work, Two cases look similar on the surface, and someone wants to copy the same decision. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2425,7 +2425,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "At work, You are asked to transfer a tactic from one project to another that only looks similar. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2454,7 +2454,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "At work, Two cases look similar on the surface, and someone wants to copy the same decision. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2483,7 +2483,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "At work, You are asked to transfer a tactic from one project to another that only looks similar. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2512,7 +2512,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "At work, Two cases look similar on the surface, and someone wants to copy the same decision. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2541,7 +2541,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "At work, You are asked to transfer a tactic from one project to another that only looks similar. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2570,7 +2570,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "At work, Two cases look similar on the surface, and someone wants to copy the same decision. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2599,7 +2599,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  true,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[work team] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "At work, You are asked to transfer a tactic from one project to another that only looks similar. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2628,7 +2628,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "In a study context, Two cases look similar on the surface, and someone wants to copy the same decision. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2657,7 +2657,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "In a study context, You are asked to transfer a tactic from one project to another that only looks similar. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2686,7 +2686,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "In a study context, Two cases look similar on the surface, and someone wants to copy the same decision. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2715,7 +2715,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "In a study context, You are asked to transfer a tactic from one project to another that only looks similar. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2744,7 +2744,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "In a study context, Two cases look similar on the surface, and someone wants to copy the same decision. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2773,7 +2773,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "In a study context, You are asked to transfer a tactic from one project to another that only looks similar. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2802,7 +2802,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "In a study context, Two cases look similar on the surface, and someone wants to copy the same decision. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2831,7 +2831,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "In a study context, You are asked to transfer a tactic from one project to another that only looks similar. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2860,7 +2860,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  false,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "In a study context, Two cases look similar on the surface, and someone wants to copy the same decision. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",
@@ -2889,7 +2889,7 @@
                       "kind":  "mini_logic",
                       "is_boundary":  true,
                       "near_miss_tag":  "surface_over_structure",
-                      "prompt":  "[study task] Quick logic check: which option best avoids the \u0027surface_over_structure\u0027 trap?",
+                      "prompt":  "In a study context, You are asked to transfer a tactic from one project to another that only looks similar. What is the best next move?",
                       "options":  [
                                       "Use a structural check and test disconfirming evidence before concluding",
                                       "Trust the first plausible pattern and proceed",

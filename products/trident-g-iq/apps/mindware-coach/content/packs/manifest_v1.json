@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "packs": [
+    { "id": "lessons_v1", "type": "lessons", "path": "./content/packs/lessons_v1.json" },
+    { "id": "core_v1", "type": "timed", "path": "./content/packs/core_v1.json" },
+    { "id": "reasoning_gym_v1", "type": "timed", "path": "./content/packs/reasoning_gym_v1.json" },
+    { "id": "logic_injections_v1", "type": "timed", "path": "./content/packs/logic_injections_v1.json" }
+  ]
+}
