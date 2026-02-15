@@ -634,6 +634,18 @@
 
     const pickItems = ({ mode, signature, microTag, script }) => {
       const targetN = mode === "gym" ? 5 : (TIMEBOX_TO_ITEMS[plan.timebox_min] || 8);
+      const byUnique = (rows, keyFn) => {
+        const out = [];
+        const seen = new Set();
+        for (const row of rows) {
+          const key = keyFn(row);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push(row);
+        }
+        return out;
+      };
+      const contentSig = (it) => `${String(stripPromptTags(it.prompt) || "").trim().toLowerCase()}||${(Array.isArray(it.options) ? it.options : []).map((x) => String(x || "").trim().toLowerCase()).join("||")}`;
       let pool = [];
       if (mode === "gym") {
         pool = allItems.filter((it) => it.near_miss_tag === microTag);
@@ -650,8 +662,11 @@
       } else {
         pool = allItems.filter((it) => it.frame === plan.frame && (it.script === script || it.script === "Y0"));
       }
+      // Remove duplicate content variants and strongly prefer unseen items.
+      pool = byUnique(byUnique(pool, (it) => it.id), contentSig);
+      const unseen = pool.filter((it) => !mwState.seen_items[it.id]);
       const fresh = pool.filter((it) => !seenRecently(it.id));
-      const src = fresh.length >= targetN ? fresh : pool;
+      const src = unseen.length ? unseen : (fresh.length ? fresh : pool);
       if (mode === "gym") {
         const limit = Math.min(targetN, src.length);
         if (!limit) return [];
@@ -666,13 +681,15 @@
           return [...oneSwitch, ...rest, ...topUp];
         }
       }
-      let picked = src.slice().sort(() => Math.random() - 0.5).slice(0, targetN);
+      const limit = Math.min(targetN, src.length);
+      if (!limit) return [];
+      let picked = src.slice().sort(() => Math.random() - 0.5).slice(0, limit);
       if (picked.length && !picked.some((x) => x.is_boundary)) {
-        const boundary = src.find((x) => x.is_boundary);
+        const boundary = src.find((x) => x.is_boundary && !picked.some((p) => p.id === x.id));
         if (boundary) picked[picked.length - 1] = boundary;
       }
       if ((picked.some((x) => x.script === "Y0" || x.script === "Y1" || x.script === "Y10")) && !picked.some((x) => x.kind === "choose_check")) {
-        const check = src.find((x) => x.kind === "choose_check");
+        const check = src.find((x) => x.kind === "choose_check" && !picked.some((p) => p.id === x.id));
         if (check) picked[Math.max(0, picked.length - 2)] = check;
       }
       return picked;
