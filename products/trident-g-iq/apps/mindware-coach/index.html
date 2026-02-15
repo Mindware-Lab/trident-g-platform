@@ -274,6 +274,7 @@
     const [guidedFeedback, setGuidedFeedback] = useState(null);
     const [lessonModalScript, setLessonModalScript] = useState(null);
     const [showHowItWorks, setShowHowItWorks] = useState(false);
+    const [showTodayHelp, setShowTodayHelp] = useState(false);
     const [missionDraft, setMissionDraft] = useState({ cue: "", success_signal: "", stop_flip_rule: "", value_tag: "" });
     const [missionOutcome, setMissionOutcome] = useState({ cue_fired: "YES", success_met: "PARTLY", blocker: "", improved: "", note: "" });
 
@@ -1349,8 +1350,17 @@
         <section className="card"><h1 className="h1">Mindware loop</h1><p className="p"><b>Teach &gt; Worked example &gt; Timed practice &gt; Try it in real life &gt; Hardwire it as new mindware (crystallised intelligence)</b></p></section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
           <p style={{ margin:0, fontWeight:900 }}>Today</p>
-          <p className="hint"><b>Recommended intensity today:</b> <b>{readinessLabel}</b> (change)</p>
+          <p className="hint"><b>Recommended intensity today:</b> <b>{readinessLabel}</b> (change) • <button className="plainLink" onClick={() => setShowTodayHelp((v) => !v)}>{showTodayHelp ? "Hide explanation" : "How is this decided?"}</button></p>
           <p className="hint">Full = normal practice. Light = shorter. Reset = mission only.</p>
+          {showTodayHelp ? (
+            <section style={{ marginTop:"8px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
+              <p className="hint"><b>What decides this recommendation:</b></p>
+              <p className="hint">1) Today&apos;s readiness from Capacity Coach (`full`, `light`, `reset`).</p>
+              <p className="hint">2) Data quality today (if noisy, we nudge Light/Reset).</p>
+              <p className="hint">3) Transfer checks (probe/re-check only run on Full days).</p>
+              <p className="hint"><b>What changes in Mindware:</b> it adjusts nudges and transfer mode suggestions. You can still choose your own rigour and timebox.</p>
+            </section>
+          ) : null}
           {capacityDoneToday >= 1 ? <p className="hint"><b>Capacity training done today:</b> {capacityDoneToday} session{capacityDoneToday === 1 ? "" : "s"}</p> : null}
           {capacityDoneToday >= 2 ? <p className="hint">You've already done a lot today. Consider a short mindware session or mission-only.</p> : null}
           {(String(shared.today.data_quality || "ok").toLowerCase() !== "ok") ? <p className="hint">Today looks noisy. Consider Light or Reset.</p> : null}
