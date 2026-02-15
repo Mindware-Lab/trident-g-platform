@@ -124,8 +124,7 @@
       links: {
         learn_more: 'Learn more',
         why_missions: 'Why missions?'
-      },
-      expanded_loop: 'Readiness -> Guided training -> Quick checks -> Results -> Mission -> Check-in'
+      }
     },
     how_it_works_modal: {
       title: 'How it works',
@@ -421,7 +420,6 @@
       value_tag: ''
     });
     const [sessionRun, setSessionRun] = useState(null);
-    const [homeHelpExpanded, setHomeHelpExpanded] = useState(false);
     const [showHowItWorks, setShowHowItWorks] = useState(false);
     const [showWhyMissions, setShowWhyMissions] = useState(false);
     const [quickCheck, setQuickCheck] = useState({
@@ -1764,22 +1762,10 @@
             <p style={{ margin: 0, fontWeight: 900 }}>{COPY.home_help_strip.title}</p>
             <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>{COPY.home_help_strip.lines[0]}</p>
             <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: '#333333' }}>{COPY.home_help_strip.lines[1]}</p>
-            {homeHelpExpanded ? (
-              <>
-                <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>
-                  <b>Capacity loop:</b> {COPY.home_help_strip.expanded_loop}
-                </p>
-                <div className="btnRow">
-                  <button className="btn btnSecondary" onClick={() => setShowHowItWorks(true)}>Open guide</button>
-                </div>
-              </>
-            ) : null}
             <p style={{ margin: '8px 0 0 0', fontSize: '13px' }}>
               <button style={{ border: 'none', background: 'none', color: '#2764B7', cursor: 'pointer', padding: 0, font: 'inherit' }} onClick={() => setShowHowItWorks(true)}>{COPY.home_help_strip.links.learn_more}</button>
               {' • '}
               <button style={{ border: 'none', background: 'none', color: '#2764B7', cursor: 'pointer', padding: 0, font: 'inherit' }} onClick={() => setShowWhyMissions(true)}>{COPY.home_help_strip.links.why_missions}</button>
-              {' • '}
-              <button style={{ border: 'none', background: 'none', color: '#2764B7', cursor: 'pointer', padding: 0, font: 'inherit' }} onClick={() => setHomeHelpExpanded((v) => !v)}>{homeHelpExpanded ? 'Less' : 'Expand'}</button>
             </p>
           </section>
 
