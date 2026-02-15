@@ -1348,8 +1348,9 @@
           ) : null}
           {needsTeach(plan.script) ? <p className="hint"><b>First run:</b> Teach and a worked example will appear before timed items.</p> : null}
           <div className="btnRow">
-            <button className="btn btnSecondary" onClick={openTeachForPlan}>Teach this script now</button>
+            <button className="btn btnSecondary" onClick={openTeachForPlan}>Open script guide (quick teach)</button>
           </div>
+          <p className="hint">Use this to learn when to use this script, the quick steps, and common traps.</p>
           {refresherLesson ? (
             <details style={{ marginTop:"8px" }}>
               <summary style={{ cursor:"pointer", fontWeight:900 }}>Quick reminder</summary>
