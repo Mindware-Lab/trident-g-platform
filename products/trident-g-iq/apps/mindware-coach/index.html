@@ -34,6 +34,61 @@
     EVENTS: "tg_mindware_events_v1",
     CACHE: "tg_mindware_content_cache_v1"
   };
+  const COPY = {
+    home_help_strip: {
+      title: "How this helps",
+      lines: [
+        "You're building mindware scripts: short, repeatable thinking steps you can run under pressure.",
+        "You practise one here, then use it on a real work task so it still holds up when you're busy or using AI."
+      ],
+      links: { learn_more: "Learn more", why_missions: "Why missions?" },
+      expanded_loop: "Teach -> Worked example -> Timed practice -> Quick repair (optional) -> Try it in real life -> Save"
+    },
+    how_it_works_modal: {
+      title: "How it works",
+      sections: [
+        {
+          title: "The point of this app",
+          body: "Build a small set of reliable thinking steps that improve decision quality and problem-solving in real work, especially under time pressure and AI-assisted workflows."
+        },
+        {
+          title: "What is a thinking step?",
+          body: "A thinking step is one repeatable action in your reasoning, such as: \"Pick the one check that would change your next action.\" or \"Define what done looks like before you start.\""
+        },
+        {
+          title: "The Mindware Loop",
+          list: [
+            "Teach: learn what the script is for",
+            "Worked example: see it applied once, without time pressure",
+            "Timed practice: practise using it quickly and reliably",
+            "Quick repair (optional): fix a specific weakness if the same mistake repeats",
+            "Try it in real life: apply it once to a real task",
+            "Save: keep a short version you can reuse next time"
+          ]
+        },
+        {
+          title: "Why try it in real life?",
+          body: "Practice makes a script familiar. A real task makes it reliable. Missions are how you prove a script still works when you are interrupted, under pressure, or leaning on AI suggestions."
+        }
+      ],
+      footer_small: "This app supports better habits and clearer thinking. It is not medical advice. If you're concerned about health or mental health, speak to your GP.",
+      more_detail: "These scripts are designed to protect good judgement when tasks are complex, time is limited, or AI tools encourage auto-pilot answers. The goal is not more information. It's better thinking steps, applied consistently."
+    },
+    start_session: {
+      why_line: "Why: Practice makes it familiar. Real tasks make it reliable."
+    },
+    mission_bridge_banner: {
+      no_mission: "After this session: set one tiny real-world mission (2-10 minutes) to use the script once.",
+      pending_title: "Mission pending",
+      pending_body: "Log what happened before your next session (recommended).",
+      buttons: { log_outcome: "Log outcome", skip_for_now: "Skip for now" }
+    },
+    why_missions_modal: {
+      title: "Why missions?",
+      body: "A mission is a small real task you already need to do. It turns practice into performance. Without missions, it's easy to get good at app questions but not actually use the script at work.\n\nA good mission is:\n- Small (2-10 minutes)\n- Real (something you genuinely need to do)\n- Measurable (you can tell if it worked)\n\nThat's why the app prompts you to try one mission before your next session.",
+      cta: "Got it"
+    }
+  };
   const FRAME_LABEL = { understand: "Understand", argue: "Argue", decide: "Decide", plan_do: "Plan & Do" };
   const FRAMES = Object.keys(FRAME_LABEL);
   const SCRIPTS = ["Y0","Y1","Y2","Y3","Y4","Y5","Y6","Y7","Y8","Y9","Y10"];
@@ -148,6 +203,7 @@
     schema_version: "tg_mindware_state_v1",
     defaults: { frame: "understand", script: "Y1", rigour: "standard", timebox_min: 4 },
     scripts: {},
+    ui: { home_help_dismissed: false, how_it_works_last_opened_ts: null },
     operator_intro: {},
     seen_items: {},
     missions: [],
@@ -192,6 +248,7 @@
       ...raw,
       defaults: { ...d.defaults, ...asObj(raw.defaults) },
       scripts: asObj(raw.scripts),
+      ui: { ...d.ui, ...asObj(raw.ui) },
       operator_intro: asObj(raw.operator_intro),
       seen_items: asObj(raw.seen_items),
       missions: Array.isArray(raw.missions) ? raw.missions : [],
@@ -220,10 +277,14 @@
     const [lessonRun, setLessonRun] = useState(null);
     const [guidedFeedback, setGuidedFeedback] = useState(null);
     const [lessonModalScript, setLessonModalScript] = useState(null);
+    const [homeHelpExpanded, setHomeHelpExpanded] = useState(false);
+    const [showHowItWorks, setShowHowItWorks] = useState(false);
+    const [showWhyMissions, setShowWhyMissions] = useState(false);
     const [missionDraft, setMissionDraft] = useState({ cue: "", success_signal: "", stop_flip_rule: "", value_tag: "" });
     const [missionOutcome, setMissionOutcome] = useState({ cue_fired: "YES", success_met: "PARTLY", blocker: "", improved: "", note: "" });
 
     const pendingMission = useMemo(() => mwState.missions.find((m) => m.status === "pending") || null, [mwState.missions]);
+    const pendingMissionCount = useMemo(() => mwState.missions.filter((m) => m.status === "pending").length, [mwState.missions]);
     const allItems = useMemo(() => timedPacks.flatMap((p) => p.items || []), [timedPacks]);
     const getLessonByScript = (script) => (lessonsPack?.operators || []).find((op) => op.script === script) || null;
     const getGuidedItemByScript = (script) => {
@@ -598,6 +659,17 @@
       setGuidedFeedback(null);
       setScreen("teach");
     };
+    const openHowItWorks = () => {
+      setShowHowItWorks(true);
+      setMwState((prev) => ({
+        ...prev,
+        ui: {
+          ...asObj(prev.ui),
+          home_help_dismissed: false,
+          how_it_works_last_opened_ts: nowIso()
+        }
+      }));
+    };
 
     const resetLearningState = () => {
       setMwState((prev) => {
@@ -857,6 +929,38 @@
                   </>
                 ) : null}
                 <div className="btnRow"><button className="btn btnPrimary" onClick={() => setLessonModalScript(null)}>Close</button></div>
+              </section>
+            </div>
+          ) : null}
+          {showHowItWorks ? (
+            <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.35)", display:"grid", placeItems:"center", padding:"12px", zIndex:20 }}>
+              <section style={{ width:"min(700px, 100%)", maxHeight:"85vh", overflow:"auto", background:"#fff", borderRadius:"16px", border:"1px solid #ddd", padding:"16px" }}>
+                <h2 className="h1" style={{ marginTop:0 }}>{COPY.how_it_works_modal.title}</h2>
+                <p style={{ margin:"8px 0", fontWeight:900 }}>{COPY.how_it_works_modal.sections[0].title}</p>
+                <p className="hint">{COPY.how_it_works_modal.sections[0].body}</p>
+                <p style={{ margin:"8px 0", fontWeight:900 }}>{COPY.how_it_works_modal.sections[1].title}</p>
+                <p className="hint">{COPY.how_it_works_modal.sections[1].body}</p>
+                <p style={{ margin:"8px 0", fontWeight:900 }}>{COPY.how_it_works_modal.sections[2].title}</p>
+                <ol style={{ margin:"0 0 8px 18px", padding:0 }}>
+                  {COPY.how_it_works_modal.sections[2].list.map((row, i) => <li key={i} className="hint">{row}</li>)}
+                </ol>
+                <p style={{ margin:"8px 0", fontWeight:900 }}>{COPY.how_it_works_modal.sections[3].title}</p>
+                <p className="hint">{COPY.how_it_works_modal.sections[3].body}</p>
+                <details>
+                  <summary style={{ cursor:"pointer", fontWeight:900 }}>More detail (optional)</summary>
+                  <p className="hint">{COPY.how_it_works_modal.more_detail}</p>
+                </details>
+                <p className="hint" style={{ marginTop:"10px" }}>{COPY.how_it_works_modal.footer_small}</p>
+                <div className="btnRow"><button className="btn btnPrimary" onClick={() => setShowHowItWorks(false)}>Close</button></div>
+              </section>
+            </div>
+          ) : null}
+          {showWhyMissions ? (
+            <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.35)", display:"grid", placeItems:"center", padding:"12px", zIndex:20 }}>
+              <section style={{ width:"min(640px, 100%)", maxHeight:"80vh", overflow:"auto", background:"#fff", borderRadius:"16px", border:"1px solid #ddd", padding:"16px" }}>
+                <h2 className="h1" style={{ marginTop:0 }}>{COPY.why_missions_modal.title}</h2>
+                <p className="hint" style={{ whiteSpace:"pre-line" }}>{COPY.why_missions_modal.body}</p>
+                <div className="btnRow"><button className="btn btnPrimary" onClick={() => setShowWhyMissions(false)}>{COPY.why_missions_modal.cta}</button></div>
               </section>
             </div>
           ) : null}
@@ -1158,6 +1262,26 @@
 
     return (
       <Frame chip={`${Number(shared.today.mindware?.sessions_completed || 0)} today`} subtitle="Understand • Argue • Decide • Plan & Do">
+        <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"12px" }}>
+          <p style={{ margin:"0 0 6px 0", fontWeight:900 }}>{COPY.home_help_strip.title}</p>
+          <p className="hint">{COPY.home_help_strip.lines[0]}</p>
+          <p className="hint">{COPY.home_help_strip.lines[1]}</p>
+          {homeHelpExpanded ? (
+            <>
+              <p className="hint"><b>{COPY.how_it_works_modal.sections[2].title}:</b> {COPY.home_help_strip.expanded_loop}</p>
+              <div className="btnRow">
+                <button className="btn btnSecondary" onClick={openHowItWorks}>Open guide</button>
+              </div>
+            </>
+          ) : null}
+          <p className="hint" style={{ marginTop:"8px" }}>
+            <button className="plainLink" onClick={openHowItWorks}>{COPY.home_help_strip.links.learn_more}</button>
+            {" • "}
+            <button className="plainLink" onClick={() => setShowWhyMissions(true)}>{COPY.home_help_strip.links.why_missions}</button>
+            {" • "}
+            <button className="plainLink" onClick={() => setHomeHelpExpanded((v) => !v)}>{homeHelpExpanded ? "Less" : "Expand"}</button>
+          </p>
+        </section>
         <section className="card"><h1 className="h1">Mindware loop</h1><p className="p">Teach once, then worked example, timed set, results, and mission.</p></section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
           <p style={{ margin:0, fontWeight:900 }}>Today</p>
@@ -1167,12 +1291,13 @@
           <p className="hint">{recommended.note}</p>
           {recommended.mode === "probe" ? <p className="hint">Transfer check = Same script, different situation.</p> : null}
           {recommended.mode === "recheck" ? <p className="hint">Transfer re-check = Try it again later to see if it sticks.</p> : null}
+          {!pendingMission ? <p className="hint">{COPY.mission_bridge_banner.no_mission}</p> : null}
           {pendingMission ? (
             <>
-              <p className="hint"><b>You have {mwState.missions.filter((m)=>m.status==="pending").length} mission{mwState.missions.filter((m)=>m.status==="pending").length === 1 ? "" : "s"} to check in.</b> It takes about 20 seconds.</p>
+              <p className="hint"><b>{COPY.mission_bridge_banner.pending_title}:</b> {COPY.mission_bridge_banner.pending_body}</p>
               <div className="btnRow">
-                <button className="btn btnSecondary" onClick={() => setScreen("mission_outcome")}>Log outcome</button>
-                <button className="btn btnSecondary" onClick={() => setScreen("home")}>Skip for now</button>
+                <button className="btn btnSecondary" onClick={() => setScreen("mission_outcome")}>{COPY.mission_bridge_banner.buttons.log_outcome}</button>
+                <button className="btn btnSecondary" onClick={() => setScreen("home")}>{COPY.mission_bridge_banner.buttons.skip_for_now}</button>
               </div>
             </>
           ) : null}
@@ -1239,6 +1364,7 @@
             </details>
           ) : null}
           <div className="btnRow"><button className="btn btnPrimary" onClick={startSession}>Start session</button></div>
+          <p className="hint"><b>{COPY.start_session.why_line}</b></p>
         </section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
           <details>
@@ -1251,7 +1377,7 @@
             <p className="hint">Deck script: <b>{previewSession.script ? scriptTitle(previewSession.script) : "mixed"}</b> ({previewSession.mode})</p>
             <p className="hint">Pending probe: <b>{mwState.probe.pending_probe ? "Yes" : "No"}</b> | Pending re-check: <b>{mwState.probe.pending_recheck ? "Yes" : "No"}</b></p>
             <p className="hint">Reasoning Gym next: <b>{mwState.probe.next_microset_tag ? gymFamilyLabel(mapTag(mwState.probe.next_microset_tag)) : "none"}</b></p>
-            <p className="hint">Missions pending: <b>{mwState.missions.filter((m)=>m.status==="pending").length}</b></p>
+            <p className="hint">Missions pending: <b>{pendingMissionCount}</b></p>
             <div className="btnRow">
               <button className="btn btnSecondary" onClick={resetLearningState}>Reset learning</button>
             </div>
