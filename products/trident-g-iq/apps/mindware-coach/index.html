@@ -221,7 +221,7 @@
     const [guidedFeedback, setGuidedFeedback] = useState(null);
     const [lessonModalScript, setLessonModalScript] = useState(null);
     const [missionDraft, setMissionDraft] = useState({ cue: "", success_signal: "", stop_flip_rule: "", value_tag: "" });
-    const [missionOutcome, setMissionOutcome] = useState({ cue_fired: "YES", success_met: "PARTLY", blocker: "", note: "" });
+    const [missionOutcome, setMissionOutcome] = useState({ cue_fired: "YES", success_met: "PARTLY", blocker: "", improved: "", note: "" });
 
     const pendingMission = useMemo(() => mwState.missions.find((m) => m.status === "pending") || null, [mwState.missions]);
     const allItems = useMemo(() => timedPacks.flatMap((p) => p.items || []), [timedPacks]);
@@ -413,6 +413,16 @@
       const tags = ["invalid_conditional","no_counterexample","base_rate_ignored","correlation_not_cause","surface_over_structure"];
       return tags.includes(tag) ? tag : "surface_over_structure";
     };
+    const transferFailCountLast7d = (script) => {
+      if (!script) return 0;
+      const since = Date.now() - (7 * 24 * 60 * 60 * 1000);
+      return events.filter((e) => {
+        const ts = new Date(e?.ts || 0).getTime();
+        return ts >= since
+          && (e?.type === "probe_failed" || e?.type === "recheck_failed")
+          && e?.payload?.script === script;
+      }).length;
+    };
     const sessionGymSuggestion = (s) => {
       if (!s || !Array.isArray(s.answers)) return null;
       const total = s.answers.length;
@@ -422,8 +432,11 @@
       const boundaryPass = boundaryAnswers.length ? boundaryAnswers.every((a) => a.correct) : false;
       const missCounts = s.answers.reduce((acc, a) => ({ ...acc, [a.near_miss_tag]: (acc[a.near_miss_tag] || 0) + (a.correct ? 0 : 1) }), {});
       const topMiss = Object.entries(missCounts).sort((a, b) => b[1] - a[1])[0] || null;
-      if (topMiss && topMiss[1] >= 2) return mapTag(topMiss[0]);
-      if ((s.mode === "probe" || s.mode === "recheck") && !(accuracy >= 0.7 && boundaryPass)) return mapTag(topMiss ? topMiss[0] : null);
+      const repeatedMistake = Boolean(topMiss && topMiss[1] >= 2 && accuracy < 0.8);
+      if (repeatedMistake) return mapTag(topMiss[0]);
+      const transferFailedNow = (s.mode === "probe" || s.mode === "recheck") && !(accuracy >= 0.7 && boundaryPass);
+      const transferFails = transferFailCountLast7d(s.script) + (transferFailedNow ? 1 : 0);
+      if (transferFailedNow && transferFails >= 2) return mapTag(topMiss ? topMiss[0] : null);
       return null;
     };
     const recommended = useMemo(() => {
@@ -560,6 +573,14 @@
       }));
       beginTimedSession({ mode: "gym", signature: null, microTag: tag, script: plan.script });
     };
+    const useSimpleMissionPreset = () => {
+      setMissionDraft((prev) => ({
+        ...prev,
+        cue: "Today, during my next focused work block",
+        success_signal: "I complete one concrete step and write a 1-2 line result",
+        stop_flip_rule: "If I'm stuck for 5 minutes, I simplify and pick the next smallest step"
+      }));
+    };
 
     const resetLearningState = () => {
       setMwState((prev) => {
@@ -629,6 +650,8 @@
       const boundaryPass = boundaryAnswers.length ? boundaryAnswers.every((a) => a.correct) : false;
       const missCounts = session.answers.reduce((acc, a) => ({ ...acc, [a.near_miss_tag]: (acc[a.near_miss_tag] || 0) + (a.correct ? 0 : 1) }), {});
       const topMiss = Object.entries(missCounts).sort((a, b) => b[1] - a[1])[0] || null;
+      const transferFailedNow = (session.mode === "probe" || session.mode === "recheck") && !(accuracy >= 0.7 && boundaryPass);
+      const shouldSuggestTransferGym = transferFailedNow && ((transferFailCountLast7d(session.script) + 1) >= 2);
       const summary = {
         session_id: session.id,
         mode: session.mode,
@@ -678,9 +701,14 @@
             next.probe.next_microset_source_session_id = null;
             pushEvent("probe_passed", { session_id: session.id, distance: dist });
           } else {
-            next.probe.next_microset_tag = mapTag(topMiss ? topMiss[0] : next.probe.next_microset_tag);
-            next.probe.next_microset_source_session_id = session.id;
-            pushEvent("probe_failed", { session_id: session.id, distance: session.signature?.distance || "near" });
+            if (shouldSuggestTransferGym) {
+              next.probe.next_microset_tag = mapTag(topMiss ? topMiss[0] : next.probe.next_microset_tag);
+              next.probe.next_microset_source_session_id = session.id;
+            } else {
+              next.probe.next_microset_tag = null;
+              next.probe.next_microset_source_session_id = null;
+            }
+            pushEvent("probe_failed", { session_id: session.id, script: session.script, distance: session.signature?.distance || "near" });
           }
         } else if (session.mode === "recheck") {
           next.probe.pending_recheck = null;
@@ -690,9 +718,14 @@
             pushEvent("recheck_passed", { session_id: session.id });
           }
           else {
-            next.probe.next_microset_tag = mapTag(topMiss ? topMiss[0] : next.probe.next_microset_tag);
-            next.probe.next_microset_source_session_id = session.id;
-            pushEvent("recheck_failed", { session_id: session.id });
+            if (shouldSuggestTransferGym) {
+              next.probe.next_microset_tag = mapTag(topMiss ? topMiss[0] : next.probe.next_microset_tag);
+              next.probe.next_microset_source_session_id = session.id;
+            } else {
+              next.probe.next_microset_tag = null;
+              next.probe.next_microset_source_session_id = null;
+            }
+            pushEvent("recheck_failed", { session_id: session.id, script: session.script });
           }
         } else if (session.mode === "gym") {
           next.probe.next_microset_tag = null;
@@ -710,7 +743,7 @@
               lens_target: session.items[0]?.lens_target
             };
           }
-          if (topMiss && topMiss[1] >= 2) {
+          if (topMiss && topMiss[1] >= 2 && accuracy < 0.8) {
             next.probe.next_microset_tag = mapTag(topMiss[0]);
             next.probe.next_microset_source_session_id = session.id;
           } else {
@@ -778,7 +811,7 @@
         today: { ...prev.today, mindware: { ...prev.today.mindware, missions_pending: Math.max(0, Number(prev.today.mindware?.missions_pending || 0) - 1) } }
       }));
       pushEvent("mission_completed", { mission_id: pendingMission.id, outcome: missionOutcome.success_met });
-      setMissionOutcome({ cue_fired: "YES", success_met: "PARTLY", blocker: "", note: "" });
+      setMissionOutcome({ cue_fired: "YES", success_met: "PARTLY", blocker: "", improved: "", note: "" });
       setScreen("home");
     };
 
@@ -979,6 +1012,9 @@
               {quickRepairTag ? (
                 <>
                   <p style={{ margin:0, fontWeight:900 }}>Quick repair (2 minutes)</p>
+                  <p className="hint">This fixes the mistake that blocked your script today.</p>
+                  <p className="hint"><b>Mindware script:</b> {scriptTitle(session.script)}</p>
+                  <p className="hint"><b>Reasoning Gym focus:</b> {gymFamilyLabel(quickRepairTag)}</p>
                   <p className="hint">Fix the exact mistake that repeated: <b>{gymFamilyLabel(quickRepairTag)}</b>.</p>
                   <p className="hint">{gymFamilyDef(quickRepairTag)}</p>
                 </>
@@ -986,6 +1022,7 @@
               <p style={{ margin:0, fontWeight:900 }}>Next step</p>
               <p className="hint"><b>Try this before your next session:</b> pick one small real task today and apply this script once.</p>
               <div className="btnRow"><button className="btn btnPrimary" onClick={finishSession}>Continue</button></div>
+              <p className="hint"><b>Next:</b> do one real-life mission today, then log the outcome next time you open the app.</p>
             </section>
           </Frame>
         );
@@ -1023,6 +1060,9 @@
             <label style={{ fontWeight:900, display:"block", marginTop:"10px" }}>Success signal (How will I know it worked?)</label><input className="field" value={missionDraft.success_signal} onChange={(e)=>setMissionDraft((p)=>({...p,success_signal:e.target.value}))} />
             <label style={{ fontWeight:900, display:"block", marginTop:"10px" }}>Stop/switch rule (optional)</label><input className="field" value={missionDraft.stop_flip_rule} onChange={(e)=>setMissionDraft((p)=>({...p,stop_flip_rule:e.target.value}))} />
             <label style={{ fontWeight:900, display:"block", marginTop:"10px" }}>Value tag (optional)</label><input className="field" value={missionDraft.value_tag} onChange={(e)=>setMissionDraft((p)=>({...p,value_tag:e.target.value}))} />
+            <div className="btnRow">
+              <button className="btn btnSecondary" onClick={useSimpleMissionPreset}>Use a simple mission (recommended)</button>
+            </div>
             <div className="btnRow"><button className="btn btnPrimary" onClick={saveMission}>Save mission</button><button className="btn btnSecondary" onClick={()=>setScreen("home")}>Skip</button></div>
           </section>
         </Frame>
@@ -1044,9 +1084,12 @@
                 <option value="state">State (tired, stressed, distracted)</option>
                 <option value="capacity">Capacity (could not hold it in mind)</option>
                 <option value="context">Context (time, interruptions, missing info)</option>
-                <option value="script_use">Script use (did not apply it correctly)</option>
+                <option value="script_use">Using the script (did not apply it correctly)</option>
                 <option value="unsure">Not sure</option>
               </select>
+              {missionOutcome.success_met === "PARTLY" ? (
+                <input className="field" style={{ marginTop:"10px" }} value={missionOutcome.improved} onChange={(e)=>setMissionOutcome((p)=>({...p,improved:e.target.value}))} placeholder="What improved? (optional)" />
+              ) : null}
               <input className="field" style={{ marginTop:"10px" }} value={missionOutcome.note} onChange={(e)=>setMissionOutcome((p)=>({...p,note:e.target.value}))} placeholder="Optional note" />
               <div className="btnRow"><button className="btn btnPrimary" onClick={saveMissionOutcome}>Save check-in</button></div>
             </section>
@@ -1077,6 +1120,8 @@
           <p className="hint">Capacity sessions completed today: <b>{Number(shared.today.capacity?.sessions_completed || 0)}</b></p>
           {(String(shared.today.data_quality || "ok").toLowerCase() !== "ok") ? <p className="hint">Today looks noisy. Consider Light or Reset.</p> : null}
           <p className="hint">{recommended.note}</p>
+          {recommended.mode === "probe" ? <p className="hint">Transfer check = Same script, different situation.</p> : null}
+          {recommended.mode === "recheck" ? <p className="hint">Transfer re-check = Try it again later to see if it sticks.</p> : null}
           {pendingMission ? (
             <>
               <p className="hint"><b>You have {mwState.missions.filter((m)=>m.status==="pending").length} mission{mwState.missions.filter((m)=>m.status==="pending").length === 1 ? "" : "s"} to check in.</b> It takes about 20 seconds.</p>
