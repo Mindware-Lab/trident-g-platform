@@ -45,11 +45,11 @@
     surface_over_structure: "Structure vs surface"
   };
   const GYM_FAMILY_DEF = {
-    invalid_conditional: "Check whether the conclusion really follows from the if-then rule.",
-    no_counterexample: "Ask what single example would prove this wrong.",
-    base_rate_ignored: "Do not ignore the background odds.",
-    correlation_not_cause: "A pattern together is not proof of cause; look for a better check.",
-    surface_over_structure: "Do not trust shallow similarity; compare the deeper structure."
+    invalid_conditional: "Stops conclusions that do not follow.",
+    no_counterexample: "Stops you believing a rule with an obvious exception.",
+    base_rate_ignored: "Stops you overreacting to one case.",
+    correlation_not_cause: "Stops you treating patterns as causes.",
+    surface_over_structure: "Stops shallow similarities fooling you."
   };
   const OPERATOR_GLOSSARY = {
     Y0: [
@@ -460,7 +460,7 @@
     }, [mwState.probe, shared]);
 
     const pickItems = ({ mode, signature, microTag, script }) => {
-      const targetN = TIMEBOX_TO_ITEMS[plan.timebox_min] || 8;
+      const targetN = mode === "gym" ? 5 : (TIMEBOX_TO_ITEMS[plan.timebox_min] || 8);
       let pool = [];
       if (mode === "gym") {
         pool = allItems.filter((it) => it.near_miss_tag === microTag);
@@ -479,6 +479,20 @@
       }
       const fresh = pool.filter((it) => !seenRecently(it.id));
       const src = fresh.length >= targetN ? fresh : pool;
+      if (mode === "gym") {
+        const limit = Math.min(targetN, src.length);
+        if (!limit) return [];
+        const switchPool = src.filter((it) => it.is_switch === true);
+        const regularPool = src.filter((it) => it.is_switch !== true);
+        if (switchPool.length) {
+          const oneSwitch = switchPool.slice().sort(() => Math.random() - 0.5).slice(0, 1);
+          const restN = Math.max(0, limit - 1);
+          const rest = regularPool.slice().sort(() => Math.random() - 0.5).slice(0, restN);
+          const topUpN = Math.max(0, limit - (oneSwitch.length + rest.length));
+          const topUp = switchPool.slice().sort(() => Math.random() - 0.5).slice(1, 1 + topUpN);
+          return [...oneSwitch, ...rest, ...topUp];
+        }
+      }
       let picked = src.slice().sort(() => Math.random() - 0.5).slice(0, targetN);
       if (picked.length && !picked.some((x) => x.is_boundary)) {
         const boundary = src.find((x) => x.is_boundary);
@@ -548,15 +562,7 @@
         return;
       }
       if (needsTeach(script)) {
-        const lesson = getLessonByScript(script);
-        const guided = getGuidedItemByScript(script);
-        if (!lesson || !guided) {
-          alert("Lesson content for this script is missing.");
-          return;
-        }
-        setLessonRun({ script, lesson, guided, mode, signature, microTag });
-        setGuidedFeedback(null);
-        setScreen("teach");
+        startTeachForScript(script, mode, signature, microTag);
         return;
       }
       beginTimedSession({ mode, signature, microTag, script });
@@ -581,6 +587,17 @@
         stop_flip_rule: "If I'm stuck for 5 minutes, I simplify and pick the next smallest step"
       }));
     };
+    const startTeachForScript = (script, mode = "practice", signature = null, microTag = null) => {
+      const lesson = getLessonByScript(script);
+      const guided = getGuidedItemByScript(script);
+      if (!lesson || !guided) {
+        alert("Lesson content for this script is missing.");
+        return;
+      }
+      setLessonRun({ script, lesson, guided, mode, signature, microTag });
+      setGuidedFeedback(null);
+      setScreen("teach");
+    };
 
     const resetLearningState = () => {
       setMwState((prev) => {
@@ -599,17 +616,7 @@
       });
     };
 
-    const openTeachForPlan = () => {
-      const lesson = getLessonByScript(plan.script);
-      const guided = getGuidedItemByScript(plan.script);
-      if (!lesson || !guided) {
-        alert("Lesson content for this script is missing.");
-        return;
-      }
-      setLessonRun({ script: plan.script, lesson, guided, mode: "practice", signature: null, microTag: null });
-      setGuidedFeedback(null);
-      setScreen("teach");
-    };
+    const openTeachForPlan = () => startTeachForScript(plan.script, "practice", null, null);
 
     const handleAnswer = (selectedIndex) => {
       setSession((prev) => {
@@ -881,12 +888,48 @@
             <ul style={{ margin:"0 0 12px 18px", padding:0 }}>
               {(lesson.common_traps || []).slice(0, 2).map((row, i) => <li key={i} className="hint">{row}</li>)}
             </ul>
+            {Array.isArray(lesson.when_not_to_use) && lesson.when_not_to_use.length ? (
+              <>
+                <p style={{ margin:"0 0 6px 0", fontWeight:900 }}>When not to use this</p>
+                <ul style={{ margin:"0 0 12px 18px", padding:0 }}>
+                  {lesson.when_not_to_use.slice(0, 2).map((row, i) => <li key={i} className="hint">{row}</li>)}
+                </ul>
+              </>
+            ) : null}
+            {Array.isArray(lesson.switch_first_to_script) && lesson.switch_first_to_script.length ? (
+              <section style={{ margin:"0 0 12px 0", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
+                <p style={{ margin:"0 0 4px 0", fontWeight:900 }}>If this is the real issue, start with...</p>
+                <p className="hint"><b>Start with:</b> {scriptTitle(lesson.switch_first_to_script[0])}</p>
+                {lesson.switch_first_reason ? <p className="hint"><b>Why:</b> {lesson.switch_first_reason}</p> : null}
+                <div className="btnRow">
+                  <button className="btn btnSecondary" onClick={() => startTeachForScript(lesson.switch_first_to_script[0], "practice", null, null)}>See that script</button>
+                </div>
+              </section>
+            ) : null}
             <details>
               <summary style={{ cursor:"pointer", fontWeight:900 }}>More detail</summary>
               <p className="hint"><b>When to use it:</b></p>
               <ul style={{ margin:"0 0 8px 18px", padding:0 }}>
                 {(lesson.when_to_use || []).map((row, i) => <li key={i} className="hint">{row}</li>)}
               </ul>
+              {Array.isArray(lesson.when_not_to_use) && lesson.when_not_to_use.length ? (
+                <>
+                  <p className="hint"><b>When not to use this:</b></p>
+                  <ul style={{ margin:"0 0 8px 18px", padding:0 }}>
+                    {(lesson.when_not_to_use || []).map((row, i) => <li key={i} className="hint">{row}</li>)}
+                  </ul>
+                </>
+              ) : null}
+              {Array.isArray(lesson.switch_first_to_script) && lesson.switch_first_to_script.length ? (
+                <>
+                  <p className="hint"><b>If this is the real issue, start with...</b></p>
+                  <p className="hint"><b>Start with:</b> {scriptTitle(lesson.switch_first_to_script[0])}</p>
+                  {lesson.switch_first_reason ? <p className="hint"><b>Why:</b> {lesson.switch_first_reason}</p> : null}
+                  <div className="btnRow">
+                    <button className="btn btnSecondary" onClick={() => startTeachForScript(lesson.switch_first_to_script[0], "practice", null, null)}>See that script</button>
+                  </div>
+                </>
+              ) : null}
               <p className="hint"><b>All steps:</b></p>
               <ol style={{ margin:"0 0 8px 18px", padding:0 }}>
                 {(lesson.steps || []).map((row, i) => <li key={i} className="hint">{row}</li>)}
@@ -1039,6 +1082,8 @@
               <button className="plainLink" onClick={() => setLessonModalScript(q.script)}>What is this script?</button>
             </p>
             <h1 className="h1">Timed item</h1>
+            {(q.is_switch === true && q.switch_type === "wrong_tool") ? <p className="hint"><b>Is this the right approach?</b></p> : null}
+            {(q.is_switch === true && q.switch_type === "flip_trigger") ? <p className="hint"><b>What would change your mind?</b></p> : null}
             <p className="p">{stripPromptTags(q.prompt)}</p>
             {timerSec <= 0 ? <p className="hint"><b>Time is up.</b> You can still answer.</p> : null}
           </section>
@@ -1205,7 +1250,7 @@
             <p className="hint">Selected script: <b>{scriptTitle(plan.script)}</b></p>
             <p className="hint">Deck script: <b>{previewSession.script ? scriptTitle(previewSession.script) : "mixed"}</b> ({previewSession.mode})</p>
             <p className="hint">Pending probe: <b>{mwState.probe.pending_probe ? "Yes" : "No"}</b> | Pending re-check: <b>{mwState.probe.pending_recheck ? "Yes" : "No"}</b></p>
-            <p className="hint">Reasoning Gym next: <b>{mwState.probe.next_microset_tag || "none"}</b></p>
+            <p className="hint">Reasoning Gym next: <b>{mwState.probe.next_microset_tag ? gymFamilyLabel(mapTag(mwState.probe.next_microset_tag)) : "none"}</b></p>
             <p className="hint">Missions pending: <b>{mwState.missions.filter((m)=>m.status==="pending").length}</b></p>
             <div className="btnRow">
               <button className="btn btnSecondary" onClick={resetLearningState}>Reset learning</button>

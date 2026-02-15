@@ -27,9 +27,16 @@
                                                "You keep collecting information without deciding."
                                            ],
                           "guided_item_id":  "lesson_y0_guided_0001",
-                          "operator_version":  1,
+                          "operator_version":  2,
                           "display_name":  "Commit or park (meta)",
-                          "display_subtitle":  "Decide if this is worth attention now. Set a timebox, define \"good enough\", add a stop or switch rule, then pick the next script."
+                          "display_subtitle":  "Decide if this is worth attention now. Set a timebox, define \"good enough\", add a stop or switch rule, then pick the next script.",
+                          "when_not_to_use":  [
+                                                  "When it\u0027s tiny and obvious. Just do the next step.",
+                                                  "When you\u0027re avoiding action by planning forever."
+                                              ],
+                          "switch_first_to_script":  [
+
+                                                     ]
                       },
                       {
                           "script":  "Y1",
@@ -52,9 +59,18 @@
                                                "Not writing a flip condition."
                                            ],
                           "guided_item_id":  "lesson_y1_guided_0001",
-                          "operator_version":  1,
+                          "operator_version":  2,
                           "display_name":  "The one test",
-                          "display_subtitle":  "Pick the single check that would most change what you do next, and do that first."
+                          "display_subtitle":  "Pick the single check that would most change what you do next, and do that first.",
+                          "when_not_to_use":  [
+                                                  "When you already have enough information and it\u0027s mainly about priorities.",
+                                                  "When you can\u0027t run a test and must choose a safe default."
+                                              ],
+                          "switch_first_to_script":  [
+                                                         "Y2",
+                                                         "Y0"
+                                                     ],
+                          "switch_first_reason":  "If it\u0027s a priorities trade-off, use Trade-offs. If it\u0027s about whether to engage at all, start with Commit or park."
                       },
                       {
                           "script":  "Y2",
@@ -77,9 +93,18 @@
                                                "No flip check."
                                            ],
                           "guided_item_id":  "lesson_y2_guided_0001",
-                          "operator_version":  1,
+                          "operator_version":  2,
                           "display_name":  "Trade-offs",
-                          "display_subtitle":  "Choose using a few criteria (time, cost, quality, risk, etc.). Score options quickly, then ask what uncertainty could flip the winner."
+                          "display_subtitle":  "Choose using a few criteria (time, cost, quality, risk, etc.). Score options quickly, then ask what uncertainty could flip the winner.",
+                          "when_not_to_use":  [
+                                                  "When one missing fact decides everything.",
+                                                  "When you can estimate chances and outcomes. Use value x chance instead."
+                                              ],
+                          "switch_first_to_script":  [
+                                                         "Y1",
+                                                         "Y3"
+                                                     ],
+                          "switch_first_reason":  "If one unknown dominates, run The one test. If uncertainty is the core, use Value x chance."
                       },
                       {
                           "script":  "Y3",
@@ -102,9 +127,19 @@
                                                "Checking forever when result will not flip."
                                            ],
                           "guided_item_id":  "lesson_y3_guided_0001",
-                          "operator_version":  1,
+                          "operator_version":  2,
                           "display_name":  "Value × chance",
-                          "display_subtitle":  "When outcomes are uncertain, compare rough value × likelihood. Tighten only the one estimate that could change your choice."
+                          "display_subtitle":  "When outcomes are uncertain, compare rough value × likelihood. Tighten only the one estimate that could change your choice.",
+                          "when_not_to_use":  [
+                                                  "When you can\u0027t even roughly estimate chances or outcomes.",
+                                                  "When the main issue is one missing piece of information."
+                                              ],
+                          "switch_first_to_script":  [
+                                                         "Y9",
+                                                         "Y1",
+                                                         "Y2"
+                                                     ],
+                          "switch_first_reason":  "If you can test by trying, run a Strategic experiment. If one missing fact dominates, use The one test. If it\u0027s mostly priorities, use Trade-offs."
                       },
                       {
                           "script":  "Y4",
@@ -127,9 +162,18 @@
                                                "Overstated conclusion."
                                            ],
                           "guided_item_id":  "lesson_y4_guided_0001",
-                          "operator_version":  1,
+                          "operator_version":  2,
                           "display_name":  "Claim → support",
-                          "display_subtitle":  "Make the claim clear, list what supports it, and state the link between them so the conclusion actually follows."
+                          "display_subtitle":  "Make the claim clear, list what supports it, and state the link between them so the conclusion actually follows.",
+                          "when_not_to_use":  [
+                                                  "When the disagreement is about values, not facts.",
+                                                  "When key terms are unclear and everyone is using different meanings."
+                                              ],
+                          "switch_first_to_script":  [
+                                                         "Y2",
+                                                         "Y7"
+                                                     ],
+                          "switch_first_reason":  "If it\u0027s values, use Trade-offs. If the claim is vague, make it measurable first."
                       },
                       {
                           "script":  "Y5",
@@ -152,9 +196,19 @@
                                                "Ignoring alternative causes."
                                            ],
                           "guided_item_id":  "lesson_y5_guided_0001",
-                          "operator_version":  1,
+                          "operator_version":  2,
                           "display_name":  "Cause chain",
-                          "display_subtitle":  "Explain with a simple mechanism (driver → steps → outcome). Predict what you would see if it\u0027s true, then check."
+                          "display_subtitle":  "Explain with a simple mechanism (driver → steps → outcome). Predict what you would see if it\u0027s true, then check.",
+                          "when_not_to_use":  [
+                                                  "When you can run a quick test without building a full explanation.",
+                                                  "When you need a practical next step right now, not a deep model."
+                                              ],
+                          "switch_first_to_script":  [
+                                                         "Y1",
+                                                         "Y6",
+                                                         "Y8"
+                                                     ],
+                          "switch_first_reason":  "If a quick check can settle it, run The one test. If action is blocked, find the bottleneck or simplify the plan."
                       },
                       {
                           "script":  "Y6",
@@ -177,9 +231,18 @@
                                                "Not verifying the bottleneck moved."
                                            ],
                           "guided_item_id":  "lesson_y6_guided_0001",
-                          "operator_version":  1,
+                          "operator_version":  2,
                           "display_name":  "Bottleneck first",
-                          "display_subtitle":  "Find the limiting constraint and move it before optimising anything else."
+                          "display_subtitle":  "Find the limiting constraint and move it before optimising anything else.",
+                          "when_not_to_use":  [
+                                                  "When you don\u0027t yet have a clear goal or success signal.",
+                                                  "When you\u0027re stuck in why debate rather than what-next action."
+                                              ],
+                          "switch_first_to_script":  [
+                                                         "Y7",
+                                                         "Y8"
+                                                     ],
+                          "switch_first_reason":  "If success is unclear, make it measurable. If the map is messy, simplify under constraints first."
                       },
                       {
                           "script":  "Y7",
@@ -202,9 +265,19 @@
                                                "Keeping goals abstract."
                                            ],
                           "guided_item_id":  "lesson_y7_guided_0001",
-                          "operator_version":  1,
+                          "operator_version":  2,
                           "display_name":  "Make it measurable",
-                          "display_subtitle":  "Turn a vague goal into a clear success signal you can actually observe."
+                          "display_subtitle":  "Turn a vague goal into a clear success signal you can actually observe.",
+                          "when_not_to_use":  [
+                                                  "When success is already clear and you\u0027re delaying action.",
+                                                  "When measurement cost is too high for a low-stakes task."
+                                              ],
+                          "switch_first_to_script":  [
+                                                         "Y6",
+                                                         "Y9",
+                                                         "Y0"
+                                                     ],
+                          "switch_first_reason":  "If you already have a measure, act on the bottleneck or run a small experiment. If it\u0027s low-stakes, set good enough and move on."
                       },
                       {
                           "script":  "Y8",
@@ -227,9 +300,19 @@
                                                "No testable next move."
                                            ],
                           "guided_item_id":  "lesson_y8_guided_0001",
-                          "operator_version":  1,
+                          "operator_version":  2,
                           "display_name":  "Simplify under constraints",
-                          "display_subtitle":  "Build the smallest useful model that keeps the key constraint and the one uncertainty that could change your plan, then take one check or step."
+                          "display_subtitle":  "Build the smallest useful model that keeps the key constraint and the one uncertainty that could change your plan, then take one check or step.",
+                          "when_not_to_use":  [
+                                                  "When you already have a clear plan and need to execute.",
+                                                  "When it\u0027s mainly a priorities trade-off rather than a messy map."
+                                              ],
+                          "switch_first_to_script":  [
+                                                         "Y6",
+                                                         "Y9",
+                                                         "Y2"
+                                                     ],
+                          "switch_first_reason":  "If it\u0027s execution, go Bottleneck first or run an experiment. If it\u0027s priorities, use Trade-offs."
                       },
                       {
                           "script":  "Y9",
@@ -252,9 +335,19 @@
                                                "No end date."
                                            ],
                           "guided_item_id":  "lesson_y9_guided_0001",
-                          "operator_version":  1,
+                          "operator_version":  2,
                           "display_name":  "Strategic experiment",
-                          "display_subtitle":  "Run a time-boxed trial with a metric and a keep/switch rule, then update based on what happened."
+                          "display_subtitle":  "Run a time-boxed trial with a metric and a keep/switch rule, then update based on what happened.",
+                          "when_not_to_use":  [
+                                                  "When stakes are too high for trial-and-error.",
+                                                  "When you haven\u0027t defined what works yet."
+                                              ],
+                          "switch_first_to_script":  [
+                                                         "Y2",
+                                                         "Y7",
+                                                         "Y0"
+                                                     ],
+                          "switch_first_reason":  "If risk is high, choose a safer option with Trade-offs. If success is unclear, make it measurable. If you should not engage now, commit or park."
                       },
                       {
                           "script":  "Y10",
@@ -277,9 +370,19 @@
                                                "Belief update without behavior update."
                                            ],
                           "guided_item_id":  "lesson_y10_guided_0001",
-                          "operator_version":  1,
+                          "operator_version":  2,
                           "display_name":  "Evidence update",
-                          "display_subtitle":  "Update confidence in line with the evidence, then say clearly what you will do differently (or not) and whether another check is worth it."
+                          "display_subtitle":  "Update confidence in line with the evidence, then say clearly what you will do differently (or not) and whether another check is worth it.",
+                          "when_not_to_use":  [
+                                                  "When you have no new evidence yet.",
+                                                  "When the question is values rather than facts."
+                                              ],
+                          "switch_first_to_script":  [
+                                                         "Y1",
+                                                         "Y5",
+                                                         "Y2"
+                                                     ],
+                          "switch_first_reason":  "If you need evidence, run The one test or Cause chain. If it\u0027s values, use Trade-offs."
                       }
                   ],
     "items":  [

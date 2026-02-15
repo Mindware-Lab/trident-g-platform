@@ -2905,6 +2905,623 @@
                                     ],
                       "difficulty":  1,
                       "time_limit_s":  28
+                  },
+                  {
+                      "id":  "gym_sw_ifthen_work_001",
+                      "context":  "work",
+                      "frame":  "decide",
+                      "wrapper":  "switch_check",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "conditional",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "is_switch":  true,
+                      "switch_type":  "wrong_tool",
+                      "prompt":  "You think: \"If the client is happy, they will reply today.\" No reply arrives. What is the best conclusion?",
+                      "options":  [
+                                      "The client is unhappy",
+                                      "No reply does not prove the client is unhappy",
+                                      "The project is definitely off track",
+                                      "They are ignoring you on purpose"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "A missing reply does not prove the opposite. You need a clearer signal before concluding anything.",
+                      "why_traps":  [
+                                        "No reply can happen for many reasons.",
+                                        "Project status cannot be inferred from a single missing message.",
+                                        "Mind-reading is not evidence."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_ifthen_work_002",
+                      "context":  "work",
+                      "frame":  "plan_do",
+                      "wrapper":  "switch_check",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "conditional",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "is_switch":  true,
+                      "switch_type":  "flip_trigger",
+                      "prompt":  "You believe: \"If the new meeting format works, we will finish on time.\" What would most change your mind that it is working?",
+                      "options":  [
+                                      "One meeting ends on time",
+                                      "Several meetings end on time across the week, compared with before",
+                                      "Someone says it feels smoother",
+                                      "You feel less stressed afterward"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "A pattern across several meetings is a stronger test than a single instance or feelings.",
+                      "why_traps":  [
+                                        "One meeting can be a fluke.",
+                                        "Feelings can mislead about outcomes.",
+                                        "Stress can change for unrelated reasons."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_ifthen_study_001",
+                      "context":  "study",
+                      "frame":  "understand",
+                      "wrapper":  "switch_check",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "meaning",
+                      "logic_family":  "conditional",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "is_switch":  true,
+                      "switch_type":  "wrong_tool",
+                      "prompt":  "You think: \"If I understand this topic, I will get every practice question right.\" You miss one question. What is the best conclusion?",
+                      "options":  [
+                                      "You do not understand the topic at all",
+                                      "One wrong answer does not prove you do not understand the topic",
+                                      "You should abandon the topic and move on",
+                                      "The practice questions are useless"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Understanding is not all-or-nothing. A single miss can reflect a detail gap, misread question, or time pressure.",
+                      "why_traps":  [
+                                        "Over-generalising from one miss is a common error.",
+                                        "Avoidance is not a conclusion.",
+                                        "Practice questions can still be useful even if imperfect."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_ifthen_study_002",
+                      "context":  "study",
+                      "frame":  "decide",
+                      "wrapper":  "switch_check",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "conditional",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "invalid_conditional",
+                      "is_switch":  true,
+                      "switch_type":  "flip_trigger",
+                      "prompt":  "You believe: \"If this study method works, my recall will improve.\" What would most change your mind that it works?",
+                      "options":  [
+                                      "One good revision session",
+                                      "Better recall across several sessions, checked the same way each time",
+                                      "You enjoy the method more",
+                                      "A friend recommends it"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Repeated checks using the same measure are a stronger test than a single session, enjoyment, or opinions.",
+                      "why_traps":  [
+                                        "Enjoyment is not the same as improved recall.",
+                                        "One session can be noise.",
+                                        "Other people\u0027s preferences may not match yours."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_counter_work_001",
+                      "context":  "work",
+                      "frame":  "argue",
+                      "wrapper":  "switch_check",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "meaning",
+                      "logic_family":  "counterexample",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "is_switch":  true,
+                      "switch_type":  "wrong_tool",
+                      "prompt":  "A colleague says: \"This team always misses deadlines.\" What is the best next move?",
+                      "options":  [
+                                      "Agree. Always is probably true",
+                                      "Ask for one clear example where they met a deadline, or why they did not",
+                                      "Change the topic to keep things calm",
+                                      "Assume it is true because they sound confident"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Looking for an exception or concrete example tests whether always is accurate and reveals causes.",
+                      "why_traps":  [
+                                        "Strong language often hides missing detail.",
+                                        "Avoiding the topic does not improve accuracy.",
+                                        "Confidence is not evidence."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_counter_work_002",
+                      "context":  "work",
+                      "frame":  "decide",
+                      "wrapper":  "switch_check",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "counterexample",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "is_switch":  true,
+                      "switch_type":  "flip_trigger",
+                      "prompt":  "You believe: \"This process is the best way to do it.\" What would most change your mind?",
+                      "options":  [
+                                      "A single person dislikes it",
+                                      "A clear case where the process fails under a known condition (time pressure, missing data, scale)",
+                                      "A longer document describing the process",
+                                      "A new name for the process"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "A specific failure condition is a real counterexample and tells you when to switch approach.",
+                      "why_traps":  [
+                                        "Preferences are not counterexamples.",
+                                        "More description is not evidence of effectiveness.",
+                                        "Renaming changes nothing."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_counter_study_001",
+                      "context":  "study",
+                      "frame":  "understand",
+                      "wrapper":  "switch_check",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "meaning",
+                      "logic_family":  "counterexample",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "is_switch":  true,
+                      "switch_type":  "wrong_tool",
+                      "prompt":  "You think: \"Flashcards always work for learning.\" What is the best next move?",
+                      "options":  [
+                                      "Keep using them no matter what",
+                                      "Ask: when do flashcards fail (for example, complex explanations or problem-solving), and what to use instead?",
+                                      "Stop all revision methods",
+                                      "Only use flashcards for everything"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Looking for exceptions helps you choose the right method for the right content, rather than over-using one tool.",
+                      "why_traps":  [
+                                        "One tool rarely fits every situation.",
+                                        "Stopping everything is not a reasoned response.",
+                                        "Over-applying a tool creates avoidable failure."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_counter_study_002",
+                      "context":  "study",
+                      "frame":  "decide",
+                      "wrapper":  "switch_check",
+                      "script":  "Y4",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "counterexample",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "no_counterexample",
+                      "is_switch":  true,
+                      "switch_type":  "flip_trigger",
+                      "prompt":  "You believe: \"I learn best by re-reading.\" What would most change your mind?",
+                      "options":  [
+                                      "A teacher says re-reading is bad",
+                                      "Seeing that recall tests improve more when you practise retrieval than when you re-read",
+                                      "A nicer textbook layout",
+                                      "Studying longer hours"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "A direct comparison using the same recall test is strong evidence that can overturn a belief about best.",
+                      "why_traps":  [
+                                        "Authority alone is not a test.",
+                                        "Presentation does not prove learning.",
+                                        "More hours can hide inefficiency."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_baserate_work_001",
+                      "context":  "work",
+                      "frame":  "decide",
+                      "wrapper":  "switch_check",
+                      "script":  "Y3",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "base_rate",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "is_switch":  true,
+                      "switch_type":  "wrong_tool",
+                      "prompt":  "One user reports a serious bug. You feel the release is unsafe. What is the best next move?",
+                      "options":  [
+                                      "Assume the release is unsafe based on one report",
+                                      "Check how often this bug type happens overall and how many users are affected",
+                                      "Ignore the report because it is only one person",
+                                      "Blame the user\u0027s device without checking"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Base rates prevent overreacting to one vivid case. You need the wider frequency to judge risk.",
+                      "why_traps":  [
+                                        "One report can be important but not representative.",
+                                        "Ignoring evidence is also an error.",
+                                        "Blame is not measurement."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_baserate_work_002",
+                      "context":  "work",
+                      "frame":  "decide",
+                      "wrapper":  "switch_check",
+                      "script":  "Y3",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "base_rate",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "is_switch":  true,
+                      "switch_type":  "flip_trigger",
+                      "prompt":  "A colleague says a new tool doubled productivity. What would most change your mind that it genuinely helps?",
+                      "options":  [
+                                      "Another single colleague says the same",
+                                      "Seeing similar gains across several people compared with normal week-to-week variation",
+                                      "A longer feature list",
+                                      "A convincing brand name"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Multiple cases compared with baseline variation is stronger evidence than anecdotes or marketing.",
+                      "why_traps":  [
+                                        "Two anecdotes are still weak evidence.",
+                                        "Features and branding do not show outcomes.",
+                                        "Claims can be inflated without comparison."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_baserate_study_001",
+                      "context":  "study",
+                      "frame":  "understand",
+                      "wrapper":  "switch_check",
+                      "script":  "Y3",
+                      "polarity":  "tighten",
+                      "lens_target":  "meaning",
+                      "logic_family":  "base_rate",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "is_switch":  true,
+                      "switch_type":  "wrong_tool",
+                      "prompt":  "You read one dramatic story about a study technique failing and assume it is useless. What is the best next move?",
+                      "options":  [
+                                      "Assume it never works",
+                                      "Check how often it works on average and in what conditions",
+                                      "Ignore all evidence and use your gut",
+                                      "Only trust dramatic stories"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Base rates help you avoid being swayed by vivid single cases and focus on typical outcomes.",
+                      "why_traps":  [
+                                        "Never claims are rarely justified.",
+                                        "Gut feelings are not a frequency estimate.",
+                                        "Dramatic cases are often unrepresentative."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_baserate_study_002",
+                      "context":  "study",
+                      "frame":  "decide",
+                      "wrapper":  "switch_check",
+                      "script":  "Y3",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "base_rate",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "base_rate_ignored",
+                      "is_switch":  true,
+                      "switch_type":  "flip_trigger",
+                      "prompt":  "You think you failed because you got one low score on a quiz. What would most change your mind about your overall progress?",
+                      "options":  [
+                                      "One friend says you are doing fine",
+                                      "Your average score across several quizzes improves over time",
+                                      "You feel more motivated today",
+                                      "You read the notes again"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Progress is best judged by trends over repeated checks, not one score or feelings.",
+                      "why_traps":  [
+                                        "Reassurance is not measurement.",
+                                        "Motivation is not performance.",
+                                        "Re-reading does not show recall improvement by itself."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_causal_work_001",
+                      "context":  "work",
+                      "frame":  "plan_do",
+                      "wrapper":  "switch_check",
+                      "script":  "Y5",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "causal",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "is_switch":  true,
+                      "switch_type":  "wrong_tool",
+                      "prompt":  "You notice you feel focused on days you start early. You assume starting early causes focus. What is the best next move?",
+                      "options":  [
+                                      "Conclude early start causes focus",
+                                      "Try starting early for a short run while keeping other factors as steady as possible",
+                                      "Read more opinions about early mornings",
+                                      "Assume focus is just random"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "A small intervention test is stronger than assuming cause from a pattern you observed.",
+                      "why_traps":  [
+                                        "Patterns can be driven by hidden factors (sleep, stress, deadlines).",
+                                        "Opinions are not a test.",
+                                        "Randomness is not a conclusion without checking."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_causal_work_002",
+                      "context":  "work",
+                      "frame":  "decide",
+                      "wrapper":  "switch_check",
+                      "script":  "Y5",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "causal",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "is_switch":  true,
+                      "switch_type":  "flip_trigger",
+                      "prompt":  "You believe a new workflow improves quality. What evidence would most change your mind?",
+                      "options":  [
+                                      "One day quality feels worse",
+                                      "A short A/B trial showing no improvement compared with the old workflow",
+                                      "A colleague complains",
+                                      "The workflow looks more professional"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "A direct comparison trial is strong evidence about cause and effect.",
+                      "why_traps":  [
+                                        "One day can be noise.",
+                                        "Complaints are not outcome measurement.",
+                                        "Appearance is not effectiveness."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_causal_study_001",
+                      "context":  "study",
+                      "frame":  "understand",
+                      "wrapper":  "switch_check",
+                      "script":  "Y5",
+                      "polarity":  "tighten",
+                      "lens_target":  "meaning",
+                      "logic_family":  "causal",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "is_switch":  true,
+                      "switch_type":  "wrong_tool",
+                      "prompt":  "You notice you do better when you study with music. You assume music causes better learning. What is the best next move?",
+                      "options":  [
+                                      "Assume music is the cause",
+                                      "Try a short run with and without music while checking recall the same way",
+                                      "Tell everyone music is essential",
+                                      "Stop studying without music forever"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Testing with and without music using the same recall check is a simple way to test cause rather than coincidence.",
+                      "why_traps":  [
+                                        "Personal patterns can be misleading.",
+                                        "Universal claims rarely follow from one person\u0027s experience.",
+                                        "Rigid rules reduce flexibility."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_causal_study_002",
+                      "context":  "study",
+                      "frame":  "decide",
+                      "wrapper":  "switch_check",
+                      "script":  "Y5",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "causal",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "correlation_not_cause",
+                      "is_switch":  true,
+                      "switch_type":  "flip_trigger",
+                      "prompt":  "You believe late-night study works best for me. What would most change your mind?",
+                      "options":  [
+                                      "A friend prefers mornings",
+                                      "A short comparison where your recall is better after earlier study for the same topic length",
+                                      "A motivational quote about mornings",
+                                      "A new desk lamp"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "A direct comparison using the same recall check tests what actually works for you.",
+                      "why_traps":  [
+                                        "Other people\u0027s preferences do not test yours.",
+                                        "Motivation and tools are not evidence of learning."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_analogy_work_001",
+                      "context":  "work",
+                      "frame":  "plan_do",
+                      "wrapper":  "switch_check",
+                      "script":  "Y8",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "analogy",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "is_switch":  true,
+                      "switch_type":  "wrong_tool",
+                      "prompt":  "You want to copy a strategy from another company because their situation sounds similar. What is the best next move?",
+                      "options":  [
+                                      "Copy it exactly",
+                                      "Check the structure: goal, constraints, resources, and what actually drove success, then adapt",
+                                      "Ignore it completely",
+                                      "Only copy the parts that look impressive"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Transfer works when you match the underlying structure, not surface similarity.",
+                      "why_traps":  [
+                                        "Exact copying ignores different constraints.",
+                                        "Ignoring all examples throws away useful information.",
+                                        "Impressive-looking parts may be irrelevant."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_analogy_work_002",
+                      "context":  "work",
+                      "frame":  "decide",
+                      "wrapper":  "switch_check",
+                      "script":  "Y8",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "analogy",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "is_switch":  true,
+                      "switch_type":  "flip_trigger",
+                      "prompt":  "You think: this project is basically the same as the last one. What would most change your mind?",
+                      "options":  [
+                                      "It feels familiar",
+                                      "A key constraint is different (deadline, rules, resources) and changes what actions are possible",
+                                      "The branding is different",
+                                      "A different team member joins"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "A changed constraint changes the problem structure, so the old solution may no longer fit.",
+                      "why_traps":  [
+                                        "Familiarity is a feeling, not a structural match.",
+                                        "Branding and people can matter, but constraints often determine what is possible."
+                                    ],
+                      "difficulty":  2,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_analogy_study_001",
+                      "context":  "study",
+                      "frame":  "understand",
+                      "wrapper":  "switch_check",
+                      "script":  "Y8",
+                      "polarity":  "tighten",
+                      "lens_target":  "meaning",
+                      "logic_family":  "analogy",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "is_switch":  true,
+                      "switch_type":  "wrong_tool",
+                      "prompt":  "You remember a similar-looking example and try to apply it, but you are not sure it truly matches. What is the best next move?",
+                      "options":  [
+                                      "Apply it anyway because it looks similar",
+                                      "Identify the deep match: same relationship or rule, not just similar words",
+                                      "Avoid using examples at all",
+                                      "Memorise more examples without checking structure"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "Analogies work when the underlying relationship matches, not when the surface features match.",
+                      "why_traps":  [
+                                        "Surface similarity can mislead.",
+                                        "Avoidance removes a useful learning tool.",
+                                        "More examples without structure increases confusion."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  35
+                  },
+                  {
+                      "id":  "gym_sw_analogy_study_002",
+                      "context":  "study",
+                      "frame":  "decide",
+                      "wrapper":  "switch_check",
+                      "script":  "Y8",
+                      "polarity":  "tighten",
+                      "lens_target":  "moves",
+                      "logic_family":  "analogy",
+                      "kind":  "mini_logic",
+                      "is_boundary":  false,
+                      "near_miss_tag":  "surface_over_structure",
+                      "is_switch":  true,
+                      "switch_type":  "flip_trigger",
+                      "prompt":  "You think: this new topic is just like the last one. What would most change your mind?",
+                      "options":  [
+                                      "The headings look similar",
+                                      "The key rule is different and changes what answers count as correct",
+                                      "The textbook font is different",
+                                      "The lecturer uses different slides"
+                                  ],
+                      "answer_index":  1,
+                      "why_right":  "A different rule changes the structure, so the same approach may fail.",
+                      "why_traps":  [
+                                        "Headings and presentation can be surface-level cues.",
+                                        "Style changes do not necessarily change the underlying rule."
+                                    ],
+                      "difficulty":  1,
+                      "time_limit_s":  35
                   }
               ]
 }
