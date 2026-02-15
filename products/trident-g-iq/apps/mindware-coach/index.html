@@ -27,6 +27,7 @@
   const APP_ICON = "../../../../branding/Trident-G-Icon.svg";
   const APP_NAME = "IQ Mindware Coach v1";
   const BUILD_ID = "2026-02-15.2";
+  const TIME_UP_SOUND = "../../../siren.mp3";
 
   const LS = {
     SHARED: "tg_shared_state_v1",
@@ -261,6 +262,7 @@
     const [loadingPacks, setLoadingPacks] = useState(true);
     const [timerSec, setTimerSec] = useState(0);
     const timeoutAdvanceRef = useRef(null);
+    const timeoutSoundRef = useRef(null);
     const audioCtxRef = useRef(null);
     const [plan, setPlan] = useState(() => ({
       mode: "practice",
@@ -458,33 +460,59 @@
       return () => clearTimeout(id);
     }, [timerSec, session, lessonModalScript]);
 
-    const playTimeUpBuzzer = () => {
+    useEffect(() => {
       try {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        if (!Ctx) return;
-        if (!audioCtxRef.current) audioCtxRef.current = new Ctx();
-        const ctx = audioCtxRef.current;
-        const now = ctx.currentTime;
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "sawtooth";
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(0.24, now + 0.03);
-        gain.gain.setValueAtTime(0.24, now + 0.95);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.18);
-
-        // Deeper, sustained alarm sweep.
-        osc.frequency.setValueAtTime(300, now);
-        osc.frequency.exponentialRampToValueAtTime(180, now + 0.25);
-        osc.frequency.exponentialRampToValueAtTime(320, now + 0.5);
-        osc.frequency.exponentialRampToValueAtTime(170, now + 0.75);
-        osc.frequency.exponentialRampToValueAtTime(340, now + 1.0);
-        osc.frequency.exponentialRampToValueAtTime(190, now + 1.18);
-
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 1.2);
+        const audio = new Audio(TIME_UP_SOUND);
+        audio.preload = "auto";
+        timeoutSoundRef.current = audio;
       } catch {}
+    }, []);
+
+    const playTimeUpBuzzer = () => {
+      const playFallbackSynth = () => {
+        try {
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) return;
+          if (!audioCtxRef.current) audioCtxRef.current = new Ctx();
+          const ctx = audioCtxRef.current;
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sawtooth";
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(0.24, now + 0.03);
+          gain.gain.setValueAtTime(0.24, now + 0.95);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.18);
+
+          // Deeper, sustained alarm sweep.
+          osc.frequency.setValueAtTime(300, now);
+          osc.frequency.exponentialRampToValueAtTime(180, now + 0.25);
+          osc.frequency.exponentialRampToValueAtTime(320, now + 0.5);
+          osc.frequency.exponentialRampToValueAtTime(170, now + 0.75);
+          osc.frequency.exponentialRampToValueAtTime(340, now + 1.0);
+          osc.frequency.exponentialRampToValueAtTime(190, now + 1.18);
+
+          osc.connect(gain).connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 1.2);
+        } catch {}
+      };
+
+      const fileSound = timeoutSoundRef.current;
+      if (fileSound) {
+        try {
+          fileSound.pause();
+          fileSound.currentTime = 0;
+          const played = fileSound.play();
+          if (played && typeof played.catch === "function") {
+            played.catch(() => playFallbackSynth());
+          } else {
+            return;
+          }
+          return;
+        } catch {}
+      }
+      playFallbackSynth();
     };
 
     useEffect(() => {
