@@ -22,9 +22,9 @@
                                         "Set a stop or switch rule."
                                     ],
                           "common_traps":  [
-                                               "No timebox, so thinking drifts.",
-                                               "No good enough, so nothing finishes.",
-                                               "You keep collecting information without deciding."
+                                               "Starting without a time limit, so you keep thinking and drift.",
+                                               "Not defining what good enough means, so you never finish.",
+                                               "Collecting more information instead of making a decision."
                                            ],
                           "guided_item_id":  "lesson_y0_guided_0001",
                           "operator_version":  2,
@@ -54,9 +54,9 @@
                                         "Write what would change your mind."
                                     ],
                           "common_traps":  [
-                                               "Reading without a clear test.",
-                                               "Picking nice-to-know checks.",
-                                               "Not writing a flip condition."
+                                               "Reading more before deciding what test you will run.",
+                                               "Choosing a check that is interesting but will not change your next step.",
+                                               "Not writing what result would make you change direction."
                                            ],
                           "guided_item_id":  "lesson_y1_guided_0001",
                           "operator_version":  2,
@@ -88,9 +88,9 @@
                                         "Run one small check if needed."
                                     ],
                           "common_traps":  [
-                                               "Too many criteria.",
-                                               "Scores that hide storytelling.",
-                                               "No flip check."
+                                               "Using too many criteria, so the choice gets muddy.",
+                                               "Giving scores that just match your initial preference.",
+                                               "Skipping the flip check, so you miss what could change the winner."
                                            ],
                           "guided_item_id":  "lesson_y2_guided_0001",
                           "operator_version":  2,
@@ -122,9 +122,9 @@
                                         "Timebox one check on the flip estimate."
                                     ],
                           "common_traps":  [
-                                               "Fake precision.",
-                                               "Ignoring the key driver estimate.",
-                                               "Checking forever when result will not flip."
+                                               "Using very precise numbers you cannot really justify.",
+                                               "Ignoring the one estimate that actually drives the decision.",
+                                               "Keeping on checking even when it cannot change the choice."
                                            ],
                           "guided_item_id":  "lesson_y3_guided_0001",
                           "operator_version":  2,
@@ -157,9 +157,9 @@
                                         "Tighten scope to match support."
                                     ],
                           "common_traps":  [
-                                               "Definition drift.",
-                                               "Evidence with no link.",
-                                               "Overstated conclusion."
+                                               "Changing what key words mean mid-conversation.",
+                                               "Listing evidence but not explaining how it supports the claim.",
+                                               "Making a stronger conclusion than the evidence supports."
                                            ],
                           "guided_item_id":  "lesson_y4_guided_0001",
                           "operator_version":  2,
@@ -191,9 +191,9 @@
                                         "Run one disconfirming or supporting check."
                                     ],
                           "common_traps":  [
-                                               "Label instead of mechanism.",
-                                               "Uncheckable story.",
-                                               "Ignoring alternative causes."
+                                               "Using labels instead of explaining how the cause works.",
+                                               "Telling a story you cannot test.",
+                                               "Ignoring other possible causes."
                                            ],
                           "guided_item_id":  "lesson_y5_guided_0001",
                           "operator_version":  2,
@@ -226,9 +226,9 @@
                                         "Do one relief action and re-check flow."
                                     ],
                           "common_traps":  [
-                                               "Optimizing non-bottlenecks.",
-                                               "Confusing symptoms with constraints.",
-                                               "Not verifying the bottleneck moved."
+                                               "Improving busywork instead of the real bottleneck.",
+                                               "Treating symptoms as the main constraint.",
+                                               "Not checking whether the bottleneck actually moved."
                                            ],
                           "guided_item_id":  "lesson_y6_guided_0001",
                           "operator_version":  2,
@@ -260,9 +260,9 @@
                                         "Set stop rule."
                                     ],
                           "common_traps":  [
-                                               "Measure you will not track.",
-                                               "Too many measures.",
-                                               "Keeping goals abstract."
+                                               "Choosing a metric you will not track in real life.",
+                                               "Tracking too many metrics at once.",
+                                               "Keeping the goal vague, so you cannot tell if it worked."
                                            ],
                           "guided_item_id":  "lesson_y7_guided_0001",
                           "operator_version":  2,
@@ -295,9 +295,9 @@
                                         "Pick one check or one next step."
                                     ],
                           "common_traps":  [
-                                               "Dropping the key constraint.",
-                                               "Keeping everything for comfort.",
-                                               "No testable next move."
+                                               "Simplifying so much that you drop the key constraint.",
+                                               "Keeping every detail because it feels safer.",
+                                               "Ending with no clear next test or step."
                                            ],
                           "guided_item_id":  "lesson_y8_guided_0001",
                           "operator_version":  2,
@@ -330,9 +330,9 @@
                                         "Set keep or switch rule."
                                     ],
                           "common_traps":  [
-                                               "Changing too many variables.",
-                                               "No metric.",
-                                               "No end date."
+                                               "Changing multiple things at once, so results are unclear.",
+                                               "Running a trial without one clear metric.",
+                                               "Running the trial with no end date."
                                            ],
                           "guided_item_id":  "lesson_y9_guided_0001",
                           "operator_version":  2,
@@ -365,9 +365,9 @@
                                         "Change plan explicitly or hold explicitly."
                                     ],
                           "common_traps":  [
-                                               "Ignoring disconfirming data.",
-                                               "Over-updating weak evidence.",
-                                               "Belief update without behavior update."
+                                               "Ignoring evidence that goes against your preferred view.",
+                                               "Making a big change based on weak evidence.",
+                                               "Updating your view but not changing what you do."
                                            ],
                           "guided_item_id":  "lesson_y10_guided_0001",
                           "operator_version":  2,
