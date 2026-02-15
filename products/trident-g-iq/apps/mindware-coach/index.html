@@ -339,12 +339,6 @@
     useEffect(() => save(LS.SHARED, shared), [shared]);
     useEffect(() => save(LS.EVENTS, events.slice(-800)), [events]);
     useEffect(() => {
-      if (screen !== "splash") return;
-      const id = setTimeout(() => setScreen("home"), 1100);
-      return () => clearTimeout(id);
-    }, [screen]);
-
-    useEffect(() => {
       // Do not persist a forced Gym suggestion across reloads.
       setMwState((prev) => {
         if (!prev.probe?.next_microset_tag) return prev;

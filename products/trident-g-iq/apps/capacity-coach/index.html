@@ -686,12 +686,6 @@
       saveJson(STORAGE.MISSIONS_V11, missionsV11);
     }, [missionsV11]);
 
-    useEffect(() => {
-      if (screen !== 'splash') return;
-      const id = setTimeout(() => setScreen('home'), 1100);
-      return () => clearTimeout(id);
-    }, [screen]);
-
     const firstSession = (programV11.program_session_index || 0) === 0;
     const planLabel = firstSession
       ? 'No session-style suggestion yet (first session)'
