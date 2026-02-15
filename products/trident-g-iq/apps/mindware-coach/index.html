@@ -468,20 +468,21 @@
         const gain = ctx.createGain();
         osc.type = "sawtooth";
         gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(0.2, now + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.58);
+        gain.gain.exponentialRampToValueAtTime(0.24, now + 0.03);
+        gain.gain.setValueAtTime(0.24, now + 0.95);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.18);
 
-        // Short alarm-style siren sweep.
-        osc.frequency.setValueAtTime(760, now);
-        osc.frequency.exponentialRampToValueAtTime(420, now + 0.12);
-        osc.frequency.exponentialRampToValueAtTime(820, now + 0.24);
-        osc.frequency.exponentialRampToValueAtTime(450, now + 0.36);
-        osc.frequency.exponentialRampToValueAtTime(900, now + 0.48);
-        osc.frequency.exponentialRampToValueAtTime(520, now + 0.58);
+        // Deeper, sustained alarm sweep.
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(180, now + 0.25);
+        osc.frequency.exponentialRampToValueAtTime(320, now + 0.5);
+        osc.frequency.exponentialRampToValueAtTime(170, now + 0.75);
+        osc.frequency.exponentialRampToValueAtTime(340, now + 1.0);
+        osc.frequency.exponentialRampToValueAtTime(190, now + 1.18);
 
         osc.connect(gain).connect(ctx.destination);
         osc.start(now);
-        osc.stop(now + 0.6);
+        osc.stop(now + 1.2);
       } catch {}
     };
 
