@@ -812,12 +812,31 @@
     const startQuickRepair = () => {
       startGymWithTag(recommended.tag || mwState.probe.next_microset_tag || menuGymTag, plan.script);
     };
+    const autoValueTagForScript = (script) => {
+      const tags = {
+        Y0: "focus",
+        Y1: "quality",
+        Y2: "decision quality",
+        Y3: "risk",
+        Y4: "clarity",
+        Y5: "reliability",
+        Y6: "speed",
+        Y7: "quality",
+        Y8: "clarity",
+        Y9: "speed",
+        Y10: "risk"
+      };
+      return tags[String(script || "")] || "focus";
+    };
     const useSimpleMissionPreset = () => {
+      const lastScript = asObj(shared.last?.mindware_session?.summary).script || null;
+      const missionScript = session?.script || lastScript || plan.script;
       setMissionDraft((prev) => ({
         ...prev,
         cue: "Today, during my next focused work block",
         success_signal: "I complete one concrete step and write a 1-2 line result",
-        stop_flip_rule: "If I'm stuck for 5 minutes, I simplify and pick the next smallest step"
+        stop_flip_rule: "If I'm stuck for 5 minutes, I simplify and pick the next smallest step",
+        value_tag: autoValueTagForScript(missionScript)
       }));
     };
     const startTeachForScript = (script, mode = "practice", signature = null, microTag = null) => {
