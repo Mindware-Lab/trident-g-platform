@@ -1272,7 +1272,7 @@
           <p className="hint">Choose what to practise.</p>
           <p className="hint">Frame = the kind of thinking task. Script = the routine you'll use inside it.</p>
           <p className="hint">Example: Decide + Trade-offs means make a decision using a quick trade-off check.</p>
-          <div className="grid2">
+          <div className="grid2" style={{ marginTop:"10px" }}>
             <select className="field" value={plan.frame} onChange={(e)=>setPlan((p)=>({...p,frame:e.target.value}))}>{FRAMES.map((f) => <option key={f} value={f}>Frame: {FRAME_LABEL[f]}</option>)}</select>
             <select className="field" value={plan.script} onChange={(e)=>setPlan((p)=>({...p,script:e.target.value}))}>
               {SCRIPTS.map((s) => <option key={s} value={s}>Script: {scriptTitle(s)}</option>)}
