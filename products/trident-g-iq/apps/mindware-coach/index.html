@@ -1010,13 +1010,20 @@
                 <p className="hint"><b>Start with:</b> {scriptTitle(lesson.switch_first_to_script[0])}</p>
                 {lesson.switch_first_reason ? <p className="hint"><b>Why:</b> {lesson.switch_first_reason}</p> : null}
                 <div className="btnRow">
-                  <button className="btn btnSecondary" onClick={() => startTeachForScript(lesson.switch_first_to_script[0], "practice", null, null)}>See that script</button>
+                  <button
+                    className="btn btnSecondary"
+                    style={{ background:"#EAF5FF", border:"1px solid #2764B7", color:"#143A73", fontWeight:900, opacity:1 }}
+                    onClick={() => startTeachForScript(lesson.switch_first_to_script[0], "practice", null, null)}
+                  >
+                    See that script
+                  </button>
                 </div>
               </section>
             ) : null}
             <div className="btnRow">
               <button
                 className="btn btnSecondary"
+                style={{ background:"#EAF5FF", border:"1px solid #2764B7", color:"#143A73", fontWeight:900, opacity:1 }}
                 onClick={() => {
                   setLessonRun(null);
                   setGuidedFeedback(null);
@@ -1026,7 +1033,13 @@
                 Return to menu
               </button>
               <button className="btn btnPrimary" onClick={() => setScreen("guided")}>Try a worked example</button>
-              <button className="btn btnSecondary" onClick={() => setScreen("guided")}>Skip for now</button>
+              <button
+                className="btn btnSecondary"
+                style={{ background:"#EAF5FF", border:"1px solid #2764B7", color:"#143A73", fontWeight:900, opacity:1 }}
+                onClick={() => setScreen("guided")}
+              >
+                Skip for now
+              </button>
             </div>
           </section>
         </Frame>
