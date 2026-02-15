@@ -2028,7 +2028,13 @@
             <p style={{ marginTop: '8px' }}>Use the coach between each block. It tells you the next block settings based on your quick check.</p>
             <div className="btnRow">
               <button className="btn btnPrimary" onClick={startGuidedSession}>Start guided session</button>
-              <button className="btn btnSecondary" onClick={() => setScreen('results')}>Use post-session entry instead</button>
+              <button
+                className="btn btnSecondary"
+                style={{ background: '#EAF5FF', border: '1px solid #2764B7', color: '#143A73', fontWeight: 900, opacity: 1 }}
+                onClick={() => setScreen('results')}
+              >
+                Use post-session entry instead
+              </button>
             </div>
             <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333', fontWeight: 700 }}>{COPY.start_session.why_line}</p>
           </section>
