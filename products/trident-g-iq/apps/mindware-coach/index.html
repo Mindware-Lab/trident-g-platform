@@ -1014,57 +1014,17 @@
                 </div>
               </section>
             ) : null}
-            <details>
-              <summary style={{ cursor:"pointer", fontWeight:900 }}>More detail</summary>
-              <p className="hint"><b>When to use it:</b></p>
-              <ul style={{ margin:"0 0 8px 18px", padding:0 }}>
-                {(lesson.when_to_use || []).map((row, i) => <li key={i} className="hint">{row}</li>)}
-              </ul>
-              {Array.isArray(lesson.when_not_to_use) && lesson.when_not_to_use.length ? (
-                <>
-                  <p className="hint"><b>When not to use this:</b></p>
-                  <ul style={{ margin:"0 0 8px 18px", padding:0 }}>
-                    {(lesson.when_not_to_use || []).map((row, i) => <li key={i} className="hint">{row}</li>)}
-                  </ul>
-                </>
-              ) : null}
-              {Array.isArray(lesson.switch_first_to_script) && lesson.switch_first_to_script.length ? (
-                <>
-                  <p className="hint"><b>If this is the real issue, start with...</b></p>
-                  <p className="hint"><b>Start with:</b> {scriptTitle(lesson.switch_first_to_script[0])}</p>
-                  {lesson.switch_first_reason ? <p className="hint"><b>Why:</b> {lesson.switch_first_reason}</p> : null}
-                  <div className="btnRow">
-                    <button className="btn btnSecondary" onClick={() => startTeachForScript(lesson.switch_first_to_script[0], "practice", null, null)}>See that script</button>
-                  </div>
-                </>
-              ) : null}
-              <p className="hint"><b>All steps:</b></p>
-              <ol style={{ margin:"0 0 8px 18px", padding:0 }}>
-                {(lesson.steps || []).map((row, i) => <li key={i} className="hint">{row}</li>)}
-              </ol>
-              <p className="hint"><b>All traps:</b></p>
-              <ul style={{ margin:"0 0 8px 18px", padding:0 }}>
-                {(lesson.common_traps || []).map((row, i) => <li key={i} className="hint">{row}</li>)}
-              </ul>
-              {lessonRun.script === "Y8" ? (
-                <>
-                  <p className="hint"><b>Zoom-out note:</b> Sometimes simplifying means zooming out so details do not swamp the plan.</p>
-                  <p className="hint">Keep what matters (goal), what blocks you (constraint), what could change your plan (key uncertainty), and one next check or step.</p>
-                </>
-              ) : null}
-              {lessonRun.script === "Y0" ? (
-                <p className="hint"><b>Tip:</b> If you feel swamped, run Simplify under constraints for 30 seconds, then continue.</p>
-              ) : null}
-              {Array.isArray(OPERATOR_GLOSSARY[lessonRun.script]) ? (
-                <>
-                  <p className="hint"><b>Plain-language terms:</b></p>
-                  <ul style={{ margin:"0 0 8px 18px", padding:0 }}>
-                    {OPERATOR_GLOSSARY[lessonRun.script].map(([term, meaning], i) => <li key={i} className="hint"><b>{term}:</b> {meaning}</li>)}
-                  </ul>
-                </>
-              ) : null}
-            </details>
             <div className="btnRow">
+              <button
+                className="btn btnSecondary"
+                onClick={() => {
+                  setLessonRun(null);
+                  setGuidedFeedback(null);
+                  setScreen("home");
+                }}
+              >
+                Return to menu
+              </button>
               <button className="btn btnPrimary" onClick={() => setScreen("guided")}>Try a worked example</button>
               <button className="btn btnSecondary" onClick={() => setScreen("guided")}>Skip for now</button>
             </div>
