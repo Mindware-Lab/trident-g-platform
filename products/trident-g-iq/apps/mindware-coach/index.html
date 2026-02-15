@@ -177,6 +177,42 @@
   const stripPromptTags = (prompt) => String(prompt || "").replace(/^(\[[^\]]+\]\s*)+/, "").trim();
   const gymFamilyLabel = (tag) => GYM_FAMILY_LABEL[tag] || GYM_FAMILY_LABEL.surface_over_structure;
   const gymFamilyDef = (tag) => GYM_FAMILY_DEF[tag] || GYM_FAMILY_DEF.surface_over_structure;
+  const shuffleOptionsForItem = (item) => {
+    const opts = Array.isArray(item?.options) ? item.options.slice() : [];
+    const answerIdx = Number(item?.answer_index);
+    if (opts.length < 2 || !Number.isInteger(answerIdx) || answerIdx < 0 || answerIdx >= opts.length) return item;
+    const rows = opts.map((label, idx) => ({ label, idx }));
+    for (let i = rows.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [rows[i], rows[j]] = [rows[j], rows[i]];
+    }
+    const remappedAnswer = rows.findIndex((r) => r.idx === answerIdx);
+    if (remappedAnswer < 0) return item;
+    return {
+      ...item,
+      options: rows.map((r) => r.label),
+      answer_index: remappedAnswer
+    };
+  };
+  const shuffleOptionsForSession = (items) => {
+    const out = [];
+    let prevAnswer = -1;
+    for (const base of (Array.isArray(items) ? items : [])) {
+      let row = shuffleOptionsForItem(base);
+      const n = Array.isArray(row?.options) ? row.options.length : 0;
+      if (n > 1 && row.answer_index === prevAnswer) {
+        const current = Number(row.answer_index);
+        const jump = 1 + Math.floor(Math.random() * (n - 1));
+        const target = (current + jump) % n;
+        const swapped = row.options.slice();
+        [swapped[current], swapped[target]] = [swapped[target], swapped[current]];
+        row = { ...row, options: swapped, answer_index: target };
+      }
+      out.push(row);
+      prevAnswer = Number(row?.answer_index);
+    }
+    return out;
+  };
   const localDateKey = (d = new Date()) => {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -700,7 +736,8 @@
         alert("No items available for this mode.");
         return false;
       }
-      const q = items[0];
+      const randomizedItems = shuffleOptionsForSession(items);
+      const q = randomizedItems[0];
       const questionTimeSec = getQuestionTimeSecForToday();
       setSession({
         id: uid(),
@@ -711,7 +748,7 @@
         rigour: signature?.rigour || plan.rigour,
         signature,
         question_time_s: questionTimeSec,
-        items,
+        items: randomizedItems,
         index: 0,
         phase: "question",
         answers: [],
@@ -790,7 +827,7 @@
         alert("Lesson content for this script is missing.");
         return;
       }
-      setLessonRun({ script, lesson, guided, mode, signature, microTag });
+      setLessonRun({ script, lesson, guided: shuffleOptionsForItem(guided), mode, signature, microTag });
       setGuidedFeedback(null);
       setScreen("teach");
     };
@@ -1580,7 +1617,7 @@
                     const lesson = getLessonByScript(plan.script);
                     const guided = getGuidedItemByScript(plan.script);
                     if (!lesson || !guided) return;
-                    setLessonRun({ script: plan.script, lesson, guided, mode: "practice", signature: null, microTag: null });
+                    setLessonRun({ script: plan.script, lesson, guided: shuffleOptionsForItem(guided), mode: "practice", signature: null, microTag: null });
                     setGuidedFeedback(null);
                     setScreen("guided");
                   }}
