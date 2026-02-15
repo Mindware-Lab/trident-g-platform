@@ -169,8 +169,11 @@
       }
     },
     why_missions_modal: {
-      title: 'Why missions?',
-      body: "A mission is a small real task you already need to do. It turns training into performance. Without missions, it's easy to improve in app but not in work.\n\nA good mission is:\n- Small (2-10 minutes)\n- Real (something you genuinely need to do)\n- Measurable (you can tell if it worked)\n\nThat is why the app prompts you to try one mission before your next session.",
+      title: 'Capacity Coach mission',
+      body: "What this is for\nCapacity training helps you stay steady under load: fewer slips, faster re-entry, better follow-through.\nThe transfer check is a short real work task that tests whether today's steadiness shows up outside the app.\n\nHow this supports Mindware Coach\nWhen your attention is steadier, it's easier to use mindware scripts well.\nSo capacity training often makes your mindware practice more reliable, especially when you're busy or using AI tools.\n\nA good transfer check is:\n- Small (up to 30 minutes)\n- Real (something you already need to do)\n- Measurable (clear worked / partly / didn't signal, for example stayed on-task, finished the block)\n\nThat's why the app suggests one before your next session: it helps you build carry-over, not just in-app performance.\n\nExample: Do one 10-minute work block. Track: stayed on-task, number of slips, finished vs not.",
+      capacity_mindware_line: 'Using Mindware Coach too? Capacity steadiness helps scripts work better under pressure.',
+      mindware_cta: 'Open Mindware Coach',
+      mindware_href: '../mindware-coach/',
       cta: 'Got it'
     }
   };
@@ -2045,6 +2048,10 @@
               <section style={{ width: 'min(640px, 100%)', maxHeight: '80vh', overflow: 'auto', background: '#fff', borderRadius: '16px', border: '1px solid #ddd', padding: '16px' }}>
                 <h2 className="h1" style={{ marginTop: 0 }}>{COPY.why_missions_modal.title}</h2>
                 <p style={{ margin: 0, fontSize: '13px', color: '#333333', whiteSpace: 'pre-line' }}>{COPY.why_missions_modal.body}</p>
+                <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#555555' }}>
+                  {COPY.why_missions_modal.capacity_mindware_line}{' '}
+                  <a href={COPY.why_missions_modal.mindware_href} style={{ color: '#2764B7' }}>{COPY.why_missions_modal.mindware_cta}</a>
+                </p>
                 <div className="btnRow"><button className="btn btnPrimary" onClick={() => setShowWhyMissions(false)}>{COPY.why_missions_modal.cta}</button></div>
               </section>
             </div>
