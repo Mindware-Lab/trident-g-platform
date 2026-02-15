@@ -372,7 +372,7 @@
   };
 
   function App() {
-    const [screen, setScreen] = useState('home');
+    const [screen, setScreen] = useState('splash');
     const [progress, setProgress] = useState(() => loadProgress());
     const [settingsV11] = useState(() => loadSettingsV11());
     const [programV11, setProgramV11] = useState(() => loadProgramV11());
@@ -685,6 +685,12 @@
     useEffect(() => {
       saveJson(STORAGE.MISSIONS_V11, missionsV11);
     }, [missionsV11]);
+
+    useEffect(() => {
+      if (screen !== 'splash') return;
+      const id = setTimeout(() => setScreen('home'), 1100);
+      return () => clearTimeout(id);
+    }, [screen]);
 
     const firstSession = (programV11.program_session_index || 0) === 0;
     const planLabel = firstSession
@@ -1710,6 +1716,23 @@
               </div>
             </section>
             )}
+          </main>
+        </div>
+      );
+    }
+
+    if (screen === 'splash') {
+      return (
+        <div className="screen" style={{ background: '#E8F4FF' }}>
+          <main className="content capacityNarrow" style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
+            <section style={{ width: '100%', background: '#E8F4FF', border: '1px solid #BFDFFF', borderRadius: '18px', padding: '28px', textAlign: 'center' }}>
+              <img src={APP_ICON} alt="Trident G" style={{ width: '56px', height: '56px', objectFit: 'contain', margin: '0 auto 10px auto', display: 'block' }} />
+              <h1 className="h1" style={{ margin: '0 0 6px 0', fontWeight: 900 }}>IQ Capacity Coach v1</h1>
+              <p className="p" style={{ margin: 0 }}>Building steadier focus and control under load.</p>
+              <div className="btnRow" style={{ justifyContent: 'center' }}>
+                <button className="btn btnPrimary" onClick={() => setScreen('home')}>Continue</button>
+              </div>
+            </section>
           </main>
         </div>
       );

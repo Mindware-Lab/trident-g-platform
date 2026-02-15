@@ -257,7 +257,7 @@
   };
 
   function App() {
-    const [screen, setScreen] = useState("home");
+    const [screen, setScreen] = useState("splash");
     const [shared, setShared] = useState(() => loadShared());
     const [mwState, setMwState] = useState(() => loadState());
     const [events, setEvents] = useState(() => (Array.isArray(parse(localStorage.getItem(LS.EVENTS), [])) ? parse(localStorage.getItem(LS.EVENTS), []) : []));
@@ -338,6 +338,11 @@
     useEffect(() => save(LS.STATE, mwState), [mwState]);
     useEffect(() => save(LS.SHARED, shared), [shared]);
     useEffect(() => save(LS.EVENTS, events.slice(-800)), [events]);
+    useEffect(() => {
+      if (screen !== "splash") return;
+      const id = setTimeout(() => setScreen("home"), 1100);
+      return () => clearTimeout(id);
+    }, [screen]);
 
     useEffect(() => {
       // Do not persist a forced Gym suggestion across reloads.
@@ -967,6 +972,23 @@
         </>
       );
     };
+
+    if (screen === "splash") {
+      return (
+        <div className="screen" style={{ background: "#E8F4FF" }}>
+          <main className="content mindwareNarrow" style={{ display: "grid", placeItems: "center", minHeight: "100vh" }}>
+            <section style={{ width: "100%", background: "#E8F4FF", border: "1px solid #BFDFFF", borderRadius: "18px", padding: "28px", textAlign: "center" }}>
+              <img src={APP_ICON} alt="Trident G" style={{ width: "56px", height: "56px", objectFit: "contain", margin: "0 auto 10px auto", display: "block" }} />
+              <h1 className="h1" style={{ margin: "0 0 6px 0", fontWeight: 900 }}>{APP_NAME}</h1>
+              <p className="p" style={{ margin: 0 }}>Training reliable thinking steps under pressure.</p>
+              <div className="btnRow" style={{ justifyContent: "center" }}>
+                <button className="btn btnPrimary" onClick={() => setScreen("home")}>Continue</button>
+              </div>
+            </section>
+          </main>
+        </div>
+      );
+    }
 
     if (loadingPacks) return <Frame chip="Loading" subtitle="Mindware session coordinator"><section className="card"><h1 className="h1">Loading content packs...</h1><p className="p">Preparing scenarios and drills.</p></section></Frame>;
 
