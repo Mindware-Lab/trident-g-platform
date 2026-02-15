@@ -1120,6 +1120,16 @@
             <p className="hint">{scriptOneLiner(lessonRun.script)}</p>
             <div className="btnRow">
               <button
+                className="btn btnSecondary"
+                onClick={() => {
+                  setLessonRun(null);
+                  setGuidedFeedback(null);
+                  setScreen("home");
+                }}
+              >
+                Return to selection
+              </button>
+              <button
                 className="btn btnPrimary"
                 onClick={() => {
                   beginTimedSession({ mode: lessonRun.mode, signature: lessonRun.signature, microTag: lessonRun.microTag, script: lessonRun.script });
