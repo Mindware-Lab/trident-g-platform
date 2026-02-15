@@ -1219,6 +1219,7 @@
       }
       const q = session.current;
       const lesson = getLessonByScript(q.script);
+      const remainingAfterThis = Math.max(0, Number(session.items.length || 0) - Number(session.index || 0) - 1);
       return (
         <Frame chip={`${session.index + 1}/${session.items.length}`} subtitle="Timed practice">
           <section className="card">
@@ -1230,9 +1231,14 @@
             </p>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", gap:"10px", marginTop:"4px" }}>
               <h1 className="h1" style={{ margin:0 }}>Timed item</h1>
-              <p style={{ margin:0, fontWeight:900, fontSize:"28px", lineHeight:1.1, color: timerSec <= 5 ? "#B42318" : "#FFFFFF" }}>
-                {timerSec > 0 ? `${timerSec}s left` : "Time's up"}
-              </p>
+              <div style={{ display:"flex", alignItems:"baseline", gap:"12px" }}>
+                <p style={{ margin:0, fontWeight:900, fontSize:"18px", lineHeight:1.1, color:"#FFFFFF" }}>
+                  {remainingAfterThis} remaining
+                </p>
+                <p style={{ margin:0, fontWeight:900, fontSize:"28px", lineHeight:1.1, color: timerSec <= 5 ? "#B42318" : "#FFFFFF" }}>
+                  {timerSec > 0 ? `${timerSec}s left` : "Time's up"}
+                </p>
+              </div>
             </div>
             {(q.is_switch === true && q.switch_type === "wrong_tool") ? <p className="hint"><b>Is this the right approach?</b></p> : null}
             {(q.is_switch === true && q.switch_type === "flip_trigger") ? <p className="hint"><b>What would change your mind?</b></p> : null}
