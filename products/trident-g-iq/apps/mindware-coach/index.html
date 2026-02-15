@@ -163,6 +163,19 @@
     "./content/packs/reasoning_gym_v1.json",
     "./content/packs/logic_injections_v1.json"
   ];
+  const SCRIPT_GPT_LINKS = {
+    Y0: "",
+    Y1: "",
+    Y2: "",
+    Y3: "",
+    Y4: "",
+    Y5: "",
+    Y6: "",
+    Y7: "",
+    Y8: "",
+    Y9: "",
+    Y10: ""
+  };
   const LESSON_PACK = "./content/packs/lessons_v1.json";
   const MANIFEST_PACK = "./content/packs/manifest_v1.json";
   const TIMEBOX_TO_ITEMS = { 2: 5, 4: 8, 6: 12, 8: 16 };
@@ -1117,6 +1130,15 @@
       setMissionOutcome({ cue_fired: "YES", success_met: "PARTLY", blocker: "", improved: "", note: "" });
       setScreen("home");
     };
+    const openScriptGpt = () => {
+      const script = session?.script || asObj(shared.last?.mindware_session?.summary).script || plan.script;
+      const link = SCRIPT_GPT_LINKS[String(script || "")];
+      if (!link) {
+        alert(`GPT link for "${scriptTitle(script)}" is not set yet. Add it in SCRIPT_GPT_LINKS.`);
+        return;
+      }
+      window.open(link, "_blank", "noopener,noreferrer");
+    };
 
     const returnToMenu = () => {
       if (timeoutAdvanceRef.current) {
@@ -1464,6 +1486,13 @@
             <label style={{ fontWeight:900, display:"block", marginTop:"10px" }}>Value tag (What is this mission mainly for, for example speed, quality, focus, or risk?)</label><input className="field" value={missionDraft.value_tag} onChange={(e)=>setMissionDraft((p)=>({...p,value_tag:e.target.value}))} />
             <div className="btnRow">
               <button className="btn btnSecondary" onClick={useSimpleMissionPreset}>Generate a simple mission automatically.</button>
+              <button
+                className="btn btnSecondary"
+                onClick={openScriptGpt}
+                title="Open a script-specific GPT helper (link can be configured later)."
+              >
+                Open Script GPT helper
+              </button>
             </div>
             <div className="btnRow"><button className="btn btnPrimary" onClick={saveMission}>Save mission</button><button className="btn btnSecondary" onClick={()=>setScreen("home")}>Skip</button></div>
           </section>
