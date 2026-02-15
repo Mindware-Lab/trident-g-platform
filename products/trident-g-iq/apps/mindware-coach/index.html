@@ -264,6 +264,7 @@
     const timeoutAdvanceRef = useRef(null);
     const warningSoundRef = useRef(null);
     const warningPlayedKeyRef = useRef("");
+    const postFinishActionRef = useRef(null);
     const audioCtxRef = useRef(null);
     const [plan, setPlan] = useState(() => ({
       mode: "practice",
@@ -278,6 +279,7 @@
     const [lessonModalScript, setLessonModalScript] = useState(null);
     const [showHowItWorks, setShowHowItWorks] = useState(false);
     const [showTodayHelp, setShowTodayHelp] = useState(false);
+    const [menuGymTag, setMenuGymTag] = useState("invalid_conditional");
     const [missionDraft, setMissionDraft] = useState({ cue: "", success_signal: "", stop_flip_rule: "", value_tag: "" });
     const [missionOutcome, setMissionOutcome] = useState({ cue_fired: "YES", success_met: "PARTLY", blocker: "", improved: "", note: "" });
 
@@ -679,7 +681,7 @@
       const items = pickItems({ mode, signature, microTag, script });
       if (!items.length) {
         alert("No items available for this mode.");
-        return;
+        return false;
       }
       const q = items[0];
       const questionTimeSec = getQuestionTimeSecForToday();
@@ -702,6 +704,7 @@
       });
       setTimerSec(questionTimeSec);
       setScreen("session");
+      return true;
     };
 
     const startSession = () => {
@@ -740,8 +743,8 @@
       }
       beginTimedSession({ mode, signature, microTag, script });
     };
-    const startQuickRepair = () => {
-      const tag = mapTag(recommended.tag || mwState.probe.next_microset_tag);
+    const startGymWithTag = (tag, scriptOverride = plan.script) => {
+      const mapped = mapTag(tag);
       setMwState((prev) => ({
         ...prev,
         probe: {
@@ -750,7 +753,10 @@
           next_microset_source_session_id: null
         }
       }));
-      beginTimedSession({ mode: "gym", signature: null, microTag: tag, script: plan.script });
+      return beginTimedSession({ mode: "gym", signature: null, microTag: mapped, script: scriptOverride || plan.script });
+    };
+    const startQuickRepair = () => {
+      startGymWithTag(recommended.tag || mwState.probe.next_microset_tag || menuGymTag, plan.script);
     };
     const useSimpleMissionPreset = () => {
       setMissionDraft((prev) => ({
@@ -840,6 +846,8 @@
 
     const finishSession = () => {
       if (!session || session.phase !== "complete") return;
+      const postFinishAction = postFinishActionRef.current;
+      postFinishActionRef.current = null;
       const total = session.answers.length;
       const correct = session.answers.filter((a) => a.correct).length;
       const accuracy = total ? correct / total : 0;
@@ -965,6 +973,11 @@
         },
         last: { ...prev.last, mindware_session: { summary } }
       }));
+      if (postFinishAction?.type === "gym") {
+        const started = startGymWithTag(postFinishAction.tag || (topMiss ? topMiss[0] : "invalid_conditional"), postFinishAction.script || session.script);
+        if (!started) setScreen("post");
+        return;
+      }
       setScreen("post");
     };
 
@@ -1272,7 +1285,22 @@
               ) : null}
               <p style={{ margin:0, fontWeight:900 }}>Next step</p>
               <p className="hint"><b>Try this before your next session:</b> pick one small real task today and apply this script once.</p>
-              <div className="btnRow"><button className="btn btnPrimary" onClick={finishSession}>Continue</button></div>
+              <div className="btnRow">
+                {quickRepairTag ? (
+                  <button
+                    className="btn btnSecondary"
+                    style={{ background:"#EAF5FF", border:"1px solid #2764B7", color:"#143A73", fontWeight:900, opacity:1 }}
+                    onClick={() => {
+                      postFinishActionRef.current = { type: "gym", tag: quickRepairTag, script: session.script };
+                      finishSession();
+                    }}
+                  >
+                    Start quick repair now
+                  </button>
+                ) : null}
+                <button className="btn btnPrimary" onClick={finishSession}>{quickRepairTag ? "Continue to mission" : "Continue"}</button>
+              </div>
+              {quickRepairTag ? <p className="hint">You can also open Reasoning Gym anytime from the Home menu.</p> : null}
               <p className="hint"><b>Next:</b> do one real-life mission today, then log the outcome next time you open the app.</p>
             </section>
           </Frame>
@@ -1444,9 +1472,21 @@
               <p style={{ margin:"0 0 4px 0", fontWeight:900 }}>Reasoning Gym (quick repair)</p>
               <p className="hint"><b>{gymFamilyLabel(recommended.tag)}:</b> {gymFamilyDef(recommended.tag)}</p>
               <p className="hint">Optional warm-up: 3-5 items, about 2 minutes, then back to your script.</p>
-              <div className="btnRow"><button className="btn btnSecondary" onClick={startQuickRepair}>Start quick repair</button></div>
+              <div className="btnRow"><button className="btn btnSecondary" style={{ background:"#EAF5FF", border:"1px solid #2764B7", color:"#143A73", fontWeight:900, opacity:1 }} onClick={startQuickRepair}>Start quick repair</button></div>
             </section>
           ) : null}
+          <section style={{ marginTop:"8px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
+            <p style={{ margin:"0 0 4px 0", fontWeight:900 }}>Reasoning Gym</p>
+            <p className="hint">Optional: train one reasoning weakness directly (3-5 items).</p>
+            <select className="field" value={menuGymTag} onChange={(e) => setMenuGymTag(mapTag(e.target.value))}>
+              {Object.keys(GYM_FAMILY_LABEL).map((tag) => (
+                <option key={tag} value={tag}>Focus: {gymFamilyLabel(tag)}</option>
+              ))}
+            </select>
+            <div className="btnRow">
+              <button className="btn btnSecondary" style={{ background:"#EAF5FF", border:"1px solid #2764B7", color:"#143A73", fontWeight:900, opacity:1 }} onClick={() => startGymWithTag(menuGymTag, plan.script)}>Start Reasoning Gym</button>
+            </div>
+          </section>
         </section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
           <p style={{ margin:"0 0 10px 0", fontWeight:900 }}>Choose a mindware script</p>
