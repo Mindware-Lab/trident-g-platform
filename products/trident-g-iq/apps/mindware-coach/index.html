@@ -1338,9 +1338,12 @@
                     setScreen("guided");
                   }}
                 >
-                  See example (no timer)
+                  Preview one worked example (untimed)
                 </button>
               </div>
+              <p className="hint" style={{ marginTop:"6px" }}>
+                Use this to see one full question and feedback before you start timed practice.
+              </p>
             </section>
           ) : null}
           {needsTeach(plan.script) ? <p className="hint"><b>First run:</b> Teach and a worked example will appear before timed items.</p> : null}
