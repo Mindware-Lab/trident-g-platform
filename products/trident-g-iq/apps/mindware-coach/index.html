@@ -279,7 +279,6 @@
     const [guidedFeedback, setGuidedFeedback] = useState(null);
     const [lessonModalScript, setLessonModalScript] = useState(null);
     const [showHowItWorks, setShowHowItWorks] = useState(false);
-    const [showTodayHelp, setShowTodayHelp] = useState(false);
     const [menuGymTag, setMenuGymTag] = useState("invalid_conditional");
     const [missionDraft, setMissionDraft] = useState({ cue: "", success_signal: "", stop_flip_rule: "", value_tag: "" });
     const [missionOutcome, setMissionOutcome] = useState({ cue_fired: "YES", success_met: "PARTLY", blocker: "", improved: "", note: "" });
@@ -805,6 +804,25 @@
           how_it_works_last_opened_ts: nowIso()
         }
       }));
+    };
+
+    const saveTransferCheckin = (rating) => {
+      const summary = asObj(shared.last?.mindware_session?.summary);
+      if (!summary.session_id) return;
+      setMwState((prev) => ({
+        ...prev,
+        ui: {
+          ...asObj(prev.ui),
+          last_transfer_check_session_id: summary.session_id,
+          last_transfer_check_rating: rating,
+          last_transfer_check_ts: nowIso()
+        }
+      }));
+      pushEvent("transfer_checkin_saved", {
+        session_id: summary.session_id,
+        script: summary.script || null,
+        rating
+      });
     };
 
     const resetLearningState = () => {
@@ -1438,10 +1456,20 @@
       }
       return { mode, script, signature };
     })();
-    const readinessKey = String(shared.today.readiness || "full").toLowerCase();
-    const readinessLabel = readinessKey === "light" ? "Light" : (readinessKey === "reset" ? "Reset" : "Full");
-    const capacityDoneToday = Number(shared.today.capacity?.sessions_completed || 0);
-    const questionTimeSecToday = getQuestionTimeSecForToday();
+    const lastSessionSummary = asObj(shared.last?.mindware_session?.summary);
+    const hasPreviousSession = Boolean(lastSessionSummary.session_id);
+    const transferCheckDone = hasPreviousSession && String(asObj(mwState.ui).last_transfer_check_session_id || "") === String(lastSessionSummary.session_id);
+    const transferCheckRating = String(asObj(mwState.ui).last_transfer_check_rating || "");
+    const transferCheckRatings = [
+      { id: "YES", label: "Worked well" },
+      { id: "PARTLY", label: "Partly worked" },
+      { id: "NO", label: "Did not work yet" },
+      { id: "NOT_TRIED", label: "Did not try yet" }
+    ];
+    const transferCheckLabel = (id) => {
+      const row = transferCheckRatings.find((r) => r.id === id);
+      return row ? row.label : "";
+    };
 
     return (
       <Frame chip={`${Number(shared.today.mindware?.sessions_completed || 0)} today`} subtitle="Understand • Argue • Decide • Plan & Do">
@@ -1455,27 +1483,34 @@
         </section>
         <section className="card"><h1 className="h1">Mindware loop</h1><p className="p"><b>Teach &gt; Worked example &gt; Timed practice &gt; Try it in real life &gt; Hardwire it as new mindware (crystallised intelligence)</b></p></section>
         <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
-          <p style={{ margin:0, fontWeight:900 }}>Today</p>
-          <p className="hint"><b>Recommended intensity today:</b> <b>{readinessLabel}</b> (change) • <button className="plainLink" style={{ fontWeight:900, color:"#0F3A73", textDecoration:"underline" }} onClick={() => setShowTodayHelp((v) => !v)}>{showTodayHelp ? "Hide explanation" : "How is this decided?"}</button></p>
-          <p className="hint">Full = normal practice. Light = shorter. Reset = mission only.</p>
-          <p className="hint"><b>Question timer today:</b> {questionTimeSecToday} seconds per item.</p>
-          {showTodayHelp ? (
-            <section style={{ marginTop:"8px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
-              <p className="hint"><b>What decides this recommendation:</b></p>
-              <p className="hint">1) Today&apos;s readiness from Capacity Coach (`full`, `light`, `reset`).</p>
-              <p className="hint">2) Data quality today (if noisy, we nudge Light/Reset).</p>
-              <p className="hint">3) Transfer checks (probe/re-check only run on Full days).</p>
-              <p className="hint"><b>Timer rule:</b> Full + clean data = 20s per question. Otherwise = 30s per question.</p>
-              <p className="hint"><b>What changes in Mindware:</b> it adjusts nudges, transfer mode suggestions, and per-question timer. You can still choose your own rigour and timebox.</p>
-            </section>
-          ) : null}
-          {capacityDoneToday >= 1 ? <p className="hint"><b>Capacity training done today:</b> {capacityDoneToday} session{capacityDoneToday === 1 ? "" : "s"}</p> : null}
-          {capacityDoneToday >= 2 ? <p className="hint">You've already done a lot today. Consider a short mindware session or mission-only.</p> : null}
-          {(String(shared.today.data_quality || "ok").toLowerCase() !== "ok") ? <p className="hint">Today looks noisy. Consider Light or Reset.</p> : null}
-          {recommended.note ? <p className="hint">{recommended.note}</p> : null}
-          {recommended.mode === "probe" ? <p className="hint">Transfer check = Same script, different situation.</p> : null}
-          {recommended.mode === "recheck" ? <p className="hint">Transfer re-check = Try it again later to see if it sticks.</p> : null}
-          {!pendingMission ? <p className="hint"><b>After this session:</b> set one small work task (5-15 minutes) to try this script once. <button className="plainLink" style={{ fontWeight:900, color:"#0F3A73", textDecoration:"underline" }} onClick={openHowItWorks}>Why?</button></p> : null}
+          <p style={{ margin:0, fontWeight:900 }}>Real-life check-in</p>
+          {!hasPreviousSession ? (
+            <p className="hint">After your first session, this will ask how well using the script worked in real life.</p>
+          ) : (
+            <>
+              <p className="hint"><b>From your previous session</b> ({scriptTitle(lastSessionSummary.script)}), how successful was using that script in real life?</p>
+              <div className="btnRow">
+                {transferCheckRatings.map((row) => {
+                  const selected = transferCheckDone && transferCheckRating === row.id;
+                  return (
+                    <button
+                      key={row.id}
+                      className={selected ? "btn btnPrimary" : "btn btnSecondary"}
+                      onClick={() => saveTransferCheckin(row.id)}
+                    >
+                      {row.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="hint">
+                {transferCheckDone
+                  ? `Saved: ${transferCheckLabel(transferCheckRating)}.`
+                  : "Optional: this helps tune future recommendations."}
+              </p>
+            </>
+          )}
+          {!pendingMission ? <p className="hint"><b>After this session:</b> set one small work task (5-15 minutes) to try this script once.</p> : null}
           {pendingMission ? (
             <>
               <p className="hint"><b>{COPY.mission_bridge_banner.pending_title}:</b> {COPY.mission_bridge_banner.pending_body}</p>
