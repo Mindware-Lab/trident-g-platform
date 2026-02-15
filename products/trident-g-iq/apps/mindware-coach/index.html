@@ -1566,14 +1566,6 @@
               <p style={homeCardTitleStyle}>What you're practising</p>
               <p className="hint"><b>Script:</b> {scriptTitle(plan.script)}</p>
               <p className="hint">{scriptOneLiner(plan.script)}</p>
-              <p className="hint"><b>Use it when:</b> {plan.script === "Y1" ? "you're gathering info but nothing is changing what you'll do next." : ((getLessonByScript(plan.script).when_to_use || [])[0] || "A decision needs a clear next move.")}</p>
-              <p className="hint"><b>Quick steps:</b></p>
-              <ol style={{ margin:"0 0 0 18px", padding:0 }}>
-                {(getLessonByScript(plan.script).steps || []).slice(0, 3).map((s, i) => <li key={i} className="hint">{s}</li>)}
-              </ol>
-              {Array.isArray(OPERATOR_GLOSSARY[plan.script]) ? (
-                <p className="hint"><b>Terms:</b> {OPERATOR_GLOSSARY[plan.script].map(([term, meaning]) => `${term} = ${meaning}`).join(" | ")}</p>
-              ) : null}
               <div className="btnRow">
                 <button
                   className="btn btnPrimary"
@@ -1596,12 +1588,6 @@
                   Preview one worked example (untimed)
                 </button>
               </div>
-              <p className="hint" style={{ marginTop:"6px" }}>
-                Use the script guide first if this routine is new. Then preview one worked example before timed practice.
-              </p>
-              <p className="hint" style={{ marginTop:"6px" }}>
-                Use this to see one full question and feedback before you start timed practice.
-              </p>
             </section>
           ) : null}
           {needsTeach(plan.script) ? <p className="hint"><b>First run:</b> Teach and a worked example will appear before timed items.</p> : null}
