@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ψ-Band Cognitive Bandwidth Scale (Ψ-CBS)</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Lucide Icons as inline SVG components
+        const ChevronRight = ({ className }) => (
+            <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        );
+
+        const RotateCcw = ({ className }) => (
+            <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+        );
+
+        const CheckCircle = ({ className }) => (
+            <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+        );
+
+        const Brain = ({ className }) => (
+            <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"></path>
+                <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"></path>
+            </svg>
+        );
+
+        const PSI_CBS = {
+            core: {
+                title: "Ψ-CBS Core",
+                subtitle: "Everyday Cognitive Performance",
+                instructions: "Please answer based on your everyday work/study/projects over the past two weeks.",
+                questions: [
+                    {
+                        id: "C1",
+                        text: "I can start a focused work block within about 5 minutes of sitting down (without drifting into tabs/messages).",
+                        factor: "focus"
+                    },
+                    {
+                        id: "C2",
+                        text: "After an interruption, I can return to the same task and regain full focus within about 5 minutes.",
+                        factor: "focus"
+                    },
+                    {
+                        id: "C3",
+                        text: "I miss important details in emails/docs and only notice later (or when someone points it out).",
+                        factor: "focus",
+                        reverse: true
+                    },
+                    {
+                        id: "C4",
+                        text: "I make \"action slips\" at work (e.g., send the wrong link, paste the wrong version, click the wrong option).",
+                        factor: "focus",
+                        reverse: true
+                    },
+                    {
+                        id: "C5",
+                        text: "When faced with a new and complex problem, I can break it into clear sub-problems and identify the next best step.",
+                        factor: "processing"
+                    },
+                    {
+                        id: "C6",
+                        text: "Before committing to a decision, I explicitly check assumptions and consider at least one alternative explanation/option.",
+                        factor: "processing"
+                    },
+                    {
+                        id: "C7",
+                        text: "I can learn a new tool/process quickly enough to use it confidently within 1–2 work sessions.",
+                        factor: "processing"
+                    },
+                    {
+                        id: "C8",
+                        text: "After reading or training, I can recall and apply the key points later without having to re-read/re-watch.",
+                        factor: "processing"
+                    }
+                ]
+            },
+            ad: {
+                title: "Ψ-CBS-AD",
+                subtitle: "Allostatic Dysregulation (Supplementary)",
+                instructions: "Please answer based on your everyday work/study/projects over the past two weeks.",
+                sections: [
+                    {
+                        name: "AD1: Re-entry stickiness",
+                        items: [
+                            "After a stressful trigger, I stayed wound up or unsettled for hours, even after the situation had passed.",
+                            "Small cues (a message, uncertainty, bodily sensation, awkward interaction) quickly escalated into a big shift in my mental state.",
+                            "Even when I tried to reset (break, walk, breathing, sleep), the improvement often did not stick and I slid back into the same mental state."
+                        ]
+                    },
+                    {
+                        name: "AD2: Exploit-lock-in basin",
+                        items: [
+                            "Discomfort or uncertainty pulled me into repeated checking, monitoring, analysing, or reassurance-seeking (in my head or via tools/messages).",
+                            "Even when I could tell the checking/analysing was not helping, it was hard to stop.",
+                            "I narrowed onto 'getting it right' (perfect plan, perfect wording, perfect choice) and struggled to tolerate a 'good enough' solution."
+                        ]
+                    },
+                    {
+                        name: "AD3: Explore-lock-in basin",
+                        items: [
+                            "I kept searching for the 'right' plan/explanation instead of running a small test and updating from the concrete result.",
+                            "I generated lots of options or ideas, but struggled to choose one and carry it through to completion.",
+                            "I got stuck in information-gathering (tabs, notes, comparisons) as a substitute for deciding and acting."
+                        ]
+                    },
+                    {
+                        name: "AD4: Autopilot drop-out basin",
+                        items: [
+                            "When things felt hard, I postponed or avoided key tasks even when they mattered.",
+                            "Under pressure, I tended to freeze, go blank, or drift into low-effort distraction rather than taking a small next step.",
+                            "I withdrew (mentally or socially) and operated on bare-minimum 'autopilot'."
+                        ]
+                    },
+                    {
+                        name: "AD5: Cycling across basins",
+                        items: [
+                            "Across the past two weeks, I swung between overdrive (high push, high urgency, hard to slow down) and crash (low drive, depleted, hard to start).",
+                            "When I started to settle into one state (either more driven, or more slowed down and withdrawn), I often went too far and later swung to the opposite state.",
+                            "My sleep–energy rhythm felt unstable with noticeable shifts in sleep timing/quality that coincided with shifts in drive, mood, or focus."
+                        ]
+                    }
+                ]
+            },
+            ai: {
+                title: "Ψ-CBS-AI",
+                subtitle: "AI Multiplier Effects (Supplementary)",
+                instructions: "Only answer this section if you used AI tools in the past two weeks for your work/study/projects.",
+                sections: [
+                    {
+                        name: "AI effects on Core outcomes",
+                        pairs: [
+                            {
+                                name: "AI1: Focus & error resistance",
+                                positive: "When I used AI tools, they helped me stay on track and reduce avoidable mistakes (slips/oversights).",
+                                negative: "When I used AI tools, I became more distractible or switched tasks more often."
+                            },
+                            {
+                                name: "AI2: Active processing / reasoning",
+                                positive: "AI helped me compare options and produce clearer explanations/justifications.",
+                                negative: "AI led me to accept the first plausible answer and stop checking alternatives."
+                            },
+                            {
+                                name: "AI3: Learning & transfer",
+                                positive: "After using AI, I understood the ideas well enough to explain or apply them later without AI.",
+                                negative: "After using AI, I struggled to reproduce the reasoning later without AI."
+                            }
+                        ]
+                    },
+                    {
+                        name: "AI effects on Trident G control markers",
+                        pairs: [
+                            {
+                                name: "AI4: Engagement & calibration",
+                                positive: "AI helped me anticipate difficulty and \"brace\" realistically (clearer plan, fewer nasty surprises).",
+                                negative: "AI gave me a false sense of simplicity and I later got caught off guard by the true demands."
+                            },
+                            {
+                                name: "AI5: Niche coupling & friction",
+                                positive: "AI reduced workflow friction (e.g., clearer drafts, smoother handoffs, better external memory).",
+                                negative: "AI increased workflow friction (e.g., more tool sprawl, more coordination drag, more rework)."
+                            }
+                        ]
+                    },
+                    {
+                        name: "AI Extended Cognition",
+                        pairs: [
+                            {
+                                name: "AI6: Portability / situatedness",
+                                positive: "If AI were unavailable tomorrow, I could still perform most of my key tasks effectively.",
+                                negative: "My current effectiveness depends on having my usual AI tools available in my workflow."
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        const RESPONSE_OPTIONS = [
+            { value: 1, label: "Never" },
+            { value: 2, label: "Rarely" },
+            { value: 3, label: "Sometimes" },
+            { value: 4, label: "Often" },
+            { value: 5, label: "Very often" }
+        ];
+
+        function App() {
+            const [stage, setStage] = useState('intro');
+            const [currentQuestion, setCurrentQuestion] = useState(0);
+            const [answers, setAnswers] = useState({});
+            const [includeAD, setIncludeAD] = useState(false);
+            const [includeAI, setIncludeAI] = useState(false);
+            const [usesAI, setUsesAI] = useState(null);
+
+            const handleAnswer = (questionId, value) => {
+                setAnswers(prev => ({
+                    ...prev,
+                    [questionId]: value
+                }));
+            };
+
+            const handleNext = () => {
+                if (stage === 'core') {
+                    if (currentQuestion < PSI_CBS.core.questions.length - 1) {
+                        setCurrentQuestion(prev => prev + 1);
+                    } else {
+                        if (includeAD) {
+                            setStage('ad');
+                            setCurrentQuestion(0);
+                        } else if (includeAI && usesAI) {
+                            setStage('ai');
+                            setCurrentQuestion(0);
+                        } else {
+                            setStage('results');
+                        }
+                    }
+                } else if (stage === 'ad') {
+                    const totalADQuestions = PSI_CBS.ad.sections.reduce((sum, s) => sum + s.items.length, 0);
+                    if (currentQuestion < totalADQuestions - 1) {
+                        setCurrentQuestion(prev => prev + 1);
+                    } else {
+                        if (includeAI && usesAI) {
+                            setStage('ai');
+                            setCurrentQuestion(0);
+                        } else {
+                            setStage('results');
+                        }
+                    }
+                } else if (stage === 'ai') {
+                    const totalAIQuestions = PSI_CBS.ai.sections.reduce((sum, s) => 
+                        sum + s.pairs.reduce((pairSum, p) => pairSum + 2, 0), 0);
+                    if (currentQuestion < totalAIQuestions - 1) {
+                        setCurrentQuestion(prev => prev + 1);
+                    } else {
+                        setStage('results');
+                    }
+                }
+            };
+
+            const handlePrevious = () => {
+                if (currentQuestion > 0) {
+                    setCurrentQuestion(prev => prev - 1);
+                } else if (stage === 'ad') {
+                    setStage('core');
+                    setCurrentQuestion(PSI_CBS.core.questions.length - 1);
+                } else if (stage === 'ai' && includeAD) {
+                    setStage('ad');
+                    const totalADQuestions = PSI_CBS.ad.sections.reduce((sum, s) => sum + s.items.length, 0);
+                    setCurrentQuestion(totalADQuestions - 1);
+                } else if (stage === 'ai' && !includeAD) {
+                    setStage('core');
+                    setCurrentQuestion(PSI_CBS.core.questions.length - 1);
+                }
+            };
+
+            const handleRestart = () => {
+                setStage('intro');
+                setCurrentQuestion(0);
+                setAnswers({});
+                setIncludeAD(false);
+                setIncludeAI(false);
+                setUsesAI(null);
+            };
+
+            const calculateCoreResults = () => {
+                const focusItems = PSI_CBS.core.questions.filter(q => q.factor === 'focus');
+                const processingItems = PSI_CBS.core.questions.filter(q => q.factor === 'processing');
+                
+                let focusSum = 0;
+                let focusCount = 0;
+                focusItems.forEach(item => {
+                    if (answers[item.id]) {
+                        const score = item.reverse ? (6 - answers[item.id]) : answers[item.id];
+                        focusSum += score;
+                        focusCount++;
+                    }
+                });
+
+                let processingSum = 0;
+                let processingCount = 0;
+                processingItems.forEach(item => {
+                    if (answers[item.id]) {
+                        processingSum += answers[item.id];
+                        processingCount++;
+                    }
+                });
+
+                const focusScore = focusCount > 0 ? focusSum / focusCount : 0;
+                const processingScore = processingCount > 0 ? processingSum / processingCount : 0;
+                const totalScore = (focusSum + processingSum) / (focusCount + processingCount);
+
+                return { focusScore, processingScore, totalScore };
+            };
+
+            const calculateADResults = () => {
+                const results = {};
+                let questionIndex = 0;
+                
+                PSI_CBS.ad.sections.forEach((section, sectionIdx) => {
+                    let sectionSum = 0;
+                    let sectionCount = 0;
+                    
+                    section.items.forEach(() => {
+                        const qId = `AD${questionIndex}`;
+                        if (answers[qId]) {
+                            sectionSum += answers[qId];
+                            sectionCount++;
+                        }
+                        questionIndex++;
+                    });
+                    
+                    results[`AD${sectionIdx + 1}`] = sectionCount > 0 ? sectionSum / sectionCount : 0;
+                });
+
+                const allADValues = Object.values(results);
+                results.total = allADValues.length > 0 ? 
+                    allADValues.reduce((sum, val) => sum + val, 0) / allADValues.length : 0;
+
+                return results;
+            };
+
+            const calculateAIResults = () => {
+                const results = {};
+                let questionIndex = 0;
+                
+                PSI_CBS.ai.sections.forEach(section => {
+                    section.pairs.forEach((pair, pairIdx) => {
+                        const posId = `AI${questionIndex}`;
+                        const negId = `AI${questionIndex + 1}`;
+                        
+                        if (answers[posId]) results[`${posId}_pos`] = answers[posId];
+                        if (answers[negId]) results[`${negId}_neg`] = answers[negId];
+                        
+                        questionIndex += 2;
+                    });
+                });
+
+                return results;
+            };
+
+            const getScoreBand = (score) => {
+                if (score < 2.5) return 'low';
+                if (score < 3.5) return 'moderate';
+                return 'high';
+            };
+
+            const getBandColor = (band) => {
+                switch(band) {
+                    case 'low': return 'bg-orange-100 text-orange-800 border-orange-200';
+                    case 'moderate': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                    case 'high': return 'bg-green-100 text-green-800 border-green-200';
+                    default: return 'bg-gray-100 text-gray-800 border-gray-200';
+                }
+            };
+
+            if (stage === 'intro') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
+                        <div className="max-w-3xl mx-auto pt-12">
+                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <Brain className="w-10 h-10 text-purple-600" />
+                                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                                        Ψ-Band Cognitive Bandwidth Scale
+                                    </h1>
+                                </div>
+                                <p className="text-lg text-gray-600 mb-2">Mindware Lab, 2025</p>
+                                <p className="text-gray-500 mb-8">License: CC BY 4.0</p>
+                                
+                                <div className="bg-purple-50 border-l-4 border-purple-500 p-6 mb-8">
+                                    <p className="text-gray-700 leading-relaxed mb-4">
+                                        The Ψ-CBS is a brief self-report measure for tracking everyday cognitive performance 
+                                        over the past two weeks. The Core scale measures focus stability, error resistance, 
+                                        active processing, and learning/transfer.
+                                    </p>
+                                    <p className="text-gray-700 leading-relaxed">
+                                        Optional supplementary tests assess allostatic dysregulation patterns (Ψ-CBS-AD) 
+                                        and AI tool multiplier effects (Ψ-CBS-AI).
+                                    </p>
+                                </div>
+
+                                <div className="space-y-6 mb-8">
+                                    <div className="border-2 border-purple-200 rounded-lg p-6">
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                                            Select which sections to complete:
+                                        </h3>
+                                        
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-3 p-3 bg-purple-50 rounded">
+                                                <CheckCircle className="w-5 h-5 text-purple-600" />
+                                                <span className="font-medium text-gray-900">Ψ-CBS Core (Required)</span>
+                                                <span className="text-sm text-gray-600 ml-auto">~3 minutes</span>
+                                            </div>
+                                            
+                                            <label className="flex items-center gap-3 p-3 border-2 border-gray-200 rounded hover:border-purple-300 cursor-pointer transition-colors">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={includeAD}
+                                                    onChange={(e) => setIncludeAD(e.target.checked)}
+                                                    className="w-5 h-5 text-purple-600 rounded"
+                                                />
+                                                <span className="font-medium text-gray-900">Ψ-CBS-AD (Allostatic Dysregulation)</span>
+                                                <span className="text-sm text-gray-600 ml-auto">~4 minutes</span>
+                                            </label>
+                                            
+                                            <label className="flex items-center gap-3 p-3 border-2 border-gray-200 rounded hover:border-purple-300 cursor-pointer transition-colors">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={includeAI}
+                                                    onChange={(e) => setIncludeAI(e.target.checked)}
+                                                    className="w-5 h-5 text-purple-600 rounded"
+                                                />
+                                                <span className="font-medium text-gray-900">Ψ-CBS-AI (AI Multiplier Effects)</span>
+                                                <span className="text-sm text-gray-600 ml-auto">~3 minutes</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    {includeAI && (
+                                        <div className="border-2 border-blue-200 rounded-lg p-6 bg-blue-50">
+                                            <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                                                Have you used AI tools in the past two weeks?
+                                            </h3>
+                                            <div className="space-y-2">
+                                                <label className="flex items-center gap-3 p-3 bg-white border-2 border-gray-200 rounded cursor-pointer hover:border-blue-400 transition-colors">
+                                                    <input
+                                                        type="radio"
+                                                        name="usesAI"
+                                                        checked={usesAI === true}
+                                                        onChange={() => setUsesAI(true)}
+                                                        className="w-4 h-4 text-blue-600"
+                                                    />
+                                                    <span className="text-gray-900">Yes, I've used AI tools</span>
+                                                </label>
+                                                <label className="flex items-center gap-3 p-3 bg-white border-2 border-gray-200 rounded cursor-pointer hover:border-blue-400 transition-colors">
+                                                    <input
+                                                        type="radio"
+                                                        name="usesAI"
+                                                        checked={usesAI === false}
+                                                        onChange={() => setUsesAI(false)}
+                                                        className="w-4 h-4 text-blue-600"
+                                                    />
+                                                    <span className="text-gray-900">No, I haven't used AI tools</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <button
+                                    onClick={() => setStage('core')}
+                                    disabled={includeAI && usesAI === null}
+                                    className={`w-full py-4 px-6 rounded-lg font-semibold transition-colors flex items-center justify-between group ${
+                                        includeAI && usesAI === null
+                                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                            : 'bg-purple-600 hover:bg-purple-700 text-white'
+                                    }`}
+                                >
+                                    <span className="text-lg">Begin Assessment</span>
+                                    <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                                </button>
+
+                                <p className="text-sm text-gray-500 mt-6 text-center">
+                                    This is not a diagnostic tool. For product research and self-tracking only.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (stage === 'results') {
+                const coreResults = calculateCoreResults();
+                const adResults = includeAD ? calculateADResults() : null;
+                const aiResults = includeAI && usesAI ? calculateAIResults() : null;
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 py-8">
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h1 className="text-3xl font-bold text-gray-900">Your Results</h1>
+                                    <button
+                                        onClick={handleRestart}
+                                        className="flex items-center gap-2 text-purple-600 hover:text-purple-700 font-medium"
+                                    >
+                                        <RotateCcw className="w-5 h-5" />
+                                        Restart
+                                    </button>
+                                </div>
+
+                                <div className="mb-8">
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Ψ-CBS Core Results</h2>
+                                    
+                                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 mb-6">
+                                        <h3 className="text-xl font-semibold text-gray-900 mb-3">Overall Core Score</h3>
+                                        <div className="flex items-center gap-4">
+                                            <div className="text-5xl font-bold text-purple-600">
+                                                {coreResults.totalScore.toFixed(2)}
+                                            </div>
+                                            <div>
+                                                <span className={`inline-block px-4 py-2 rounded-lg font-semibold border ${getBandColor(getScoreBand(coreResults.totalScore))}`}>
+                                                    {getScoreBand(coreResults.totalScore).charAt(0).toUpperCase() + getScoreBand(coreResults.totalScore).slice(1)}
+                                                </span>
+                                                <p className="text-sm text-gray-600 mt-2">Scale: 1.0 - 5.0</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="border border-gray-200 rounded-lg p-6">
+                                            <div className="flex items-start justify-between mb-3">
+                                                <h3 className="text-lg font-semibold text-gray-900">Focus Stability & Error Resistance</h3>
+                                                <div className="text-right">
+                                                    <div className="text-2xl font-bold text-purple-600">{coreResults.focusScore.toFixed(2)}</div>
+                                                    <span className={`inline-block px-3 py-1 rounded text-sm font-semibold border mt-1 ${getBandColor(getScoreBand(coreResults.focusScore))}`}>
+                                                        {getScoreBand(coreResults.focusScore).charAt(0).toUpperCase() + getScoreBand(coreResults.focusScore).slice(1)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <p className="text-gray-700 leading-relaxed">
+                                                Reflects your ability to maintain focus, return to tasks after interruptions, and avoid attention slips and errors.
+                                            </p>
+                                        </div>
+
+                                        <div className="border border-gray-200 rounded-lg p-6">
+                                            <div className="flex items-start justify-between mb-3">
+                                                <h3 className="text-lg font-semibold text-gray-900">Active Processing & Learning/Transfer</h3>
+                                                <div className="text-right">
+                                                    <div className="text-2xl font-bold text-purple-600">{coreResults.processingScore.toFixed(2)}</div>
+                                                    <span className={`inline-block px-3 py-1 rounded text-sm font-semibold border mt-1 ${getBandColor(getScoreBand(coreResults.processingScore))}`}>
+                                                        {getScoreBand(coreResults.processingScore).charAt(0).toUpperCase() + getScoreBand(coreResults.processingScore).slice(1)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <p className="text-gray-700 leading-relaxed">
+                                                Reflects your ability to break down complex problems, check assumptions, learn new tools quickly, and apply knowledge effectively.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {adResults && (
+                                    <div className="mb-8">
+                                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Ψ-CBS-AD: Allostatic Dysregulation</h2>
+                                        
+                                        <div className="bg-orange-50 rounded-xl p-6 mb-6">
+                                            <h3 className="text-xl font-semibold text-gray-900 mb-3">Total Dysregulation Score</h3>
+                                            <div className="flex items-center gap-4">
+                                                <div className="text-5xl font-bold text-orange-600">
+                                                    {adResults.total.toFixed(2)}
+                                                </div>
+                                                <p className="text-sm text-gray-600">
+                                                    Higher scores indicate more dysregulation patterns
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            {PSI_CBS.ad.sections.map((section, idx) => (
+                                                <div key={idx} className="border border-gray-200 rounded-lg p-6">
+                                                    <div className="flex items-start justify-between mb-2">
+                                                        <h3 className="text-lg font-semibold text-gray-900">{section.name}</h3>
+                                                        <div className="text-2xl font-bold text-orange-600">
+                                                            {adResults[`AD${idx + 1}`].toFixed(2)}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {aiResults && (
+                                    <div className="mb-8">
+                                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Ψ-CBS-AI: AI Multiplier Effects</h2>
+                                        
+                                        <div className="space-y-6">
+                                            {PSI_CBS.ai.sections.map((section, secIdx) => (
+                                                <div key={secIdx}>
+                                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">{section.name}</h3>
+                                                    <div className="space-y-3">
+                                                        {section.pairs.map((pair, pairIdx) => {
+                                                            const baseIdx = PSI_CBS.ai.sections.slice(0, secIdx).reduce((sum, s) => sum + s.pairs.length * 2, 0) + pairIdx * 2;
+                                                            const posScore = aiResults[`AI${baseIdx}_pos`];
+                                                            const negScore = aiResults[`AI${baseIdx + 1}_neg`];
+                                                            
+                                                            return (
+                                                                <div key={pairIdx} className="border border-gray-200 rounded-lg p-4">
+                                                                    <h4 className="font-semibold text-gray-900 mb-3">{pair.name}</h4>
+                                                                    <div className="grid grid-cols-2 gap-4">
+                                                                        <div className="bg-green-50 p-3 rounded">
+                                                                            <div className="text-xs text-gray-600 mb-1">Positive Effect</div>
+                                                                            <div className="text-2xl font-bold text-green-600">
+                                                                                {posScore ? posScore.toFixed(1) : 'N/A'}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="bg-red-50 p-3 rounded">
+                                                                            <div className="text-xs text-gray-600 mb-1">Negative Effect</div>
+                                                                            <div className="text-2xl font-bold text-red-600">
+                                                                                {negScore ? negScore.toFixed(1) : 'N/A'}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="mt-8 bg-gray-50 rounded-lg p-6">
+                                    <p className="text-gray-700 leading-relaxed mb-3">
+                                        <strong>Note:</strong> This is not a clinical tool. Scores are intended to highlight everyday 
+                                        cognitive performance patterns and track change over time.
+                                    </p>
+                                    <p className="text-gray-700 leading-relaxed">
+                                        <strong>Save these results:</strong> Consider printing or saving this page for your records 
+                                        and to track changes over time.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // Core questions stage
+            if (stage === 'core') {
+                const question = PSI_CBS.core.questions[currentQuestion];
+                const currentAnswer = answers[question.id];
+                const progress = ((currentQuestion + 1) / PSI_CBS.core.questions.length) * 100;
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 py-8">
+                        <div className="max-w-3xl mx-auto">
+                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                                <div className="mb-8">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-sm font-semibold text-purple-600">
+                                            Ψ-CBS Core • Question {currentQuestion + 1} of {PSI_CBS.core.questions.length}
+                                        </h2>
+                                        <button onClick={handleRestart} className="text-gray-400 hover:text-gray-600">
+                                            <RotateCcw className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                        <div
+                                            className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                                            style={{ width: `${progress}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="mb-8">
+                                    <p className="text-lg text-gray-700 leading-relaxed">{question.text}</p>
+                                    {question.reverse && (
+                                        <p className="text-sm text-orange-600 mt-2 italic">Note: This is a reverse-scored item</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-3 mb-8">
+                                    {RESPONSE_OPTIONS.map((option) => (
+                                        <button
+                                            key={option.value}
+                                            onClick={() => handleAnswer(question.id, option.value)}
+                                            className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                                                currentAnswer === option.value
+                                                    ? 'border-purple-600 bg-purple-50'
+                                                    : 'border-gray-200 hover:border-purple-300 bg-white'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                                                    currentAnswer === option.value
+                                                        ? 'border-purple-600 bg-purple-600'
+                                                        : 'border-gray-300'
+                                                }`}>
+                                                    {currentAnswer === option.value && (
+                                                        <CheckCircle className="w-4 h-4 text-white" />
+                                                    )}
+                                                </div>
+                                                <span className="text-gray-900 font-medium">{option.label}</span>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="flex gap-3">
+                                    {currentQuestion > 0 && (
+                                        <button
+                                            onClick={handlePrevious}
+                                            className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                                        >
+                                            Previous
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={handleNext}
+                                        disabled={!currentAnswer}
+                                        className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
+                                            currentAnswer
+                                                ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                        }`}
+                                    >
+                                        {currentQuestion < PSI_CBS.core.questions.length - 1 ? 'Next' : (includeAD || (includeAI && usesAI) ? 'Continue to Supplements' : 'See Results')}
+                                        <ChevronRight className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // AD questions stage
+            if (stage === 'ad') {
+                let flatQuestions = [];
+                PSI_CBS.ad.sections.forEach((section) => {
+                    section.items.forEach((item) => {
+                        flatQuestions.push({
+                            id: `AD${flatQuestions.length}`,
+                            text: item,
+                            sectionName: section.name
+                        });
+                    });
+                });
+
+                const question = flatQuestions[currentQuestion];
+                const currentAnswer = answers[question.id];
+                const progress = ((currentQuestion + 1) / flatQuestions.length) * 100;
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 py-8">
+                        <div className="max-w-3xl mx-auto">
+                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                                <div className="mb-8">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h2 className="text-sm font-semibold text-orange-600">
+                                                Ψ-CBS-AD: Allostatic Dysregulation • Question {currentQuestion + 1} of {flatQuestions.length}
+                                            </h2>
+                                            <p className="text-xs text-gray-500 mt-1">{question.sectionName}</p>
+                                        </div>
+                                        <button onClick={handleRestart} className="text-gray-400 hover:text-gray-600">
+                                            <RotateCcw className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                        <div
+                                            className="bg-orange-500 h-2 rounded-full transition-all duration-300"
+                                            style={{ width: `${progress}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="mb-8">
+                                    <p className="text-lg text-gray-700 leading-relaxed">{question.text}</p>
+                                </div>
+
+                                <div className="space-y-3 mb-8">
+                                    {RESPONSE_OPTIONS.map((option) => (
+                                        <button
+                                            key={option.value}
+                                            onClick={() => handleAnswer(question.id, option.value)}
+                                            className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                                                currentAnswer === option.value
+                                                    ? 'border-orange-600 bg-orange-50'
+                                                    : 'border-gray-200 hover:border-orange-300 bg-white'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                                                    currentAnswer === option.value
+                                                        ? 'border-orange-600 bg-orange-600'
+                                                        : 'border-gray-300'
+                                                }`}>
+                                                    {currentAnswer === option.value && (
+                                                        <CheckCircle className="w-4 h-4 text-white" />
+                                                    )}
+                                                </div>
+                                                <span className="text-gray-900 font-medium">{option.label}</span>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={handlePrevious}
+                                        className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                                    >
+                                        Previous
+                                    </button>
+                                    <button
+                                        onClick={handleNext}
+                                        disabled={!currentAnswer}
+                                        className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
+                                            currentAnswer
+                                                ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                        }`}
+                                    >
+                                        {currentQuestion < flatQuestions.length - 1 ? 'Next' : (includeAI && usesAI ? 'Continue to AI Assessment' : 'See Results')}
+                                        <ChevronRight className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // AI questions stage
+            if (stage === 'ai') {
+                let flatQuestions = [];
+                PSI_CBS.ai.sections.forEach(section => {
+                    section.pairs.forEach(pair => {
+                        flatQuestions.push({
+                            id: `AI${flatQuestions.length}`,
+                            text: pair.positive,
+                            type: 'positive',
+                            pairName: pair.name,
+                            sectionName: section.name
+                        });
+                        flatQuestions.push({
+                            id: `AI${flatQuestions.length}`,
+                            text: pair.negative,
+                            type: 'negative',
+                            pairName: pair.name,
+                            sectionName: section.name
+                        });
+                    });
+                });
+
+                const question = flatQuestions[currentQuestion];
+                const currentAnswer = answers[question.id];
+                const progress = ((currentQuestion + 1) / flatQuestions.length) * 100;
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 py-8">
+                        <div className="max-w-3xl mx-auto">
+                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                                <div className="mb-8">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h2 className="text-sm font-semibold text-blue-600">
+                                                Ψ-CBS-AI: AI Multiplier Effects • Question {currentQuestion + 1} of {flatQuestions.length}
+                                            </h2>
+                                            <p className="text-xs text-gray-500 mt-1">{question.pairName}</p>
+                                        </div>
+                                        <button onClick={handleRestart} className="text-gray-400 hover:text-gray-600">
+                                            <RotateCcw className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                        <div
+                                            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                                            style={{ width: `${progress}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="mb-8">
+                                    <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 ${
+                                        question.type === 'positive' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                    }`}>
+                                        {question.type === 'positive' ? 'Positive Effect' : 'Negative Effect'}
+                                    </div>
+                                    <p className="text-lg text-gray-700 leading-relaxed">{question.text}</p>
+                                </div>
+
+                                <div className="space-y-3 mb-8">
+                                    {RESPONSE_OPTIONS.map((option) => (
+                                        <button
+                                            key={option.value}
+                                            onClick={() => handleAnswer(question.id, option.value)}
+                                            className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                                                currentAnswer === option.value
+                                                    ? 'border-blue-600 bg-blue-50'
+                                                    : 'border-gray-200 hover:border-blue-300 bg-white'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                                                    currentAnswer === option.value
+                                                        ? 'border-blue-600 bg-blue-600'
+                                                        : 'border-gray-300'
+                                                }`}>
+                                                    {currentAnswer === option.value && (
+                                                        <CheckCircle className="w-4 h-4 text-white" />
+                                                    )}
+                                                </div>
+                                                <span className="text-gray-900 font-medium">{option.label}</span>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={handlePrevious}
+                                        className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                                    >
+                                        Previous
+                                    </button>
+                                    <button
+                                        onClick={handleNext}
+                                        disabled={!currentAnswer}
+                                        className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
+                                            currentAnswer
+                                                ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                                                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                        }`}
+                                    >
+                                        {currentQuestion < flatQuestions.length - 1 ? 'Next' : 'See Results'}
+                                        <ChevronRight className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return null;
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html

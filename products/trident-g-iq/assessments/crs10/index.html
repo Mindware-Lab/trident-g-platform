@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognitive Resilience Scale (CRS-10)</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const QUESTIONS = [
+            {
+                id: 1,
+                text: "Stress helps me cognitively -- to focus, make decisions, problem solve and learn.",
+                reverse: false
+            },
+            {
+                id: 2,
+                text: "Stressful situations make it difficult for me to monitor myself and adapt to new circumstances.",
+                reverse: true
+            },
+            {
+                id: 3,
+                text: "Obstacles and setbacks give me a mental buzz and sharpen my thinking.",
+                reverse: false
+            },
+            {
+                id: 4,
+                text: "I over-think situations and suffer from \"paralysis of analysis\" when I am under a lot of pressure.",
+                reverse: true
+            },
+            {
+                id: 5,
+                text: "I suffer from \"tunnel vision\" and am less flexible in my judgements and decision-making when I'm highly stressed.",
+                reverse: true
+            },
+            {
+                id: 6,
+                text: "Failure, loss, and major obstacles are demotivating for me.",
+                reverse: true
+            },
+            {
+                id: 7,
+                text: "My focus and problem-solving strategies are sharper when I need to overcome major setbacks.",
+                reverse: false
+            },
+            {
+                id: 8,
+                text: "I have to force myself to focus and problem solve when facing major obstacles -- the motivation is often lacking.",
+                reverse: true
+            },
+            {
+                id: 9,
+                text: "I attain my highest levels of mental clarity and performance in high-pressure situations where there is a lot on the line.",
+                reverse: false
+            },
+            {
+                id: 10,
+                text: "My ability to make judgements and decisions stays sharp when I am stressed.",
+                reverse: false
+            }
+        ];
+
+        const LIKERT_OPTIONS = [
+            { value: 1, label: "Strongly disagree" },
+            { value: 2, label: "Disagree" },
+            { value: 3, label: "Neither agree nor disagree" },
+            { value: 4, label: "Agree" },
+            { value: 5, label: "Strongly agree" }
+        ];
+
+        // SVG Icons as components
+        const ChevronRight = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+        );
+
+        const RotateCcw = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+            </svg>
+        );
+
+        const CheckCircle = ({ className }) => (
+            <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+
+        const Brain = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+        );
+
+        function App() {
+            const [currentQuestion, setCurrentQuestion] = useState(0);
+            const [answers, setAnswers] = useState({});
+            const [showResults, setShowResults] = useState(false);
+
+            const handleAnswer = (questionId, value) => {
+                setAnswers(prev => ({
+                    ...prev,
+                    [questionId]: value
+                }));
+            };
+
+            const handleNext = () => {
+                if (currentQuestion < QUESTIONS.length - 1) {
+                    setCurrentQuestion(prev => prev + 1);
+                } else {
+                    setShowResults(true);
+                }
+            };
+
+            const handlePrevious = () => {
+                if (currentQuestion > 0) {
+                    setCurrentQuestion(prev => prev - 1);
+                }
+            };
+
+            const handleRestart = () => {
+                setCurrentQuestion(0);
+                setAnswers({});
+                setShowResults(false);
+            };
+
+            const calculateScore = () => {
+                let totalScore = 0;
+                let itemCount = 0;
+
+                QUESTIONS.forEach(question => {
+                    if (answers[question.id] !== undefined) {
+                        let score = answers[question.id];
+                        
+                        if (question.reverse) {
+                            score = 6 - score;
+                        }
+                        
+                        totalScore += score;
+                        itemCount++;
+                    }
+                });
+
+                return itemCount > 0 ? totalScore / itemCount : 0;
+            };
+
+            const getScoreBand = (score) => {
+                if (score < 3.0) return 'lower';
+                if (score <= 4.3) return 'typical';
+                return 'higher';
+            };
+
+            const getBandLabel = (band) => {
+                switch(band) {
+                    case 'lower': return 'Lower cognitive resilience';
+                    case 'typical': return 'Typical / Average cognitive resilience';
+                    case 'higher': return 'Higher cognitive resilience';
+                    default: return '';
+                }
+            };
+
+            const getBandColor = (band) => {
+                switch(band) {
+                    case 'lower': return 'bg-orange-100 text-orange-800 border-orange-200';
+                    case 'typical': return 'bg-blue-100 text-blue-800 border-blue-200';
+                    case 'higher': return 'bg-green-100 text-green-800 border-green-200';
+                    default: return 'bg-gray-100 text-gray-800 border-gray-200';
+                }
+            };
+
+            const getInterpretation = (band) => {
+                switch(band) {
+                    case 'lower':
+                        return {
+                            title: "Lower cognitive resilience at the moment",
+                            description: "Stress and setbacks often disrupt your thinking. You may notice more over-thinking, tunnel vision, mental \"freezing\" or loss of motivation when things get tough. It can feel harder to adapt, see options clearly, or get your mind back into problem-solving mode after something goes wrong. This does not mean there is something \"wrong\" with you. It usually means your system is carrying a lot of load (stress, fatigue, worry, pain, etc.) and finds it harder to stay in the zone. Training, rest and better self-regulation can shift this over time."
+                        };
+                    case 'typical':
+                        return {
+                            title: "Typical / mixed cognitive resilience",
+                            description: "You often manage to think reasonably clearly under pressure, but not always. In some situations stress sharpens you; in others it leaves you scattered, distracted, or stuck in loops. You might have good days where challenges wake you up mentally, and other days where the same challenges feel overwhelming. This is where many people sit. There is real room for growth, especially in learning how to use stress as useful \"training load\" for your thinking, rather than letting it tip you into over-drive or shutdown."
+                        };
+                    case 'higher':
+                        return {
+                            title: "Higher cognitive resilience right now",
+                            description: "Pressure often brings out your best thinking. When things are important or difficult, you tend to become more focused, more strategic and more mentally alert. You can usually keep your decision-making sharp and get your mind back online reasonably quickly after setbacks. Even in this range, cognitive resilience is not fixed. It can still be strengthened, especially by learning how to protect yourself from burnout, pace effort, and build reliable reset routines so you can stay in your \"thinking zone\" more often."
+                        };
+                    default:
+                        return { title: "", description: "" };
+                }
+            };
+
+            if (showResults) {
+                const crsScore = calculateScore();
+                const band = getScoreBand(crsScore);
+                const interpretation = getInterpretation(band);
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 p-4 py-8">
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                                <div className="flex items-center justify-between mb-8">
+                                    <div className="flex items-center gap-3">
+                                        <Brain className="w-8 h-8 text-indigo-600" />
+                                        <h1 className="text-3xl font-bold text-gray-900">Your Results</h1>
+                                    </div>
+                                    <button
+                                        onClick={handleRestart}
+                                        className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium"
+                                    >
+                                        <RotateCcw className="w-5 h-5" />
+                                        Restart
+                                    </button>
+                                </div>
+
+                                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 mb-8">
+                                    <h2 className="text-xl font-semibold text-gray-900 mb-3">Your CRS-10 Index Score</h2>
+                                    <div className="flex items-center gap-4 mb-4">
+                                        <div className="text-5xl font-bold text-indigo-600">
+                                            {crsScore.toFixed(2)}
+                                        </div>
+                                        <div>
+                                            <span className={`inline-block px-4 py-2 rounded-lg font-semibold border ${getBandColor(band)}`}>
+                                                {getBandLabel(band)}
+                                            </span>
+                                            <p className="text-sm text-gray-600 mt-2">Scale: 1.0 - 5.0</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="border border-gray-200 rounded-lg p-6 mb-8">
+                                    <h3 className="text-xl font-semibold text-gray-900 mb-3">{interpretation.title}</h3>
+                                    <p className="text-gray-700 leading-relaxed">{interpretation.description}</p>
+                                </div>
+
+                                <div className="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">What is "cognitive resilience"?</h3>
+                                    <p className="text-gray-700 leading-relaxed mb-3">
+                                        Cognitive resilience is about how well your mind keeps working under pressure. It reflects how easily you can:
+                                    </p>
+                                    <ul className="list-disc list-inside text-gray-700 space-y-1 mb-3">
+                                        <li>Think clearly when you are stressed or tired</li>
+                                        <li>Focus and solve problems when things go wrong</li>
+                                        <li>Make decisions when there is a lot at stake</li>
+                                        <li>Get your thinking back on track after setbacks</li>
+                                    </ul>
+                                    <p className="text-gray-700 leading-relaxed">
+                                        Everyone's thinking dips sometimes. Cognitive resilience is about how quickly and reliably you can return to your "good thinking zone" when life puts you under strain.
+                                    </p>
+                                </div>
+
+                                <div className="bg-purple-50 border-l-4 border-purple-500 p-6 mb-8">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">What can help cognitive resilience grow?</h3>
+                                    <p className="text-gray-700 leading-relaxed mb-3">Small, consistent changes help most. For example:</p>
+                                    <div className="space-y-3 text-gray-700">
+                                        <div>
+                                            <span className="font-semibold">Deliberate reset moments:</span> Short breathing, movement or "mental reset" breaks to bring yourself back towards calm focus when you notice overload or shutdown.
+                                        </div>
+                                        <div>
+                                            <span className="font-semibold">Chunking challenges:</span> Turning big problems into smaller, clearer steps so your mind has something concrete to work on.
+                                        </div>
+                                        <div>
+                                            <span className="font-semibold">Planning for hard moments:</span> Deciding in advance how you want to respond when stress spikes (for example, "Pause, breathe, list options, then choose one small action").
+                                        </div>
+                                        <div>
+                                            <span className="font-semibold">Protecting your basics:</span> Sleep, nutrition, movement and social connection all make it easier for your brain to stay flexible and recover after strain.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-50 rounded-lg p-6">
+                                    <p className="text-gray-700 leading-relaxed mb-3">
+                                        <strong>Note:</strong> This is not a clinical test. It is a brief snapshot of your current patterns, useful for self-reflection and for tracking change over time (for example, before and after training). Your CRS-10 score is simply a starting point. It can move up with practice, recovery, and better ways of working with stress—not by eliminating pressure, but by learning to use it without letting it hijack your mind.
+                                    </p>
+                                    <p className="text-gray-700 leading-relaxed">
+                                        <strong>Ensure that you print this set of scores and store securely for your records.</strong>
+                                    </p>
+                                </div>
+
+                                <div className="mt-8 text-center">
+                                    <p className="text-sm text-gray-500">
+                                        HRP Cognitive Resilience Scale (CRS-10) | Developed by Mindware Lab
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            const question = QUESTIONS[currentQuestion];
+            const currentAnswer = answers[question.id];
+            const progress = ((currentQuestion + 1) / QUESTIONS.length) * 100;
+            const allAnswered = Object.keys(answers).length === QUESTIONS.length;
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 p-4 py-8">
+                    <div className="max-w-3xl mx-auto">
+                        {currentQuestion === 0 && Object.keys(answers).length === 0 ? (
+                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-8">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <Brain className="w-10 h-10 text-indigo-600" />
+                                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                                        Cognitive Resilience Scale
+                                    </h1>
+                                </div>
+                                <p className="text-lg text-gray-600 mb-2">CRS-10 | Mindware Lab</p>
+                                
+                                <div className="bg-indigo-50 border-l-4 border-indigo-500 p-6 mb-8">
+                                    <h2 className="text-xl font-semibold text-gray-900 mb-3">What is cognitive resilience?</h2>
+                                    <p className="text-gray-700 leading-relaxed mb-3">
+                                        Cognitive resilience is about <strong>how well your mind keeps working under pressure</strong>. 
+                                        It reflects how easily you can think clearly when stressed, focus and solve problems when things 
+                                        go wrong, make decisions when there's a lot at stake, and get your thinking back on track after setbacks.
+                                    </p>
+                                </div>
+
+                                <div className="bg-purple-50 border-l-4 border-purple-500 p-6 mb-8">
+                                    <h2 className="text-xl font-semibold text-gray-900 mb-3">About this assessment</h2>
+                                    <p className="text-gray-700 leading-relaxed">
+                                        The CRS-10 is a brief 10-item questionnaire that takes 1-2 minutes to complete. 
+                                        Your answers are combined into a single score between 1 and 5, where higher scores indicate 
+                                        you more often stay clear-headed, focused and mentally active under stress.
+                                    </p>
+                                </div>
+
+                                <div className="bg-blue-50 rounded-lg p-6 mb-8">
+                                    <h3 className="font-semibold text-gray-900 mb-2">Instructions</h3>
+                                    <p className="text-gray-700 leading-relaxed">
+                                        Please answer each statement by selecting the number that best reflects how much you agree with it. 
+                                        There are no right or wrong answers. Please respond honestly and quickly.
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={() => setCurrentQuestion(0)}
+                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 group"
+                                >
+                                    <span className="text-lg">Begin Assessment</span>
+                                    <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                                </button>
+                            </div>
+                        ) : null}
+
+                        <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                            <div className="mb-8">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-sm font-semibold text-indigo-600">
+                                        Question {currentQuestion + 1} of {QUESTIONS.length}
+                                    </h2>
+                                    <button
+                                        onClick={handleRestart}
+                                        className="text-gray-400 hover:text-gray-600"
+                                    >
+                                        <RotateCcw className="w-5 h-5" />
+                                    </button>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div
+                                        className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                                        style={{ width: `${progress}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mb-8">
+                                <p className="text-xl text-gray-900 leading-relaxed font-medium">{question.text}</p>
+                            </div>
+
+                            <div className="space-y-3 mb-8">
+                                {LIKERT_OPTIONS.map((option) => (
+                                    <button
+                                        key={option.value}
+                                        onClick={() => handleAnswer(question.id, option.value)}
+                                        className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                                            currentAnswer === option.value
+                                                ? 'border-indigo-600 bg-indigo-50'
+                                                : 'border-gray-200 hover:border-indigo-300 bg-white'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                                                currentAnswer === option.value
+                                                    ? 'border-indigo-600 bg-indigo-600'
+                                                    : 'border-gray-300'
+                                            }`}>
+                                                {currentAnswer === option.value && (
+                                                    <CheckCircle className="w-4 h-4 text-white" />
+                                                )}
+                                            </div>
+                                            <div className="flex-1 flex items-center justify-between">
+                                                <span className="text-gray-900 font-medium">{option.label}</span>
+                                                <span className={`text-sm font-semibold ${
+                                                    currentAnswer === option.value ? 'text-indigo-600' : 'text-gray-400'
+                                                }`}>
+                                                    {option.value}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="flex gap-3">
+                                {currentQuestion > 0 && (
+                                    <button
+                                        onClick={handlePrevious}
+                                        className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
+                                    >
+                                        Previous
+                                    </button>
+                                )}
+                                <button
+                                    onClick={handleNext}
+                                    disabled={!currentAnswer}
+                                    className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
+                                        currentAnswer
+                                            ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    }`}
+                                >
+                                    {currentQuestion < QUESTIONS.length - 1 ? 'Next' : 'See Results'}
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {allAnswered && currentQuestion < QUESTIONS.length - 1 && (
+                                <div className="mt-4 text-center">
+                                    <button
+                                        onClick={() => setShowResults(true)}
+                                        className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+                                    >
+                                        Skip to results →
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
