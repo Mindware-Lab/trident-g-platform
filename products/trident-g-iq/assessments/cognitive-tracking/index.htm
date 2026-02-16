@@ -139,6 +139,18 @@
       line-height: 1.4;
     }
 
+    .timepointRow{
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .timepointSelect{
+      max-width: 260px;
+    }
+
     .infoGrid{
       margin-top: 8px;
       display: grid;
@@ -405,8 +417,7 @@
     function createDefaultState(){
       return {
         schemaVersion: HUB_VERSION,
-        currentPhase: "PRE",
-        repeatableMode: "PHASE",
+        selectedTimepoints: {},
         tests: {
           // [testId]: { entries: [{measure_id,timepoint,date_ts,score_payload,notes}] }
         }
@@ -429,15 +440,24 @@
       return new Date().toISOString();
     }
 
-    function normalizeLegacyPhase(raw){
-      return (raw === "post" || raw === "POST") ? "POST" : "PRE";
-    }
-
     function ensureTestRecord(state, testId){
       if(!state.tests[testId]){
         state.tests[testId] = { entries: [] };
       }
       return state.tests[testId];
+    }
+
+    function allowedTimepoints(test){
+      if(test.fixedTimepoint) return [test.fixedTimepoint];
+      if(test.schedule === "pre_post") return ["PRE", "POST"];
+      if(test.schedule === "repeatable") return ["PRE", "WEEKLY", "POST", "FOLLOW_UP"];
+      if(test.schedule === "pre_post_optional_checkin") return ["PRE", "MIDPOINT", "POST", "FOLLOW_UP"];
+      return ["PRE"];
+    }
+
+    function defaultTimepoint(test){
+      const options = allowedTimepoints(test);
+      return options[0];
     }
 
     function allowsTimepoint(test, timepoint){
@@ -455,12 +475,10 @@
       );
     }
 
-    function resolveTimepoint(test, phase, repeatableMode){
-      if(test.fixedTimepoint) return test.fixedTimepoint;
-      if(test.schedule === "repeatable" || test.schedule === "pre_post_optional_checkin"){
-        return repeatableMode === "PHASE" ? phase : repeatableMode;
-      }
-      return phase;
+    function resolveTimepoint(test, selectedTimepoints){
+      const selected = selectedTimepoints?.[test.id];
+      if(selected && allowsTimepoint(test, selected)) return selected;
+      return defaultTimepoint(test);
     }
 
     function listEntries(record, timepoint){
@@ -512,7 +530,6 @@
 
     function migrateV1ToV2(v1State){
       const migrated = createDefaultState();
-      migrated.currentPhase = normalizeLegacyPhase(v1State?.currentPhase);
 
       for(const test of TESTS){
         const oldRecord = v1State?.tests?.[test.id];
@@ -555,7 +572,10 @@
         const rawV2 = localStorage.getItem(STORAGE_KEY);
         if(rawV2){
           const parsed = JSON.parse(rawV2);
-          if(parsed?.schemaVersion === HUB_VERSION) return parsed;
+          if(parsed?.schemaVersion === HUB_VERSION){
+            if(!parsed.selectedTimepoints) parsed.selectedTimepoints = {};
+            return parsed;
+          }
         }
 
         const rawV1 = localStorage.getItem("ctHub_v1_state");
@@ -575,15 +595,12 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    function sectionCopy(groupName, phase, repeatableMode){
+    function sectionCopy(groupName){
       if(groupName === "IQ Performance"){
         return "Short IQ forms are PRE and POST only. Mensa links are unofficial online practice-style checks (optional baseline plus optional delayed re-test).";
       }
       if(groupName === "Bandwidth Tracking"){
-        if(repeatableMode === "PHASE"){
-          return `Use PRE/POST now (${phase}). Switch repeatables mode for weekly, midpoint, or follow-up check-ins.`;
-        }
-        return `Repeatables are currently logging: ${timepointLabel(repeatableMode)}.`;
+        return "Psi-CBS is the repeatable tracker: use PRE, weekly during training, POST, and optional follow-up.";
       }
       if(groupName === "Cognitive Resilience"){
         return "CRS-10 is PRE and POST by default, with optional midpoint or follow-up checks.";
@@ -619,8 +636,15 @@
         return map;
       }, []);
 
-      const phase = state.currentPhase;
-      const repeatableMode = state.repeatableMode;
+      const setSelectedTimepoint = (testId, timepoint) => {
+        setState(prev => ({
+          ...prev,
+          selectedTimepoints: {
+            ...(prev.selectedTimepoints || {}),
+            [testId]: timepoint
+          }
+        }));
+      };
 
       const updateEntry = (test, timepoint, updater) => {
         setState(prev => {
@@ -732,21 +756,9 @@
         return <span className="tag">Not started</span>;
       };
 
-      const getLockMessage = (test, timepoint) => {
-        if(!allowsTimepoint(test, timepoint)){
-          return `This measure does not use ${timepointLabel(timepoint)} logging.`;
-        }
-        if(test.fixedTimepoint === "PRE" && phase !== "PRE"){
-          return "Switch phase to PRE to log this measure.";
-        }
-        if(test.fixedTimepoint === "POST" && phase !== "POST"){
-          return "Switch phase to POST to log this measure.";
-        }
-        if(test.fixedTimepoint === "FOLLOW_UP" && repeatableMode !== "FOLLOW_UP"){
-          return "Set repeatables mode to FOLLOW-UP to log this delayed re-test.";
-        }
-        return "";
-      };
+      const getLockMessage = (test, timepoint) => (
+        allowsTimepoint(test, timepoint) ? "" : `This measure does not use ${timepointLabel(timepoint)} logging.`
+      );
 
       if(showSplash){
         return (
@@ -766,9 +778,7 @@
         );
       }
 
-      const chipText = repeatableMode === "PHASE"
-        ? phase
-        : `${phase} + ${timepointLabel(repeatableMode)}`;
+      const chipText = "PER-TEST";
 
       return (
         <div className="screen">
@@ -787,42 +797,6 @@
               </p>
 
               <div className="btnRow">
-                <button
-                  className={"btn " + (phase === "PRE" ? "btnPrimary" : "btnSecondary")}
-                  onClick={() => setState(prev => ({ ...prev, currentPhase: "PRE" }))}
-                >
-                  Set phase: PRE
-                </button>
-                <button
-                  className={"btn " + (phase === "POST" ? "btnPrimary" : "btnSecondary")}
-                  onClick={() => setState(prev => ({ ...prev, currentPhase: "POST" }))}
-                >
-                  Set phase: POST
-                </button>
-                <button
-                  className={"btn " + (repeatableMode === "PHASE" ? "btnPrimary" : "btnSecondary")}
-                  onClick={() => setState(prev => ({ ...prev, repeatableMode: "PHASE" }))}
-                >
-                  Repeatables: PHASE
-                </button>
-                <button
-                  className={"btn " + (repeatableMode === "WEEKLY" ? "btnPrimary" : "btnSecondary")}
-                  onClick={() => setState(prev => ({ ...prev, repeatableMode: "WEEKLY" }))}
-                >
-                  Repeatables: WEEKLY
-                </button>
-                <button
-                  className={"btn " + (repeatableMode === "MIDPOINT" ? "btnPrimary" : "btnSecondary")}
-                  onClick={() => setState(prev => ({ ...prev, repeatableMode: "MIDPOINT" }))}
-                >
-                  Repeatables: MIDPOINT CHECK-IN
-                </button>
-                <button
-                  className={"btn " + (repeatableMode === "FOLLOW_UP" ? "btnPrimary" : "btnSecondary")}
-                  onClick={() => setState(prev => ({ ...prev, repeatableMode: "FOLLOW_UP" }))}
-                >
-                  Repeatables: FOLLOW-UP
-                </button>
                 <button className="btn btnPrimary" onClick={exportJSON}>Export JSON</button>
                 <button className="btn btnSecondary" onClick={importJSON}>Import JSON</button>
               </div>
@@ -830,6 +804,12 @@
               <div className="danger" style={{ marginTop: "10px" }}>
                 <p className="muted">
                   Tip: if you switch devices or clear browser data, local results can be lost. Export JSON for backup.
+                </p>
+              </div>
+
+              <div className="danger" style={{ marginTop: "10px" }}>
+                <p className="muted">
+                  Pick the timepoint on each test card before entering score/notes. Fixed tests lock to one timepoint automatically.
                 </p>
               </div>
 
@@ -857,11 +837,12 @@
               {GROUP_ORDER.map(groupName => (
                 <div className="card" key={groupName}>
                   <div className="sectionTitle">{groupName}</div>
-                  <div className="sectionNote">{sectionCopy(groupName, phase, repeatableMode)}</div>
+                  <div className="sectionNote">{sectionCopy(groupName)}</div>
 
                   <div style={{ marginTop: "10px" }} className="grid">
                     {grouped[groupName].map(test => {
-                      const activeTimepoint = resolveTimepoint(test, phase, repeatableMode);
+                      const activeTimepoint = resolveTimepoint(test, state.selectedTimepoints);
+                      const availableTimepoints = allowedTimepoints(test);
                       const rec = getRec(test, activeTimepoint);
                       const lockMessage = getLockMessage(test, activeTimepoint);
                       const canHaveMultiple = supportsMultiEntries(test, activeTimepoint);
@@ -875,6 +856,21 @@
                             <p className="testDesc">
                               {test.kind === "external" ? "External test" : "Internal test"} - {test.timing}
                             </p>
+
+                            {availableTimepoints.length > 1 && (
+                              <div className="timepointRow">
+                                <span className="muted">Log this entry as:</span>
+                                <select
+                                  className="input timepointSelect"
+                                  value={activeTimepoint}
+                                  onChange={(e) => setSelectedTimepoint(test.id, e.target.value)}
+                                >
+                                  {availableTimepoints.map(tp => (
+                                    <option key={tp} value={tp}>{timepointLabel(tp)}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
 
                             <div className="tagRow">
                               {statusTag(rec)}
