@@ -107,3 +107,13 @@ In the full stack:
 
 - This tool supports training habits and better judgment routines.
 - It is not medical advice or treatment.
+
+## Rollback Note
+
+Recent Zone Coach integration commits:
+- `c8ffd5d` - optional Zone Coach handoff + local PVT-based Zone probe integration
+- `2444ccc` - optional embedded Zone Coach panel in Capacity Coach
+
+If needed, revert either change with:
+- `git revert c8ffd5d`
+- `git revert 2444ccc`
