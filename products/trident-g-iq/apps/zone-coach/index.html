@@ -75,7 +75,8 @@
     const LS_KEYS = Object.freeze({
       ZONE_LAST: 'iqmw.zone.lastCheck',
       ZONE_HISTORY: 'iqmw.zone.history',
-      CAPACITY_FROM_ZONE: 'iqmw.capacity.handoffFromZone'
+      CAPACITY_FROM_ZONE: 'iqmw.capacity.handoffFromZone',
+      PVTB_HISTORY: 'iqmw.zone.pvtb.history'
     });
 
     // Optional cross-app fallback key (helps interoperability)
@@ -98,8 +99,8 @@
     const MODE_LABELS = Object.freeze({
       SUB: 'Subcritical',
       PSI: 'In the G Zone',
-      ENT: 'Supercritical — scattered',
-      MIT: 'Supercritical — rigid',
+      ENT: 'Supercritical - scattered',
+      MIT: 'Supercritical - rigid',
       DEP: 'Depleted overload'
     });
 
@@ -185,7 +186,7 @@
     downshift: Object.freeze({
       id: 'downshift',
       name: 'Downshift',
-      description: 'Cyclic sighing to reduce arousal and overload. Take two small “sip” inhales through your nose, then a long sigh out through your mouth.',
+      description: 'Cyclic sighing to reduce arousal and overload. Take two small "sip" inhales through your nose, then a long sigh out through your mouth.',
       attentionCue: 'Count the pattern: sip, sip, long sigh. If your mind races, return to the count.',
       safety: 'If you feel dizzy or unwell, stop and return to normal breathing.',
       phases: makeRepeat(20, [
@@ -206,7 +207,7 @@
     // -----------------------------
     const SLIDERS = Object.freeze([
       { key: 'E', label: 'Energy', desc: 'How much usable energy do you have right now to start and keep going?' },
-      { key: 'S', label: 'Tension', desc: 'How tense or “on edge” do you feel in your body and mind?' },
+      { key: 'S', label: 'Tension', desc: 'How tense or "on edge" do you feel in your body and mind?' },
       { key: 'F', label: 'Focus steadiness', desc: 'How easy is it to stay with one thing without forcing it?' },
       { key: 'N', label: 'Mental chatter', desc: 'How noisy is your mind with thoughts, worries, or distractions?' },
       { key: 'O', label: 'Mental load', desc: 'How overloaded do you feel by what you are juggling right now?' },
@@ -527,7 +528,7 @@
               </div>
               <div>
                 <p className="title">{brand?.appName || 'Zone Coach'}</p>
-                <p className="subtitle">{brand?.subtitle || 'Quick state check → mindful reset → start training'}</p>
+                <p className="subtitle">{brand?.subtitle || 'Quick state check -> mindful reset -> start training'}</p>
               </div>
             </div>
             <div className="chip">Reset</div>
@@ -614,303 +615,404 @@
                 )}
 
                 <button onClick={() => { stop(); onComplete?.(); }} className="btn btnSecondary" style={{ flex: '0 1 200px', padding: '12px 20px' }}>
-                  I’m done
+                  I'm done
                 </button>
               </div>
             </div>
           </div>
 
           <div className="footer">
-            <span>Mindware Lab • Trident</span>
+            <span>Mindware Lab | Trident</span>
             <a className="link" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">Capacity Coach</a>
           </div>
         </div>
       );
     }
-
     // -----------------------------
-    // Heart rate helper (Web Bluetooth)
+    // PVT-style readiness probe (no HR/BLE dependency)
     // -----------------------------
-    const hrManager = (() => {
-      let device = null;
-      let characteristic = null;
-      let connected = false;
-      let connecting = false;
-      let lastHr = null;
-      const listeners = new Set();
-      let valueHandler = null;
+    function DotProbe({ label, onComplete, brand, durationSec = 180, isRecheck = false }) {
+      const PRACTICE_TRIALS = 6;
+      const FOREPERIOD_MIN_MS = 1000;
+      const FOREPERIOD_MAX_MS = 4000;
+      const RESPONSE_WINDOW_MS = 30000;
+      const LAPSE_THRESHOLD_MS = 500;
 
-      const notify = (hr) => {
-        listeners.forEach((fn) => fn(hr));
-      };
-
-      const parseHr = (dataView) => {
-        const flags = dataView.getUint8(0);
-        const isUint16 = (flags & 0x01) === 0x01;
-        return isUint16 ? dataView.getUint16(1, true) : dataView.getUint8(1);
-      };
-
-      const handleDisconnect = () => {
-        connected = false;
-        characteristic = null;
-        lastHr = null;
-        notify(null);
-        // Best-effort auto-reconnect in case the strap drops briefly.
-        if (device && !connecting) {
-          setTimeout(() => {
-            reconnect().catch(() => {});
-          }, 500);
-        }
-      };
-
-      const connect = async () => {
-        if (!navigator.bluetooth) {
-          throw new Error('Web Bluetooth not supported in this browser.');
-        }
-        if (connected && characteristic) {
-          return { connected, name: device?.name || null, lastHr };
-        }
-        if (connecting) {
-          return { connected, name: device?.name || null, lastHr };
-        }
-
-        connecting = true;
-        try {
-          if (!device) {
-            device = await navigator.bluetooth.requestDevice({
-              filters: [{ services: ['heart_rate'] }]
-            });
-            device.addEventListener('gattserverdisconnected', handleDisconnect);
-          }
-
-          const server = await device.gatt.connect();
-          const service = await server.getPrimaryService('heart_rate');
-          characteristic = await service.getCharacteristic('heart_rate_measurement');
-
-          valueHandler = (event) => {
-            const hr = parseHr(event.target.value);
-            lastHr = hr;
-            notify(hr);
-          };
-
-          await characteristic.startNotifications();
-          characteristic.addEventListener('characteristicvaluechanged', valueHandler);
-          connected = true;
-        } finally {
-          connecting = false;
-        }
-
-        return { connected, name: device?.name || null, lastHr };
-      };
-
-      const reconnect = async () => {
-        if (!device) throw new Error('No device paired yet.');
-        if (connected && characteristic) {
-          return { connected, name: device?.name || null, lastHr };
-        }
-        return connect();
-      };
-
-      const disconnect = async () => {
-        try {
-          if (characteristic && valueHandler) {
-            characteristic.removeEventListener('characteristicvaluechanged', valueHandler);
-          }
-          if (device?.gatt?.connected) device.gatt.disconnect();
-        } finally {
-          valueHandler = null;
-          device = null;
-          characteristic = null;
-          connected = false;
-          lastHr = null;
-          notify(null);
-        }
-      };
-
-      const subscribe = (fn) => {
-        listeners.add(fn);
-        return () => listeners.delete(fn);
-      };
-
-      const getStatus = () => ({
-        connected,
-        connecting,
-        hasDevice: !!device,
-        name: device?.name || null,
-        lastHr
-      });
-
-      return { connect, reconnect, disconnect, subscribe, getStatus };
-    })();
-
-    // -----------------------------
-    // Simple dot probe (fast RT check)
-    // -----------------------------
-    function DotProbe({ label, onComplete, brand }) {
-      const TRIALS = 30;
-      const MIN_DELAY_MS = 400;
-      const MAX_DELAY_MS = 1200;
-      const RESPONSE_WINDOW_MS = 1200;
-
-      const [started, setStarted] = useState(false);
-      const [trialIndex, setTrialIndex] = useState(0);
-      const [showDot, setShowDot] = useState(false);
+      const [stage, setStage] = useState('intro'); // intro | practice | practice_done | run | done
       const [status, setStatus] = useState('Ready');
-      const [result, setResult] = useState(null);
-      const [hrStatus, setHrStatus] = useState(() => hrManager.getStatus());
-      const [hrError, setHrError] = useState('');
-      const rtsRef = useRef([]);
-      const lapseRef = useRef(0);
-      const falseStartRef = useRef(0);
-      const activeRef = useRef(false);
-      const respondedRef = useRef(false);
-      const showAtRef = useRef(null);
-      const timeoutRef = useRef(null);
-      const collectingRef = useRef(false);
-      const hrSamplesRef = useRef([]);
+      const [elapsedSec, setElapsedSec] = useState(0);
+      const [trialLabel, setTrialLabel] = useState('');
+      const [showTarget, setShowTarget] = useState(false);
+      const [summary, setSummary] = useState(null);
 
-      const clearTimers = () => {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
+      const runningRef = useRef(false);
+      const stageRef = useRef('intro');
+      const startPerfRef = useRef(0);
+      const trialCounterRef = useRef(0);
+      const currentTrialRef = useRef(null);
+      const inForeperiodRef = useRef(false);
+      const targetVisibleRef = useRef(false);
+      const logsRef = useRef([]);
+      const timersRef = useRef({ foreperiod: null, response: null, tick: null });
+
+      const clearTimer = (key) => {
+        if (timersRef.current[key]) {
+          clearTimeout(timersRef.current[key]);
+          timersRef.current[key] = null;
+        }
       };
 
-      const nextTrial = useCallback(() => {
-        clearTimers();
-        setShowDot(false);
-        setStatus('Wait');
-
-        const delay = Math.floor(Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS + 1)) + MIN_DELAY_MS;
-        timeoutRef.current = setTimeout(() => {
-          showAtRef.current = performance.now();
-          activeRef.current = true;
-          respondedRef.current = false;
-          setShowDot(true);
-          setStatus('Tap');
-
-          timeoutRef.current = setTimeout(() => {
-            if (respondedRef.current) return;
-            lapseRef.current += 1;
-            activeRef.current = false;
-            setTrialIndex((t) => t + 1);
-          }, RESPONSE_WINDOW_MS);
-        }, delay);
-      }, []);
+      const clearAllTimers = () => {
+        clearTimer('foreperiod');
+        clearTimer('response');
+        clearTimer('tick');
+      };
 
       const median = (arr) => {
         if (!arr.length) return null;
         const sorted = arr.slice().sort((a, b) => a - b);
         const mid = Math.floor(sorted.length / 2);
-        return sorted.length % 2 === 1
-          ? sorted[mid]
-          : (sorted[mid - 1] + sorted[mid]) / 2;
+        return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+      };
+
+      const mean = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
+
+      const sd = (arr) => {
+        if (arr.length < 2) return 0;
+        const m = mean(arr);
+        const variance = arr.reduce((acc, x) => acc + Math.pow(x - m, 2), 0) / arr.length;
+        return Math.sqrt(variance);
       };
 
       const mad = (arr) => {
         if (!arr.length) return null;
         const med = median(arr);
-        const absDevs = arr.map((x) => Math.abs(x - med));
-        return median(absDevs);
+        const absDeviations = arr.map((x) => Math.abs(x - med));
+        return median(absDeviations);
       };
 
-      useEffect(() => {
-        const unsubscribe = hrManager.subscribe((hr) => {
-          setHrStatus(hrManager.getStatus());
-          if (collectingRef.current && typeof hr === 'number') {
-            hrSamplesRef.current.push(hr);
-          }
-        });
-        setHrStatus(hrManager.getStatus());
-        return () => unsubscribe();
-      }, []);
+      const readPvtHistory = () => {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(LS_KEYS.PVTB_HISTORY) || '[]');
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      };
 
-      useEffect(() => {
-        if (!started) return;
-        if (trialIndex >= TRIALS) {
-          clearTimers();
-          collectingRef.current = false;
+      const savePvtHistory = (entry) => {
+        try {
+          const history = readPvtHistory();
+          history.push(entry);
+          while (history.length > 120) history.shift();
+          localStorage.setItem(LS_KEYS.PVTB_HISTORY, JSON.stringify(history));
+        } catch {}
+      };
 
-          const rts = rtsRef.current.slice();
-          const n = rts.length;
-          const mean = n ? rts.reduce((a, b) => a + b, 0) / n : null;
-          const medianRt = median(rts);
-          const madRt = mad(rts);
-          const madScaled = madRt === null ? null : madRt * 1.4826;
-          const hrSamples = hrSamplesRef.current.slice();
-          const hrAvg = hrSamples.length
-            ? Math.round(hrSamples.reduce((a, b) => a + b, 0) / hrSamples.length)
-            : null;
+      const meanOrNull = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
 
-          setShowDot(false);
-          setStatus('Complete');
-          setResult({
-            trials: TRIALS,
-            hits: rts.length,
+      const sdOrNull = (arr, m) => {
+        if (arr.length < 2 || !Number.isFinite(m)) return null;
+        const variance = arr.reduce((acc, x) => acc + Math.pow(x - m, 2), 0) / arr.length;
+        const out = Math.sqrt(variance);
+        return Number.isFinite(out) ? out : null;
+      };
+
+      const classifyReadiness = ({ lapses, rtCv, falseStarts }) => {
+        const history = readPvtHistory();
+        const comparable = history.filter((h) =>
+          Number(h?.duration_s) === Number(durationSec)
+          && Number.isFinite(Number(h?.summary?.rtCv))
+        );
+        const baselineCount = comparable.length;
+        if (baselineCount < 7 || !Number.isFinite(rtCv)) {
+          return { band: 'calibrating', readinessIndex: null, baselineCount };
+        }
+
+        const lapsesLogArr = comparable.map((h) => Math.log(Number(h?.summary?.lapses ?? 0) + 1));
+        const rtCvArr = comparable.map((h) => Number(h.summary.rtCv));
+        const falseStartsLogArr = comparable.map((h) => Math.log(Number(h?.summary?.falseStarts ?? 0) + 1));
+
+        const currentLapsesLog = Math.log(Number(lapses ?? 0) + 1);
+        const currentFalseStartsLog = Math.log(Number(falseStarts ?? 0) + 1);
+
+        const z = (value, arr) => {
+          const m = meanOrNull(arr);
+          const s = sdOrNull(arr, m);
+          if (!Number.isFinite(value) || !Number.isFinite(m) || !Number.isFinite(s) || s <= 0) return 0;
+          return (value - m) / s;
+        };
+
+        const readinessIndex =
+          -z(currentLapsesLog, lapsesLogArr)
+          -z(rtCv, rtCvArr)
+          -z(currentFalseStartsLog, falseStartsLogArr);
+
+        const rounded = Number(readinessIndex.toFixed(3));
+        const band = rounded >= -0.5 ? 'green' : (rounded > -1.5 ? 'amber' : 'red');
+        return { band, readinessIndex: rounded, baselineCount };
+      };
+
+      const remainingSec = Math.max(0, durationSec - elapsedSec);
+
+      const runTicker = useCallback(() => {
+        if (!runningRef.current) return;
+        if (stageRef.current !== 'run') return;
+
+        const elapsed = Math.floor((performance.now() - startPerfRef.current) / 1000);
+        setElapsedSec(elapsed);
+
+        if (elapsed >= durationSec) {
+          runningRef.current = false;
+          setShowTarget(false);
+          targetVisibleRef.current = false;
+          inForeperiodRef.current = false;
+          clearAllTimers();
+
+          const all = logsRef.current.slice();
+          const stimTrials = all.filter((t) => !t.false_start);
+          const hits = stimTrials.filter((t) => Number.isFinite(t.rt_ms) && !t.timeout);
+          const rts = hits.map((t) => t.rt_ms);
+          const rtMean = mean(rts);
+          const rtMedian = median(rts);
+          const rtSd = sd(rts);
+          const rtCv = rtMean ? rtSd / rtMean : null;
+          const rtMad = mad(rts);
+          const rtMadScaled = rtMad === null ? null : rtMad * 1.4826;
+          const lapses = stimTrials.filter((t) => t.lapse).length;
+          const falseStarts = all.filter((t) => t.false_start).length;
+          const timeouts = stimTrials.filter((t) => t.timeout).length;
+          const responseSpeed = rts.length ? rts.reduce((acc, rt) => acc + (1000 / rt), 0) / rts.length : null;
+
+          const summaryCore = {
+            test_id: 'pvtb_readiness_v1',
+            duration_s: durationSec,
+            trials: stimTrials.length,
+            hits: hits.length,
             rts,
-            meanMs: mean ? Math.round(mean) : null,
-            medianMs: medianRt ? Math.round(medianRt) : null,
-            madMs: madRt ? Math.round(madRt) : null,
-            madScaledMs: madScaled ? Math.round(madScaled) : null,
-            lapses: lapseRef.current,
-            falseStarts: falseStartRef.current,
-            hrAvgBpm: hrAvg,
-            hrSampleCount: hrSamples.length
+            meanMs: rtMean !== null ? Math.round(rtMean) : null,
+            medianMs: rtMedian !== null ? Math.round(rtMedian) : null,
+            rtSdMs: rtSd !== null ? Math.round(rtSd) : null,
+            rtCv: rtCv !== null ? Number(rtCv.toFixed(3)) : null,
+            madMs: rtMad !== null ? Math.round(rtMad) : null,
+            madScaledMs: rtMadScaled !== null ? Math.round(rtMadScaled) : null,
+            lapses,
+            falseStarts,
+            timeouts,
+            responseSpeed: responseSpeed !== null ? Number(responseSpeed.toFixed(3)) : null,
+            trialLog: all
+          };
+
+          const readiness = classifyReadiness({
+            lapses: summaryCore.lapses,
+            rtCv: summaryCore.rtCv,
+            falseStarts: summaryCore.falseStarts
           });
+
+          const runEntry = {
+            ts: new Date().toISOString(),
+            test_id: 'pvtb_readiness_v1',
+            duration_s: durationSec,
+            device_mode: 'keyboard_or_tap',
+            summary: {
+              medianMs: summaryCore.medianMs,
+              meanMs: summaryCore.meanMs,
+              rtCv: summaryCore.rtCv,
+              lapses: summaryCore.lapses,
+              falseStarts: summaryCore.falseStarts,
+              responseSpeed: summaryCore.responseSpeed
+            },
+            band: readiness.band
+          };
+          savePvtHistory(runEntry);
+
+          setSummary({
+            ...summaryCore,
+            readinessBand: readiness.band,
+            readinessIndex: readiness.readinessIndex,
+            baselineCount: readiness.baselineCount
+          });
+
+          setStage('done');
+          setStatus('Complete');
           return;
         }
 
-        nextTrial();
-        return () => clearTimers();
-      }, [started, trialIndex, nextTrial, onComplete]);
+        timersRef.current.tick = setTimeout(runTicker, 200);
+      }, [durationSec]);
 
-      const handleTap = () => {
-        if (!started || result) return;
-        if (!activeRef.current || !showAtRef.current) {
-          if (status === 'Wait') falseStartRef.current += 1;
+      const scheduleNextTrial = useCallback(() => {
+        if (!runningRef.current) return;
+        if (stageRef.current !== 'practice' && stageRef.current !== 'run') return;
+
+        if (stageRef.current === 'practice' && trialCounterRef.current >= PRACTICE_TRIALS) {
+          runningRef.current = false;
+          setShowTarget(false);
+          targetVisibleRef.current = false;
+          inForeperiodRef.current = false;
+          setStage('practice_done');
+          setStatus('Practice complete');
+          setTrialLabel(`Practice: ${PRACTICE_TRIALS}/${PRACTICE_TRIALS}`);
           return;
         }
-        const rt = performance.now() - showAtRef.current;
-        if (rt > RESPONSE_WINDOW_MS) {
-          lapseRef.current += 1;
-          respondedRef.current = true;
-          activeRef.current = false;
-          setShowDot(false);
-          setStatus('Too slow');
-          setTrialIndex((t) => t + 1);
-          return;
+
+        setShowTarget(false);
+        targetVisibleRef.current = false;
+        inForeperiodRef.current = true;
+        setStatus('Wait for signal');
+
+        const foreperiodMs = Math.floor(
+          Math.random() * (FOREPERIOD_MAX_MS - FOREPERIOD_MIN_MS + 1)
+        ) + FOREPERIOD_MIN_MS;
+
+        if (stageRef.current === 'practice') {
+          setTrialLabel(`Practice: ${trialCounterRef.current + 1}/${PRACTICE_TRIALS}`);
+        } else {
+          setTrialLabel(`Trials logged: ${trialCounterRef.current}`);
         }
-        rtsRef.current.push(rt);
-        respondedRef.current = true;
-        activeRef.current = false;
-        setShowDot(false);
-        setStatus('Got it');
-        setTrialIndex((t) => t + 1);
+
+        timersRef.current.foreperiod = setTimeout(() => {
+          if (!runningRef.current) return;
+
+          inForeperiodRef.current = false;
+          targetVisibleRef.current = true;
+          setShowTarget(true);
+          setStatus('Respond now');
+
+          trialCounterRef.current += 1;
+          const stimOnsetPerf = performance.now();
+          const stimOnsetTs = Date.now();
+          currentTrialRef.current = {
+            trial_index: trialCounterRef.current,
+            foreperiod_ms: foreperiodMs,
+            stim_onset_perf: stimOnsetPerf,
+            stim_onset_ts: stimOnsetTs
+          };
+
+          timersRef.current.response = setTimeout(() => {
+            if (!runningRef.current || !targetVisibleRef.current) return;
+            targetVisibleRef.current = false;
+            setShowTarget(false);
+            setStatus('Timeout');
+
+            const base = currentTrialRef.current;
+            logsRef.current.push({
+              trial_index: base?.trial_index ?? trialCounterRef.current,
+              foreperiod_ms: base?.foreperiod_ms ?? foreperiodMs,
+              stim_onset_ts: base?.stim_onset_ts ?? null,
+              response_ts: null,
+              rt_ms: null,
+              false_start: false,
+              timeout: true,
+              lapse: true
+            });
+            currentTrialRef.current = null;
+            scheduleNextTrial();
+          }, RESPONSE_WINDOW_MS);
+        }, foreperiodMs);
+      }, [PRACTICE_TRIALS]);
+
+      const startStage = (nextStage) => {
+        clearAllTimers();
+        stageRef.current = nextStage;
+        setStage(nextStage);
+        setSummary(null);
+        setStatus('Ready');
+        setElapsedSec(0);
+        setTrialLabel('');
+        setShowTarget(false);
+        targetVisibleRef.current = false;
+        inForeperiodRef.current = false;
+        currentTrialRef.current = null;
+        trialCounterRef.current = 0;
+
+        if (nextStage === 'run') {
+          logsRef.current = [];
+        }
+
+        runningRef.current = nextStage === 'practice' || nextStage === 'run';
+        if (!runningRef.current) return;
+
+        startPerfRef.current = performance.now();
+        if (nextStage === 'run') runTicker();
+        scheduleNextTrial();
       };
 
-      const start = () => {
-        rtsRef.current = [];
-        lapseRef.current = 0;
-        falseStartRef.current = 0;
-        hrSamplesRef.current = [];
-        collectingRef.current = true;
-        setResult(null);
-        setTrialIndex(0);
-        setStarted(true);
-      };
+      const handleResponse = useCallback(() => {
+        if (!runningRef.current) return;
+
+        if (!targetVisibleRef.current) {
+          if (inForeperiodRef.current && stageRef.current !== 'practice') {
+            logsRef.current.push({
+              trial_index: trialCounterRef.current + 1,
+              foreperiod_ms: null,
+              stim_onset_ts: null,
+              response_ts: Date.now(),
+              rt_ms: null,
+              false_start: true,
+              timeout: false,
+              lapse: false
+            });
+            setStatus('Too early');
+          }
+          return;
+        }
+
+        clearTimer('response');
+        targetVisibleRef.current = false;
+        setShowTarget(false);
+
+        const nowPerf = performance.now();
+        const nowTs = Date.now();
+        const base = currentTrialRef.current;
+        const rtMs = Math.max(0, Math.round(nowPerf - (base?.stim_onset_perf ?? nowPerf)));
+        const lapse = rtMs >= LAPSE_THRESHOLD_MS;
+
+        if (stageRef.current !== 'practice') {
+          logsRef.current.push({
+            trial_index: base?.trial_index ?? trialCounterRef.current,
+            foreperiod_ms: base?.foreperiod_ms ?? null,
+            stim_onset_ts: base?.stim_onset_ts ?? null,
+            response_ts: nowTs,
+            rt_ms: rtMs,
+            false_start: false,
+            timeout: false,
+            lapse
+          });
+        }
+
+        currentTrialRef.current = null;
+        setStatus(lapse ? 'Late response' : 'Good');
+        scheduleNextTrial();
+      }, [LAPSE_THRESHOLD_MS, scheduleNextTrial]);
+
+      useEffect(() => {
+        const onKeyDown = (e) => {
+          if (e.code === 'Space' || e.key === ' ') {
+            if (e.repeat) return;
+            e.preventDefault();
+            handleResponse();
+          }
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+      }, [handleResponse]);
+
+      useEffect(() => () => {
+        runningRef.current = false;
+        clearAllTimers();
+      }, []);
 
       const logoSrc = brand?.logoSrc || '../../../../branding/Trident-G-Icon.svg';
       const appName = brand?.appName || 'Zone Coach';
-      const subtitle = brand?.subtitle || 'Quick state check → mindful reset → start training';
+      const subtitle = brand?.subtitle || 'Quick state check -> mindful reset -> start training';
 
       return (
         <div className="screen">
           <div className="topbar">
             <div className="brandleft">
               <div className="icon">
-                <img
-                  src={logoSrc}
-                  alt="Trident logo"
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                />
+                <img src={logoSrc} alt="Trident logo" onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
               <div>
                 <p className="title">{appName}</p>
@@ -922,118 +1024,47 @@
 
           <div className="content">
             <div className="card" style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
-              <div className="h1">Tap the dot</div>
+              <div className="h1">{isRecheck ? 'Quick recheck' : `Readiness check (${durationSec}s)`}</div>
               <p className="p" style={{ marginTop: 6 }}>
-                Wait for the dot to appear, then tap as fast as you can. Keep it simple.
+                Press <b>Space</b> or tap as soon as the target appears. Avoid early taps.
               </p>
 
-              {!started && !result ? (
+              {stage === 'intro' && (
                 <>
-                  <div className="card" style={{ boxShadow: 'none', marginTop: 10 }}>
-                    <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Heart rate (optional)</div>
-                    <p className="p" style={{ marginTop: 6 }}>
-                      Connect a Polar H10 (or other BLE HR monitor) to record average HR during the probe.
-                    </p>
-                    <div className="btnRow" style={{ justifyContent: 'center' }}>
-                      <button
-                        className="btn btnSecondary"
-                        style={{ width: 'min(360px, 100%)' }}
-                        onClick={async () => {
-                          setHrError('');
-                          try {
-                            await hrManager.connect();
-                            setHrStatus(hrManager.getStatus());
-                          } catch (e) {
-                            setHrError(e?.message || 'Could not connect to heart rate sensor.');
-                          }
-                        }}
-                      >
-                        {hrStatus.connected ? 'HR connected' : (hrStatus.connecting ? 'Connectingâ€¦' : 'Connect HR')}
-                      </button>
-                      {!hrStatus.connected && hrStatus.hasDevice && (
-                        <button
-                          className="btn btnSecondary"
-                          style={{ width: 'min(360px, 100%)' }}
-                          onClick={async () => {
-                            setHrError('');
-                            try {
-                              await hrManager.reconnect();
-                              setHrStatus(hrManager.getStatus());
-                            } catch (e) {
-                              setHrError(e?.message || 'Could not reconnect to heart rate sensor.');
-                            }
-                          }}
-                        >
-                          Reconnect HR
-                        </button>
-                      )}
-                      {hrStatus.connected && (
-                        <button
-                          className="btn btnSecondary"
-                          style={{ width: 'min(360px, 100%)' }}
-                          onClick={async () => {
-                            await hrManager.disconnect();
-                            setHrStatus(hrManager.getStatus());
-                          }}
-                        >
-                          Disconnect HR
-                        </button>
-                      )}
-                    </div>
-                    <div className="p" style={{ marginTop: 6 }}>
-                      Status: {hrStatus.connected ? `Connected${hrStatus.name ? ` (${hrStatus.name})` : ''}` : 'Not connected'}
-                      {typeof hrStatus.lastHr === 'number' ? ` · Last HR: ${hrStatus.lastHr} bpm` : ''}
-                    </div>
-                    {hrError && (
-                      <div className="p" style={{ marginTop: 6, color: '#b00020', fontWeight: 800 }}>
-                        {hrError}
-                      </div>
-                    )}
-                  </div>
-
+                  <p className="p" style={{ marginTop: 10 }}>
+                    This is a local-only readiness probe. No HR/Bluetooth sensor is required.
+                  </p>
                   <div className="btnRow" style={{ justifyContent: 'center' }}>
-                    <button className="btn btnPrimary" style={{ width: 'min(360px, 100%)' }} onClick={start}>
-                      Start probe
+                    <button className="btn btnSecondary" style={{ width: 'min(360px, 100%)' }} onClick={() => startStage('practice')}>
+                      Start practice ({PRACTICE_TRIALS} trials)
+                    </button>
+                    <button className="btn btnPrimary" style={{ width: 'min(360px, 100%)' }} onClick={() => startStage('run')}>
+                      Skip practice and start
                     </button>
                   </div>
                 </>
-              ) : result ? (
-                <>
-                  <div className="card" style={{ boxShadow: 'none', marginTop: 12, textAlign: 'left' }}>
-                    <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Quick results</div>
-                    <p className="p" style={{ marginTop: 6 }}>
-                      Median RT: <span style={{ fontWeight: 900 }}>{result.medianMs ?? '—'} ms</span>
-                      <span style={{ color: '#111' }}> • Variability: </span>
-                      <span style={{ fontWeight: 900 }}>{result.madScaledMs ?? result.madMs ?? '—'} ms</span>
-                      <span style={{ color: '#111' }}> • Lapses: </span>
-                      <span style={{ fontWeight: 900 }}>{result.lapses ?? 0}</span>
-                      {result.hrAvgBpm ? (
-                        <>
-                          <span style={{ color: '#111' }}> â€¢ Avg HR: </span>
-                          <span style={{ fontWeight: 900 }}>{result.hrAvgBpm} bpm</span>
-                        </>
-                      ) : null}
-                    </p>
-                  </div>
+              )}
 
+              {stage === 'practice_done' && (
+                <>
+                  <p className="p" style={{ marginTop: 10 }}>Practice complete. Start the timed probe when ready.</p>
                   <div className="btnRow" style={{ justifyContent: 'center' }}>
-                    <button
-                      className="btn btnPrimary"
-                      style={{ width: 'min(360px, 100%)' }}
-                      onClick={() => onComplete?.(result)}
-                    >
-                      Continue
+                    <button className="btn btnPrimary" style={{ width: 'min(360px, 100%)' }} onClick={() => startStage('run')}>
+                      Start timed probe
                     </button>
                   </div>
                 </>
-              ) : (
+              )}
+
+              {(stage === 'practice' || stage === 'run') && (
                 <>
                   <div style={{ marginTop: 12, color: 'var(--deep)', fontWeight: 800 }}>
-                    Trial {Math.min(trialIndex + 1, TRIALS)} / {TRIALS} · {status}
+                    {stage === 'run' ? `Time left: ${remainingSec}s` : 'Practice mode'} | {status}
                   </div>
+                  <div style={{ marginTop: 6, color: 'rgba(0,0,0,0.75)', fontWeight: 700 }}>{trialLabel}</div>
 
                   <div
-                    onClick={handleTap}
+                    onClick={handleResponse}
                     style={{
                       margin: '18px auto 0',
                       height: 240,
@@ -1042,25 +1073,71 @@
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      cursor: showDot ? 'pointer' : 'default',
+                      cursor: 'pointer',
                       userSelect: 'none'
                     }}
                   >
-                    {showDot && (
-                      <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--deep)' }} />
-                    )}
+                    {showTarget
+                      ? <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--deep)' }} />
+                      : <div style={{ color: 'rgba(0,0,0,0.55)', fontWeight: 800 }}>Wait...</div>
+                    }
                   </div>
 
-                  <p className="p" style={{ marginTop: 10 }}>
-                    Tap area is the full panel. Lapses are counted if no tap occurs in time.
-                  </p>
+                  <div className="btnRow" style={{ justifyContent: 'center' }}>
+                    <button
+                      className="btn btnSecondary"
+                      style={{ width: 'min(360px, 100%)' }}
+                      onClick={() => {
+                        runningRef.current = false;
+                        clearAllTimers();
+                        setStage('intro');
+                        setStatus('Stopped');
+                      }}
+                    >
+                      Stop
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {stage === 'done' && summary && (
+                <>
+                  <div className="card" style={{ boxShadow: 'none', marginTop: 12, textAlign: 'left' }}>
+                    <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Readiness metrics</div>
+                    <p className="p" style={{ marginTop: 6 }}>
+                      Median RT: <span style={{ fontWeight: 900 }}>{summary.medianMs ?? '-'}</span> ms
+                      <span style={{ color: '#111' }}> | RT CV: </span>
+                      <span style={{ fontWeight: 900 }}>{summary.rtCv ?? '-'}</span>
+                      <span style={{ color: '#111' }}> | Lapses: </span>
+                      <span style={{ fontWeight: 900 }}>{summary.lapses ?? 0}</span>
+                      <span style={{ color: '#111' }}> | False starts: </span>
+                      <span style={{ fontWeight: 900 }}>{summary.falseStarts ?? 0}</span>
+                    </p>
+                    <p className="p" style={{ marginTop: 6 }}>
+                      Readiness band: <span style={{ fontWeight: 900 }}>{summary.readinessBand || 'calibrating'}</span>
+                      {summary.readinessIndex !== null ? (
+                        <span style={{ color: '#111' }}> | Index: <span style={{ fontWeight: 900 }}>{summary.readinessIndex}</span></span>
+                      ) : null}
+                      <span style={{ color: '#111' }}> | Baseline checks: </span>
+                      <span style={{ fontWeight: 900 }}>{summary.baselineCount ?? 0}</span>
+                    </p>
+                  </div>
+
+                  <div className="btnRow" style={{ justifyContent: 'center' }}>
+                    <button className="btn btnSecondary" style={{ width: 'min(360px, 100%)' }} onClick={() => startStage('run')}>
+                      Run again
+                    </button>
+                    <button className="btn btnPrimary" style={{ width: 'min(360px, 100%)' }} onClick={() => onComplete?.(summary)}>
+                      Continue
+                    </button>
+                  </div>
                 </>
               )}
             </div>
           </div>
 
           <div className="footer">
-            <span>Mindware Lab • Trident</span>
+            <span>Mindware Lab | Trident</span>
             <a className="link" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">Capacity Coach</a>
           </div>
         </div>
@@ -1102,7 +1179,7 @@ function ZoneCoach() {
 
   const brand = useMemo(() => ({
     appName: 'Zone Coach',
-    subtitle: 'Quick state check → mindful reset → start training',
+    subtitle: 'Quick state check -> mindful reset -> start training',
     accent: 'var(--deep)',
     logoSrc: '../../../../branding/Trident-G-Icon.svg'
   }), []);
@@ -1156,7 +1233,7 @@ function ZoneCoach() {
     const zoneGate = toZoneGate(classification.primaryMode);
 
     const preInBand = classification.primaryMode === 'PSI';
-    const postInBand = report === 'Ψ-band';
+    const postInBand = report === 'Psi-band';
     const stateConfidence = computeStateConfidence({
       signalClarity: null,
       probe: probePre,
@@ -1292,7 +1369,7 @@ function ZoneCoach() {
       <div className="content">{children}</div>
 
       <div className="footer">
-        <span>Mindware Lab • Trident</span>
+        <span>Mindware Lab | Trident</span>
         <a className="link" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">
           Capacity Coach
         </a>
@@ -1342,7 +1419,7 @@ function ZoneCoach() {
               </button>
             </div>
 
-            <p className="p" style={{ marginTop: 10 }}>Mindware Lab • Trident</p>
+            <p className="p" style={{ marginTop: 10 }}>Mindware Lab | Trident</p>
           </div>
         </div>
       </div>
@@ -1355,6 +1432,7 @@ function ZoneCoach() {
       <DotProbe
         label="Probe"
         brand={brand}
+        durationSec={180}
         onComplete={(result) => {
           setProbePre(result);
           setStep('ratings');
@@ -1380,6 +1458,8 @@ function ZoneCoach() {
       <DotProbe
         label="Recheck"
         brand={brand}
+        durationSec={90}
+        isRecheck={true}
         onComplete={(result) => {
           setProbePost(result);
           setStep('postBreath');
@@ -1498,9 +1578,9 @@ function ZoneCoach() {
             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 10, marginTop: 12 }}>
               {[
                 { label: 'Flat / low drive', value: 'Subcritical' },
-                { label: 'In the G Zone', value: 'Ψ-band' },
-                { label: 'Overloaded & scattered', value: 'Supercritical – explore' },
-                { label: 'Over-tight & stuck', value: 'Supercritical – rigid control' },
+                { label: 'In the G Zone', value: 'Psi-band' },
+                { label: 'Overloaded & scattered', value: 'Supercritical - explore' },
+                { label: 'Over-tight & stuck', value: 'Supercritical - rigid control' },
                 { label: 'Not sure', value: 'Not sure' }
               ].map(opt => (
                 <button
@@ -1518,7 +1598,7 @@ function ZoneCoach() {
 
         {step === 'complete' && classification && (
           <>
-            <div className="h1">Reset complete ✓</div>
+            <div className="h1">Reset complete</div>
 
             <div className="card" style={{ boxShadow: 'none', background: 'rgba(34,170,255,0.08)', border: '1px solid rgba(39,100,183,0.18)', marginTop: 12 }}>
               <div style={{ fontWeight: 900, fontSize: 16, color: 'rgba(0,0,0,0.90)' }}>
@@ -1529,7 +1609,7 @@ function ZoneCoach() {
             {(() => {
               const zoneGate = toZoneGate(classification.primaryMode);
               const preInBand = classification.primaryMode === 'PSI';
-              const postInBand = postBreathReport === 'Ψ-band';
+              const postInBand = postBreathReport === 'Psi-band';
               const proceedNormal =
                 (preInBand || postInBand)
                 && overallConfidence !== 'Low'
@@ -1542,8 +1622,8 @@ function ZoneCoach() {
                   <div style={{ fontWeight: 900, fontSize: 14, color: 'rgba(0,0,0,0.85)' }}>Next step</div>
 
                   <p className="p" style={{ marginTop: 8 }}>
-                    Zone gate: <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{ZONE_UI[zoneGate]?.title || '—'}</span>
-                    <span style={{ color: '#111' }}> • Suggested focus: </span>
+                    Zone gate: <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{ZONE_UI[zoneGate]?.title || '-'}</span>
+                    <span style={{ color: '#111' }}> | Suggested focus: </span>
                     <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{suggestion.primary}</span>
                     {suggestion.secondary ? <span style={{ color: '#111' }}> then </span> : null}
                     {suggestion.secondary ? <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{suggestion.secondary}</span> : null}
@@ -1617,7 +1697,3 @@ function ZoneCoach() {
 // React 18 root
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<ZoneCoach />);
-
-
-
-
