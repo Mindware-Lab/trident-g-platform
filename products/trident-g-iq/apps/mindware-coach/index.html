@@ -1334,7 +1334,7 @@
             <p className="p"><b>Why this is best:</b> {item.why_right}</p>
           </section>
           <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
-            <p style={{ margin:0, fontWeight:900 }}>Why the tempting options fail</p>
+            <p style={{ margin:0, fontWeight:900 }}>Watch out for</p>
             {(item.why_traps || []).map((t, i) => <p key={i} className="hint">{t}</p>)}
             <p style={{ margin:"8px 0 0 0", fontWeight:900 }}>What to do in real life</p>
             <p className="hint">{scriptOneLiner(lessonRun.script)}</p>
@@ -1375,7 +1375,7 @@
             <section className="card"><h1 className="h1">{last?.late ? "Time's up" : (session.lastCorrect ? "Correct" : "Not this time")}</h1><p className="p">{q.why_right}</p></section>
             <section style={{ background:"#FFF", border:"1px solid #E0E0E0", borderRadius:"16px", padding:"16px" }}>
               {last?.late ? <p className="hint"><b>Answered after time.</b></p> : null}
-              <p style={{ margin:0, fontWeight:900 }}>Why the trap fails</p>
+              <p style={{ margin:0, fontWeight:900 }}>Watch out for</p>
               {(q.why_traps || []).slice(0,2).map((t, i) => <p key={i} className="hint">{t}</p>)}
               <div className="btnRow"><button className="btn btnPrimary" onClick={nextQuestion}>{session.index + 1 >= session.items.length ? "Finish session" : "Next item"}</button></div>
             </section>
