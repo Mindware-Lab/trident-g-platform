@@ -1149,7 +1149,7 @@
 // -----------------------------
 function ZoneCoach() {
   const [showSplash, setShowSplash] = useState(true);
-  const [step, setStep] = useState('probePre');
+  const [step, setStep] = useState('ratings');
 
   const [ratings, setRatings] = useState({ E: 5, S: 5, F: 5, N: 5, O: 5, C: 5, R: 5 });
   const [externalDistractions, setExternalDistractions] = useState(false);
@@ -1221,7 +1221,7 @@ function ZoneCoach() {
     const pattern = selectBreathingPattern(result.primaryMode);
     setClassification(result);
     setBreathPattern(pattern);
-    setStep('results');
+    setStep('probePre');
   };
 
   const handleStartBreathing = () => setStep('breathing');
@@ -1337,7 +1337,7 @@ function ZoneCoach() {
     : null;
 
   const startNewCheck = () => {
-    setStep('probePre');
+    setStep('ratings');
     interruptionsRef.current = { tabSwitches: 0, blurs: 0 };
     setPostBreathReport(null);
     setClassification(null);
@@ -1435,7 +1435,7 @@ function ZoneCoach() {
         durationSec={180}
         onComplete={(result) => {
           setProbePre(result);
-          setStep('ratings');
+          setStep('results');
         }}
       />
     );
@@ -1515,7 +1515,7 @@ function ZoneCoach() {
 
             <div className="btnRow">
               <button onClick={handleRatingsSubmit} className="btn btnPrimary" style={{ width: '100%' }}>
-                Analyse my state
+                Continue to readiness check
               </button>
             </div>
           </>
