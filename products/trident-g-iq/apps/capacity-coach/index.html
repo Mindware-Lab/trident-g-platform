@@ -426,6 +426,8 @@
     const [showHowItWorks, setShowHowItWorks] = useState(false);
     const [showWhyMissions, setShowWhyMissions] = useState(false);
     const [zoneHandoff, setZoneHandoff] = useState(null);
+    const [showEmbeddedZoneCoach, setShowEmbeddedZoneCoach] = useState(false);
+    const [zoneEmbedNonce, setZoneEmbedNonce] = useState(0);
     const [quickCheck, setQuickCheck] = useState({
       level_played: '',
       felt_difficulty: 'ok',
@@ -622,6 +624,14 @@
 
     const openZoneCoach = () => {
       window.open(ZONE_COACH_URL, '_blank', 'noopener,noreferrer');
+    };
+
+    const toggleEmbeddedZoneCoach = () => {
+      setShowEmbeddedZoneCoach((prev) => !prev);
+    };
+
+    const refreshEmbeddedZoneCoach = () => {
+      setZoneEmbedNonce((n) => n + 1);
     };
 
     const importLatestZoneHandoff = () => {
@@ -1919,7 +1929,7 @@
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
             <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Optional: Full Zone Coach</p>
             <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333333' }}>
-              Run the full Zone Coach flow (3-minute readiness probe + reset + recheck) in a separate tab, then import the latest result here.
+              Run the full Zone Coach flow (3-minute readiness probe + reset + recheck) in a separate tab or embed it below, then import the latest result here.
             </p>
             <div className="btnRow">
               <button
@@ -1936,7 +1946,34 @@
               >
                 Import latest Zone result
               </button>
+              <button
+                className="btn"
+                style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }}
+                onClick={toggleEmbeddedZoneCoach}
+              >
+                {showEmbeddedZoneCoach ? 'Hide embedded Zone Coach' : 'Embed Zone Coach here'}
+              </button>
+              {showEmbeddedZoneCoach ? (
+                <button
+                  className="btn"
+                  style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', color: '#333333' }}
+                  onClick={refreshEmbeddedZoneCoach}
+                >
+                  Reload embed
+                </button>
+              ) : null}
             </div>
+            {showEmbeddedZoneCoach ? (
+              <div style={{ marginTop: '10px', border: '1px solid #E0E0E0', borderRadius: '14px', overflow: 'hidden' }}>
+                <iframe
+                  key={zoneEmbedNonce}
+                  src={ZONE_COACH_URL}
+                  title="Embedded Zone Coach"
+                  style={{ width: '100%', height: '760px', border: 'none', display: 'block', background: '#EFF3F8' }}
+                  loading="lazy"
+                />
+              </div>
+            ) : null}
             {zoneHandoff ? (
               <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>
                 Last Zone handoff: <b>{zoneHandoffZone || 'unknown'}</b> ({zoneHandoffRecommendation || 'unknown'}){zoneHandoffTimestamp ? `, ${zoneHandoffTimestamp}` : ''}.
