@@ -334,7 +334,10 @@
 
     const pendingMission = useMemo(() => mwState.missions.find((m) => m.status === "pending") || null, [mwState.missions]);
     const pendingMissionCount = useMemo(() => mwState.missions.filter((m) => m.status === "pending").length, [mwState.missions]);
-    const allItems = useMemo(() => timedPacks.flatMap((p) => p.items || []), [timedPacks]);
+    const allItems = useMemo(
+      () => timedPacks.flatMap((p) => (p.items || []).map((it) => ({ ...it, __pack_id: p.pack_id }))),
+      [timedPacks]
+    );
     const getLessonByScript = (script) => (lessonsPack?.operators || []).find((op) => op.script === script) || null;
     const getGuidedItemByScript = (script) => {
       const lesson = getLessonByScript(script);
@@ -696,7 +699,8 @@
       const contentSig = (it) => `${String(stripPromptTags(it.prompt) || "").trim().toLowerCase()}||${(Array.isArray(it.options) ? it.options : []).map((x) => String(x || "").trim().toLowerCase()).join("||")}`;
       let pool = [];
       if (mode === "gym") {
-        pool = allItems.filter((it) => it.near_miss_tag === microTag);
+        const gymPool = allItems.filter((it) => it.__pack_id === "reasoning_gym_v1" && it.near_miss_tag === microTag);
+        pool = gymPool.length ? gymPool : allItems.filter((it) => String(it.id || "").startsWith("gym_") && it.near_miss_tag === microTag);
       } else if (mode === "recheck" && signature) {
         pool = allItems.filter((it) => it.frame === signature.frame && it.wrapper === signature.wrapper && it.script === signature.script);
       } else if (mode === "probe" && signature) {
@@ -1422,18 +1426,26 @@
       }
       const q = session.current;
       const lesson = getLessonByScript(q.script);
+      const isGymMode = session.mode === "gym";
+      const gymFocus = gymFamilyLabel(mapTag(q.near_miss_tag));
       const remainingAfterThis = Math.max(0, Number(session.items.length || 0) - Number(session.index || 0) - 1);
       return (
-        <Frame chip={`${session.index + 1}/${session.items.length}`} subtitle="Timed practice">
+        <Frame chip={`${session.index + 1}/${session.items.length}`} subtitle={isGymMode ? "Reasoning Gym" : "Timed practice"}>
           <section className="card">
-            <p className="p" style={{ marginBottom:"8px", fontSize:"13px", color:"#334" }}>
-              <b>{FRAME_LABEL[session.frame]}</b> • <b>MS: {lesson ? scriptTitle(q.script) : "Script"}</b> • <b>{prettyContext(q.context)}</b>
-            </p>
+            {isGymMode ? (
+              <p className="p" style={{ marginBottom:"8px", fontSize:"13px", color:"#334" }}>
+                <b>Reasoning Gym</b> • <b>Focus: {gymFocus}</b> • <b>{prettyContext(q.context)}</b>
+              </p>
+            ) : (
+              <p className="p" style={{ marginBottom:"8px", fontSize:"13px", color:"#334" }}>
+                <b>{FRAME_LABEL[session.frame]}</b> • <b>MS: {lesson ? scriptTitle(q.script) : "Script"}</b> • <b>{prettyContext(q.context)}</b>
+              </p>
+            )}
             <p className="hint" style={{ marginTop:0 }}>
               <button className="plainLink" onClick={() => setLessonModalScript(q.script)}>What is this script?</button>
             </p>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", gap:"10px", marginTop:"4px" }}>
-              <h1 className="h1" style={{ margin:0 }}>Timed item</h1>
+              <h1 className="h1" style={{ margin:0 }}>{isGymMode ? "Reasoning Gym item" : "Timed item"}</h1>
               <div style={{ display:"flex", alignItems:"baseline", gap:"12px" }}>
                 <p style={{ margin:0, fontWeight:900, fontSize:"18px", lineHeight:1.1, color:"#FFFFFF" }}>
                   {remainingAfterThis} remaining
