@@ -151,6 +151,31 @@
       max-width: 260px;
     }
 
+    .scoreReadout{
+      margin-top: 8px;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.42);
+      padding: 8px 10px;
+      max-width: 760px;
+    }
+
+    .scoreReadoutTitle{
+      margin: 0;
+      font-size: 14px;
+      font-weight: 900;
+      color: #111;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .scoreReadoutLine{
+      margin-top: 4px;
+      font-size: 16px;
+      color: var(--grey-600);
+      line-height: 1.35;
+    }
+
     .infoGrid{
       margin-top: 8px;
       display: grid;
@@ -270,6 +295,31 @@
       color: rgba(255,255,255,0.95);
       font-size: 20px;
       font-weight: 700;
+    }
+
+    @media (max-width: 600px){
+      .gSplashCard{
+        width: 100%;
+        border-radius: 18px;
+        padding: 20px 16px;
+      }
+
+      .gSplashTitle{
+        font-size: clamp(34px, 11vw, 42px);
+      }
+
+      .gSplashSub{
+        font-size: 18px;
+      }
+
+      .gSplashBtn{
+        width: 100%;
+        min-width: 0;
+      }
+
+      .gSplashFoot{
+        font-size: 16px;
+      }
     }
   </style>
 </head>
@@ -754,6 +804,39 @@
         return completedCount(record, timepoint);
       };
 
+      const normalizeScore = (value) => String(value ?? "").trim();
+
+      const getLatestScore = (test, timepoint) => {
+        const record = state.tests?.[test.id];
+        if(!record) return "";
+        const entries = listEntries(record, timepoint);
+        for(let i = entries.length - 1; i >= 0; i--){
+          const score = normalizeScore(entries[i]?.score_payload?.score);
+          if(score) return score;
+        }
+        return "";
+      };
+
+      const getScoreCount = (test, timepoint) => {
+        const record = state.tests?.[test.id];
+        if(!record) return 0;
+        return listEntries(record, timepoint)
+          .filter(entry => normalizeScore(entry?.score_payload?.score).length > 0)
+          .length;
+      };
+
+      const getScoreSummaryLine = (test) => {
+        const parts = allowedTimepoints(test).map(tp => {
+          const latest = getLatestScore(test, tp);
+          const count = getScoreCount(test, tp);
+          if(tp === "WEEKLY" && count > 0){
+            return `${timepointLabel(tp)} latest ${latest || "-"} (${count} entries)`;
+          }
+          return `${timepointLabel(tp)} ${latest || "-"}`;
+        });
+        return parts.join(" | ");
+      };
+
       const statusTag = (entry) => {
         if(!entry) return <span className="tag">Not started</span>;
         if(entry.score_payload?.done) return <span className="tag tagDone">Completed</span>;
@@ -884,6 +967,11 @@
                               <span className="tag">{test.scheduleLabel}</span>
                               <span className="tag">{test.kind === "external" ? "Manual score" : "Auto page"}</span>
                               <span className="tag">Logging: {timepointLabel(activeTimepoint)}</span>
+                            </div>
+
+                            <div className="scoreReadout">
+                              <p className="scoreReadoutTitle">Saved scores</p>
+                              <p className="scoreReadoutLine">{getScoreSummaryLine(test)}</p>
                             </div>
 
                             <p className="whenLine">
