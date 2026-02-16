@@ -216,6 +216,7 @@
       ])
     }
   };
+  const DEFAULT_READINESS_SNAPSHOT = Object.freeze({ load: 4, drift: 4, mismatch: 4 });
 
   const safeParse = (raw, fallback) => {
     try { return JSON.parse(raw); } catch { return fallback; }
@@ -380,10 +381,9 @@
     const [programV11, setProgramV11] = useState(() => loadProgramV11());
     const [sessionsV11, setSessionsV11] = useState(() => loadSessionsV11());
     const [missionsV11, setMissionsV11] = useState(() => loadMissionsV11());
-    const [zoneMode, setZoneMode] = useState('in_band');
-    const [planType, setPlanType] = useState('type1_build');
-    const [stateRatings, setStateRatings] = useState({ load: 4, drift: 4, mismatch: 4 });
+    const [zoneMode, setZoneMode] = useState('light');
     const [lastStateReason, setLastStateReason] = useState('');
+    const stateRatings = DEFAULT_READINESS_SNAPSHOT;
     const [selectedGame, setSelectedGame] = useState('classic');
     const [speedPreset, setSpeedPreset] = useState('default');
     const [interferencePreset, setInterferencePreset] = useState('default');
@@ -568,11 +568,6 @@
       };
     }, [zoneMode, programV11, trainingSessionsV11, settingsV11, stateRatings]);
 
-    const computePlanType = (zone) => {
-      if (zone !== 'in_band') return 'type1_light';
-      return 'type1_build';
-    };
-
     const normalizeZoneHandoff = (candidate) => {
       const raw = asObject(candidate);
       if (!Object.keys(raw).length) return null;
@@ -603,7 +598,10 @@
       if (recommendation === 'light') {
         return { zoneMode: 'light', breathRoutine: 'amplify', reason: 'Zone Coach recommends a lighter session today.' };
       }
-      return { zoneMode: 'in_band', breathRoutine: 'upshift', reason: 'Zone Coach indicates normal readiness for a full session.' };
+      if (zone === 'in_band' || recommendation === 'proceed') {
+        return { zoneMode: 'in_band', breathRoutine: 'upshift', reason: 'Zone Coach indicates normal readiness for a full session.' };
+      }
+      return { zoneMode: 'light', breathRoutine: 'amplify', reason: 'Zone result is unclear, so a lighter session is recommended by default.' };
     };
 
     const applyZoneHandoff = (candidate) => {
@@ -614,7 +612,6 @@
       }
       const mapped = mapZoneHandoffToCoach(normalized);
       setZoneMode(mapped.zoneMode);
-      setPlanType(computePlanType(mapped.zoneMode));
       setBreathRoutine(mapped.breathRoutine);
       setZoneHandoff(normalized);
       const tsLabel = normalized.timestamp ? new Date(normalized.timestamp).toLocaleString() : 'unknown time';
@@ -643,27 +640,6 @@
         return;
       }
       applyZoneHandoff(selected.raw);
-    };
-
-    const estimateZoneFromRatings = () => {
-      const vals = [stateRatings.load, stateRatings.drift, stateRatings.mismatch];
-      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-      const peak = Math.max(...vals);
-      let nextZone = 'in_band';
-      let reason = 'State looks manageable for normal training.';
-      if (peak >= 8 || avg >= 7) {
-        nextZone = 'reset';
-        reason = 'You look overloaded right now, so use easier settings today.';
-      } else if (avg >= 5) {
-        nextZone = 'light';
-        reason = 'You look a bit stretched, so keep this session lighter.';
-      }
-      setZoneMode(nextZone);
-      setPlanType(computePlanType(nextZone));
-      setLastStateReason(reason);
-      if (nextZone === 'reset') setBreathRoutine('downshift');
-      else if (nextZone === 'light') setBreathRoutine('amplify');
-      else setBreathRoutine('upshift');
     };
 
     useEffect(() => {
@@ -740,7 +716,15 @@
     useEffect(() => {
       const primary = normalizeZoneHandoff(safeParse(localStorage.getItem(STORAGE.ZONE_TO_CAPACITY), null));
       const fallback = normalizeZoneHandoff(safeParse(localStorage.getItem(FALLBACK_ZONE_TO_CAPACITY_KEY), null));
-      setZoneHandoff(primary || fallback || null);
+      const selected = primary || fallback;
+      if (selected) {
+        applyZoneHandoff(selected.raw);
+        return;
+      }
+      setZoneHandoff(null);
+      setZoneMode('light');
+      setBreathRoutine('amplify');
+      setLastStateReason('No Zone Coach handoff found yet. Run Zone Coach and import the result before training. Defaulting to light mode for safety.');
     }, []);
 
     useEffect(() => {
@@ -777,6 +761,7 @@
     const zoneHandoffTimestamp = zoneHandoff?.timestamp
       ? new Date(zoneHandoff.timestamp).toLocaleString()
       : null;
+    const zoneModeLabel = zoneMode === 'reset' ? 'RESET' : (zoneMode === 'light' ? 'LIGHT' : 'FULL');
 
     const parseRecoveryBlocks = () => {
       const parsed = recoveryBlocksCsv
@@ -1927,9 +1912,9 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Optional: Full Zone Coach</p>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>1) Zone readiness gate (Zone Coach)</p>
             <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333333' }}>
-              Run the full Zone Coach flow (3-minute readiness probe + reset + recheck) in a separate tab or embed it below, then import the latest result here.
+              Capacity Coach now uses the Zone Coach readiness algorithm/decision rule as the gate. Run Zone Coach, then import the latest result here.
             </p>
             <div className="btnRow">
               <button
@@ -1957,11 +1942,18 @@
                 <button
                   className="btn"
                   style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', color: '#333333' }}
-                  onClick={refreshEmbeddedZoneCoach}
-                >
-                  Reload embed
-                </button>
+                onClick={refreshEmbeddedZoneCoach}
+              >
+                Reload embed
+              </button>
               ) : null}
+              <button
+                className="btn"
+                style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', color: '#333333' }}
+                onClick={saveRestDay}
+              >
+                Record rest day
+              </button>
             </div>
             {showEmbeddedZoneCoach ? (
               <div style={{ marginTop: '10px', border: '1px solid #E0E0E0', borderRadius: '14px', overflow: 'hidden' }}>
@@ -1974,6 +1966,9 @@
                 />
               </div>
             ) : null}
+            <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>
+              Current gate in Capacity Coach: <b>{zoneModeLabel}</b>
+            </p>
             {zoneHandoff ? (
               <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>
                 Last Zone handoff: <b>{zoneHandoffZone || 'unknown'}</b> ({zoneHandoffRecommendation || 'unknown'}){zoneHandoffTimestamp ? `, ${zoneHandoffTimestamp}` : ''}.
@@ -1983,71 +1978,11 @@
                 No Zone Coach handoff found yet on this browser.
               </p>
             )}
-          </section>
-
-          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>1) Quick readiness check</p>
-            <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333333' }}>
-              Quick self-check before training. These are simple readiness sliders.
-            </p>
-            <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#555555' }}>
-              Use these to choose full, light, or rest for today.
-            </p>
-            {[
-              ['load', 'How overloaded do you feel?'],
-              ['drift', 'How steady is your focus today?'],
-              ['mismatch', 'Does today\'s plan feel doable?']
-            ].map(([k, label]) => (
-              <div key={k} style={{ marginBottom: '10px' }}>
-                <label style={{ fontWeight: 700 }}>{label}: {stateRatings[k]}</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="10"
-                  value={stateRatings[k]}
-                  onChange={(e) => setStateRatings((prev) => ({ ...prev, [k]: Number(e.target.value) }))}
-                  style={{ width: '100%' }}
-                />
-                <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#777777' }}>Low &lt;-&gt; High</p>
-              </div>
-            ))}
-            <div className="btnRow" style={{ marginTop: 8 }}>
-              <button className="btn" style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }} onClick={estimateZoneFromRatings}>
-                Auto-suggest readiness
-              </button>
-            </div>
             {lastStateReason ? (
               <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>
                 {lastStateReason}
               </p>
             ) : null}
-            <div className="btnRow">
-              {[
-                { id: 'in_band', label: 'Full session (10 blocks, normal plan)', action: 'zone' },
-                { id: 'light', label: 'Light session (10 blocks, easier settings, no challenge tests)', action: 'zone' },
-                { id: 'rest', label: 'Rest day (no blocks today, optional 90-second reset)', action: 'rest' }
-              ].map((z) => (
-                <button
-                  key={z.id}
-                  className="btn"
-                  onClick={() => {
-                    if (z.action === 'rest') {
-                      saveRestDay();
-                      return;
-                    }
-                    setZoneMode(z.id);
-                    setPlanType(computePlanType(z.id));
-                  }}
-                  style={{
-                    background: zoneMode === z.id && z.action === 'zone' ? '#E8F4FF' : '#FFFFFF',
-                    border: '1px solid ' + (zoneMode === z.id && z.action === 'zone' ? '#2764B7' : '#E0E0E0'),
-                    color: '#111111'
-                  }}
-                >
-                  {z.label}
-                </button>
-              ))}
-            </div>
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
