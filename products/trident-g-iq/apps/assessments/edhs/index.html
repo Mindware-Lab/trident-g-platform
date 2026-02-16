@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Everyday Decision Habits Scale – Mindware Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-50">
+  <div id="root"></div>
+
+  <!-- React + ReactDOM + Babel -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- EDHS React app -->
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Simple inline SVG icons (ChevronRight, RotateCcw, CheckCircle)
+    const ChevronRight = ({ className }) => (
+      <svg
+        className={className}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <polyline points="9 18 15 12 9 6" />
+      </svg>
+    );
+
+    const RotateCcw = ({ className }) => (
+      <svg
+        className={className}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <polyline points="1 4 1 10 7 10" />
+        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+      </svg>
+    );
+
+    const CheckCircle = ({ className }) => (
+      <svg
+        className={className}
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M9 12l2 2 4-4" />
+        <circle cx="12" cy="12" r="10" />
+      </svg>
+    );
+
+    const VERSIONS = {
+      A: {
+        title: "Version A",
+        questions: [
+          {
+            id: "A1",
+            title: "Too many tasks",
+            text: "You've got too many tasks and not enough time today. What do you do first?",
+            options: [
+              { id: "A", text: "Start with the task that feels most interesting and get going with that.", score: 2 },
+              { id: "B", text: "Do a few of the simpler tasks first so you can get some quick wins.", score: 3 },
+              { id: "C", text: "Take a couple of minutes to list your tasks, choose the one with the biggest impact or tightest deadline, and block time for it.", score: 4 },
+              { id: "D", text: "Look through your messages and notifications and see what comes up as you go.", score: 1 }
+            ]
+          },
+          {
+            id: "A2",
+            title: "Big project starting",
+            text: "You've just been given a new project that will run for a month. What do you do in the first couple of days?",
+            options: [
+              { id: "A", text: "Skim the brief and then get started on a part that seems manageable.", score: 2 },
+              { id: "B", text: "Leave it for now and assume you'll work out the details closer to the time.", score: 1 },
+              { id: "C", text: "Break the project into a few main steps, sketch a rough timeline, and set a first small milestone.", score: 4 },
+              { id: "D", text: "Ask someone else what they think you should do and mostly follow their suggestions.", score: 3 }
+            ]
+          },
+          {
+            id: "A3",
+            title: "Difficult phone call",
+            text: "You need to call someone to sort out an awkward issue (for example about money, a mistake, or a misunderstanding). How do you usually handle it?",
+            options: [
+              { id: "A", text: "Put it off and plan to deal with it when things feel a bit calmer.", score: 1 },
+              { id: "B", text: "Send a short, non-specific message instead and see how they respond.", score: 2 },
+              { id: "C", text: "Decide on a time, note the key points you need to cover, and make the call then.", score: 4 },
+              { id: "D", text: "Leave it for now and wait to see if the other person raises it first.", score: 1 }
+            ]
+          },
+          {
+            id: "A4",
+            title: "Messy problem at work/study",
+            text: "There's a messy problem at work or on your course that keeps coming back (for example, missing information, unclear roles, or repeated errors). What do you tend to do?",
+            options: [
+              { id: "A", text: "Focus on your own tasks and leave the wider problem to one side.", score: 1 },
+              { id: "B", text: "Talk about it with a friend or colleague but don't usually take steps yourself.", score: 2 },
+              { id: "C", text: "Set aside a bit of time to understand the problem and take at least one concrete step to move it forward.", score: 4 },
+              { id: "D", text: "Assume that someone else will deal with it in due course.", score: 1 }
+            ]
+          },
+          {
+            id: "A5",
+            title: "Spending vs saving",
+            text: "You receive a significant, unexpected amount of money. What are you most likely to do?",
+            options: [
+              { id: "A", text: "Use most of it on things you've been wanting to buy.", score: 1 },
+              { id: "B", text: "Put a small part aside but mainly enjoy spending it now.", score: 2 },
+              { id: "C", text: "Decide on a specific longer-term use (for example paying down debt, building an emergency fund, or a course) and put most of it towards that.", score: 4 },
+              { id: "D", text: "Keep it in your account without a clear plan and notice it goes on day-to-day spending over time.", score: 1 }
+            ]
+          },
+          {
+            id: "A6",
+            title: "Sleep vs one more episode",
+            text: "It's late and you have an important day tomorrow, but you're watching a series or on your phone. What do you usually do?",
+            options: [
+              { id: "A", text: "Carry on watching or scrolling until you feel properly tired and turn in then.", score: 1 },
+              { id: "B", text: "Tell yourself you'll just watch \"a bit more\", which often ends up being longer than planned.", score: 2 },
+              { id: "C", text: "Set a clear cut-off (for example the end of this episode), stop at that point, and get to bed.", score: 4 },
+              { id: "D", text: "Let it run in the background while you get some things ready for tomorrow.", score: 3 }
+            ]
+          },
+          {
+            id: "A7",
+            title: "Starting a new habit",
+            text: "You decide you want to start a new habit (for example, daily stretching, reading, or language practice). What's closest to your usual approach?",
+            options: [
+              { id: "A", text: "Think \"I'd like to do that\" and see if it happens when the moment feels right.", score: 1 },
+              { id: "B", text: "Try it once or twice and then see whether the habit continues on its own.", score: 2 },
+              { id: "C", text: "Choose a specific time and place (for example \"after breakfast at the kitchen table\") and link it to something you already do.", score: 4 },
+              { id: "D", text: "Make a mental note to do more of it at some point during the week.", score: 2 }
+            ]
+          },
+          {
+            id: "A8",
+            title: "Remembering to use a strategy",
+            text: "You've learned a planning strategy you know would help (for example, writing a short morning plan). How do you usually make sure you use it?",
+            options: [
+              { id: "A", text: "Rely on remembering it when a suitable moment comes up.", score: 1 },
+              { id: "B", text: "Wait until you feel really stuck and then try to recall what the strategy was.", score: 2 },
+              { id: "C", text: "Set a simple reminder or visual cue (for example, a sticky note or phone alert) tied to a specific moment in the day.", score: 4 },
+              { id: "D", text: "Intend to use it when your schedule feels a bit quieter.", score: 1 }
+            ]
+          }
+        ],
+        factors: {
+          "Planning & prioritisation": ["A1", "A2"],
+          "Facing hard decisions vs avoidance": ["A3", "A4"],
+          "Considering future consequences": ["A5", "A6"],
+          "Concrete follow-through planning": ["A7", "A8"]
+        }
+      },
+      B: {
+        title: "Version B",
+        questions: [
+          {
+            id: "B1",
+            title: "Weekend chores",
+            text: "It's Saturday and you have several chores: cleaning, food shopping, admin, and one enjoyable activity. How do you usually tackle it?",
+            options: [
+              { id: "A", text: "Start with whichever task feels most appealing at the time.", score: 2 },
+              { id: "B", text: "Do the quickest and easiest jobs first so you can build some momentum.", score: 3 },
+              { id: "C", text: "Take a few minutes to list everything, decide what really matters today, and plan an order and rough time slots.", score: 4 },
+              { id: "D", text: "Move between tasks and messages as they come up without much structure.", score: 1 }
+            ]
+          },
+          {
+            id: "B2",
+            title: "Overflowing inbox",
+            text: "Your email or message inbox is overflowing. What's your typical response?",
+            options: [
+              { id: "A", text: "Leave it for now and assume you'll spot what's important when you need to.", score: 1 },
+              { id: "B", text: "Skim through and reply to messages that catch your eye.", score: 2 },
+              { id: "C", text: "Sort messages quickly into groups (urgent, important, later) and deal with the high-impact ones first.", score: 4 },
+              { id: "D", text: "Ask someone else what they think you should focus on and mainly go with that.", score: 3 }
+            ]
+          },
+          {
+            id: "B3",
+            title: "Performance feedback",
+            text: "You suspect you'll get some uncomfortable feedback in an upcoming review or tutorial. What do you tend to do?",
+            options: [
+              { id: "A", text: "Try to put it to the back of your mind and focus on other things.", score: 1 },
+              { id: "B", text: "Think about moving or delaying the meeting to another time.", score: 1 },
+              { id: "C", text: "Keep the appointment, prepare a few questions, and think in advance about how you might respond constructively.", score: 4 },
+              { id: "D", text: "Attend the meeting but keep your involvement fairly minimal so you don't have to go into too much detail.", score: 2 }
+            ]
+          },
+          {
+            id: "B4",
+            title: "Health appointment",
+            text: "You've been putting off a health or dental check-up that you know would probably be useful. What usually happens?",
+            options: [
+              { id: "A", text: "You hold off booking until symptoms or discomfort become more noticeable.", score: 1 },
+              { id: "B", text: "You plan to call \"next week\" but don't usually set a specific time.", score: 2 },
+              { id: "C", text: "You pick a date, book the appointment, and make a quick note of questions or points to mention.", score: 4 },
+              { id: "D", text: "You mention it in conversation with others but don't typically take steps yourself.", score: 1 }
+            ]
+          },
+          {
+            id: "B5",
+            title: "Short-term gig vs training",
+            text: "You're offered a short-term job that pays quickly just as you're thinking about doing a course that could help your future work. What do you do?",
+            options: [
+              { id: "A", text: "Take the job and let the idea of the course drop for the time being.", score: 1 },
+              { id: "B", text: "Take the job now and keep the course in mind without making specific plans for it.", score: 2 },
+              { id: "C", text: "Weigh up both options and, if the course looks valuable, either choose it or plan the job in a way that still lets you start the course soon.", score: 4 },
+              { id: "D", text: "Leave both options open for now and see what happens over time.", score: 1 }
+            ]
+          },
+          {
+            id: "B6",
+            title: "Food choice",
+            text: "At lunchtime you're tired and hungry. You can grab fast food, or pick something a bit lighter or more balanced. What's closest to what you usually do?",
+            options: [
+              { id: "A", text: "Choose the option that's quickest and most satisfying in the moment.", score: 1 },
+              { id: "B", text: "Aim for a lighter choice but often switch to the quickest option when you're hungry.", score: 2 },
+              { id: "C", text: "Think about how you want to feel later in the day and week, and pick something that balances taste and health.", score: 4 },
+              { id: "D", text: "Sometimes skip a full lunch and then rely on whatever snacks are around later.", score: 1 }
+            ]
+          },
+          {
+            id: "B7",
+            title: "Learning project",
+            text: "You want to start learning something new (for example, a language or coding). How do you usually approach it?",
+            options: [
+              { id: "A", text: "Think it would be good to do and wait until you feel ready to begin.", score: 1 },
+              { id: "B", text: "Watch a few videos or download an app and see how far you get.", score: 2 },
+              { id: "C", text: "Decide exactly when and where you'll practise (for example \"15 minutes after dinner on weekdays\") and set it up in your calendar or app.", score: 4 },
+              { id: "D", text: "Mention it to someone close to you but don't usually make a concrete plan.", score: 2 }
+            ]
+          },
+          {
+            id: "B8",
+            title: "Budget habit",
+            text: "You decide it would help to review your spending regularly. What are you most likely to do?",
+            options: [
+              { id: "A", text: "Intend to look at your statements when money feels tight.", score: 1 },
+              { id: "B", text: "Open your banking app from time to time when it crosses your mind.", score: 2 },
+              { id: "C", text: "Pick a specific day and time (for example Sunday evening), set a reminder, and use the same simple checklist each time.", score: 4 },
+              { id: "D", text: "Decide in general to \"pay more attention\" to your spending without setting anything specific up.", score: 1 }
+            ]
+          }
+        ],
+        factors: {
+          "Planning & prioritisation": ["B1", "B2"],
+          "Facing hard decisions vs avoidance": ["B3", "B4"],
+          "Considering future consequences": ["B5", "B6"],
+          "Concrete follow-through planning": ["B7", "B8"]
+        }
+      }
+    };
+
+    const INTERPRETATIONS = {
+      factor: {
+        "Planning & prioritisation": {
+          developing:
+            "You tend to move into tasks as they appear or based on mood, rather than deciding what really matters first. This can work on simple days, but when things are busy it can leave you reacting rather than directing your time.",
+          mixed:
+            "You sometimes step back and organise your work, especially under pressure, but at other times you default to what is easiest or most appealing. A short daily planning routine could help you make the more structured style your default.",
+          strong:
+            "You often step back, list options and choose based on impact or deadlines. This kind of deliberate prioritisation supports better follow-through and less \"firefighting\" in complex workloads."
+        },
+        "Facing hard decisions vs avoidance": {
+          developing:
+            "You often put off awkward or effortful decisions, aim to deal with them later, or wait for others to raise or solve them. This is common, but it can keep problems hanging around and using up background mental energy.",
+          mixed:
+            "Sometimes you tackle difficult issues directly, especially when they become pressing, and sometimes you hold back or delay. Small \"do one piece today\" steps can shift you towards a more active, problem-solving stance.",
+          strong:
+            "You are generally willing to face uncomfortable tasks: you book the appointment, have the conversation, attend the meeting and prepare at least a little. This pattern is linked to less lingering stress and a greater sense of control."
+        },
+        "Considering future consequences": {
+          developing:
+            "You often lean towards what is comfortable or convenient in the moment and only loosely track how today's choice affects later energy, health or options. That is very human, but it can make longer-term goals harder to protect.",
+          mixed:
+            "You sometimes factor in tomorrow or next week, especially for bigger decisions, but in everyday situations immediate comfort or convenience easily wins. Simple \"future self\" prompts can help you use your longer-term thinking more consistently.",
+          strong:
+            "You regularly consider later consequences as well as how things feel now. You still allow room for enjoyment, but you actively balance this with how you want to feel later, which is a core element of sustainable self-control."
+        },
+        "Concrete follow-through planning": {
+          developing:
+            "You often stop at good intentions: you genuinely want to change things, but plans stay vague and rely on memory or motivation. This makes it harder for new habits and strategies to survive once life gets busy.",
+          mixed:
+            "Sometimes you set clear cues and reminders, especially for important changes, but at other times you rely on willpower or memory alone. A few simple \"if-then\" routines could help you make concrete planning your default.",
+          strong:
+            "You frequently translate intentions into specific times, places and cues. This kind of planning is strongly linked to better habit formation, adherence and goal progress."
+        }
+      },
+      overall: {
+        developing:
+          "Your current decision habits are mostly reactive, with planning, future focus and concrete follow-through used only now and then. Training can give you small, repeatable tools to move from drifting and delaying into more deliberate choices.",
+        mixed:
+          "You already use some helpful decision habits, especially when things really matter, but there is still inconsistency day to day. With regular practice you can make your better patterns (planning, facing issues early, clearer follow-through) more automatic.",
+        strong:
+          "You are already using many patterns that support clear, effective decisions under pressure: planning, facing issues early, balancing now and later, and setting specific plans. Training can still refine these, but your foundation is solid."
+      }
+    };
+
+    function App() {
+      const [selectedVersion, setSelectedVersion] = useState(null);
+      const [currentQuestion, setCurrentQuestion] = useState(0);
+      const [answers, setAnswers] = useState({});
+      const [showResults, setShowResults] = useState(false);
+
+      const version = selectedVersion ? VERSIONS[selectedVersion] : null;
+
+      const handleAnswer = (questionId, optionId, score) => {
+        setAnswers(prev => ({
+          ...prev,
+          [questionId]: { optionId, score }
+        }));
+      };
+
+      const handleNext = () => {
+        if (currentQuestion < version.questions.length - 1) {
+          setCurrentQuestion(prev => prev + 1);
+        } else {
+          setShowResults(true);
+        }
+      };
+
+      const handlePrevious = () => {
+        if (currentQuestion > 0) {
+          setCurrentQuestion(prev => prev - 1);
+        }
+      };
+
+      const handleRestart = () => {
+        setSelectedVersion(null);
+        setCurrentQuestion(0);
+        setAnswers({});
+        setShowResults(false);
+      };
+
+      const calculateResults = () => {
+        const factorScores = {};
+        let totalScore = 0;
+        let totalQuestions = 0;
+
+        Object.entries(version.factors).forEach(([factorName, questionIds]) => {
+          let factorTotal = 0;
+          let factorCount = 0;
+
+          questionIds.forEach(qId => {
+            if (answers[qId]) {
+              factorTotal += answers[qId].score;
+              factorCount++;
+            }
+          });
+
+          factorScores[factorName] = factorCount > 0 ? factorTotal / factorCount : 0;
+        });
+
+        Object.values(answers).forEach(answer => {
+          totalScore += answer.score;
+          totalQuestions++;
+        });
+
+        const overallScore = totalQuestions > 0 ? totalScore / totalQuestions : 0;
+
+        return { factorScores, overallScore };
+      };
+
+      const getScoreBand = score => {
+        if (score <= 2.0) return "developing";
+        if (score <= 3.0) return "mixed";
+        return "strong";
+      };
+
+      const getBandLabel = band => band.charAt(0).toUpperCase() + band.slice(1);
+
+      const getBandColor = band => {
+        switch (band) {
+          case "developing":
+            return "bg-orange-100 text-orange-800 border-orange-200";
+          case "mixed":
+            return "bg-yellow-100 text-yellow-800 border-yellow-200";
+          case "strong":
+            return "bg-green-100 text-green-800 border-green-200";
+          default:
+            return "bg-gray-100 text-gray-800 border-gray-200";
+        }
+      };
+
+      if (!selectedVersion) {
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
+            <div className="max-w-3xl mx-auto pt-12">
+              <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  Everyday Decision Habits Scale
+                </h1>
+                <p className="text-lg text-gray-600 mb-2">Mindware Lab, 2025</p>
+                <p className="text-gray-500 mb-8">License: CC BY 4.0</p>
+
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8">
+                  <p className="text-gray-700 leading-relaxed">
+                    This brief questionnaire helps you reflect on your typical decision-making patterns in everyday situations.
+                    Choose the version you'd like to complete. Each takes about 5 minutes and measures four core aspects of
+                    decision-making: planning &amp; prioritisation, facing hard decisions, considering future consequences,
+                    and concrete follow-through planning.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <button
+                    onClick={() => setSelectedVersion("A")}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-between group"
+                  >
+                    <span className="text-lg">Start Version A</span>
+                    <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedVersion("B")}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-between group"
+                  >
+                    <span className="text-lg">Start Version B</span>
+                    <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+
+                <p className="text-sm text-gray-500 mt-8 text-center">
+                  There are no right or wrong answers — this is about your current habits.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      if (showResults) {
+        const { factorScores, overallScore } = calculateResults();
+        const overallBand = getScoreBand(overallScore);
+
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 py-8">
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                <div className="flex items-center justify-between mb-8">
+                  <h1 className="text-3xl font-bold text-gray-900">Your Results</h1>
+                  <button
+                    onClick={handleRestart}
+                    className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium"
+                  >
+                    <RotateCcw className="w-5 h-5" />
+                    Restart
+                  </button>
+                </div>
+
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 mb-8">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-3">Overall Decision Habits Score</h2>
+                  <div className="flex items-center gap-4">
+                    <div className="text-5xl font-bold text-indigo-600">
+                      {overallScore.toFixed(2)}
+                    </div>
+                    <div>
+                      <span
+                        className={
+                          "inline-block px-4 py-2 rounded-lg font-semibold border " +
+                          getBandColor(overallBand)
+                        }
+                      >
+                        {getBandLabel(overallBand)}
+                      </span>
+                      <p className="text-sm text-gray-600 mt-2">Scale: 1.0 - 4.0</p>
+                    </div>
+                  </div>
+                  <p className="text-gray-700 mt-4 leading-relaxed">
+                    {INTERPRETATIONS.overall[overallBand]}
+                  </p>
+                </div>
+
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Factor Scores</h2>
+
+                <div className="space-y-6">
+                  {Object.entries(factorScores).map(([factorName, score]) => {
+                    const band = getScoreBand(score);
+                    return (
+                      <div key={factorName} className="border border-gray-200 rounded-lg p-6">
+                        <div className="flex items-start justify-between mb-3">
+                          <h3 className="text-lg font-semibold text-gray-900">{factorName}</h3>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-indigo-600">
+                              {score.toFixed(2)}
+                            </div>
+                            <span
+                              className={
+                                "inline-block px-3 py-1 rounded text-sm font-semibold border mt-1 " +
+                                getBandColor(band)
+                              }
+                            >
+                              {getBandLabel(band)}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-gray-700 leading-relaxed">
+                          {INTERPRETATIONS.factor[factorName][band]}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-8 bg-gray-50 rounded-lg p-6">
+                  <p className="text-gray-700 leading-relaxed mb-3">
+                    <strong>Note:</strong> This is not a clinical tool. Scores are intended to highlight everyday
+                    decision patterns and track change over time (for example, before and after a training programme).
+                  </p>
+                  <p className="text-gray-700 leading-relaxed">
+                    <strong>Ensure that you print this set of scores and store securely for your records.</strong>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      const question = version.questions[currentQuestion];
+      const currentAnswer = answers[question.id];
+      const progress = ((currentQuestion + 1) / version.questions.length) * 100;
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 py-8">
+          <div className="max-w-3xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold text-indigo-600">
+                    {version.title} • Question {currentQuestion + 1} of {version.questions.length}
+                  </h2>
+                  <button
+                    onClick={handleRestart}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <RotateCcw className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: progress + "%" }}
+                  />
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">{question.title}</h3>
+                <p className="text-lg text-gray-700 leading-relaxed">{question.text}</p>
+              </div>
+
+              <div className="space-y-3 mb-8">
+                {question.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(question.id, option.id, option.score)}
+                    className={
+                      "w-full text-left p-4 rounded-lg border-2 transition-all " +
+                      (currentAnswer && currentAnswer.optionId === option.id
+                        ? "border-indigo-600 bg-indigo-50"
+                        : "border-gray-200 hover:border-indigo-300 bg-white")
+                    }
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={
+                          "flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center " +
+                          (currentAnswer && currentAnswer.optionId === option.id
+                            ? "border-indigo-600 bg-indigo-600"
+                            : "border-gray-300")
+                        }
+                      >
+                        {currentAnswer && currentAnswer.optionId === option.id && (
+                          <CheckCircle className="w-4 h-4 text-white" />
+                        )}
+                      </div>
+                      <div>
+                        <span className="font-semibold text-gray-900">{option.id}.</span>
+                        <span className="text-gray-700 ml-2">{option.text}</span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                {currentQuestion > 0 && (
+                  <button
+                    onClick={handlePrevious}
+                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colours"
+                  >
+                    Previous
+                  </button>
+                )}
+                <button
+                  onClick={handleNext}
+                  disabled={!currentAnswer}
+                  className={
+                    "flex-1 py-3 px-6 rounded-lg font-semibold transition-colours flex items-center justify-center gap-2 " +
+                    (currentAnswer
+                      ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed")
+                  }
+                >
+                  {currentQuestion < version.questions.length - 1 ? "Next" : "See Results"}
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>
+

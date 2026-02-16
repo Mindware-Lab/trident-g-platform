@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cognitive Tracking Hub</title>
+
+  <!-- Shared brand CSS (your deep blue header kit) -->
+  <link rel="stylesheet" href="/iq-assessments/branding/brand.css">
+
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+  <style>
+    /* Hub-specific helpers (keeps brand.css clean) */
+    .grid { display: grid; gap: 12px; }
+    .grid2 { grid-template-columns: 1fr; }
+    @media (min-width: 860px){
+      .grid2 { grid-template-columns: 1fr 1fr; }
+    }
+
+    .sectionTitle{
+      margin: 4px 2px 0;
+      font-weight: 900;
+      font-size: 14px;
+      letter-spacing: 0.2px;
+      color: #111;
+    }
+
+    .sectionNote{
+      margin: 4px 2px 0;
+      font-size: 12px;
+      color: var(--grey-600);
+      line-height: 1.35;
+    }
+
+    .testRow{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(224,224,224,0.35);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .testMeta{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width: 0;
+    }
+
+    .testName{
+      font-weight: 900;
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .testDesc{
+      margin: 0;
+      font-size: 12px;
+      color: var(--grey-600);
+      line-height: 1.35;
+    }
+
+    .tagRow{ display:flex; gap:6px; flex-wrap:wrap; margin-top: 4px; }
+    .tag{
+      font-size: 11px;
+      font-weight: 800;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(39,100,183,0.08);
+      border: 1px solid rgba(39,100,183,0.18);
+      color: var(--deep);
+      white-space: nowrap;
+    }
+    .tagDone{
+      background: rgba(204,255,102,0.95);
+      border: 1px solid rgba(0,0,0,0.08);
+      color:#0B1A0B;
+    }
+
+    .rightCol{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:flex-end;
+      flex: 0 0 auto;
+    }
+
+    .miniRow{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+
+    .btnSmall{
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .input{
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,0.10);
+      padding: 10px 12px;
+      font-size: 13px;
+      outline: none;
+    }
+    .input:focus{
+      border-color: rgba(34,170,255,0.65);
+      box-shadow: 0 0 0 3px rgba(34,170,255,0.12);
+    }
+
+    .twoCol{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 600px){
+      .twoCol{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .muted{
+      font-size: 12px;
+      color: var(--grey-600);
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    .danger{
+      background: rgba(0,0,0,0.04);
+      border: 1px dashed rgba(0,0,0,0.15);
+      padding: 10px 12px;
+      border-radius: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="env,react">
+    const { useEffect, useMemo, useState } = React;
+
+    // --- Config ---
+    const HUB_VERSION = "ct_hub_v1";
+    const STORAGE_KEY = "ctHub_v1_state";
+
+    // Put your icon here: svg or png
+    const ICON_SRC = "/iq-assessments/branding/Trident-Icon.svg"; // change to .png if you prefer
+
+    const TESTS = [
+      // IQ Performance (one-time)
+      {
+        id: "sgs12a",
+        group: "IQ Performance",
+        name: "Short IQ test 1 (before training)",
+        url: "https://mindware-lab.github.io/iq-assessments/sgs12a/",
+        kind: "internal",
+        timing: "10–12 mins",
+        policy: "one_time"
+      },
+      {
+        id: "sgs12b",
+        group: "IQ Performance",
+        name: "Short IQ test 2 (after training)",
+        url: "https://mindware-lab.github.io/iq-assessments/sgs12b/",
+        kind: "internal",
+        timing: "10–12 mins",
+        policy: "one_time"
+      },
+      {
+        id: "mensa_dk",
+        group: "IQ Performance",
+        name: "Valid matrices IQ test 1",
+        url: "https://mensa.dk/iqtest/",
+        kind: "external",
+        timing: "30 mins",
+        policy: "one_time"
+      },
+      {
+        id: "mensa_no",
+        group: "IQ Performance",
+        name: "Valid matrices IQ test 2",
+        url: "https://test.mensa.no/home/test/en",
+        kind: "external",
+        timing: "25 mins",
+        policy: "one_time"
+      },
+
+      // Repeatable (pre/post)
+      {
+        id: "psi_cbs",
+        group: "IQ, Cognitive Health & AI–IQ Scale",
+        name: "Applied intelligence / AI test",
+        url: "https://mindware-lab.github.io/iq-assessments/psi-cbs/",
+        kind: "internal",
+        timing: "10–15 mins",
+        policy: "pre_post"
+      },
+      {
+        id: "crs10",
+        group: "Cognitive Resilience",
+        name: "Cognitive resilience test (CRS-10)",
+        url: "https://mindware-lab.github.io/iq-assessments/crs10/",
+        kind: "internal",
+        timing: "3–6 mins",
+        policy: "pre_post"
+      },
+      {
+        id: "edhs",
+        group: "Decision Making",
+        name: "Decision-making test (EDHS)",
+        url: "https://mindware-lab.github.io/iq-assessments/edhs/",
+        kind: "internal",
+        timing: "5–10 mins",
+        policy: "pre_post"
+      }
+    ];
+
+    const GROUP_ORDER = [
+      "IQ Performance",
+      "IQ, Cognitive Health & AI–IQ Scale",
+      "Cognitive Resilience",
+      "Decision Making"
+    ];
+
+    // --- UI bits ---
+    const BrandTopBar = ({ appName, subtitle, chipText, iconSrc }) => (
+      <div className="topbar">
+        <div className="brandleft">
+          <div className="icon">
+            <img src={iconSrc} alt="Trident icon" onError={(e)=>{ e.target.style.display='none'; }} />
+          </div>
+          <div>
+            <p className="title">{appName}</p>
+            <p className="subtitle">{subtitle}</p>
+          </div>
+        </div>
+        <div className="chip">{chipText}</div>
+      </div>
+    );
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return null;
+        const parsed = JSON.parse(raw);
+        if(parsed?.schemaVersion !== HUB_VERSION) return null;
+        return parsed;
+      }catch{
+        return null;
+      }
+    }
+
+    function saveState(state){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function nowISO(){
+      return new Date().toISOString();
+    }
+
+    const defaultState = {
+      schemaVersion: HUB_VERSION,
+      currentPhase: "pre", // "pre" | "post"
+      tests: {
+        // [testId]: { pre:{done,score,notes,ts}, post:{...}, one:{...} }
+      }
+    };
+
+    function ensureTestRecord(state, testId){
+      if(!state.tests[testId]){
+        state.tests[testId] = {
+          one: { done:false, score:"", notes:"", ts:"" },
+          pre: { done:false, score:"", notes:"", ts:"" },
+          post:{ done:false, score:"", notes:"", ts:"" }
+        };
+      }
+      return state;
+    }
+
+    function App(){
+      const [state, setState] = useState(() => loadState() || defaultState);
+      const [toast, setToast] = useState("");
+
+      useEffect(() => {
+        saveState(state);
+      }, [state]);
+
+      useEffect(() => {
+        if(!toast) return;
+        const t = setTimeout(() => setToast(""), 2200);
+        return () => clearTimeout(t);
+      }, [toast]);
+
+      const grouped = useMemo(() => {
+        const map = {};
+        for(const g of GROUP_ORDER) map[g] = [];
+        for(const t of TESTS){
+          if(!map[t.group]) map[t.group] = [];
+          map[t.group].push(t);
+        }
+        return map;
+      }, []);
+
+      const phase = state.currentPhase;
+
+      const markDone = (test, which) => {
+        setState(prev => {
+          const next = JSON.parse(JSON.stringify(prev));
+          ensureTestRecord(next, test.id);
+          next.tests[test.id][which].done = true;
+          next.tests[test.id][which].ts = nowISO();
+          return next;
+        });
+        setToast("Saved");
+      };
+
+      const setScore = (test, which, value) => {
+        setState(prev => {
+          const next = JSON.parse(JSON.stringify(prev));
+          ensureTestRecord(next, test.id);
+          next.tests[test.id][which].score = value;
+          return next;
+        });
+      };
+
+      const setNotes = (test, which, value) => {
+        setState(prev => {
+          const next = JSON.parse(JSON.stringify(prev));
+          ensureTestRecord(next, test.id);
+          next.tests[test.id][which].notes = value;
+          return next;
+        });
+      };
+
+      const openTest = (test) => {
+        window.open(test.url, "_blank", "noopener,noreferrer");
+      };
+
+      const exportJSON = () => {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "cognitive-tracking-export.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      const importJSON = () => {
+        const raw = prompt("Paste exported JSON here:");
+        if(!raw) return;
+        try{
+          const parsed = JSON.parse(raw);
+          if(parsed?.schemaVersion !== HUB_VERSION){
+            alert("That JSON does not match this hub schema.");
+            return;
+          }
+          setState(parsed);
+          setToast("Imported");
+        }catch{
+          alert("Could not parse JSON.");
+        }
+      };
+
+      const resetAll = () => {
+        if(!confirm("Reset all locally saved hub data?")) return;
+        localStorage.removeItem(STORAGE_KEY);
+        setState(defaultState);
+        setToast("Reset");
+      };
+
+      const getRec = (test) => {
+        const rec = (state.tests && state.tests[test.id]) ? state.tests[test.id] : null;
+        if(!rec) return null;
+        if(test.policy === "one_time") return rec.one;
+        return rec[phase];
+      };
+
+      const whichKey = (test) => (test.policy === "one_time" ? "one" : phase);
+
+      const statusTag = (rec, test) => {
+        if(!rec) return <span className="tag">Not started</span>;
+        if(rec.done) return <span className="tag tagDone">Completed</span>;
+        if((rec.score && rec.score.trim().length>0) || (rec.notes && rec.notes.trim().length>0)) return <span className="tag">In progress</span>;
+        return <span className="tag">Not started</span>;
+      };
+
+      return (
+        <div className="screen">
+          <BrandTopBar
+            appName="Cognitive Tracking Hub"
+            subtitle="Local-first tracking for pre / post measures"
+            chipText={phase.toUpperCase()}
+            iconSrc={ICON_SRC}
+          />
+
+          <div className="content">
+            <div className="card">
+              <h1 className="h1">Your test battery</h1>
+              <p className="p">
+                IQ Performance tests are one-time. The other measures can be taken pre and post training. Results are saved locally in your browser.
+              </p>
+
+<div className="btnRow">
+  <button
+    className={"btn " + (phase === "pre" ? "btnPrimary" : "btnSecondary")}
+    onClick={() => setState(prev => ({...prev, currentPhase:"pre"}))}
+  >
+    Set phase: PRE
+  </button>
+
+  <button
+    className={"btn " + (phase === "post" ? "btnPrimary" : "btnSecondary")}
+    onClick={() => setState(prev => ({...prev, currentPhase:"post"}))}
+  >
+    Set phase: POST
+  </button>
+
+  <button className="btn btnPrimary" onClick={exportJSON}>Export JSON</button>
+  <button className="btn btnSecondary" onClick={importJSON}>Import JSON</button>
+</div>
+
+              <div className="danger" style={{marginTop:"10px"}}>
+                <p className="muted">
+                  Tip: if you switch devices or clear browser data, local results can be lost. Export JSON for backup.
+                </p>
+              </div>
+
+              {toast && (
+                <div style={{
+                  marginTop:"10px",
+                  padding:"10px 12px",
+                  borderRadius:"14px",
+                  background:"rgba(204,255,102,0.75)",
+                  fontWeight:900,
+                  fontSize:"12px"
+                }}>
+                  {toast}
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid2">
+              {GROUP_ORDER.map(groupName => (
+                <div className="card" key={groupName}>
+                  <div className="sectionTitle">{groupName}</div>
+                  <div className="sectionNote">
+                    {groupName === "IQ Performance"
+                      ? "One-time measures. For the Mensa tests, record your score manually after completing."
+                      : `Repeatable measures. You are currently logging: ${phase.toUpperCase()}.`
+                    }
+                  </div>
+
+                  <div style={{marginTop:"10px"}} className="grid">
+                    {grouped[groupName].map(test => {
+                      const rec = getRec(test);
+                      const key = whichKey(test);
+
+                      return (
+                        <div className="testRow" key={test.id}>
+                          <div className="testMeta">
+                            <p className="testName">{test.name}</p>
+                            <p className="testDesc">
+                              {test.kind === "external" ? "External test" : "Internal test"} • {test.timing}
+                            </p>
+                            <div className="tagRow">
+                              {statusTag(rec, test)}
+                              <span className="tag">{test.policy === "one_time" ? "One-time" : "Pre/Post"}</span>
+                              <span className="tag">{test.kind === "external" ? "Manual score" : "Auto page"}</span>
+                            </div>
+
+                            <div className="twoCol" style={{marginTop:"10px"}}>
+                              <input
+                                className="input"
+                                placeholder="Score (optional)"
+                                value={rec?.score || ""}
+                                onChange={(e)=>setScore(test, key, e.target.value)}
+                              />
+                              <input
+                                className="input"
+                                placeholder="Notes (optional: conditions, sleep, focus, etc.)"
+                                value={rec?.notes || ""}
+                                onChange={(e)=>setNotes(test, key, e.target.value)}
+                              />
+                            </div>
+
+                            {rec?.ts && (
+                              <p className="muted" style={{marginTop:"8px"}}>
+                                Last marked complete: {new Date(rec.ts).toLocaleString()}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="rightCol">
+                            <div className="miniRow">
+                              <button className="btn btnPrimary btnSmall" onClick={()=>openTest(test)}>
+                                Open
+                              </button>
+                              <button
+                                className="btn btnSecondary btnSmall"
+                                onClick={()=>markDone(test, key)}
+                                disabled={test.policy === "one_time" && rec?.done}
+                                style={{
+                                  opacity: (test.policy === "one_time" && rec?.done) ? 0.6 : 1,
+                                  cursor: (test.policy === "one_time" && rec?.done) ? "not-allowed" : "pointer"
+                                }}
+                              >
+                                {test.policy === "one_time" && rec?.done ? "Locked" : "Mark complete"}
+                              </button>
+                            </div>
+
+                            <div className="muted" style={{textAlign:"right", maxWidth:"180px"}}>
+                              {test.kind === "external"
+                                ? "After finishing, come back here and record your score."
+                                : "Open the test in a new tab, then return here."
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="card">
+              <div className="sectionTitle">Admin</div>
+              <p className="sectionNote">
+                This only resets the Hub’s local tracking data, not the individual test apps’ local storage.
+              </p>
+              <div className="btnRow">
+                <button className="btn btnSecondary" onClick={resetAll}>Reset hub data</button>
+                <a className="btn btnPrimary" style={{textDecoration:"none", display:"inline-flex", alignItems:"center"}}
+                   href="https://mindware-lab.github.io/iq-assessments/"
+                >
+                  Back to iq-assessments
+                </a>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="footer">
+            <span>Local-first • Schema: {HUB_VERSION}</span>
+            <a className="link" href="https://mindware-lab.github.io/iq-assessments/" target="_self">Home</a>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

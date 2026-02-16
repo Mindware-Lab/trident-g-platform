@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SgS-12 A – Short g Scale</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Item definitions – SgS-12 Form A
+    // Matrix items (ICAR q-IDs in comments):
+    // AM1 = q12043 (D), AM2 = q12044 (C), AM3 = q12054 (A), AM4 = q12056 (E), AM5 = q12050 (E)
+    const ITEMS = [
+      // Matrices
+      {
+        id: 'AM1',
+        kind: 'matrix',
+        stemImageUrl: './images/matrices/AM1.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
+        correctOptionIndex: 3, // D
+      },
+      {
+        id: 'AM2',
+        kind: 'matrix',
+        stemImageUrl: './images/matrices/AM2.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
+        correctOptionIndex: 2, // C
+      },
+      {
+        id: 'AM3',
+        kind: 'matrix',
+        stemImageUrl: './images/matrices/AM3.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
+        correctOptionIndex: 0, // A
+      },
+      {
+        id: 'AM4',
+        kind: 'matrix',
+        stemImageUrl: './images/matrices/AM4.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
+        correctOptionIndex: 4, // E
+      },
+      {
+        id: 'AM5',
+        kind: 'matrix',
+        stemImageUrl: './images/matrices/AM5.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
+        correctOptionIndex: 4, // E
+      },
+      // Verbal reasoning
+      {
+        id: 'VR1',
+        kind: 'verbal',
+        stemText:
+          'Joshua is 12 years old and his sister is three times as old as he. When Joshua is 23 years old, how old will his sister be?',
+        responseOptions: ['35', '39', '44', '47', '53', '57', 'None of these', "I don't know"],
+        correctOptionIndex: 3, // 47
+      },
+      {
+        id: 'VR2',
+        kind: 'verbal',
+        stemText:
+          'What number is one fifth of one fourth of one ninth of 900?',
+        responseOptions: ['2', '3', '4', '5', '6', '7', 'None of these', "I don't know"],
+        correctOptionIndex: 3, // 5
+      },
+      {
+        id: 'VR3',
+        kind: 'verbal',
+        stemText:
+          'Please mark the word that does not match the other words: (1) Sycamore (2) Buckeye (3) Elm (4) Daffodil (5) Hickory (6) Sequoia',
+        responseOptions: ['1', '2', '3', '4', '5', '6', 'None of these', "I don't know"],
+        correctOptionIndex: 3, // 4 (Daffodil)
+      },
+      // Series
+      {
+        id: 'SR1',
+        kind: 'series',
+        stemText:
+          'In the following number series, what number comes next? 64, 81, 100, 121, 144, …',
+        responseOptions: ['154', '156', '162', '169', '178', '196', 'None of these', "I don't know"],
+        correctOptionIndex: 3, // 169
+      },
+      {
+        id: 'SR2',
+        kind: 'series',
+        stemText:
+          'In the following alphanumeric series, what letter comes next? Q, S, N, P, L, …',
+        responseOptions: ['J', 'H', 'I', 'N', 'M', 'L', 'None of these', "I don't know"],
+        correctOptionIndex: 3, // N (FIXED)
+      },
+      // 3D rotation
+      {
+        id: 'AR1',
+        kind: 'rotation',
+        stemImageUrl: './images/rotation/AR1.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+        correctOptionIndex: 5,
+      },
+      {
+        id: 'AR2',
+        kind: 'rotation',
+        stemImageUrl: './images/rotation/AR2.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+        correctOptionIndex: 1,
+      },
+    ];
+
+    // Scoring and interpretation functions
+    function getBand(raw) {
+      if (raw <= 3) return 'low';
+      if (raw <= 7) return 'typical';
+      if (raw <= 9) return 'high';
+      return 'veryHigh';
+    }
+
+    function rsIq(raw) {
+      const mean = 5.4;
+      const sd = 1.6;
+      return Math.round(100 + 15 * ((raw - mean) / sd));
+    }
+
+    function getBandLabel(band) {
+      const labels = {
+        low: 'Lower than typical range',
+        typical: 'Typical range',
+        high: 'Higher than typical range',
+        veryHigh: 'Very high range',
+      };
+      return labels[band];
+    }
+
+    function getBandDescription(band) {
+      const descriptions = {
+        low: 'Your score falls below the typical adult range. This could reflect tiredness, anxiety, unfamiliarity with the test format, or genuine difficulty with abstract reasoning. Consider retaking the test under less stressful conditions if you suspect external factors affected your performance.',
+        typical: 'Your score falls within the broad typical range. You demonstrate reasonable ability to spot patterns and solve novel problems. This is representative of many adults tested on this kind of task.',
+        high: 'Your score is above average. You found the pattern puzzles fairly natural once the format became clear. You perform well on abstract reasoning tasks.',
+        veryHigh: 'Your score is in the very high range, indicating strong abstract reasoning ability. At this level, small differences in raw scores are not particularly meaningful.',
+      };
+      return descriptions[band];
+    }
+
+    // Start screen
+    function StartScreen({ onStart }) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
+            <h1 className="text-4xl font-bold text-gray-800 mb-4 text-center">
+              Short g Scale – SgS-12 A
+            </h1>
+            <p className="text-gray-600 text-lg mb-8 text-center leading-relaxed">
+              A 12-item reasoning snapshot measuring matrices, verbal, series and 3D rotation.
+              There are no time limits, but most people finish in around 5–10 minutes.
+            </p>
+            <button
+              onClick={onStart}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            >
+              Start test
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // Item screen
+    function ItemScreen({
+      item,
+      itemIndex,
+      totalItems,
+      selectedOption,
+      onSelectOption,
+      onNext,
+      onPrev,
+    }) {
+      const isAnswered = selectedOption !== null;
+      const isLast = itemIndex === totalItems - 1;
+
+      return (
+        <div className="min-h-screen bg-gray-50 p-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="mb-6">
+              <div className="text-sm text-gray-600 font-medium">
+                Question {itemIndex + 1} of {totalItems}
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div
+                  className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${((itemIndex + 1) / totalItems) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-md p-8 mb-6">
+              {/* Stem */}
+              {item.kind === 'matrix' || item.kind === 'rotation' ? (
+                <div className="mb-8 text-center">
+                  <img
+                    src={item.stemImageUrl}
+                    alt="Reasoning puzzle"
+                    className="max-w-full h-auto mx-auto max-h-96 object-contain"
+                  />
+                </div>
+              ) : (
+                <p className="text-lg text-gray-700 mb-8 leading-relaxed">
+                  {item.stemText}
+                </p>
+              )}
+
+              {/* Response options */}
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                {item.responseOptions.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => onSelectOption(idx)}
+                    className={`py-3 px-4 rounded-lg font-medium transition-all ${
+                      selectedOption === idx
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <div className="flex gap-4">
+              <button
+                onClick={onPrev}
+                disabled={itemIndex === 0}
+                className="flex-1 py-3 px-4 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Previous
+              </button>
+              <button
+                onClick={onNext}
+                disabled={!isAnswered}
+                className="flex-1 py-3 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLast ? 'See results' : 'Next'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Results screen
+    function ResultsScreen({ rawScore, onRestart }) {
+      const band = getBand(rawScore);
+      const bandLabel = getBandLabel(band);
+      const description = getBandDescription(band);
+      const iq = rsIq(rawScore);
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+                Your Results
+              </h2>
+
+              {/* Raw score */}
+              <div className="bg-indigo-50 rounded-lg p-6 mb-8 text-center border-2 border-indigo-200">
+                <div className="text-5xl font-bold text-indigo-600 mb-2">
+                  {rawScore}
+                </div>
+                <div className="text-gray-600 font-medium">
+                  Raw score (out of 12)
+                </div>
+              </div>
+
+              {/* Band interpretation */}
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  Score band: {bandLabel}
+                </h3>
+                <p className="text-gray-700 leading-relaxed">
+                  {description}
+                </p>
+              </div>
+
+              {/* RS-IQ */}
+              <div className="bg-blue-50 rounded-lg p-6 mb-8 border-2 border-blue-200">
+                <div className="text-center mb-4">
+                  <div className="text-4xl font-bold text-blue-600 mb-1">
+                    RS-IQ {iq}
+                  </div>
+                  <div className="text-gray-600 font-medium text-sm">
+                    Reasoning Snapshot IQ-equivalent
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600 text-center mt-4 pt-4 border-t border-blue-200">
+                  RS-IQ is an internal Reasoning Snapshot IQ-equivalent score, based on adult
+                  internet-sample norms. It is not a clinical IQ score and should not be
+                  interpreted as a WAIS score.
+                </div>
+              </div>
+
+              {/* Correspondence guide */}
+              <div className="bg-gray-50 rounded-lg p-6 mb-8">
+                <h4 className="font-bold text-gray-800 mb-3">Typical score ranges:</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="text-gray-700">
+                    <span className="font-semibold">0–3:</span> RS-IQ &lt; ~85
+                  </div>
+                  <div className="text-gray-700">
+                    <span className="font-semibold">4–7:</span> ~85–115
+                  </div>
+                  <div className="text-gray-700">
+                    <span className="font-semibold">8–9:</span> ~115–125
+                  </div>
+                  <div className="text-gray-700">
+                    <span className="font-semibold">10–12:</span> 125+
+                  </div>
+                </div>
+              </div>
+
+              {/* Restart button */}
+              <button
+                onClick={onRestart}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              >
+                Restart test
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Main app
+    function SgS12AApp() {
+      const [screen, setScreen] = useState('start'); // 'start', 'test', 'results'
+      const [currentItemIndex, setCurrentItemIndex] = useState(0);
+      const [answers, setAnswers] = useState(new Array(ITEMS.length).fill(null));
+
+      const handleStart = () => {
+        setScreen('test');
+        setCurrentItemIndex(0);
+        setAnswers(new Array(ITEMS.length).fill(null));
+      };
+
+      const handleSelectOption = (optionIndex) => {
+        const newAnswers = [...answers];
+        newAnswers[currentItemIndex] = optionIndex;
+        setAnswers(newAnswers);
+      };
+
+      const handleNext = () => {
+        if (currentItemIndex < ITEMS.length - 1) {
+          setCurrentItemIndex(currentItemIndex + 1);
+        } else {
+          // Finished: show results (rawScore computed in render)
+          setScreen('results');
+        }
+      };
+
+      const handlePrev = () => {
+        if (currentItemIndex > 0) {
+          setCurrentItemIndex(currentItemIndex - 1);
+        }
+      };
+
+      const handleRestart = () => {
+        setScreen('start');
+        setCurrentItemIndex(0);
+        setAnswers(new Array(ITEMS.length).fill(null));
+      };
+
+      if (screen === 'start') {
+        return <StartScreen onStart={handleStart} />;
+      }
+
+      if (screen === 'test') {
+        const currentItem = ITEMS[currentItemIndex];
+        return (
+          <ItemScreen
+            item={currentItem}
+            itemIndex={currentItemIndex}
+            totalItems={ITEMS.length}
+            selectedOption={answers[currentItemIndex]}
+            onSelectOption={handleSelectOption}
+            onNext={handleNext}
+            onPrev={handlePrev}
+          />
+        );
+      }
+
+      if (screen === 'results') {
+        const rawScore = answers.reduce((sum, answer, idx) => {
+          if (answer === ITEMS[idx].correctOptionIndex) {
+            return sum + 1;
+          }
+          return sum;
+        }, 0);
+        return <ResultsScreen rawScore={rawScore} onRestart={handleRestart} />;
+      }
+
+      return null;
+    }
+
+    // Render
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<SgS12AApp />);
+  </script>
+</body>
+</html>
