@@ -313,7 +313,8 @@
         fixedTimepoint: "PRE",
         scheduleLabel: "PRE only",
         whenText: "Take once before training.",
-        whatText: "Short internal IQ form A used as your pre-training anchor."
+        whatText: "Short internal IQ form A used as your pre-training anchor.",
+        credentialsText: "This short form uses ICAR-style reasoning item families (e.g., matrices, series, verbal and rotation tasks). Treat it as an indicative tracker unless you run separate norming/validation for this exact short form."
       },
       {
         id: "sgs12b",
@@ -326,7 +327,8 @@
         fixedTimepoint: "POST",
         scheduleLabel: "POST only",
         whenText: "Take once after training.",
-        whatText: "Short internal IQ form B used at programme end for PRE vs POST comparison."
+        whatText: "Short internal IQ form B used at programme end for PRE vs POST comparison.",
+        credentialsText: "Same evidence basis as the PRE short form: ICAR-style item families with published bank-level validation, but this exact short form is best interpreted as a practical change tracker."
       },
       {
         id: "mensa_dk",
@@ -339,7 +341,8 @@
         fixedTimepoint: "PRE",
         scheduleLabel: "Optional baseline",
         whenText: "Optional baseline only.",
-        whatText: "Unofficial online practice-style matrix test for a rough baseline indication."
+        whatText: "Unofficial online practice-style matrix test for a rough baseline indication.",
+        credentialsText: "Mensa online matrix challenge intended as an unofficial screening/practice-style test. Useful for a rough indication only, not a supervised professional IQ assessment."
       },
       {
         id: "mensa_no",
@@ -352,7 +355,8 @@
         fixedTimepoint: "FOLLOW_UP",
         scheduleLabel: "Optional delayed re-test",
         whenText: "Optional long-delayed re-test only (e.g., months later).",
-        whatText: "Unofficial online practice-style matrix re-check for delayed comparison."
+        whatText: "Unofficial online practice-style matrix re-check for delayed comparison.",
+        credentialsText: "Same positioning as the baseline Mensa link: unofficial matrix challenge for rough comparison over time, not a formal diagnostic measure."
       },
       {
         id: "psi_cbs",
@@ -364,7 +368,8 @@
         schedule: "repeatable",
         scheduleLabel: "PRE + weekly + POST + follow-up",
         whenText: "Take at PRE, weekly during training, POST, and optional 4-week follow-up.",
-        whatText: "Self-report of real-world mental bandwidth across work, study, and life."
+        whatText: "Self-report of real-world mental bandwidth across work, study, and life.",
+        credentialsText: "Pilot evidence supports the intended structure and internal consistency, but with a small sample. Treat as a practical programme tracker rather than a clinical instrument."
       },
       {
         id: "crs10",
@@ -376,7 +381,8 @@
         schedule: "pre_post_optional_checkin",
         scheduleLabel: "PRE + POST (optional check-ins)",
         whenText: "Take at PRE and POST, with optional midpoint or follow-up checks.",
-        whatText: "Tracks how steadily you function under cognitive pressure."
+        whatText: "Tracks how steadily you function under cognitive pressure.",
+        credentialsText: "CRS-10 has published psychometric support in available validation studies (including factor structure and reliability), making it suitable for resilience trend tracking."
       },
       {
         id: "edhs",
@@ -388,13 +394,14 @@
         schedule: "pre_post",
         scheduleLabel: "PRE + POST only",
         whenText: "Take once before training and once after training.",
-        whatText: "Captures higher-level habit shift in everyday decision making across the programme."
+        whatText: "Captures higher-level habit shift in everyday decision making across the programme.",
+        credentialsText: "EDHS in this app should be treated as an in-progress programme scale: useful for self-tracking and feedback, but not yet a settled clinical/diagnostic measure."
       }
     ];
 
     const GROUP_ORDER = [
-      "IQ Performance",
       "Bandwidth Tracking",
+      "IQ Performance",
       "Cognitive Resilience",
       "Decision Habits"
     ];
@@ -894,6 +901,11 @@
                                 <ul className="checkList">
                                   {FAIR_RESULTS_CHECKLIST.map(item => <li key={item}>{item}</li>)}
                                 </ul>
+                              </details>
+
+                              <details className="infoBlock">
+                                <summary>Credentials (quick view)</summary>
+                                <p className="muted">{test.credentialsText}</p>
                               </details>
                             </div>
 
