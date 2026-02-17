@@ -625,7 +625,7 @@
       const fallback = normalizeZoneHandoff(safeParse(localStorage.getItem(FALLBACK_ZONE_TO_CAPACITY_KEY), null));
       const selected = primary || fallback;
       if (!selected) {
-        setLastStateReason('No saved Zone Coach handoff found. Run Zone Coach first, then import.');
+        setLastStateReason('No Zone Coach result imported yet. Run Zone Coach, then import here.');
         return;
       }
       applyZoneHandoff(selected.raw);
@@ -666,7 +666,7 @@
       setZoneHandoff(null);
       setZoneMode('light');
       setBreathRoutine('amplify');
-      setLastStateReason('No Zone Coach handoff found yet. Run Zone Coach and import the result before training. Defaulting to light mode for safety.');
+      setLastStateReason('');
     }, []);
 
     useEffect(() => {
@@ -1846,7 +1846,7 @@
               </button>
             </div>
             <p style={{ margin: '8px 0 0 0', fontSize: '17px', lineHeight: 1.3, color: '#1F2F44' }}>
-              Instruction: after you complete the full Zone Coach flow (to the final result screen), click <b>Import latest Zone result</b> once to apply that readiness gate in Capacity Coach.
+              Complete the Zone Coach flow, then click <b>Import latest Zone result</b> once to apply that gate in Capacity Coach.
             </p>
             {showEmbeddedZoneCoach ? (
               <div style={{ marginTop: '10px', border: '1px solid #E0E0E0', borderRadius: '14px', overflow: 'hidden' }}>
@@ -1868,10 +1868,10 @@
               </p>
             ) : (
               <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#555555' }}>
-                No Zone Coach handoff found yet on this browser.
+                {lastStateReason || 'No Zone Coach result imported yet. Run Zone Coach, then import here. Using LIGHT mode for now.'}
               </p>
             )}
-            {lastStateReason ? (
+            {zoneHandoff && lastStateReason ? (
               <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>
                 {lastStateReason}
               </p>
