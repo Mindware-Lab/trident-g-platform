@@ -45,10 +45,22 @@
     PROGRAM_V11: 'iqmw.capacity.program.v1',
     SESSIONS_V11: 'iqmw.capacity.sessions.v1',
     MISSIONS_V11: 'iqmw.capacity.missions.v1',
-    ZONE_TO_CAPACITY: 'iqmw.capacity.handoffFromZone'
+    ZONE_TO_CAPACITY: 'iqmw.capacity.handoffFromZone',
+    CYCLE_ARCHIVE: 'iqmw.capacity.cycleArchive.v1'
   };
 
   const PROGRAM_TARGET = 24;
+  const REBOOT_CONFIRM_PHRASE = 'RESET 24';
+  const CYCLE_ARCHIVE_MAX = 12;
+  const CYCLE_RESET_KEYS = [
+    STORAGE.PROGRESS,
+    STORAGE.PROGRESS_LEGACY,
+    STORAGE.CAPACITY_LAST_GAME,
+    STORAGE.CAPACITY_LAST_SESSION,
+    STORAGE.PROGRAM_V11,
+    STORAGE.SESSIONS_V11,
+    STORAGE.MISSIONS_V11
+  ];
   const SESSION_TYPES = ['TUNE', 'EXPLORE', 'TIGHTEN', 'PROBE', 'RECHECK', 'RESET'];
   const GAME_ENUM = {
     classic: 'CLASSIC',
@@ -407,6 +419,8 @@
     const [zoneHandoff, setZoneHandoff] = useState(null);
     const [showEmbeddedZoneCoach, setShowEmbeddedZoneCoach] = useState(false);
     const [zoneEmbedNonce, setZoneEmbedNonce] = useState(0);
+    const [cycleConfirmText, setCycleConfirmText] = useState('');
+    const [cycleStatus, setCycleStatus] = useState('');
     const [quickCheck, setQuickCheck] = useState({
       level_played: '',
       felt_difficulty: 'ok',
@@ -690,6 +704,99 @@
       ? new Date(zoneHandoff.timestamp).toLocaleString()
       : null;
     const zoneModeLabel = zoneMode === 'reset' ? 'RESET' : (zoneMode === 'light' ? 'LIGHT' : 'FULL');
+
+    const readCycleArchive = () => {
+      const parsed = safeParse(localStorage.getItem(STORAGE.CYCLE_ARCHIVE), []);
+      return Array.isArray(parsed) ? parsed : [];
+    };
+    const writeCycleArchive = (rows) => {
+      try { localStorage.setItem(STORAGE.CYCLE_ARCHIVE, JSON.stringify(rows)); } catch {}
+    };
+    const downloadSnapshotJson = (snapshot) => {
+      try {
+        const stamp = String(snapshot.created_at || new Date().toISOString()).replace(/[:.]/g, '-');
+        const filename = 'capacity-cycle-backup-' + stamp + '.json';
+        const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json;charset=utf-8' });
+        const href = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = href;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(href), 1000);
+      } catch {}
+    };
+    const buildCycleSnapshot = () => ({
+      schemaVersion: 'capacity_cycle_archive_v1',
+      app: 'iq-capacity-coach',
+      created_at: new Date().toISOString(),
+      program_target: PROGRAM_TARGET,
+      data: {
+        progress,
+        settingsV11,
+        programV11,
+        sessionsV11,
+        missionsV11,
+        zoneHandoff: safeParse(localStorage.getItem(STORAGE.ZONE_TO_CAPACITY), null),
+        fallbackZoneHandoff: safeParse(localStorage.getItem(FALLBACK_ZONE_TO_CAPACITY_KEY), null)
+      }
+    });
+    const backupCurrentCycle = ({ downloadFile = true } = {}) => {
+      const snapshot = buildCycleSnapshot();
+      const archive = readCycleArchive();
+      archive.push(snapshot);
+      while (archive.length > CYCLE_ARCHIVE_MAX) archive.shift();
+      writeCycleArchive(archive);
+      if (downloadFile) downloadSnapshotJson(snapshot);
+      return snapshot;
+    };
+    const backupNow = () => {
+      backupCurrentCycle({ downloadFile: true });
+      setCycleStatus('Backup saved locally and downloaded as JSON.');
+    };
+    const startNewCycleWithBackup = () => {
+      if (cycleConfirmText.trim() !== REBOOT_CONFIRM_PHRASE) {
+        setCycleStatus('Type "' + REBOOT_CONFIRM_PHRASE + '" first to confirm safe reboot.');
+        return;
+      }
+      backupCurrentCycle({ downloadFile: true });
+      CYCLE_RESET_KEYS.forEach((key) => localStorage.removeItem(key));
+      setCycleStatus('New 24-session cycle created. Backup saved. Reloading now...');
+      setTimeout(() => window.location.reload(), 250);
+    };
+    const restoreLatestBackup = () => {
+      const archive = readCycleArchive();
+      if (!archive.length) {
+        setCycleStatus('No backup archive found yet on this browser.');
+        return;
+      }
+      const latest = asObject(archive[archive.length - 1]);
+      const data = asObject(latest.data);
+      if (Object.keys(data).length === 0) {
+        setCycleStatus('Latest backup is invalid. Nothing restored.');
+        return;
+      }
+      if (data.progress) saveProgress(data.progress);
+      else {
+        localStorage.removeItem(STORAGE.PROGRESS);
+        localStorage.removeItem(STORAGE.PROGRESS_LEGACY);
+      }
+      if (data.settingsV11) localStorage.setItem(STORAGE.SETTINGS_V11, JSON.stringify(data.settingsV11));
+      else localStorage.removeItem(STORAGE.SETTINGS_V11);
+      if (data.programV11) localStorage.setItem(STORAGE.PROGRAM_V11, JSON.stringify(data.programV11));
+      else localStorage.removeItem(STORAGE.PROGRAM_V11);
+      if (Array.isArray(data.sessionsV11)) localStorage.setItem(STORAGE.SESSIONS_V11, JSON.stringify(data.sessionsV11));
+      else localStorage.removeItem(STORAGE.SESSIONS_V11);
+      if (Array.isArray(data.missionsV11)) localStorage.setItem(STORAGE.MISSIONS_V11, JSON.stringify(data.missionsV11));
+      else localStorage.removeItem(STORAGE.MISSIONS_V11);
+      if (data.zoneHandoff) localStorage.setItem(STORAGE.ZONE_TO_CAPACITY, JSON.stringify(data.zoneHandoff));
+      else localStorage.removeItem(STORAGE.ZONE_TO_CAPACITY);
+      if (data.fallbackZoneHandoff) localStorage.setItem(FALLBACK_ZONE_TO_CAPACITY_KEY, JSON.stringify(data.fallbackZoneHandoff));
+      else localStorage.removeItem(FALLBACK_ZONE_TO_CAPACITY_KEY);
+      setCycleStatus('Latest backup restored. Reloading now...');
+      setTimeout(() => window.location.reload(), 250);
+    };
 
     const parseRecoveryBlocks = () => {
       const parsed = recoveryBlocksCsv
@@ -1792,6 +1899,39 @@
                 <p style={{ marginTop: '8px', fontSize: '13px', color: '#555555' }}>{notCountedNote}</p>
               ) : null}
             </details>
+            <div style={{ marginTop: '12px', padding: '12px', border: '1px dashed #C6D8F2', borderRadius: '12px', background: '#FAFCFF' }}>
+              <p style={{ margin: 0, fontWeight: 900 }}>Cycle controls (safe)</p>
+              <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: '#333333' }}>
+                At or after 24/24, you can start a fresh cycle without clearing browser data globally.
+              </p>
+              <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: '#333333' }}>
+                Type <b>{REBOOT_CONFIRM_PHRASE}</b> to unlock safe reboot.
+              </p>
+              <input
+                type="text"
+                value={cycleConfirmText}
+                onChange={(e) => { setCycleConfirmText(e.target.value); setCycleStatus(''); }}
+                placeholder={'Type ' + REBOOT_CONFIRM_PHRASE}
+                style={{ marginTop: '8px', width: '100%', padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}
+              />
+              <div className="btnRow" style={{ marginTop: '10px' }}>
+                <button className="btn" style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', color: '#333333' }} onClick={backupNow}>
+                  Backup now (JSON)
+                </button>
+                <button className="btn" style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#143A73' }} onClick={restoreLatestBackup}>
+                  Restore latest backup
+                </button>
+                <button className="btn btnPrimary" onClick={startNewCycleWithBackup}>
+                  Start new 24-session cycle
+                </button>
+              </div>
+              {cycleStatus ? (
+                <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>{cycleStatus}</p>
+              ) : null}
+              <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#555555' }}>
+                Safety: this only resets Capacity Coach cycle keys. It does not clear unrelated browser/app data.
+              </p>
+            </div>
           </section>
 
           <section style={{ background: '#FAFAFA', border: '1px solid #E0E0E0', borderRadius: '12px', padding: '10px' }}>
