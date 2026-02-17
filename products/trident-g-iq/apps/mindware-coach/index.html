@@ -1281,8 +1281,8 @@
     if (screen === "splash") {
       return (
         <div className="screen" style={{ background: "#EFF3F8" }}>
-          <main className="content mindwareNarrow" style={{ display: "grid", placeItems: "center", minHeight: "100vh" }}>
-            <section style={{ width: "min(640px, 100%)", boxSizing: "border-box", background: "#4EA0E8", border: "1px solid #4EA0E8", borderRadius: "22px", padding: "30px 28px", textAlign: "center", boxShadow: "0 8px 24px rgba(20,58,115,0.16)" }}>
+          <main className="content" style={{ display: "grid", placeItems: "center", minHeight: "100vh" }}>
+            <section style={{ width: "min(640px, 100%)", boxSizing: "border-box", background: "#4EA0E8", border: "1px solid #4EA0E8", borderRadius: "22px", padding: "clamp(18px, 5vw, 30px) clamp(16px, 5vw, 28px)", textAlign: "center", boxShadow: "0 8px 24px rgba(20,58,115,0.16)" }}>
               <div style={{ width: "52px", height: "52px", borderRadius: "14px", background: "#BEEF4E", display: "grid", placeItems: "center", margin: "0 auto 12px auto", border: "4px solid rgba(255,255,255,0.5)" }}>
                 <img src={APP_ICON} alt="Trident G" style={{ width: "34px", height: "34px", objectFit: "contain", display: "block" }} />
               </div>
