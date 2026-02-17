@@ -357,6 +357,114 @@
       return { label, reason };
     }
 
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function safeRate(num, den) {
+      const n = Number(num);
+      const d = Number(den);
+      if (!Number.isFinite(n) || !Number.isFinite(d) || d <= 0) return null;
+      return n / d;
+    }
+
+    function relativeImprovement(preValue, postValue, floor = 0.01) {
+      if (!Number.isFinite(preValue) || !Number.isFinite(postValue)) return 0;
+      const scale = Math.max(Math.abs(preValue), floor);
+      return clamp((preValue - postValue) / scale, -1, 1);
+    }
+
+    function evaluateInterventionEffect({ preProbe, postProbe, signalQualityLabel }) {
+      if (!preProbe || !postProbe) {
+        return {
+          bucket: 'unknown',
+          score: null,
+          reliability: 0,
+          message: 'Intervention effect unavailable: missing one of the probe runs.',
+          metrics: null
+        };
+      }
+
+      const preTrials = Number(preProbe.trials || 0);
+      const postTrials = Number(postProbe.trials || 0);
+      if (preTrials < 12 || postTrials < 8) {
+        return {
+          bucket: 'unknown',
+          score: null,
+          reliability: 0,
+          message: 'Not enough probe data to estimate intervention effect yet.',
+          metrics: {
+            preTrials,
+            postTrials
+          }
+        };
+      }
+
+      const preLapseRate = safeRate(preProbe.lapses || 0, preTrials);
+      const postLapseRate = safeRate(postProbe.lapses || 0, postTrials);
+      const preFalseStartRate = safeRate(preProbe.falseStarts || 0, preTrials + Number(preProbe.falseStarts || 0));
+      const postFalseStartRate = safeRate(postProbe.falseStarts || 0, postTrials + Number(postProbe.falseStarts || 0));
+      const preCv = Number.isFinite(Number(preProbe.rtCv)) ? Number(preProbe.rtCv) : null;
+      const postCv = Number.isFinite(Number(postProbe.rtCv)) ? Number(postProbe.rtCv) : null;
+      const preMedian = Number.isFinite(Number(preProbe.medianMs)) ? Number(preProbe.medianMs) : null;
+      const postMedian = Number.isFinite(Number(postProbe.medianMs)) ? Number(postProbe.medianMs) : null;
+
+      const lapseImprovement = relativeImprovement(preLapseRate, postLapseRate, 0.05);
+      const cvImprovement = relativeImprovement(preCv, postCv, 0.08);
+      const rtImprovement = relativeImprovement(preMedian, postMedian, 180);
+      const falseStartImprovement = relativeImprovement(preFalseStartRate, postFalseStartRate, 0.03);
+
+      let reliability = 1;
+      if (signalQualityLabel === 'Poor') reliability *= 0.55;
+      else if (signalQualityLabel === 'Mixed') reliability *= 0.75;
+
+      const postHitRate = safeRate(postProbe.hits || 0, postTrials);
+      if (Number.isFinite(postHitRate) && postHitRate < 0.75) reliability *= 0.75;
+      if (postTrials < 15) reliability *= 0.9;
+      reliability = clamp(reliability, 0.4, 1);
+
+      const rawScore =
+        0.45 * lapseImprovement +
+        0.25 * cvImprovement +
+        0.20 * rtImprovement +
+        0.10 * falseStartImprovement;
+
+      const score = Number((rawScore * reliability).toFixed(3));
+
+      let bucket = 'no_clear_change';
+      if (score >= 0.18) bucket = 'improved';
+      else if (score <= -0.18) bucket = 'worsened';
+
+      const message = bucket === 'improved'
+        ? 'Good response: your post-reset probe improved versus pre-reset.'
+        : bucket === 'worsened'
+          ? 'Post-reset probe looked less stable. Use a lighter session today.'
+          : 'No clear change after reset today. That is normal; keep the plan steady.';
+
+      return {
+        bucket,
+        score,
+        reliability: Number(reliability.toFixed(2)),
+        message,
+        metrics: {
+          preTrials,
+          postTrials,
+          preLapseRate,
+          postLapseRate,
+          preFalseStartRate,
+          postFalseStartRate,
+          preCv,
+          postCv,
+          preMedian,
+          postMedian,
+          lapseDeltaPp: Number(((postLapseRate - preLapseRate) * 100).toFixed(1)),
+          falseStartDeltaPp: Number(((postFalseStartRate - preFalseStartRate) * 100).toFixed(1)),
+          cvDelta: (Number.isFinite(preCv) && Number.isFinite(postCv)) ? Number((postCv - preCv).toFixed(3)) : null,
+          medianDeltaMs: (Number.isFinite(preMedian) && Number.isFinite(postMedian)) ? Math.round(postMedian - preMedian) : null
+        }
+      };
+    }
+
     // -----------------------------
     // Breathing Coach component (branded + safe audio)
     // -----------------------------
@@ -1156,10 +1264,12 @@ function ZoneCoach() {
 
   const [probePre, setProbePre] = useState(null);
   const [probePost, setProbePost] = useState(null);
+  const [interventionEffect, setInterventionEffect] = useState(null);
 
   const [classification, setClassification] = useState(null);
   const [breathPattern, setBreathPattern] = useState(null);
   const [postBreathReport, setPostBreathReport] = useState(null);
+  const [zoneDecision, setZoneDecision] = useState(null);
 
   const interruptionsRef = useRef({ tabSwitches: 0, blurs: 0 });
 
@@ -1230,7 +1340,7 @@ function ZoneCoach() {
   const handlePostBreathSubmit = (report) => {
     setPostBreathReport(report);
 
-    const zoneGate = toZoneGate(classification.primaryMode);
+    const baseZoneGate = toZoneGate(classification.primaryMode);
 
     const preInBand = classification.primaryMode === 'PSI';
     const postInBand = report === 'Psi-band';
@@ -1250,6 +1360,35 @@ function ZoneCoach() {
       (postInBand || preInBand)
       && overallConfidence !== 'Low'
       && signalQualityLocal.label !== 'Poor';
+    const baseRecommendation = proceedNormal ? 'proceed' : 'light';
+
+    const intervention = evaluateInterventionEffect({
+      preProbe: probePre,
+      postProbe: probePost,
+      signalQualityLabel: signalQualityLocal.label
+    });
+    setInterventionEffect(intervention);
+
+    let zoneGate = baseZoneGate;
+    let recommendation = baseRecommendation;
+    const canUpgrade = overallConfidence !== 'Low' && signalQualityLocal.label !== 'Poor';
+
+    // Use post-probe intervention response as a moderate decision adjuster.
+    if (intervention.bucket === 'worsened') {
+      recommendation = 'light';
+    } else if (intervention.bucket === 'improved') {
+      if (zoneGate === 'too_cold' && postInBand && canUpgrade) {
+        zoneGate = 'in_band';
+      }
+      if (zoneGate === 'in_band' && canUpgrade) {
+        recommendation = 'proceed';
+      }
+    }
+
+    // Safety lock: overloaded states never upgrade to proceed.
+    if (zoneGate === 'too_hot') {
+      recommendation = 'light';
+    }
 
     const derived = {
       N_eff: classification.N_eff,
@@ -1288,11 +1427,15 @@ function ZoneCoach() {
         pre: probePre,
         post: probePost
       },
+      intervention,
       gate: {
         zone: zoneGate, // too_cold|in_band|too_hot
+        baseZone: baseZoneGate,
         preInBand,
         postInBand,
-        recommendation: proceedNormal ? 'proceed' : 'light'
+        recommendation,
+        baseRecommendation,
+        interventionBucket: intervention.bucket
       },
       suggest: {
         rigourBudget: zoneGate === 'in_band' ? 'medium' : 'low',
@@ -1306,12 +1449,31 @@ function ZoneCoach() {
       timestamp: zoneTelemetry.timestamp,
       gate: {
         zone: zoneTelemetry.gate.zone,
+        baseZone: zoneTelemetry.gate.baseZone,
         preInBand: zoneTelemetry.gate.preInBand,
         postInBand: zoneTelemetry.gate.postInBand,
-        recommendation: zoneTelemetry.gate.recommendation
+        recommendation: zoneTelemetry.gate.recommendation,
+        baseRecommendation: zoneTelemetry.gate.baseRecommendation,
+        interventionBucket: zoneTelemetry.gate.interventionBucket
       },
-      suggest: zoneTelemetry.suggest
+      suggest: zoneTelemetry.suggest,
+      intervention: {
+        bucket: intervention.bucket,
+        score: intervention.score,
+        reliability: intervention.reliability
+      }
     };
+
+    setZoneDecision({
+      zone: zoneGate,
+      recommendation,
+      baseZone: baseZoneGate,
+      baseRecommendation,
+      preInBand,
+      postInBand,
+      intervention,
+      suggestedCapacity
+    });
 
     writeZoneTelemetry(zoneTelemetry, zoneHandoffSlim);
     setStep('complete');
@@ -1335,6 +1497,11 @@ function ZoneCoach() {
       ratings
     })
     : null;
+  const interventionPreview = evaluateInterventionEffect({
+    preProbe: probePre,
+    postProbe: probePost,
+    signalQualityLabel: signalQuality?.label || null
+  });
 
   const startNewCheck = () => {
     setStep('ratings');
@@ -1344,6 +1511,8 @@ function ZoneCoach() {
     setBreathPattern(null);
     setProbePre(null);
     setProbePost(null);
+    setInterventionEffect(null);
+    setZoneDecision(null);
   };
 
   // ----- Shared frame (topbar + footer) -----
@@ -1575,6 +1744,33 @@ function ZoneCoach() {
             <div className="h1">How do you feel now?</div>
             <p className="p">Quick check after your breathing reset.</p>
 
+            <div className="card" style={{ boxShadow: 'none', marginTop: 12, background: 'rgba(34,170,255,0.08)', border: '1px solid rgba(39,100,183,0.18)' }}>
+              <div style={{ fontWeight: 900, fontSize: 16, color: 'rgba(0,0,0,0.90)' }}>Intervention response (pre vs post probe)</div>
+              <p className="p" style={{ marginTop: 6, color: '#111' }}>{interventionPreview.message}</p>
+              {interventionPreview.metrics ? (() => {
+                const m = interventionPreview.metrics;
+                const lapsePre = Number.isFinite(m.preLapseRate) ? (m.preLapseRate * 100).toFixed(1) + '%' : '-';
+                const lapsePost = Number.isFinite(m.postLapseRate) ? (m.postLapseRate * 100).toFixed(1) + '%' : '-';
+                const cvPre = Number.isFinite(m.preCv) ? m.preCv.toFixed(3) : '-';
+                const cvPost = Number.isFinite(m.postCv) ? m.postCv.toFixed(3) : '-';
+                const rtPre = Number.isFinite(m.preMedian) ? m.preMedian + ' ms' : '-';
+                const rtPost = Number.isFinite(m.postMedian) ? m.postMedian + ' ms' : '-';
+                return (
+                  <div style={{ marginTop: 6 }}>
+                    <p className="p" style={{ margin: 0, color: '#111' }}>
+                      Lapse rate: <b>{lapsePre}</b> -> <b>{lapsePost}</b>
+                    </p>
+                    <p className="p" style={{ marginTop: 4, color: '#111' }}>
+                      RT variability (CV): <b>{cvPre}</b> -> <b>{cvPost}</b>
+                    </p>
+                    <p className="p" style={{ marginTop: 4, color: '#111' }}>
+                      Median RT: <b>{rtPre}</b> -> <b>{rtPost}</b>
+                    </p>
+                  </div>
+                );
+              })() : null}
+            </div>
+
             <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 10, marginTop: 12 }}>
               {[
                 { label: 'Flat / low drive', value: 'Subcritical' },
@@ -1606,86 +1802,81 @@ function ZoneCoach() {
               </div>
             </div>
 
-            {(() => {
-              const zoneGate = toZoneGate(classification.primaryMode);
-              const preInBand = classification.primaryMode === 'PSI';
-              const postInBand = postBreathReport === 'Psi-band';
-              const proceedNormal =
-                (preInBand || postInBand)
-                && overallConfidence !== 'Low'
-                && (!signalQuality || signalQuality.label !== 'Poor');
+            <div className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
+              <div style={{ fontWeight: 900, fontSize: 14, color: 'rgba(0,0,0,0.85)' }}>Next step</div>
 
-              const suggestion = suggestedCapacityFromMode(classification.primaryMode);
+              <p className="p" style={{ marginTop: 8 }}>
+                Zone gate: <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{ZONE_UI[zoneDecision?.zone]?.title || '-'}</span>
+                <span style={{ color: '#111' }}> | Suggested focus: </span>
+                <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{zoneDecision?.suggestedCapacity?.primary || '-'}</span>
+                {zoneDecision?.suggestedCapacity?.secondary ? <span style={{ color: '#111' }}> then </span> : null}
+                {zoneDecision?.suggestedCapacity?.secondary ? <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{zoneDecision.suggestedCapacity.secondary}</span> : null}
+              </p>
 
-              return (
-                <div className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
-                  <div style={{ fontWeight: 900, fontSize: 14, color: 'rgba(0,0,0,0.85)' }}>Next step</div>
-
-                  <p className="p" style={{ marginTop: 8 }}>
-                    Zone gate: <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{ZONE_UI[zoneGate]?.title || '-'}</span>
-                    <span style={{ color: '#111' }}> | Suggested focus: </span>
-                    <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{suggestion.primary}</span>
-                    {suggestion.secondary ? <span style={{ color: '#111' }}> then </span> : null}
-                    {suggestion.secondary ? <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{suggestion.secondary}</span> : null}
+              {interventionEffect ? (
+                <div className="card" style={{ boxShadow: 'none', marginTop: 8, background: '#F6FBFF', border: '1px solid rgba(39,100,183,0.18)' }}>
+                  <p className="p" style={{ margin: 0, color: '#111', fontWeight: 800 }}>
+                    Intervention effect: {interventionEffect.bucket === 'improved' ? 'Improved' : interventionEffect.bucket === 'worsened' ? 'Worsened' : interventionEffect.bucket === 'no_clear_change' ? 'No clear change' : 'Unknown'}
                   </p>
+                  <p className="p" style={{ marginTop: 6, color: '#111' }}>{interventionEffect.message}</p>
+                </div>
+              ) : null}
 
-                  {proceedNormal ? (
-                    <>
-                      <p className="p" style={{ marginTop: 8, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
-                        Proceed with training.
-                      </p>
-                      <div className="btnRow">
-                        <button
-                          onClick={() => window.open(CAPACITY_TRAINING_COACH_URL, '_blank')}
-                          className="btn btnPrimary"
-                          style={{ width: '100%' }}
-                        >
-                          Go to Capacity Training Coach
-                        </button>
-                      </div>
-                      <p className="p" style={{ marginTop: 8 }}>
-                        Your zone handoff has been saved for the coach/switcher.
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="p" style={{ marginTop: 8, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
-                        Light session recommended.
-                      </p>
-                      <p className="p" style={{ marginTop: 6 }}>
-                        You were not fully in band today. Keep it short and stabilising.
-                      </p>
-
-                      <div className="btnRow">
-                        <button
-                          onClick={() => window.open(CAPACITY_TRAINING_COACH_URL, '_blank')}
-                          className="btn btnPrimary"
-                          style={{ width: '100%' }}
-                        >
-                          Proceed with a light session (Recover focus)
-                        </button>
-                      </div>
-
-                      <div className="card" style={{ boxShadow: 'none', marginTop: 10 }}>
-                        <p className="p" style={{ margin: 0 }}>
-                          If you still feel overloaded: walk, hydration, low stimulation, early night. Try again tomorrow.
-                        </p>
-                      </div>
-
-                      <p className="p" style={{ marginTop: 8 }}>
-                        Your zone handoff has been saved for the coach/switcher.
-                      </p>
-                    </>
-                  )}
-
+              {zoneDecision?.recommendation === 'proceed' ? (
+                <>
+                  <p className="p" style={{ marginTop: 8, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
+                    Proceed with training.
+                  </p>
                   <div className="btnRow">
-                    <button onClick={startNewCheck} className="btn btnSecondary" style={{ width: '100%' }}>
-                      Start new check
+                    <button
+                      onClick={() => window.open(CAPACITY_TRAINING_COACH_URL, '_blank')}
+                      className="btn btnPrimary"
+                      style={{ width: '100%' }}
+                    >
+                      Go to Capacity Training Coach
                     </button>
                   </div>
-                </div>
-              );
-            })()}
+                  <p className="p" style={{ marginTop: 8 }}>
+                    Your zone handoff has been saved for the coach/switcher.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="p" style={{ marginTop: 8, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
+                    Light session recommended.
+                  </p>
+                  <p className="p" style={{ marginTop: 6 }}>
+                    If your reset effect was unclear today, that is okay. Keep the session short and stabilising.
+                  </p>
+
+                  <div className="btnRow">
+                    <button
+                      onClick={() => window.open(CAPACITY_TRAINING_COACH_URL, '_blank')}
+                      className="btn btnPrimary"
+                      style={{ width: '100%' }}
+                    >
+                      Proceed with a light session (Recover focus)
+                    </button>
+                  </div>
+
+                  <div className="card" style={{ boxShadow: 'none', marginTop: 10 }}>
+                    <p className="p" style={{ margin: 0 }}>
+                      If you still feel overloaded: walk, hydration, low stimulation, early night. Try again tomorrow.
+                    </p>
+                  </div>
+
+                  <p className="p" style={{ marginTop: 8 }}>
+                    Your zone handoff has been saved for the coach/switcher.
+                  </p>
+                </>
+              )}
+
+              <div className="btnRow">
+                <button onClick={startNewCheck} className="btn btnSecondary" style={{ width: '100%' }}>
+                  Start new check
+                </button>
+              </div>
+            </div>
           </>
         )}
 
