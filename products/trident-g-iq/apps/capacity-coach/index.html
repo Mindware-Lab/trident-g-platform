@@ -390,13 +390,6 @@
     const [bridgeObs, setBridgeObs] = useState('');
     const [bridgeMove, setBridgeMove] = useState('');
     const [breathRoutine, setBreathRoutine] = useState('amplify');
-    const [breathRunning, setBreathRunning] = useState(false);
-    const [breathRemaining, setBreathRemaining] = useState(0);
-    const [breathPhaseLabel, setBreathPhaseLabel] = useState('Ready');
-    const [breathPhaseKind, setBreathPhaseKind] = useState('inhale');
-    const [breathPhaseProgress, setBreathPhaseProgress] = useState(0);
-    const breathStartRef = useRef(null);
-    const breathRafRef = useRef(null);
     const [restConfirm, setRestConfirm] = useState(false);
     const [restReason, setRestReason] = useState('');
     const [sessionType, setSessionType] = useState('TUNE');
@@ -641,53 +634,6 @@
       }
       applyZoneHandoff(selected.raw);
     };
-
-    useEffect(() => {
-      if (!breathRunning) {
-        if (breathRafRef.current) cancelAnimationFrame(breathRafRef.current);
-        breathRafRef.current = null;
-        breathStartRef.current = null;
-        return;
-      }
-
-      const targetMs = 90000;
-      const pattern = BREATH_ROUTINES[breathRoutine];
-      const cycleMs = pattern.phases.reduce((s, p) => s + p.durationMs, 0);
-      if (!breathStartRef.current) breathStartRef.current = performance.now();
-
-      const tick = () => {
-        const elapsedMs = performance.now() - breathStartRef.current;
-        const remainingMs = Math.max(0, targetMs - elapsedMs);
-        setBreathRemaining(Math.ceil(remainingMs / 1000));
-
-        const t = ((elapsedMs % cycleMs) + cycleMs) % cycleMs;
-        let acc = 0;
-        for (let i = 0; i < pattern.phases.length; i += 1) {
-          const p = pattern.phases[i];
-          const next = acc + p.durationMs;
-          if (t >= acc && t < next) {
-            setBreathPhaseLabel(p.label);
-            setBreathPhaseKind(p.kind);
-            setBreathPhaseProgress(p.durationMs > 0 ? (t - acc) / p.durationMs : 0);
-            break;
-          }
-          acc = next;
-        }
-
-        if (remainingMs <= 0) {
-          setBreathRunning(false);
-          setBreathPhaseLabel('Complete');
-          setBreathPhaseProgress(1);
-          return;
-        }
-        breathRafRef.current = requestAnimationFrame(tick);
-      };
-
-      breathRafRef.current = requestAnimationFrame(tick);
-      return () => {
-        if (breathRafRef.current) cancelAnimationFrame(breathRafRef.current);
-      };
-    }, [breathRunning, breathRoutine]);
 
     useEffect(() => {
       const mapped = GAME_ID_FROM_ENUM[recommendationV11.recommended_game];
@@ -1986,75 +1932,6 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>2) Optional: 90-second reset</p>
-            <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333333' }}>
-              Quick local breathing reset if you skip the full Zone Coach flow.
-            </p>
-            <select
-              value={breathRoutine}
-              onChange={(e) => setBreathRoutine(e.target.value)}
-              style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0', marginBottom: '10px' }}
-            >
-              <option value="upshift">Upshift</option>
-              <option value="amplify">Amplify</option>
-              <option value="downshift">Downshift</option>
-            </select>
-            <p style={{ margin: '0 0 4px 0', fontWeight: 700 }}>{BREATH_ROUTINES[breathRoutine].name}</p>
-            <p style={{ margin: '0 0 4px 0', fontSize: '13px' }}>{BREATH_ROUTINES[breathRoutine].description}</p>
-            <p style={{ margin: 0, fontSize: '13px', color: '#555555' }}>{BREATH_ROUTINES[breathRoutine].cue}</p>
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
-              <svg width="220" height="220" viewBox="0 0 220 220">
-                <circle cx="110" cy="110" r="88" fill="none" stroke="rgba(39,100,183,0.20)" strokeWidth="8" />
-                <circle
-                  cx="110"
-                  cy="110"
-                  r={54 + (42 * (breathPhaseKind === 'inhale' ? breathPhaseProgress : (1 - breathPhaseProgress)))}
-                  fill="none"
-                  stroke="var(--deep)"
-                  strokeWidth="10"
-                  strokeOpacity="0.9"
-                />
-                <text x="110" y="115" textAnchor="middle" fontSize="18" fontWeight="900" fill="#143a73">
-                  {breathPhaseLabel}
-                </text>
-              </svg>
-            </div>
-            <div className="btnRow">
-              <button
-                className="btn"
-                style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }}
-                onClick={() => {
-                  setBreathRemaining(90);
-                  setBreathPhaseLabel('Ready');
-                  setBreathPhaseProgress(0);
-                  setBreathRunning(true);
-                }}
-              >
-                Start 90s routine
-              </button>
-              {breathRunning ? (
-                <button
-                  className="btn"
-                  style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', color: '#333333' }}
-                  onClick={() => {
-                    setBreathRunning(false);
-                    setBreathRemaining(0);
-                    setBreathPhaseLabel('Stopped');
-                    setBreathPhaseProgress(0);
-                  }}
-                >
-                  Stop
-                </button>
-              ) : null}
-            </div>
-            {breathRunning ? (
-              <p style={{ margin: '8px 0 0 0', fontWeight: 900 }}>
-                {Math.max(0, breathRemaining)}s remaining
-              </p>
-            ) : null}
-          </section>
-
-          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
             <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Baseline settings</p>
             <div className="btnRow">
               <select value={speedPreset} onChange={(e) => setSpeedPreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
@@ -2069,7 +1946,7 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>3) Choose today's i3 Mindware game</p>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>2) Choose today's i3 Mindware game</p>
             <div style={{ display: 'grid', gap: '10px' }}>
               {GAMES.map((g) => (
                 <button
@@ -2092,7 +1969,7 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: 0, fontWeight: 900 }}>4) Start session</p>
+            <p style={{ margin: 0, fontWeight: 900 }}>3) Start session</p>
             <p style={{ marginTop: '6px', fontSize: '13px', color: '#555555' }}>Plan: {planLabel}</p>
             <p style={{ marginTop: '8px' }}>Use the coach between each block. It tells you the next block settings based on your quick check.</p>
             <div className="btnRow">
