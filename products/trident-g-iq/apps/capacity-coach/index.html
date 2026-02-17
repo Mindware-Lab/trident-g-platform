@@ -612,10 +612,6 @@
       return true;
     };
 
-    const openZoneCoach = () => {
-      window.open(ZONE_COACH_URL, '_blank', 'noopener,noreferrer');
-    };
-
     const toggleEmbeddedZoneCoach = () => {
       setShowEmbeddedZoneCoach((prev) => !prev);
     };
@@ -1860,15 +1856,15 @@
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
             <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>1) Zone readiness gate (Zone Coach)</p>
             <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333333' }}>
-              Capacity Coach now uses the Zone Coach readiness algorithm/decision rule as the gate. Run Zone Coach, then import the latest result here.
+              Capacity Coach now uses the Zone Coach readiness algorithm/decision rule as the gate. Open it below, complete it, then import the latest result here.
             </p>
             <div className="btnRow">
               <button
                 className="btn"
                 style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }}
-                onClick={openZoneCoach}
+                onClick={toggleEmbeddedZoneCoach}
               >
-                Open Zone Coach
+                {showEmbeddedZoneCoach ? 'Hide embedded Zone Coach' : 'Open embedded Zone Coach'}
               </button>
               <button
                 className="btn"
@@ -1877,21 +1873,14 @@
               >
                 Import latest Zone result
               </button>
-              <button
-                className="btn"
-                style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }}
-                onClick={toggleEmbeddedZoneCoach}
-              >
-                {showEmbeddedZoneCoach ? 'Hide embedded Zone Coach' : 'Embed Zone Coach here'}
-              </button>
               {showEmbeddedZoneCoach ? (
                 <button
                   className="btn"
                   style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', color: '#333333' }}
-                onClick={refreshEmbeddedZoneCoach}
-              >
-                Reload embed
-              </button>
+                  onClick={refreshEmbeddedZoneCoach}
+                >
+                  Reload embed
+                </button>
               ) : null}
               <button
                 className="btn"
