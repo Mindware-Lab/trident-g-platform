@@ -121,8 +121,7 @@
     home_help_strip: {
       title: 'How this helps',
       lines: [
-        "You're building the runtime that lets good thinking stay online under pressure: steadier attention, fewer lapse bursts, faster recovery.",
-        "We don't treat high scores as proof. We check whether gains survive change and show up in a small real-world mission with a clear success signal."
+        "You're building proven general-intelligence runtime: the capacity that keeps smart thinking online under pressure and complexity - fewer lapses and faster re-entry after interruptions. More focus, more flexibility."
       ],
       links: {
         learn_more: 'Learn more',
@@ -130,33 +129,30 @@
       }
     },
     how_it_works_modal: {
-      title: 'How it works',
+      title: 'How this helps',
       sections: [
         {
           title: 'The point of this app',
-          body: "Train stability and flexibility under load - then prove it carries over. This isn't about getting good at a game. It's about keeping thinking reliable when you need to hold focus, switch tasks, and recover fast under time pressure, interruptions, and AI-assisted work."
+          body: "Train stability and flexibility under load - then prove it carries over. This isn't about mastering a single task. It's about upgrading the underlying runtime that general intelligence depends on: holding focus, switching cleanly, and recovering quickly when time pressure, noise, interruptions, and AI-assisted workflows try to knock you off track."
         },
         {
           title: 'Works even better with IQ Mindware Coach',
-          body: 'Capacity training strengthens the runtime (stability + switching), so your mindware scripts from IQ Mindware Coach are easier to execute when things get busy.'
+          body: 'Capacity Coach trains the runtime (stability + switching) so your mindware scripts from IQ Mindware Coach are easier to execute when things get busy. In other words: Capacity makes the engine reliable under load. Mindware gives the engine better moves.'
         },
         {
-          title: 'The Capacity Loop',
+          title: 'The training is designed for transfer learning, not shallow automation:',
           list: [
-            'Readiness gate: choose Full, Light, or Reset',
-            'Guided session: run 10 blocks with clear settings',
-            'Quick check: log load and state drift, and what changed',
-            'Change test (optional): does it still hold when the task changes? (change test -> wrapper swap)',
-            'Real-life mission: apply it to one small work task with a clear success signal',
-            'Bank (hardwire) + adjust: check in next time and update the plan'
+            'You practise control under varying load conditions.',
+            'You run optional change tests to check portability.',
+            'You validate carryover with a mission outcome, not a feeling.'
           ]
         },
         {
-          title: 'why try it with IQ Mindware Coach and real life',
-          body: "Practice tunes control. Mindware training makes it reliable. If a skill only works in-app, it doesn't count as transfer."
+          title: 'Why pair it with Mindware Coach and real-life missions',
+          body: "Practice can tune control. Proof checks make it trustworthy. If a skill only works inside the app, it doesn't count as transfer. We keep what holds up across change (wrapper swaps), delay (does it still work next time), and real work (mission success signal)."
         }
       ],
-      footer_small: "This is skills training, not medical treatment. No guaranteed outcomes. If you're concerned about health or mental health, speak to your GP."
+      footer_small: "Safety note: This is skills training, not medical treatment. No guaranteed outcomes. If you're concerned about health or mental health, speak to your GP. We don't treat high scores as proof. We test whether gains survive change (a change test -> wrapper swap) and whether they show up in one small real-world mission with a clear success signal."
     },
     start_session: {
       why_line: 'Why: Practice builds stability. Real tasks build reliability.'
@@ -1738,7 +1734,7 @@
                 <img src={APP_ICON} alt="Trident G" style={{ width: '34px', height: '34px', objectFit: 'contain', display: 'block' }} />
               </div>
               <h1 className="h1" style={{ margin: '0 0 8px 0', fontWeight: 900, color: '#FFFFFF' }}>IQ Capacity Coach v1</h1>
-              <p className="p" style={{ margin: '0 0 18px 0', color: '#F4FAFF' }}>Build steadier focus and follow-through under load.</p>
+              <p className="p" style={{ margin: '0 0 18px 0', color: '#F4FAFF' }}>Train proven general intelligence capacity and runtime</p>
               <div className="btnRow" style={{ justifyContent: 'center', marginBottom: '8px' }}>
                 <button
                   className="btn"
@@ -1777,7 +1773,9 @@
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
             <p style={{ margin: 0, fontWeight: 900 }}>{COPY.home_help_strip.title}</p>
             <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>{COPY.home_help_strip.lines[0]}</p>
-            <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: '#333333' }}>{COPY.home_help_strip.lines[1]}</p>
+            {COPY.home_help_strip.lines[1] ? (
+              <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: '#333333' }}>{COPY.home_help_strip.lines[1]}</p>
+            ) : null}
             <p style={{ margin: '8px 0 0 0', fontSize: '13px' }}>
               <button style={{ border: 'none', background: 'none', color: '#2764B7', cursor: 'pointer', padding: 0, font: 'inherit' }} onClick={() => setShowHowItWorks(true)}>{COPY.home_help_strip.links.learn_more}</button>
               {' • '}
