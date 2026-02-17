@@ -1772,6 +1772,7 @@
           <section className="card">
             <h1 className="h1">Capacity Training Programme</h1>
             <p className="p">24 sessions total. Choose any of the 4 n-back variants each session. Train stability under load - then run a quick change test to see if it holds beyond the game.</p>
+            <p className="p" style={{ marginTop: '8px' }}><b>Use the steps below in order (1 to 5).</b></p>
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
@@ -1791,70 +1792,25 @@
             <p style={{ marginTop: '6px', fontSize: '13px', color: '#555555' }}>
               Calendar entries: {programV11.calendar_entry_count} | Consecutive rests: {programV11.consecutive_rest_count}
             </p>
-          </section>
-
-          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: 0, fontWeight: 900 }}>Today's suggestion</p>
-            {firstSession ? (
+            <details style={{ marginTop: '10px' }}>
+              <summary style={{ cursor: 'pointer', fontWeight: 900 }}>View progress checks</summary>
               <p style={{ marginTop: '8px' }}>
-                First session: no session style is suggested yet. Start simple with <b>Classic n-back</b>.
+                Transfer checks: Small <b>{proofCounters.near ? 'passed' : 'not yet'}</b> | Medium <b>{proofCounters.mid ? 'passed' : 'not yet'}</b> | Big <b>{proofCounters.far ? 'passed' : 'not yet'}</b>
               </p>
-            ) : (
-              <p style={{ marginTop: '8px' }}>
-                Session style: <b>{SESSION_LABELS[recommendationV11.recommended_session_type] || 'Build'}</b> | Game: <b>{GAME_LABEL[GAME_ID_FROM_ENUM[recommendationV11.recommended_game]] || recommendationV11.recommended_game}</b>
+              <p style={{ marginTop: '6px' }}>
+                Still holds later: <b>{proofCounters.delay_holds > 0 ? proofCounters.delay_holds : 'not checked yet'}</b> | Real-life cue wins: <b>{proofCounters.mission_successes > 0 ? proofCounters.mission_successes : 'not logged yet'}</b>
               </p>
-            )}
-            <p style={{ marginTop: '4px', fontSize: '13px', color: '#555555' }}>{recommendationV11.recommendation_reason}</p>
-            {recommendationV11.probe_radius ? (
-              <p style={{ marginTop: '4px', fontSize: '13px', color: '#555555' }}>
-                Switch test: {SWITCH_SIZE_LABELS[recommendationV11.probe_radius] || recommendationV11.probe_radius} | Target game: {recommendationV11.probe_target_game}
+              <p style={{ marginTop: '6px' }}>
+                Steady sessions in a row: <b>{proofCounters.stability_streak}</b>
               </p>
-            ) : null}
-            {!pendingMission ? (
-              <p style={{ marginTop: '8px', fontSize: '13px', color: '#555555' }}>
-                {COPY.mission_bridge_banner.no_mission}
-              </p>
-            ) : null}
-            {pendingMission ? (
-              <p style={{ marginTop: '8px', fontSize: '13px', color: '#2764B7', fontWeight: 700 }}>
-                {COPY.mission_bridge_banner.pending_title}: {COPY.mission_bridge_banner.pending_body}
-              </p>
-            ) : null}
-            <div className="btnRow">
-              {pendingMission ? (
-                <button
-                  className="btn"
-                  style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }}
-                  onClick={() => setScreen('mission_outcome')}
-                >
-                  {COPY.mission_bridge_banner.buttons.log_outcome}
-                </button>
+              {notCountedNote ? (
+                <p style={{ marginTop: '8px', fontSize: '13px', color: '#555555' }}>{notCountedNote}</p>
               ) : null}
-              {pendingMission ? (
-                <button className="btn btnSecondary" onClick={() => setScreen('home')}>{COPY.mission_bridge_banner.buttons.skip_for_now}</button>
-              ) : null}
-            </div>
-            {programV11.consecutive_rest_count >= 2 ? (
-              <div style={{ marginTop: '10px' }}>
-                <p style={{ margin: 0, color: '#9a5b00', fontWeight: 700 }}>
-                  Reset day recommended: 2 or more rest days in a row.
-                </p>
-                <label style={{ display: 'block', marginTop: '6px', fontSize: '13px' }}>
-                  <input type="checkbox" checked={restConfirm} onChange={(e) => setRestConfirm(e.target.checked)} /> Confirm another rest day
-                </label>
-                <input
-                  type="text"
-                  value={restReason}
-                  onChange={(e) => setRestReason(e.target.value)}
-                  placeholder="Optional reason"
-                  style={{ marginTop: '6px' }}
-                />
-              </div>
-            ) : null}
+            </details>
           </section>
 
           <section style={{ background: '#FAFAFA', border: '1px solid #E0E0E0', borderRadius: '12px', padding: '10px' }}>
-            <p style={{ margin: '0 0 6px 0', fontWeight: 900, fontSize: '22px', lineHeight: 1.2 }}>1) Zone readiness gate (Zone Coach)</p>
+            <p style={{ margin: '0 0 6px 0', fontWeight: 900, fontSize: '22px', lineHeight: 1.2 }}>1) Zone readiness gate (optional)</p>
             <p style={{ margin: '0 0 10px 0', fontSize: '17px', lineHeight: 1.3, color: '#1F2F44' }}>
               Capacity Coach now uses the Zone Coach readiness algorithm/decision rule as the gate. Open it below, complete it, then import the latest result here.
             </p>
@@ -1923,21 +1879,67 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>Baseline settings</p>
+            <p style={{ margin: 0, fontWeight: 900 }}>2) Today's suggestion</p>
+            {firstSession ? (
+              <p style={{ marginTop: '8px' }}>
+                First session: no session style is suggested yet. Start simple with <b>Classic n-back</b>.
+              </p>
+            ) : (
+              <p style={{ marginTop: '8px' }}>
+                Session style: <b>{SESSION_LABELS[recommendationV11.recommended_session_type] || 'Build'}</b> | Game: <b>{GAME_LABEL[GAME_ID_FROM_ENUM[recommendationV11.recommended_game]] || recommendationV11.recommended_game}</b>
+              </p>
+            )}
+            <p style={{ marginTop: '4px', fontSize: '13px', color: '#555555' }}>{recommendationV11.recommendation_reason}</p>
+            {recommendationV11.probe_radius ? (
+              <p style={{ marginTop: '4px', fontSize: '13px', color: '#555555' }}>
+                Switch test: {SWITCH_SIZE_LABELS[recommendationV11.probe_radius] || recommendationV11.probe_radius} | Target game: {recommendationV11.probe_target_game}
+              </p>
+            ) : null}
+            {!pendingMission ? (
+              <p style={{ marginTop: '8px', fontSize: '13px', color: '#555555' }}>
+                {COPY.mission_bridge_banner.no_mission}
+              </p>
+            ) : null}
+            {pendingMission ? (
+              <p style={{ marginTop: '8px', fontSize: '13px', color: '#2764B7', fontWeight: 700 }}>
+                {COPY.mission_bridge_banner.pending_title}: {COPY.mission_bridge_banner.pending_body}
+              </p>
+            ) : null}
             <div className="btnRow">
-              <select value={speedPreset} onChange={(e) => setSpeedPreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                <option value="default">Speed: Baseline</option>
-                <option value="fast">Speed: Fast</option>
-              </select>
-              <select value={interferencePreset} onChange={(e) => setInterferencePreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
-                <option value="default">Distraction: Baseline</option>
-                <option value="high">Distraction: High</option>
-              </select>
+              {pendingMission ? (
+                <button
+                  className="btn"
+                  style={{ background: '#FFFFFF', border: '1px solid #2764B7', color: '#2764B7' }}
+                  onClick={() => setScreen('mission_outcome')}
+                >
+                  {COPY.mission_bridge_banner.buttons.log_outcome}
+                </button>
+              ) : null}
+              {pendingMission ? (
+                <button className="btn btnSecondary" onClick={() => setScreen('home')}>{COPY.mission_bridge_banner.buttons.skip_for_now}</button>
+              ) : null}
             </div>
+            {programV11.consecutive_rest_count >= 2 ? (
+              <div style={{ marginTop: '10px' }}>
+                <p style={{ margin: 0, color: '#9a5b00', fontWeight: 700 }}>
+                  Reset day recommended: 2 or more rest days in a row.
+                </p>
+                <label style={{ display: 'block', marginTop: '6px', fontSize: '13px' }}>
+                  <input type="checkbox" checked={restConfirm} onChange={(e) => setRestConfirm(e.target.checked)} /> Confirm another rest day
+                </label>
+                <input
+                  type="text"
+                  value={restReason}
+                  onChange={(e) => setRestReason(e.target.value)}
+                  placeholder="Optional reason"
+                  style={{ marginTop: '6px' }}
+                />
+              </div>
+            ) : null}
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>2) Choose today's i3 Mindware game</p>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>3) Choose today's i3 Mindware game</p>
             <div style={{ display: 'grid', gap: '10px' }}>
               {GAMES.map((g) => (
                 <button
@@ -1960,7 +1962,21 @@
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ margin: 0, fontWeight: 900 }}>3) Start session</p>
+            <p style={{ margin: '0 0 12px 0', fontWeight: 900 }}>4) Baseline settings</p>
+            <div className="btnRow">
+              <select value={speedPreset} onChange={(e) => setSpeedPreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                <option value="default">Speed: Baseline</option>
+                <option value="fast">Speed: Fast</option>
+              </select>
+              <select value={interferencePreset} onChange={(e) => setInterferencePreset(e.target.value)} style={{ padding: '10px', borderRadius: '12px', border: '1px solid #E0E0E0' }}>
+                <option value="default">Distraction: Baseline</option>
+                <option value="high">Distraction: High</option>
+              </select>
+            </div>
+          </section>
+
+          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
+            <p style={{ margin: 0, fontWeight: 900 }}>5) Start session</p>
             <p style={{ marginTop: '6px', fontSize: '13px', color: '#555555' }}>Plan: {planLabel}</p>
             <p style={{ marginTop: '8px' }}>Use the coach between each block. It tells you the next block settings based on your quick check.</p>
             <div className="btnRow">
@@ -1974,24 +1990,6 @@
               </button>
             </div>
             <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333', fontWeight: 700 }}>{COPY.start_session.why_line}</p>
-          </section>
-
-          <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
-            <details>
-              <summary style={{ cursor: 'pointer', fontWeight: 900 }}>View progress checks</summary>
-              <p style={{ marginTop: '8px' }}>
-                Transfer checks: Small <b>{proofCounters.near ? 'passed' : 'not yet'}</b> | Medium <b>{proofCounters.mid ? 'passed' : 'not yet'}</b> | Big <b>{proofCounters.far ? 'passed' : 'not yet'}</b>
-              </p>
-              <p style={{ marginTop: '6px' }}>
-                Still holds later: <b>{proofCounters.delay_holds > 0 ? proofCounters.delay_holds : 'not checked yet'}</b> | Real-life cue wins: <b>{proofCounters.mission_successes > 0 ? proofCounters.mission_successes : 'not logged yet'}</b>
-              </p>
-              <p style={{ marginTop: '6px' }}>
-                Steady sessions in a row: <b>{proofCounters.stability_streak}</b>
-              </p>
-              {notCountedNote ? (
-                <p style={{ marginTop: '8px', fontSize: '13px', color: '#555555' }}>{notCountedNote}</p>
-              ) : null}
-            </details>
           </section>
           {showHowItWorks ? (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'grid', placeItems: 'center', padding: '12px', zIndex: 20 }}>
