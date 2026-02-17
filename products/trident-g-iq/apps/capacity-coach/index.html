@@ -1940,6 +1940,7 @@
 
           <section style={{ background: '#FAFAFA', border: '1px solid #E0E0E0', borderRadius: '12px', padding: '10px' }}>
             <p style={{ margin: '0 0 6px 0', fontWeight: 900, fontSize: '22px', lineHeight: 1.2 }}>3) Choose today's i3 Mindware game</p>
+            <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333333' }}>The recommended game for this session is highlighted.</p>
             <div style={{ display: 'grid', gap: '10px' }}>
               {GAMES.map((g) => (
                 <button
@@ -1949,8 +1950,8 @@
                   style={{
                     width: '100%',
                     textAlign: 'left',
-                    background: selectedGame === g.id ? '#BEEF4E' : '#FFFFFF',
-                    border: '1px solid ' + (selectedGame === g.id ? '#BEEF4E' : '#E0E0E0'),
+                    background: selectedGame === g.id ? 'var(--lime)' : '#FFFFFF',
+                    border: '1px solid ' + (selectedGame === g.id ? 'var(--lime)' : '#E0E0E0'),
                     color: '#111111'
                   }}
                 >
