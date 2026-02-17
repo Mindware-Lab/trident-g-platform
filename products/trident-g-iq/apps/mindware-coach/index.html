@@ -179,6 +179,7 @@
   const LESSON_PACK = "./content/packs/lessons_v1.json";
   const MANIFEST_PACK = "./content/packs/manifest_v1.json";
   const TIMEBOX_TO_ITEMS = { 2: 5, 4: 8, 6: 12, 8: 16 };
+  const CUSTOM_QUESTION_TIME_OPTIONS = [12, 15, 20, 25, 30, 35, 40, 45, 60];
   const REQUIRED = ["id","context","frame","wrapper","script","polarity","lens_target","kind","is_boundary","near_miss_tag","prompt","options","answer_index","why_right"];
 
   const parse = (raw, fb) => { try { return JSON.parse(raw); } catch { return fb; } };
@@ -246,7 +247,14 @@
   });
   const defaultState = () => ({
     schema_version: "tg_mindware_state_v1",
-    defaults: { frame: "understand", script: "Y1", rigour: "standard", timebox_min: 4 },
+    defaults: {
+      frame: "understand",
+      script: "Y1",
+      rigour: "standard",
+      timebox_min: 4,
+      question_time_mode: "auto",
+      question_time_custom_s: 30
+    },
     scripts: {},
     ui: { home_help_dismissed: false, how_it_works_last_opened_ts: null },
     operator_intro: {},
@@ -321,7 +329,9 @@
       frame: mwState.defaults.frame,
       script: mwState.defaults.script,
       rigour: mwState.defaults.rigour,
-      timebox_min: mwState.defaults.timebox_min
+      timebox_min: mwState.defaults.timebox_min,
+      question_time_mode: mwState.defaults.question_time_mode === "custom" ? "custom" : "auto",
+      question_time_custom_s: Number(mwState.defaults.question_time_custom_s || 30)
     }));
     const [session, setSession] = useState(null);
     const [lessonRun, setLessonRun] = useState(null);
@@ -390,6 +400,42 @@
     useEffect(() => save(LS.STATE, mwState), [mwState]);
     useEffect(() => save(LS.SHARED, shared), [shared]);
     useEffect(() => save(LS.EVENTS, events.slice(-800)), [events]);
+    useEffect(() => {
+      const nextTimeMode = plan.question_time_mode === "custom" ? "custom" : "auto";
+      const nextCustomTime = Number(plan.question_time_custom_s);
+      setMwState((prev) => {
+        const currentDefaults = asObj(prev.defaults);
+        const currentTimeMode = currentDefaults.question_time_mode === "custom" ? "custom" : "auto";
+        const currentCustomTime = Number(currentDefaults.question_time_custom_s || 30);
+        if (
+          currentDefaults.frame === plan.frame &&
+          currentDefaults.script === plan.script &&
+          currentDefaults.rigour === plan.rigour &&
+          Number(currentDefaults.timebox_min || 4) === Number(plan.timebox_min || 4) &&
+          currentTimeMode === nextTimeMode &&
+          currentCustomTime === nextCustomTime
+        ) return prev;
+        return {
+          ...prev,
+          defaults: {
+            ...currentDefaults,
+            frame: plan.frame,
+            script: plan.script,
+            rigour: plan.rigour,
+            timebox_min: Number(plan.timebox_min || 4),
+            question_time_mode: nextTimeMode,
+            question_time_custom_s: nextCustomTime
+          }
+        };
+      });
+    }, [
+      plan.frame,
+      plan.script,
+      plan.rigour,
+      plan.timebox_min,
+      plan.question_time_mode,
+      plan.question_time_custom_s
+    ]);
     useEffect(() => {
       // Do not persist a forced Gym suggestion across reloads.
       setMwState((prev) => {
@@ -677,10 +723,23 @@
       return { mode: "practice", note: "" };
     }, [mwState.probe, shared]);
 
-    const getQuestionTimeSecForToday = () => {
+    const getAutoQuestionTimeSecForToday = () => {
       const readiness = String(shared.today.readiness || "full").toLowerCase();
       const noisy = String(shared.today.data_quality || "ok").toLowerCase() !== "ok";
       return (readiness === "full" && !noisy) ? 20 : 30;
+    };
+    const getQuestionTimeForMode = (mode) => {
+      const autoSec = getAutoQuestionTimeSecForToday();
+      if (mode === "probe" || mode === "recheck") {
+        return { seconds: autoSec, source: "auto_locked_transfer" };
+      }
+      if (plan.question_time_mode === "custom") {
+        const custom = Number(plan.question_time_custom_s);
+        if (Number.isFinite(custom) && custom >= 10 && custom <= 90) {
+          return { seconds: Math.round(custom), source: "custom" };
+        }
+      }
+      return { seconds: autoSec, source: "auto" };
     };
 
     const pickItems = ({ mode, signature, microTag, script }) => {
@@ -755,7 +814,8 @@
       }
       const randomizedItems = shuffleOptionsForSession(items);
       const q = randomizedItems[0];
-      const questionTimeSec = getQuestionTimeSecForToday();
+      const questionTime = getQuestionTimeForMode(mode);
+      const questionTimeSec = Number(questionTime.seconds || 30);
       setSession({
         id: uid(),
         started_at: nowIso(),
@@ -765,6 +825,7 @@
         rigour: signature?.rigour || plan.rigour,
         signature,
         question_time_s: questionTimeSec,
+        question_time_source: questionTime.source,
         items: randomizedItems,
         index: 0,
         phase: "question",
@@ -972,6 +1033,7 @@
         frame: session.frame,
         script: session.script,
         question_time_s: Number(session.question_time_s || 30),
+        question_time_source: String(session.question_time_source || "auto"),
         accuracy: Number(accuracy.toFixed(2)),
         boundary_pass: boundaryPass,
         top_near_miss: topMiss ? topMiss[0] : null,
@@ -1633,9 +1695,28 @@
             </select>
             <select className="field" value={plan.rigour} onChange={(e)=>setPlan((p)=>({...p,rigour:e.target.value}))}><option value="light">Rigour: light</option><option value="standard">Rigour: standard</option><option value="deep">Rigour: deep</option></select>
             <select className="field" value={plan.timebox_min} onChange={(e)=>setPlan((p)=>({...p,timebox_min:Number(e.target.value)}))}> {[2,4,6,8].map((m)=><option key={m} value={m}>Timebox: {m} min</option>)} </select>
+            <select
+              className="field"
+              value={plan.question_time_mode}
+              onChange={(e)=>setPlan((p)=>({...p,question_time_mode:e.target.value === "custom" ? "custom" : "auto"}))}
+            >
+              <option value="auto">Question timer: Auto (recommended)</option>
+              <option value="custom">Question timer: Custom</option>
+            </select>
+            <select
+              className="field"
+              value={Number(plan.question_time_custom_s || 30)}
+              onChange={(e)=>setPlan((p)=>({...p,question_time_custom_s:Number(e.target.value)}))}
+              disabled={plan.question_time_mode !== "custom"}
+            >
+              {CUSTOM_QUESTION_TIME_OPTIONS.map((sec) => <option key={sec} value={sec}>Custom time: {sec}s</option>)}
+            </select>
           </div>
           <p className="hint" style={{ marginTop:"10px" }}>
             Selected: <b>{FRAME_LABEL[plan.frame]}</b> • <b>Script: {scriptTitle(plan.script)}</b>
+          </p>
+          <p className="hint">
+            Question timer: <b>{plan.question_time_mode === "custom" ? `${Number(plan.question_time_custom_s || 30)}s (custom)` : "Auto (20-30s by readiness)"}</b>. Probe/re-check sessions always use Auto for fair comparison.
           </p>
           {getLessonByScript(plan.script) ? (
             <section style={{ marginTop:"8px", border:"1px solid #E0E0E0", borderRadius:"12px", padding:"10px", background:"#FAFAFA" }}>
