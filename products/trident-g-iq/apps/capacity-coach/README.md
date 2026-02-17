@@ -90,6 +90,7 @@ Legacy/back-compat keys:
 
 - App: `index.html`
 - Science/context notes: `SCIENCE.md`
+- Ethics/transparency notes: `ETHICS_AND_TRANSPARENCY.md`
 - This document: `README.md`
 
 ## Relationship to Mindware Coach
