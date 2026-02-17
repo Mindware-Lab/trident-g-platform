@@ -1845,7 +1845,7 @@
                 Record rest day
               </button>
             </div>
-            <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#333333' }}>
+            <p style={{ margin: '8px 0 0 0', fontSize: '17px', lineHeight: 1.3, color: '#1F2F44' }}>
               Instruction: after you complete the full Zone Coach flow (to the final result screen), click <b>Import latest Zone result</b> once to apply that readiness gate in Capacity Coach.
             </p>
             {showEmbeddedZoneCoach ? (
@@ -1881,11 +1881,11 @@
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
             <p style={{ margin: '0 0 6px 0', fontWeight: 900, fontSize: '22px', lineHeight: 1.2 }}>2) Today's suggestion</p>
             {firstSession ? (
-              <p style={{ marginTop: '8px' }}>
+              <p style={{ marginTop: '8px', fontSize: '17px', lineHeight: 1.3, color: '#1F2F44' }}>
                 First session: no session style is suggested yet. Start simple with <b>Classic n-back</b>.
               </p>
             ) : (
-              <p style={{ marginTop: '8px' }}>
+              <p style={{ marginTop: '8px', fontSize: '17px', lineHeight: 1.3, color: '#1F2F44' }}>
                 Session style: <b>{SESSION_LABELS[recommendationV11.recommended_session_type] || 'Build'}</b> | Game: <b>{GAME_LABEL[GAME_ID_FROM_ENUM[recommendationV11.recommended_game]] || recommendationV11.recommended_game}</b>
               </p>
             )}
@@ -1940,7 +1940,7 @@
 
           <section style={{ background: '#FAFAFA', border: '1px solid #E0E0E0', borderRadius: '12px', padding: '10px' }}>
             <p style={{ margin: '0 0 6px 0', fontWeight: 900, fontSize: '22px', lineHeight: 1.2 }}>3) Choose today's i3 Mindware game</p>
-            <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#333333' }}>The recommended game for this session is highlighted.</p>
+            <p style={{ margin: '0 0 10px 0', fontSize: '17px', lineHeight: 1.3, color: '#1F2F44' }}>The recommended game for this session is highlighted.</p>
             <div style={{ display: 'grid', gap: '10px' }}>
               {GAMES.map((g) => (
                 <button
@@ -1979,7 +1979,7 @@
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
             <p style={{ margin: '0 0 6px 0', fontWeight: 900, fontSize: '22px', lineHeight: 1.2 }}>5) Start session</p>
             <p style={{ marginTop: '6px', fontSize: '13px', color: '#555555' }}>Plan: {planLabel}</p>
-            <p style={{ marginTop: '8px' }}>Use the coach between each block. It tells you the next block settings based on your quick check.</p>
+            <p style={{ marginTop: '8px', fontSize: '17px', lineHeight: 1.3, color: '#1F2F44' }}>Use the coach between each block. It tells you the next block settings based on your quick check.</p>
             <div className="btnRow">
               <button className="btn btnPrimary" onClick={startGuidedSession}>Start guided session</button>
               <button
