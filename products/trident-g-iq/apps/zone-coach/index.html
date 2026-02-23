@@ -751,7 +751,8 @@
         const q = new URLSearchParams({
           duration: String(durationSec),
           sessionKey,
-          label: isRecheck ? 'Recheck' : 'Probe'
+          label: isRecheck ? 'Recheck' : 'Probe',
+          autostart: '1'
         });
         return `./amft-quick.html?${q.toString()}`;
       }, [durationSec, sessionKey, isRecheck]);

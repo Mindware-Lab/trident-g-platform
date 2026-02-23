@@ -61,6 +61,7 @@
   const durationFromQuery = Number(params.get('duration'));
   const sessionKey = params.get('sessionKey') || `iqmw.zone.amft.session.${Date.now()}`;
   const label = params.get('label') || 'Probe';
+  const autoStart = params.get('autostart') === '1';
   const LS_HISTORY = 'iqmw.zone.amft.history';
   const LS_LATEST = 'iqmw.zone.amft.latest';
 
@@ -154,6 +155,9 @@
   resize();
 
   function clearScreen() {
+    // Re-sync the drawing buffer to the current iframe layout before each frame.
+    // This prevents invisible/clipped stimuli if the iframe size settles after initial load.
+    resize();
     const rect = canvas.getBoundingClientRect();
     ctx.fillStyle = '#0b0b0d';
     ctx.fillRect(0, 0, rect.width, rect.height);
@@ -508,6 +512,11 @@
   });
 
   drawFixation();
+  if (autoStart) {
+    setTimeout(() => {
+      if (!running) startBtn.click();
+    }, 150);
+  }
 })();
 </script>
 </body>
