@@ -808,10 +808,13 @@
             <div className="card" style={{ maxWidth: 1080, margin: '0 auto' }}>
               <div className="h1">{isRecheck ? 'Masked majority recheck' : `Masked majority readiness probe (${durationSec}s)`}</div>
               <p className="p" style={{ marginTop: 6 }}>
-                The dot probe has been replaced with the masked majority throughput probe (aMFT-Quick). Run it in the embedded panel below, then continue once the result appears.
+                This probe lasts <b>{durationSec} seconds</b>. On each trial, briefly shown arrows will appear in a 5-arrow set. Press <b>&larr;</b> if the <b>majority</b> point left, or <b>&rarr;</b> if the <b>majority</b> point right.
               </p>
               <p className="p" style={{ marginTop: 6 }}>
-                The probe shows <b>bits/second (bps)</b>, EWMA baseline, gate, and RT structure metrics.
+                Wait for the arrows before responding (do not press early during the fixation cross). When the run finishes, the result will appear below with <b>bits/second (bps)</b>, baseline/gate, and timing stability metrics.
+              </p>
+              <p className="p" style={{ marginTop: 6 }}>
+                If the arrow keys do not register, click once inside the embedded probe panel to give it keyboard focus.
               </p>
 
               <div style={{ marginTop: 12, border: '1px solid #E0E0E0', borderRadius: 14, overflow: 'hidden', background: '#0b0b0d' }}>
