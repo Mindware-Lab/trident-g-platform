@@ -90,6 +90,14 @@
       end_hold_block: 10
     }
   };
+  const STRICT_TRANSFER_RULES = Object.freeze({
+    min_probe_wrappers: 2,
+    min_probe_demands: 2,
+    min_probe_passes: 2,
+    min_delay_rechecks: 1,
+    min_mission_successes: 1,
+    min_stability_streak: 2
+  });
   // Planned opportunities only: these slots can be deferred when out-of-band or data-quality is compromised.
   const makeScaffold = () => Array.from({ length: PROGRAM_TARGET }, (_, i) => ({
     program_day: i + 1,
@@ -169,7 +177,7 @@
       why_line: 'Why: Practice builds stability. Real tasks build reliability.'
     },
     mission_bridge_banner: {
-      no_mission: 'After this session: set one tiny real-world mission (2-10 minutes) to use the habit once.',
+      no_mission: 'After this session: set one tiny real-world mission (2-10 minutes). Mission evidence is required before strict banking.',
       pending_title: 'Mission pending',
       pending_body: 'Log what happened before your next session (recommended).',
       buttons: {
@@ -264,6 +272,62 @@
     s.data_quality === 'OK' &&
     (s.log?.plan_confirmed ?? true)
   );
+  const approxStateRatingsFromZone = (zoneMode, handoff) => {
+    const zone = handoff?.gate?.zone || null;
+    if (zone === 'too_hot' || zoneMode === 'reset') return { load: 8, drift: 7, mismatch: 7 };
+    if (zone === 'too_cold') return { load: 3, drift: 5, mismatch: 4 };
+    if (zone === 'in_band' || zoneMode === 'in_band') return { load: 4, drift: 3, mismatch: 3 };
+    return DEFAULT_READINESS_SNAPSHOT;
+  };
+  const recentDriftBand = (sessions) => {
+    const last3 = (Array.isArray(sessions) ? sessions : []).slice(-3);
+    if (!last3.length) return { high: false, low: false, lost_thread_rate: 0 };
+    const blocks = last3.flatMap((s) => Array.isArray(s?.block_logs) ? s.block_logs : []);
+    const lostThread = blocks.filter((b) => b?.state_drift === 'lost_thread').length;
+    const lostThreadRate = blocks.length ? lostThread / blocks.length : 0;
+    const meanVolatility = mean(last3.map((s) => Number(s?.derived?.volatility || 0)));
+    return {
+      high: lostThreadRate >= 0.15 || meanVolatility > 4,
+      low: lostThreadRate === 0 && meanVolatility <= 2,
+      lost_thread_rate: Number(lostThreadRate.toFixed(2))
+    };
+  };
+  const buildExploreDemandBumpPlan = (referenceSession, defaults) => {
+    const baseline = asObject(asObject(referenceSession?.plan).baseline);
+    const mode = String(baseline.mode || 'ADAPTIVE').toUpperCase();
+    const fixedN = Number.isFinite(Number(baseline.fixed_n)) ? Number(baseline.fixed_n) : null;
+    const currentSpeed = String(baseline.speed || 'DEFAULT').toUpperCase();
+    const currentInterference = String(baseline.interference || 'DEFAULT').toUpperCase();
+    const next = {
+      speed: currentSpeed === 'FAST' ? 'fast' : 'default',
+      distraction: currentInterference === 'HIGH' ? 'high' : 'default',
+      baseline_mode: mode === 'FIXED' ? 'FIXED' : 'ADAPTIVE',
+      fixed_n: mode === 'FIXED' ? fixedN : null,
+      pulse_type: '',
+      pulse_block_index: defaults?.pulse_block_index || 4,
+      recovery_blocks: Array.isArray(defaults?.recovery_blocks) ? defaults.recovery_blocks : [5, 6],
+      end_hold_block: defaults?.end_hold_block || 10
+    };
+    if (currentSpeed !== 'FAST') next.speed = 'fast';
+    else if (currentInterference !== 'HIGH') next.distraction = 'high';
+    return next;
+  };
+  const sessionHasMismatchSpike = (s) => {
+    const z = Number(s?.zone?.mismatch);
+    if (Number.isFinite(z) && z >= 6) return true;
+    if (Array.isArray(s?.block_logs) && s.block_logs.some((b) => b?.state_drift === 'lost_thread')) return true;
+    return false;
+  };
+  const demandSignatureFromSession = (s) => {
+    const baseline = asObject(asObject(s?.plan).baseline);
+    const pulse = asObject(asObject(s?.plan).pulse);
+    return [
+      String(baseline.mode || 'ADAPTIVE').toUpperCase(),
+      String(baseline.speed || 'DEFAULT').toUpperCase(),
+      String(baseline.interference || 'DEFAULT').toUpperCase(),
+      String(pulse.type || 'NONE').toUpperCase()
+    ].join('|');
+  };
   const nextProbeRadius = (lastPassed) => {
     if (!lastPassed) return 'NEAR';
     if (lastPassed === 'NEAR') return 'MID';
@@ -382,7 +446,6 @@
     const [missionsV11, setMissionsV11] = useState(() => loadMissionsV11());
     const [zoneMode, setZoneMode] = useState('light');
     const [lastStateReason, setLastStateReason] = useState('');
-    const stateRatings = DEFAULT_READINESS_SNAPSHOT;
     const [selectedGame, setSelectedGame] = useState('classic');
     const [speedPreset, setSpeedPreset] = useState('default');
     const [interferencePreset, setInterferencePreset] = useState('default');
@@ -427,6 +490,10 @@
       engagement: 'ok',
       state_drift: 'clean'
     });
+    const stateRatings = useMemo(
+      () => approxStateRatingsFromZone(zoneMode, zoneHandoff),
+      [zoneMode, zoneHandoff]
+    );
 
     const selectedGameObj = useMemo(
       () => GAMES.find((g) => g.id === selectedGame) || GAMES[0],
@@ -450,18 +517,47 @@
         return streak;
       })();
       const missionSuccesses = missionsV11.filter((m) => m.outcome && m.outcome.cue_fired === 'YES' && m.outcome.success_met === 'YES').length;
+      const strictPortableProbes = probes.filter((s) => !sessionHasMismatchSpike(s));
+      const wrapperCount = new Set(strictPortableProbes.map((s) => s.game).filter(Boolean)).size;
+      const demandCount = new Set(strictPortableProbes.map((s) => demandSignatureFromSession(s))).size;
+      const strictTransferAdmitted = (
+        strictPortableProbes.length >= STRICT_TRANSFER_RULES.min_probe_passes
+        && wrapperCount >= STRICT_TRANSFER_RULES.min_probe_wrappers
+        && demandCount >= STRICT_TRANSFER_RULES.min_probe_demands
+      );
+      const bankReady = (
+        strictTransferAdmitted
+        && rechecks >= STRICT_TRANSFER_RULES.min_delay_rechecks
+        && missionSuccesses >= STRICT_TRANSFER_RULES.min_mission_successes
+        && stabilityStreak >= STRICT_TRANSFER_RULES.min_stability_streak
+      );
+      const bankBlockers = [];
+      if (!strictTransferAdmitted) {
+        if (wrapperCount < STRICT_TRANSFER_RULES.min_probe_wrappers) bankBlockers.push('Need passed switch tests in 2+ wrappers without drift/mismatch spikes.');
+        if (demandCount < STRICT_TRANSFER_RULES.min_probe_demands) bankBlockers.push('Need passed switch tests across 2+ demand settings.');
+      }
+      if (rechecks < STRICT_TRANSFER_RULES.min_delay_rechecks) bankBlockers.push('Need one delayed re-check that still holds.');
+      if (missionSuccesses < STRICT_TRANSFER_RULES.min_mission_successes) bankBlockers.push('Need one cue-fired mission success before banking.');
+      if (stabilityStreak < STRICT_TRANSFER_RULES.min_stability_streak) bankBlockers.push('Need a short stability streak before banking.');
       return {
         near: probes.some((s) => s.probe?.probe_radius === 'NEAR'),
         mid: probes.some((s) => s.probe?.probe_radius === 'MID'),
         far: probes.some((s) => s.probe?.probe_radius === 'FAR'),
         delay_holds: rechecks,
         mission_successes: missionSuccesses,
-        stability_streak: stabilityStreak
+        stability_streak: stabilityStreak,
+        strict_probe_passes: strictPortableProbes.length,
+        wrapper_count: wrapperCount,
+        demand_count: demandCount,
+        strict_transfer_admitted: strictTransferAdmitted,
+        bank_ready: bankReady,
+        bank_blockers: bankBlockers
       };
     }, [evidenceSessions, missionsV11]);
     const notCountedNote = useMemo(() => {
       const last = [...trainingSessionsV11].reverse().find(Boolean);
       if (!last) return '';
+      if (Array.isArray(last.protocol?.reasons) && last.protocol.reasons.length) return 'Not counted: ' + last.protocol.reasons[0];
       if (last.data_quality === 'UNCONFIRMED_PLAN') return 'Not counted: you did not follow today\'s plan settings.';
       if (last.data_quality === 'COMPROMISED') return 'Not counted: some blocks had no responses.';
       if (last.session_type === 'RECHECK' && !last.recheck?.of_session_id) return 'Not counted: this check was not matched to a previous session.';
@@ -472,6 +568,7 @@
       const lane = programV11.anchor_lane || 'CLASSIC';
       const sameLane = trainingSessionsV11.filter((s) => s.game === lane);
       const tf = trendFlags(sameLane, settingsV11.thresholds.plateau_epsilon);
+      const driftBand = recentDriftBand(sameLane);
       const row = programV11.scaffold[Math.max(0, programV11.program_session_index)] || { probe_slot: false, recheck_slot: false };
       const latestTraining = [...trainingSessionsV11].reverse().find(Boolean);
       const latestLaneSession = [...sameLane].reverse().find(Boolean);
@@ -545,9 +642,15 @@
         reason = 'Today is a planned switch-test opportunity.';
       }
       if (session_type === 'TUNE' && tf.plateau && zoneRecommendation !== 'RESET') {
-        session_type = 'EXPLORE';
-        game = chooseExploreGame(lane, stateRatings);
-        reason = 'You look flat or stuck, so a controlled explore day is suggested.';
+        if (driftBand.high) {
+          session_type = 'TIGHTEN';
+          reason = 'Plateau plus drift detected: widen the corridor and stabilise before increasing challenge.';
+        } else {
+          session_type = 'EXPLORE';
+          game = chooseExploreGame(lane, stateRatings);
+          recommended_plan = buildExploreDemandBumpPlan(latestLaneSession, settingsV11.defaults);
+          reason = 'Plateau with low drift: run a controlled wrapper swap with one small demand bump.';
+        }
       }
       return {
         recommended_session_type: session_type,
@@ -837,6 +940,76 @@
       target_session_id: targetSessionId || null,
       ts: timestamp
     });
+    const sameNumberList = (a, b) => {
+      const left = Array.isArray(a) ? a.map((x) => Number(x)) : [];
+      const right = Array.isArray(b) ? b.map((x) => Number(x)) : [];
+      if (left.length !== right.length) return false;
+      for (let i = 0; i < left.length; i += 1) {
+        if (left[i] !== right[i]) return false;
+      }
+      return true;
+    };
+    const evaluateProtocolMatch = ({
+      actualSessionType,
+      actualGame,
+      baseline,
+      pulseTypeUsed,
+      pulseBlockIndexUsed,
+      recoveryBlocksUsed,
+      endHoldBlockUsed
+    }) => {
+      const reasons = [];
+      if (firstSession) return { matched: true, reasons };
+      if (recommendationV11.recommended_session_type && actualSessionType !== recommendationV11.recommended_session_type) {
+        reasons.push('Session type did not match today\'s coach recommendation.');
+      }
+      if (recommendationV11.recommended_game && actualGame !== recommendationV11.recommended_game) {
+        reasons.push('Wrapper/game did not match today\'s planned switch/build target.');
+      }
+      if (recommendationV11.recommended_session_type === 'PROBE' && !pulseTypeUsed) {
+        reasons.push('Switch test needs a challenge pulse block.');
+      }
+      const recPlan = asObject(recommendationV11.recommended_plan);
+      if (Object.keys(recPlan).length) {
+        const actualMode = String(baseline?.mode || 'ADAPTIVE').toUpperCase();
+        const actualSpeed = String(baseline?.speed || 'DEFAULT').toUpperCase();
+        const actualInterference = String(baseline?.interference || 'DEFAULT').toUpperCase();
+        if (recPlan.baseline_mode && actualMode !== String(recPlan.baseline_mode).toUpperCase()) {
+          reasons.push('Level mode did not match the planned replay signature.');
+        }
+        if (recPlan.speed && actualSpeed !== String(recPlan.speed).toUpperCase()) {
+          reasons.push('Speed did not match the planned replay signature.');
+        }
+        if (recPlan.distraction && actualInterference !== String(recPlan.distraction).toUpperCase()) {
+          reasons.push('Distraction did not match the planned replay signature.');
+        }
+        if (String(recPlan.baseline_mode || '').toUpperCase() === 'FIXED') {
+          const actualFixed = Number.isFinite(Number(baseline?.fixed_n)) ? Number(baseline.fixed_n) : null;
+          const recFixed = Number.isFinite(Number(recPlan.fixed_n)) ? Number(recPlan.fixed_n) : null;
+          if (actualFixed !== recFixed) reasons.push('Fixed n level did not match the planned replay signature.');
+        }
+        if (Object.prototype.hasOwnProperty.call(recPlan, 'pulse_type')) {
+          const actualPulse = String(pulseTypeUsed || '').toUpperCase();
+          const recPulse = String(recPlan.pulse_type || '').toUpperCase();
+          if (actualPulse !== recPulse) reasons.push('Pulse type did not match the planned replay signature.');
+        }
+        if (Number.isFinite(Number(recPlan.pulse_block_index)) && Number(pulseBlockIndexUsed) !== Number(recPlan.pulse_block_index)) {
+          reasons.push('Pulse block index did not match the planned replay signature.');
+        }
+        if (Array.isArray(recPlan.recovery_blocks) && !sameNumberList(recoveryBlocksUsed, recPlan.recovery_blocks)) {
+          reasons.push('Recovery blocks did not match the planned replay signature.');
+        }
+        if (Number.isFinite(Number(recPlan.end_hold_block)) && Number(endHoldBlockUsed) !== Number(recPlan.end_hold_block)) {
+          reasons.push('End-hold block did not match the planned replay signature.');
+        }
+      }
+      return { matched: reasons.length === 0, reasons };
+    };
+    const shouldUpdateAnchorLane = (sessionStyle, gameEnum, dataQuality) => (
+      dataQuality === 'OK'
+      && ['TUNE', 'EXPLORE', 'TIGHTEN'].includes(sessionStyle)
+      && Boolean(gameEnum)
+    );
 
     const toggleBlockTag = (current, blockIndex) => (
       current.includes(blockIndex)
@@ -866,6 +1039,7 @@
         game: GAME_ENUM[selectedGame] || 'CLASSIC',
         session_style: selectedStyle,
         recommended_session_type: firstSession ? null : recommendationV11.recommended_session_type,
+        initial_baseline_plan: { ...initialPlan },
         baseline_plan: initialPlan,
         next_block_plan: initialPlan,
         next_block_index: 1,
@@ -1054,9 +1228,27 @@
           )
         : null;
       const recoveryBlocks = parseRecoveryBlocks();
-      const dataQuality = sessionRun.blocks.some((b) => b.state_drift === 'lost_thread' && b.felt_difficulty === 'hard')
-        ? 'UNCONFIRMED_PLAN'
-        : 'OK';
+      const firstPulseBlock = sessionRun.blocks.find((b) => b.pulse_used && b.pulse_used !== 'none');
+      const guidedPulseType = firstPulseBlock
+        ? (firstPulseBlock.pulse_used === 'speed' ? 'SPEED' : 'INTERFERENCE')
+        : null;
+      const guidedBaselineForProtocol = {
+        mode: sessionRun.initial_baseline_plan?.level_mode === 'hold' ? 'FIXED' : 'ADAPTIVE',
+        speed: String(sessionRun.initial_baseline_plan?.speed || 'default').toUpperCase(),
+        interference: String(sessionRun.initial_baseline_plan?.distraction || 'default').toUpperCase(),
+        fixed_n: sessionRun.initial_baseline_plan?.level_mode === 'hold' ? Number(sessionRun.initial_baseline_plan?.hold_at) : null
+      };
+      const protocolCheck = evaluateProtocolMatch({
+        actualSessionType: sessionRun.session_style,
+        actualGame: sessionRun.game,
+        baseline: guidedBaselineForProtocol,
+        pulseTypeUsed: guidedPulseType,
+        pulseBlockIndexUsed: firstPulseBlock ? firstPulseBlock.block_index : settingsV11.defaults.pulse_block_index,
+        recoveryBlocksUsed: recoveryBlocks,
+        endHoldBlockUsed: 10
+      });
+      const messySession = sessionRun.blocks.some((b) => b.state_drift === 'lost_thread' && b.felt_difficulty === 'hard');
+      const dataQuality = (!protocolCheck.matched || messySession) ? 'UNCONFIRMED_PLAN' : 'OK';
       const anchorLane = programV11.anchor_lane || 'CLASSIC';
       const probeTargetSession = [...trainingSessionsV11].reverse().find((s) => s.game === anchorLane && isEvidenceEligible(s));
       const swapCost = sessionRun.session_style === 'PROBE' && dataQuality === 'OK' && derived && probeTargetSession?.derived
@@ -1075,10 +1267,7 @@
           && derived.volatility <= ((recheckTarget.derived.volatility ?? 0) + 2)
           && derived.end_hold_delta >= (recheckTarget.derived.end_hold_delta - 1)
         : null;
-      const firstPulseBlock = sessionRun.blocks.find((b) => b.pulse_used && b.pulse_used !== 'none');
-      const guidedPulseType = firstPulseBlock
-        ? (firstPulseBlock.pulse_used === 'speed' ? 'SPEED' : 'INTERFERENCE')
-        : null;
+      const countedProbePass = probePass === true && protocolCheck.matched;
 
       const trainingEntry = {
         id: uid(),
@@ -1113,7 +1302,7 @@
           no_response_blocks: [],
           fixed_n_blocks: sessionRun.blocks.filter((b) => b.level_mode === 'hold').map((b) => b.block_index),
           block_done: sessionRun.blocks.map(() => true),
-          plan_confirmed: true,
+          plan_confirmed: protocolCheck.matched,
           temptation_pressure: null
         },
         block_logs: sessionRun.blocks,
@@ -1131,6 +1320,13 @@
           of_session_id: recommendationV11.recheck_target_session_id || null,
           pass: recheckPass
         },
+        protocol: {
+          matched: protocolCheck.matched,
+          reasons: [
+            ...protocolCheck.reasons,
+            ...(messySession ? ['Session became messy under load (lost thread + hard blocks), so it is not counted for transfer proof.'] : [])
+          ]
+        },
         bridge: {
           what_changed: bridgeObs.trim(),
           how_ill_use_it: bridgeMove.trim()
@@ -1144,10 +1340,11 @@
         program_session_index: Math.min(PROGRAM_TARGET, (prev.program_session_index || 0) + 1),
         calendar_entry_count: (prev.calendar_entry_count || 0) + 1,
         consecutive_rest_count: 0,
+        anchor_lane: shouldUpdateAnchorLane(sessionRun.session_style, sessionRun.game, dataQuality) ? sessionRun.game : (prev.anchor_lane || 'CLASSIC'),
         last_probe_game: sessionRun.session_style === 'PROBE' ? (sessionRun.game || prev.last_probe_game) : prev.last_probe_game,
         last_probe_radius: sessionRun.session_style === 'PROBE' ? (recommendationV11.probe_radius || prev.last_probe_radius) : prev.last_probe_radius,
-        last_probe_radius_passed: probePass === true ? recommendationV11.probe_radius : prev.last_probe_radius_passed,
-        last_passed_probe_signature: probePass === true
+        last_probe_radius_passed: countedProbePass ? recommendationV11.probe_radius : prev.last_probe_radius_passed,
+        last_passed_probe_signature: countedProbePass
           ? buildProbeSignature({
               anchorLane,
               probeGame: sessionRun.game,
@@ -1218,8 +1415,24 @@
       setProgress(next);
 
       const recoveryBlocks = parseRecoveryBlocks();
+      const manualBaselineForProtocol = {
+        mode: baselineMode,
+        speed: speedPreset.toUpperCase(),
+        interference: interferencePreset.toUpperCase(),
+        fixed_n: baselineMode === 'FIXED' ? Number(fixedN) : null
+      };
+      const protocolCheck = evaluateProtocolMatch({
+        actualSessionType: sessionType,
+        actualGame: GAME_ENUM[selectedGame] || 'CLASSIC',
+        baseline: manualBaselineForProtocol,
+        pulseTypeUsed: pulseType || '',
+        pulseBlockIndexUsed: Number(pulseBlockIndex),
+        recoveryBlocksUsed: recoveryBlocks,
+        endHoldBlockUsed: Number(endHoldBlock)
+      });
       const derived = computeDerivedFromNTrace(nTrace, { block_index: Number(pulseBlockIndex), recovery_blocks: recoveryBlocks });
-      const dataQuality = noResponseBlocks.length ? 'COMPROMISED' : (planConfirmed ? 'OK' : 'UNCONFIRMED_PLAN');
+      const effectivePlanConfirmed = Boolean(planConfirmed) && protocolCheck.matched;
+      const dataQuality = noResponseBlocks.length ? 'COMPROMISED' : (effectivePlanConfirmed ? 'OK' : 'UNCONFIRMED_PLAN');
       const anchorLane = programV11.anchor_lane || 'CLASSIC';
       const probeTargetSession = [...trainingSessionsV11].reverse().find((s) => s.game === anchorLane && isEvidenceEligible(s));
       const swapCost = probeTargetSession ? Number((derived.baseline_mean - probeTargetSession.derived.baseline_mean).toFixed(2)) : null;
@@ -1248,6 +1461,7 @@
           && derived.volatility <= ((recheckTarget.derived.volatility ?? 0) + 2)
           && derived.end_hold_delta >= (recheckTarget.derived.end_hold_delta - 1)
         : null;
+      const countedProbePass = probePass === true && protocolCheck.matched;
 
       const handoff = {
         localDate: nowIso.slice(0, 10),
@@ -1307,7 +1521,7 @@
           no_response_blocks: noResponseBlocks.slice(),
           fixed_n_blocks: fixedNBlocks.slice(),
           block_done: blockDone.slice(),
-          plan_confirmed: Boolean(planConfirmed),
+          plan_confirmed: effectivePlanConfirmed,
           temptation_pressure: temptationPressure === '' ? null : Number(temptationPressure)
         },
         derived,
@@ -1324,6 +1538,13 @@
           of_session_id: recheckTarget ? recheckTarget.id : null,
           pass: recheckPass
         },
+        protocol: {
+          matched: protocolCheck.matched,
+          reasons: [
+            ...protocolCheck.reasons,
+            ...(!planConfirmed ? ['Plan was not confirmed for this session.'] : [])
+          ]
+        },
         bridge: {
           what_changed: bridgeObs.trim(),
           how_ill_use_it: bridgeMove.trim()
@@ -1336,10 +1557,11 @@
         program_session_index: Math.min(PROGRAM_TARGET, (prev.program_session_index || 0) + 1),
         calendar_entry_count: (prev.calendar_entry_count || 0) + 1,
         consecutive_rest_count: 0,
+        anchor_lane: shouldUpdateAnchorLane(sessionType, GAME_ENUM[selectedGame] || 'CLASSIC', dataQuality) ? (GAME_ENUM[selectedGame] || 'CLASSIC') : (prev.anchor_lane || 'CLASSIC'),
         last_probe_game: sessionType === 'PROBE' ? ((GAME_ENUM[selectedGame] || 'CLASSIC') || prev.last_probe_game) : prev.last_probe_game,
         last_probe_radius: sessionType === 'PROBE' ? (recommendationV11.probe_radius || prev.last_probe_radius) : prev.last_probe_radius,
-        last_probe_radius_passed: probePass === true ? recommendationV11.probe_radius : prev.last_probe_radius_passed,
-        last_passed_probe_signature: probePass === true
+        last_probe_radius_passed: countedProbePass ? recommendationV11.probe_radius : prev.last_probe_radius_passed,
+        last_passed_probe_signature: countedProbePass
           ? buildProbeSignature({
               anchorLane,
               probeGame: GAME_ENUM[selectedGame] || 'CLASSIC',
@@ -1536,7 +1758,7 @@
               <input type="text" value={bridgeObs} onChange={(e) => setBridgeObs(e.target.value)} placeholder="One concise observation" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0', marginBottom: '12px' }} />
               <label style={{ display: 'block', fontWeight: 900, marginBottom: '8px' }}>In the next task I will use it by...</label>
               <input type="text" value={bridgeMove} onChange={(e) => setBridgeMove(e.target.value)} placeholder="One concrete transfer move" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0' }} />
-              <p style={{ margin: '14px 0 8px 0', fontWeight: 900 }}>Set a tiny cue-fired mission (recommended, optional)</p>
+              <p style={{ margin: '14px 0 8px 0', fontWeight: 900 }}>Set a tiny cue-fired mission (recommended each session, required before strict banking)</p>
               <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#333333' }}>Keep it tiny: one cue, one yes/no success signal.</p>
               <input type="text" value={missionCue} onChange={(e) => setMissionCue(e.target.value)} placeholder="Cue (when/where this should fire)" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0', marginBottom: '10px' }} />
               <input type="text" value={missionSignal} onChange={(e) => setMissionSignal(e.target.value)} placeholder="Success signal (binary)" style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0', marginBottom: '10px' }} />
@@ -1715,7 +1937,7 @@
                 style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '1px solid #E0E0E0' }}
               />
 
-              <p style={{ margin: '14px 0 8px 0', fontWeight: 900 }}>Set a tiny cue-fired mission (recommended, optional)</p>
+              <p style={{ margin: '14px 0 8px 0', fontWeight: 900 }}>Set a tiny cue-fired mission (recommended each session, required before strict banking)</p>
               <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#333333' }}>Keep it tiny: one cue, one yes/no success signal.</p>
               <input
                 type="text"
@@ -1864,7 +2086,7 @@
         <main className="content capacityNarrow">
           <section className="card">
             <h1 className="h1">IQ Capacity Coach Training</h1>
-            <p className="p">24 sessions total. Choose any of the 4 n-back variants and speed/interference settings each session. The Coach recommends what you should train with based on progress and your current mental state (zone). Follow the steps below in order (1 to 5).</p>
+            <p className="p">24 sessions is the cycle length. Strict transfer banking still depends on switch tests, a later re-check, and one cue-fired mission success. The Coach recommends what you should train with based on progress and your current mental state (zone). Follow the steps below in order (1 to 5).</p>
           </section>
 
           <section style={{ background: '#FFFFFF', border: '1px solid #E0E0E0', borderRadius: '16px', padding: '16px' }}>
@@ -1895,6 +2117,15 @@
               <p style={{ marginTop: '6px' }}>
                 Steady sessions in a row: <b>{proofCounters.stability_streak}</b>
               </p>
+              <p style={{ marginTop: '6px' }}>
+                Strict transfer admission: <b>{proofCounters.strict_transfer_admitted ? 'passed' : 'not yet'}</b> (wrappers {proofCounters.wrapper_count}/2, demands {proofCounters.demand_count}/2, clean probe passes {proofCounters.strict_probe_passes}/2)
+              </p>
+              <p style={{ marginTop: '6px' }}>
+                Strict banking: <b>{proofCounters.bank_ready ? 'ready' : 'not yet'}</b>
+              </p>
+              {!proofCounters.bank_ready && proofCounters.bank_blockers?.[0] ? (
+                <p style={{ marginTop: '6px', fontSize: '13px', color: '#555555' }}>{proofCounters.bank_blockers[0]}</p>
+              ) : null}
               {notCountedNote ? (
                 <p style={{ marginTop: '8px', fontSize: '13px', color: '#555555' }}>{notCountedNote}</p>
               ) : null}
