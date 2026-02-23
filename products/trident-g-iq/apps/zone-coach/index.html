@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -76,7 +76,8 @@
       ZONE_LAST: 'iqmw.zone.lastCheck',
       ZONE_HISTORY: 'iqmw.zone.history',
       CAPACITY_FROM_ZONE: 'iqmw.capacity.handoffFromZone',
-      PVTB_HISTORY: 'iqmw.zone.pvtb.history'
+      PVTB_HISTORY: 'iqmw.zone.pvtb.history',
+      AMFT_HISTORY: 'iqmw.zone.amft.history'
     });
 
     // Optional cross-app fallback key (helps interoperability)
@@ -737,383 +738,55 @@
       );
     }
     // -----------------------------
-    // PVT-style readiness probe (no HR/BLE dependency)
-    // -----------------------------
-    function DotProbe({ label, onComplete, brand, durationSec = 180, isRecheck = false }) {
-      const PRACTICE_TRIALS = 6;
-      const FOREPERIOD_MIN_MS = 1000;
-      const FOREPERIOD_MAX_MS = 4000;
-      const RESPONSE_WINDOW_MS = 30000;
-      const LAPSE_THRESHOLD_MS = 500;
-
-      const [stage, setStage] = useState('intro'); // intro | practice | practice_done | run | done
-      const [status, setStatus] = useState('Ready');
-      const [elapsedSec, setElapsedSec] = useState(0);
-      const [trialLabel, setTrialLabel] = useState('');
-      const [showTarget, setShowTarget] = useState(false);
-      const [summary, setSummary] = useState(null);
-
-      const runningRef = useRef(false);
-      const stageRef = useRef('intro');
-      const startPerfRef = useRef(0);
-      const trialCounterRef = useRef(0);
-      const currentTrialRef = useRef(null);
-      const inForeperiodRef = useRef(false);
-      const targetVisibleRef = useRef(false);
-      const logsRef = useRef([]);
-      const timersRef = useRef({ foreperiod: null, response: null, tick: null });
-
-      const clearTimer = (key) => {
-        if (timersRef.current[key]) {
-          clearTimeout(timersRef.current[key]);
-          timersRef.current[key] = null;
-        }
-      };
-
-      const clearAllTimers = () => {
-        clearTimer('foreperiod');
-        clearTimer('response');
-        clearTimer('tick');
-      };
-
-      const median = (arr) => {
-        if (!arr.length) return null;
-        const sorted = arr.slice().sort((a, b) => a - b);
-        const mid = Math.floor(sorted.length / 2);
-        return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-      };
-
-      const mean = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
-
-      const sd = (arr) => {
-        if (arr.length < 2) return 0;
-        const m = mean(arr);
-        const variance = arr.reduce((acc, x) => acc + Math.pow(x - m, 2), 0) / arr.length;
-        return Math.sqrt(variance);
-      };
-
-      const mad = (arr) => {
-        if (!arr.length) return null;
-        const med = median(arr);
-        const absDeviations = arr.map((x) => Math.abs(x - med));
-        return median(absDeviations);
-      };
-
-      const readPvtHistory = () => {
-        try {
-          const parsed = JSON.parse(localStorage.getItem(LS_KEYS.PVTB_HISTORY) || '[]');
-          return Array.isArray(parsed) ? parsed : [];
-        } catch {
-          return [];
-        }
-      };
-
-      const savePvtHistory = (entry) => {
-        try {
-          const history = readPvtHistory();
-          history.push(entry);
-          while (history.length > 120) history.shift();
-          localStorage.setItem(LS_KEYS.PVTB_HISTORY, JSON.stringify(history));
-        } catch {}
-      };
-
-      const meanOrNull = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
-
-      const sdOrNull = (arr, m) => {
-        if (arr.length < 2 || !Number.isFinite(m)) return null;
-        const variance = arr.reduce((acc, x) => acc + Math.pow(x - m, 2), 0) / arr.length;
-        const out = Math.sqrt(variance);
-        return Number.isFinite(out) ? out : null;
-      };
-
-      const classifyReadiness = ({ lapses, rtCv, falseStarts }) => {
-        const history = readPvtHistory();
-        const comparable = history.filter((h) =>
-          Number(h?.duration_s) === Number(durationSec)
-          && Number.isFinite(Number(h?.summary?.rtCv))
-        );
-        const baselineCount = comparable.length;
-        if (baselineCount < 7 || !Number.isFinite(rtCv)) {
-          return { band: 'calibrating', readinessIndex: null, baselineCount };
-        }
-
-        const lapsesLogArr = comparable.map((h) => Math.log(Number(h?.summary?.lapses ?? 0) + 1));
-        const rtCvArr = comparable.map((h) => Number(h.summary.rtCv));
-        const falseStartsLogArr = comparable.map((h) => Math.log(Number(h?.summary?.falseStarts ?? 0) + 1));
-
-        const currentLapsesLog = Math.log(Number(lapses ?? 0) + 1);
-        const currentFalseStartsLog = Math.log(Number(falseStarts ?? 0) + 1);
-
-        const z = (value, arr) => {
-          const m = meanOrNull(arr);
-          const s = sdOrNull(arr, m);
-          if (!Number.isFinite(value) || !Number.isFinite(m) || !Number.isFinite(s) || s <= 0) return 0;
-          return (value - m) / s;
-        };
-
-        const readinessIndex =
-          -z(currentLapsesLog, lapsesLogArr)
-          -z(rtCv, rtCvArr)
-          -z(currentFalseStartsLog, falseStartsLogArr);
-
-        const rounded = Number(readinessIndex.toFixed(3));
-        const band = rounded >= -0.5 ? 'green' : (rounded > -1.5 ? 'amber' : 'red');
-        return { band, readinessIndex: rounded, baselineCount };
-      };
-
-      const remainingSec = Math.max(0, durationSec - elapsedSec);
-
-      const runTicker = useCallback(() => {
-        if (!runningRef.current) return;
-        if (stageRef.current !== 'run') return;
-
-        const elapsed = Math.floor((performance.now() - startPerfRef.current) / 1000);
-        setElapsedSec(elapsed);
-
-        if (elapsed >= durationSec) {
-          runningRef.current = false;
-          setShowTarget(false);
-          targetVisibleRef.current = false;
-          inForeperiodRef.current = false;
-          clearAllTimers();
-
-          const all = logsRef.current.slice();
-          const stimTrials = all.filter((t) => !t.false_start);
-          const hits = stimTrials.filter((t) => Number.isFinite(t.rt_ms) && !t.timeout);
-          const rts = hits.map((t) => t.rt_ms);
-          const rtMean = mean(rts);
-          const rtMedian = median(rts);
-          const rtSd = sd(rts);
-          const rtCv = rtMean ? rtSd / rtMean : null;
-          const rtMad = mad(rts);
-          const rtMadScaled = rtMad === null ? null : rtMad * 1.4826;
-          const lapses = stimTrials.filter((t) => t.lapse).length;
-          const falseStarts = all.filter((t) => t.false_start).length;
-          const timeouts = stimTrials.filter((t) => t.timeout).length;
-          const responseSpeed = rts.length ? rts.reduce((acc, rt) => acc + (1000 / rt), 0) / rts.length : null;
-
-          const summaryCore = {
-            test_id: 'pvtb_readiness_v1',
-            duration_s: durationSec,
-            trials: stimTrials.length,
-            hits: hits.length,
-            rts,
-            meanMs: rtMean !== null ? Math.round(rtMean) : null,
-            medianMs: rtMedian !== null ? Math.round(rtMedian) : null,
-            rtSdMs: rtSd !== null ? Math.round(rtSd) : null,
-            rtCv: rtCv !== null ? Number(rtCv.toFixed(3)) : null,
-            madMs: rtMad !== null ? Math.round(rtMad) : null,
-            madScaledMs: rtMadScaled !== null ? Math.round(rtMadScaled) : null,
-            lapses,
-            falseStarts,
-            timeouts,
-            responseSpeed: responseSpeed !== null ? Number(responseSpeed.toFixed(3)) : null,
-            trialLog: all
-          };
-
-          const readiness = classifyReadiness({
-            lapses: summaryCore.lapses,
-            rtCv: summaryCore.rtCv,
-            falseStarts: summaryCore.falseStarts
-          });
-
-          const runEntry = {
-            ts: new Date().toISOString(),
-            test_id: 'pvtb_readiness_v1',
-            duration_s: durationSec,
-            device_mode: 'keyboard_or_tap',
-            summary: {
-              medianMs: summaryCore.medianMs,
-              meanMs: summaryCore.meanMs,
-              rtCv: summaryCore.rtCv,
-              lapses: summaryCore.lapses,
-              falseStarts: summaryCore.falseStarts,
-              responseSpeed: summaryCore.responseSpeed
-            },
-            band: readiness.band
-          };
-          savePvtHistory(runEntry);
-
-          setSummary({
-            ...summaryCore,
-            readinessBand: readiness.band,
-            readinessIndex: readiness.readinessIndex,
-            baselineCount: readiness.baselineCount
-          });
-
-          setStage('done');
-          setStatus('Complete');
-          return;
-        }
-
-        timersRef.current.tick = setTimeout(runTicker, 200);
-      }, [durationSec]);
-
-      const scheduleNextTrial = useCallback(() => {
-        if (!runningRef.current) return;
-        if (stageRef.current !== 'practice' && stageRef.current !== 'run') return;
-
-        if (stageRef.current === 'practice' && trialCounterRef.current >= PRACTICE_TRIALS) {
-          runningRef.current = false;
-          setShowTarget(false);
-          targetVisibleRef.current = false;
-          inForeperiodRef.current = false;
-          setStage('practice_done');
-          setStatus('Practice complete');
-          setTrialLabel(`Practice: ${PRACTICE_TRIALS}/${PRACTICE_TRIALS}`);
-          return;
-        }
-
-        setShowTarget(false);
-        targetVisibleRef.current = false;
-        inForeperiodRef.current = true;
-        setStatus('Wait for signal');
-
-        const foreperiodMs = Math.floor(
-          Math.random() * (FOREPERIOD_MAX_MS - FOREPERIOD_MIN_MS + 1)
-        ) + FOREPERIOD_MIN_MS;
-
-        if (stageRef.current === 'practice') {
-          setTrialLabel(`Practice: ${trialCounterRef.current + 1}/${PRACTICE_TRIALS}`);
-        } else {
-          setTrialLabel(`Trials logged: ${trialCounterRef.current}`);
-        }
-
-        timersRef.current.foreperiod = setTimeout(() => {
-          if (!runningRef.current) return;
-
-          inForeperiodRef.current = false;
-          targetVisibleRef.current = true;
-          setShowTarget(true);
-          setStatus('Respond now');
-
-          trialCounterRef.current += 1;
-          const stimOnsetPerf = performance.now();
-          const stimOnsetTs = Date.now();
-          currentTrialRef.current = {
-            trial_index: trialCounterRef.current,
-            foreperiod_ms: foreperiodMs,
-            stim_onset_perf: stimOnsetPerf,
-            stim_onset_ts: stimOnsetTs
-          };
-
-          timersRef.current.response = setTimeout(() => {
-            if (!runningRef.current || !targetVisibleRef.current) return;
-            targetVisibleRef.current = false;
-            setShowTarget(false);
-            setStatus('Timeout');
-
-            const base = currentTrialRef.current;
-            logsRef.current.push({
-              trial_index: base?.trial_index ?? trialCounterRef.current,
-              foreperiod_ms: base?.foreperiod_ms ?? foreperiodMs,
-              stim_onset_ts: base?.stim_onset_ts ?? null,
-              response_ts: null,
-              rt_ms: null,
-              false_start: false,
-              timeout: true,
-              lapse: true
-            });
-            currentTrialRef.current = null;
-            scheduleNextTrial();
-          }, RESPONSE_WINDOW_MS);
-        }, foreperiodMs);
-      }, [PRACTICE_TRIALS]);
-
-      const startStage = (nextStage) => {
-        clearAllTimers();
-        stageRef.current = nextStage;
-        setStage(nextStage);
-        setSummary(null);
-        setStatus('Ready');
-        setElapsedSec(0);
-        setTrialLabel('');
-        setShowTarget(false);
-        targetVisibleRef.current = false;
-        inForeperiodRef.current = false;
-        currentTrialRef.current = null;
-        trialCounterRef.current = 0;
-
-        if (nextStage === 'run') {
-          logsRef.current = [];
-        }
-
-        runningRef.current = nextStage === 'practice' || nextStage === 'run';
-        if (!runningRef.current) return;
-
-        startPerfRef.current = performance.now();
-        if (nextStage === 'run') runTicker();
-        scheduleNextTrial();
-      };
-
-      const handleResponse = useCallback(() => {
-        if (!runningRef.current) return;
-
-        if (!targetVisibleRef.current) {
-          if (inForeperiodRef.current && stageRef.current !== 'practice') {
-            logsRef.current.push({
-              trial_index: trialCounterRef.current + 1,
-              foreperiod_ms: null,
-              stim_onset_ts: null,
-              response_ts: Date.now(),
-              rt_ms: null,
-              false_start: true,
-              timeout: false,
-              lapse: false
-            });
-            setStatus('Too early');
-          }
-          return;
-        }
-
-        clearTimer('response');
-        targetVisibleRef.current = false;
-        setShowTarget(false);
-
-        const nowPerf = performance.now();
-        const nowTs = Date.now();
-        const base = currentTrialRef.current;
-        const rtMs = Math.max(0, Math.round(nowPerf - (base?.stim_onset_perf ?? nowPerf)));
-        const lapse = rtMs >= LAPSE_THRESHOLD_MS;
-
-        if (stageRef.current !== 'practice') {
-          logsRef.current.push({
-            trial_index: base?.trial_index ?? trialCounterRef.current,
-            foreperiod_ms: base?.foreperiod_ms ?? null,
-            stim_onset_ts: base?.stim_onset_ts ?? null,
-            response_ts: nowTs,
-            rt_ms: rtMs,
-            false_start: false,
-            timeout: false,
-            lapse
-          });
-        }
-
-        currentTrialRef.current = null;
-        setStatus(lapse ? 'Late response' : 'Good');
-        scheduleNextTrial();
-      }, [LAPSE_THRESHOLD_MS, scheduleNextTrial]);
-
-      useEffect(() => {
-        const onKeyDown = (e) => {
-          if (e.code === 'Space' || e.key === ' ') {
-            if (e.repeat) return;
-            e.preventDefault();
-            handleResponse();
-          }
-        };
-        window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
-      }, [handleResponse]);
-
-      useEffect(() => () => {
-        runningRef.current = false;
-        clearAllTimers();
-      }, []);
-
+// Replacement wrapper: embeds the aMFT-Quick probe and imports the result.
+    function AMFTProbe({ label, onComplete, brand, durationSec = 180, isRecheck = false }) {
       const logoSrc = brand?.logoSrc || '../../../../branding/Trident-G-Icon.svg';
       const appName = brand?.appName || 'Zone Coach';
       const subtitle = brand?.subtitle || 'Quick state check -> mindful reset -> start training';
+      const [sessionKey, setSessionKey] = useState(() => `iqmw.zone.amft.session.${Date.now()}.${Math.random().toString(36).slice(2, 8)}`);
+      const [result, setResult] = useState(null);
+      const [lastPoll, setLastPoll] = useState(null);
+
+      const iframeSrc = useMemo(() => {
+        const q = new URLSearchParams({
+          duration: String(durationSec),
+          sessionKey,
+          label: isRecheck ? 'Recheck' : 'Probe'
+        });
+        return `./amft-quick.html?${q.toString()}`;
+      }, [durationSec, sessionKey, isRecheck]);
+
+      const tryLoadResult = useCallback(() => {
+        try {
+          const raw = localStorage.getItem(sessionKey);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') return null;
+          setResult(parsed);
+          setLastPoll(new Date().toLocaleTimeString());
+          return parsed;
+        } catch {
+          return null;
+        }
+      }, [sessionKey]);
+
+      useEffect(() => {
+        tryLoadResult();
+        const id = setInterval(tryLoadResult, 1000);
+        const onStorage = (e) => {
+          if (e.key === sessionKey) tryLoadResult();
+        };
+        window.addEventListener('storage', onStorage);
+        return () => {
+          clearInterval(id);
+          window.removeEventListener('storage', onStorage);
+        };
+      }, [sessionKey, tryLoadResult]);
+
+      const restartEmbeddedProbe = () => {
+        setResult(null);
+        setSessionKey(`iqmw.zone.amft.session.${Date.now()}.${Math.random().toString(36).slice(2, 8)}`);
+      };
 
       return (
         <div className="screen">
@@ -1131,116 +804,66 @@
           </div>
 
           <div className="content">
-            <div className="card" style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
-              <div className="h1">{isRecheck ? 'Quick recheck' : `Readiness check (${durationSec}s)`}</div>
+            <div className="card" style={{ maxWidth: 1080, margin: '0 auto' }}>
+              <div className="h1">{isRecheck ? 'Masked majority recheck' : `Masked majority readiness probe (${durationSec}s)`}</div>
               <p className="p" style={{ marginTop: 6 }}>
-                Press <b>Space</b> or tap as soon as the target appears. Avoid early taps.
+                The dot probe has been replaced with the masked majority throughput probe (aMFT-Quick). Run it in the embedded panel below, then continue once the result appears.
+              </p>
+              <p className="p" style={{ marginTop: 6 }}>
+                The probe shows <b>bits/second (bps)</b>, EWMA baseline, gate, and RT structure metrics.
               </p>
 
-              {stage === 'intro' && (
-                <>
-                  <p className="p" style={{ marginTop: 10 }}>
-                    This is a local-only readiness probe. No HR/Bluetooth sensor is required.
+              <div style={{ marginTop: 12, border: '1px solid #E0E0E0', borderRadius: 14, overflow: 'hidden', background: '#0b0b0d' }}>
+                <iframe
+                  key={sessionKey}
+                  src={iframeSrc}
+                  title={isRecheck ? 'aMFT recheck' : 'aMFT probe'}
+                  style={{ width: '100%', height: '860px', border: 'none', display: 'block', background: '#0b0b0d' }}
+                  loading="eager"
+                />
+              </div>
+
+              <div className="card" style={{ marginTop: 12, boxShadow: 'none' }}>
+                <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Imported result</div>
+                {!result ? (
+                  <p className="p" style={{ marginTop: 6 }}>
+                    No completed result found yet for this run. Finish the embedded task first, then click <b>Refresh result</b>.
                   </p>
-                  <div className="btnRow" style={{ justifyContent: 'center' }}>
-                    <button className="btn btnSecondary" style={{ width: 'min(360px, 100%)' }} onClick={() => startStage('practice')}>
-                      Start practice ({PRACTICE_TRIALS} trials)
-                    </button>
-                    <button className="btn btnPrimary" style={{ width: 'min(360px, 100%)' }} onClick={() => startStage('run')}>
-                      Skip practice and start
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {stage === 'practice_done' && (
-                <>
-                  <p className="p" style={{ marginTop: 10 }}>Practice complete. Start the timed probe when ready.</p>
-                  <div className="btnRow" style={{ justifyContent: 'center' }}>
-                    <button className="btn btnPrimary" style={{ width: 'min(360px, 100%)' }} onClick={() => startStage('run')}>
-                      Start timed probe
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {(stage === 'practice' || stage === 'run') && (
-                <>
-                  <div style={{ marginTop: 12, color: 'var(--deep)', fontWeight: 800 }}>
-                    {stage === 'run' ? `Time left: ${remainingSec}s` : 'Practice mode'} | {status}
-                  </div>
-                  <div style={{ marginTop: 6, color: 'rgba(0,0,0,0.75)', fontWeight: 700 }}>{trialLabel}</div>
-
-                  <div
-                    onClick={handleResponse}
-                    style={{
-                      margin: '18px auto 0',
-                      height: 240,
-                      borderRadius: 20,
-                      background: 'rgba(0,0,0,0.08)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      userSelect: 'none'
-                    }}
+                ) : (
+                  <>
+                    <p className="p" style={{ marginTop: 6 }}>
+                      BPS: <b>{Number.isFinite(Number(result.bps)) ? Number(result.bps).toFixed(2) : '-'}</b>
+                      <span style={{ color: '#111' }}> | Gate: </span><b>{result.gateLabel || result.readinessBand || '-'}</b>
+                      <span style={{ color: '#111' }}> | Quality: </span><b>{result.qualityOk ? 'OK' : 'Invalid'}</b>
+                    </p>
+                    <p className="p" style={{ marginTop: 6 }}>
+                      Median RT: <b>{result.medianMs ?? '-'}</b> ms
+                      <span style={{ color: '#111' }}> | RT CV: </span><b>{result.rtCv ?? '-'}</b>
+                      <span style={{ color: '#111' }}> | RT lag-1: </span><b>{result.rtLag1 ?? '-'}</b>
+                      <span style={{ color: '#111' }}> | Burstiness: </span><b>{result.burstiness ?? '-'}</b>
+                    </p>
+                  </>
+                )}
+                <p className="p" style={{ marginTop: 6, color: 'rgba(0,0,0,0.65)' }}>
+                  Session key: <code>{sessionKey}</code>{lastPoll ? ` | Last sync: ${lastPoll}` : ''}
+                </p>
+                <div className="btnRow" style={{ justifyContent: 'center' }}>
+                  <button className="btn btnSecondary" style={{ width: 'min(300px, 100%)' }} onClick={tryLoadResult}>
+                    Refresh result
+                  </button>
+                  <button className="btn btnSecondary" style={{ width: 'min(300px, 100%)' }} onClick={restartEmbeddedProbe}>
+                    Restart embedded probe
+                  </button>
+                  <button
+                    className="btn btnPrimary"
+                    style={{ width: 'min(300px, 100%)' }}
+                    onClick={() => result && onComplete?.(result)}
+                    disabled={!result}
                   >
-                    {showTarget
-                      ? <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--deep)' }} />
-                      : <div style={{ color: 'rgba(0,0,0,0.55)', fontWeight: 800 }}>Wait...</div>
-                    }
-                  </div>
-
-                  <div className="btnRow" style={{ justifyContent: 'center' }}>
-                    <button
-                      className="btn btnSecondary"
-                      style={{ width: 'min(360px, 100%)' }}
-                      onClick={() => {
-                        runningRef.current = false;
-                        clearAllTimers();
-                        setStage('intro');
-                        setStatus('Stopped');
-                      }}
-                    >
-                      Stop
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {stage === 'done' && summary && (
-                <>
-                  <div className="card" style={{ boxShadow: 'none', marginTop: 12, textAlign: 'left' }}>
-                    <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Readiness metrics</div>
-                    <p className="p" style={{ marginTop: 6 }}>
-                      Median RT: <span style={{ fontWeight: 900 }}>{summary.medianMs ?? '-'}</span> ms
-                      <span style={{ color: '#111' }}> | RT CV: </span>
-                      <span style={{ fontWeight: 900 }}>{summary.rtCv ?? '-'}</span>
-                      <span style={{ color: '#111' }}> | Lapses: </span>
-                      <span style={{ fontWeight: 900 }}>{summary.lapses ?? 0}</span>
-                      <span style={{ color: '#111' }}> | False starts: </span>
-                      <span style={{ fontWeight: 900 }}>{summary.falseStarts ?? 0}</span>
-                    </p>
-                    <p className="p" style={{ marginTop: 6 }}>
-                      Readiness band: <span style={{ fontWeight: 900 }}>{summary.readinessBand || 'calibrating'}</span>
-                      {summary.readinessIndex !== null ? (
-                        <span style={{ color: '#111' }}> | Index: <span style={{ fontWeight: 900 }}>{summary.readinessIndex}</span></span>
-                      ) : null}
-                      <span style={{ color: '#111' }}> | Baseline checks: </span>
-                      <span style={{ fontWeight: 900 }}>{summary.baselineCount ?? 0}</span>
-                    </p>
-                  </div>
-
-                  <div className="btnRow" style={{ justifyContent: 'center' }}>
-                    <button className="btn btnSecondary" style={{ width: 'min(360px, 100%)' }} onClick={() => startStage('run')}>
-                      Run again
-                    </button>
-                    <button className="btn btnPrimary" style={{ width: 'min(360px, 100%)' }} onClick={() => onComplete?.(summary)}>
-                      Continue
-                    </button>
-                  </div>
-                </>
-              )}
+                    Continue
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1598,7 +1221,7 @@ function ZoneCoach() {
   // ----- Probe pre -----
   if (!showSplash && step === 'probePre') {
     return (
-      <DotProbe
+      <AMFTProbe
         label="Probe"
         brand={brand}
         durationSec={180}
@@ -1624,7 +1247,7 @@ function ZoneCoach() {
   // ----- Probe post -----
   if (step === 'probePost') {
     return (
-      <DotProbe
+      <AMFTProbe
         label="Recheck"
         brand={brand}
         durationSec={90}
@@ -1888,3 +1511,4 @@ function ZoneCoach() {
 // React 18 root
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<ZoneCoach />);
+

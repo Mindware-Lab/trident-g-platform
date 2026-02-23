@@ -1,0 +1,515 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>aMFT-Quick (Zone Probe)</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0b0b0d; color:#e8e8ea; }
+    #topbar { position: sticky; top: 0; z-index: 10; padding: 10px 12px; display:flex; gap:12px; align-items:center; justify-content:space-between; background: rgba(20,20,24,0.92); backdrop-filter: blur(8px); border-bottom:1px solid rgba(255,255,255,0.08); }
+    #topbar .left, #topbar .right { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    button { background:#1d1f27; color:#e8e8ea; border:1px solid rgba(255,255,255,0.10); padding:8px 10px; border-radius:10px; cursor:pointer; }
+    button:disabled { opacity:.55; cursor:not-allowed; }
+    .pill { font-size:12px; padding:6px 8px; border-radius:999px; border:1px solid rgba(255,255,255,0.10); background:rgba(255,255,255,0.04); }
+    #wrap { padding: 12px; }
+    #hint { padding:10px 12px; border-radius:12px; background: rgba(20,20,24,0.85); border:1px solid rgba(255,255,255,0.08); max-width: 960px; font-size:13px; line-height:1.35; opacity:0.95; }
+    #canvasWrap { margin-top: 12px; border-radius: 14px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); background:#08090c; }
+    canvas { display:block; width:100%; height: min(56vh, 520px); }
+    #stats { margin-top:12px; padding: 12px; border-radius: 14px; background: rgba(20,20,24,0.92); border:1px solid rgba(255,255,255,0.08); display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; }
+    #stats .cell { padding:10px; border-radius:12px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); }
+    #stats .k { font-size:12px; opacity:0.75; margin-bottom:6px; }
+    #stats .v { font-size:16px; font-weight:650; }
+    #summary { margin-top:12px; padding:12px; border-radius: 14px; background: rgba(20,20,24,0.92); border:1px solid rgba(255,255,255,0.08); display:none; }
+    #summary p { margin: 6px 0; font-size: 14px; }
+    @media (max-width: 900px) { #stats { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 640px) { #stats { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div id="topbar">
+    <div class="left">
+      <button id="startBtn">Start probe</button>
+      <button id="resetBtn">Reset history</button>
+      <span class="pill" id="statusPill">Idle</span>
+      <span class="pill" id="refreshPill">Refresh: —</span>
+      <span class="pill" id="qualityPill">Quality: —</span>
+    </div>
+    <div class="right">
+      <span class="pill" id="labelPill">Probe</span>
+      <span class="pill">Keys: <b>&larr;</b> / <b>&rarr;</b></span>
+      <span class="pill">Mask: on</span>
+    </div>
+  </div>
+  <div id="wrap">
+    <div id="hint"><b>aMFT-Quick</b> = adaptive masked majority-throughput probe. Frame-locked timing + within-person baseline makes this suitable for Zone tracking. Avoid switching tabs. If focus is lost, the session is marked invalid.</div>
+    <div id="canvasWrap"><canvas id="c"></canvas></div>
+    <div id="stats">
+      <div class="cell"><div class="k">Scaled throughput (bps)</div><div class="v" id="bpsNow">—</div></div>
+      <div class="cell"><div class="k">EWMA (history)</div><div class="v" id="bpsEwma">—</div></div>
+      <div class="cell"><div class="k">Gate (history-relative)</div><div class="v" id="gateNow">—</div></div>
+      <div class="cell"><div class="k">RT CV</div><div class="v" id="rtCv">—</div></div>
+      <div class="cell"><div class="k">RT lag-1</div><div class="v" id="rtLag1">—</div></div>
+      <div class="cell"><div class="k">Error burstiness</div><div class="v" id="burst">—</div></div>
+    </div>
+    <div id="summary"></div>
+  </div>
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const durationFromQuery = Number(params.get('duration'));
+  const sessionKey = params.get('sessionKey') || `iqmw.zone.amft.session.${Date.now()}`;
+  const label = params.get('label') || 'Probe';
+  const LS_HISTORY = 'iqmw.zone.amft.history';
+  const LS_LATEST = 'iqmw.zone.amft.latest';
+
+  const CFG = {
+    totalSeconds: Number.isFinite(durationFromQuery) && durationFromQuery > 0 ? durationFromQuery : 150,
+    nArrows: 5,
+    easyMajority: 4,
+    hardMajority: 3,
+    fixationMs: 350,
+    isiMs: 150,
+    responseTimeoutMs: 1500,
+    maskMs: 100,
+    startStimMs: 80,
+    minStimMs: 25,
+    maxStimMs: 220,
+    stepFrames: 1,
+    bpsScaleK: 0.28,
+    rtMinMs: 150,
+    rtMaxMs: 1500,
+    lapseThresholdMs: 900,
+    maxDroppedFrameFrac: 0.06,
+  };
+
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true }) || canvas.getContext('2d');
+  const startBtn = document.getElementById('startBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const statusPill = document.getElementById('statusPill');
+  const refreshPill = document.getElementById('refreshPill');
+  const qualityPill = document.getElementById('qualityPill');
+  document.getElementById('labelPill').textContent = label;
+  const bpsNow = document.getElementById('bpsNow');
+  const bpsEwma = document.getElementById('bpsEwma');
+  const gateNow = document.getElementById('gateNow');
+  const rtCvEl = document.getElementById('rtCv');
+  const rtLag1El = document.getElementById('rtLag1');
+  const burstEl = document.getElementById('burst');
+  const summaryEl = document.getElementById('summary');
+
+  let running = false;
+  let stopRequested = false;
+  let responseOpen = false;
+  let activeResolver = null;
+
+  const mean = (xs) => xs.length ? xs.reduce((a,b)=>a+b,0) / xs.length : null;
+  const sd = (xs) => {
+    if (xs.length < 2) return 0;
+    const m = mean(xs);
+    const v = xs.reduce((a,x)=>a + (x - m) * (x - m), 0) / (xs.length - 1);
+    return Math.sqrt(Math.max(0, v));
+  };
+  const median = (xs) => {
+    if (!xs.length) return null;
+    const s = xs.slice().sort((a,b)=>a-b);
+    const mid = Math.floor(s.length / 2);
+    return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+  };
+  const mad = (xs) => {
+    if (!xs.length) return null;
+    const med = median(xs);
+    return median(xs.map(x => Math.abs(x - med)));
+  };
+  const ewma = (values, alpha = 0.25) => {
+    if (!values.length) return null;
+    let s = values[0];
+    for (let i = 1; i < values.length; i++) s = alpha * values[i] + (1 - alpha) * s;
+    return s;
+  };
+  const lag1Autocorr = (xs) => {
+    if (xs.length < 6) return null;
+    const m = mean(xs); const s = sd(xs); if (!Number.isFinite(m) || !Number.isFinite(s) || s <= 0) return null;
+    const z = xs.map(x => (x - m) / s);
+    let num = 0, den = 0;
+    for (let i = 1; i < z.length; i++) { num += z[i] * z[i-1]; den += z[i-1] * z[i-1]; }
+    return den <= 0 ? null : (num / den);
+  };
+  const fmt = (x, d=2) => (x == null || !isFinite(x)) ? '—' : Number(x).toFixed(d);
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  const shuffle = (arr) => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+  const readHistory = () => { try { const x = JSON.parse(localStorage.getItem(LS_HISTORY) || '[]'); return Array.isArray(x) ? x : []; } catch { return []; } };
+  const writeHistory = (rows) => { localStorage.setItem(LS_HISTORY, JSON.stringify(rows)); };
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+    canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function clearScreen() {
+    const rect = canvas.getBoundingClientRect();
+    ctx.fillStyle = '#0b0b0d';
+    ctx.fillRect(0, 0, rect.width, rect.height);
+  }
+  function arrowPositions() {
+    const rect = canvas.getBoundingClientRect();
+    const cx = rect.width / 2, cy = rect.height / 2;
+    const r = Math.min(rect.width, rect.height) * 0.22;
+    const pts = [];
+    for (let i = 0; i < CFG.nArrows; i++) {
+      const a = (-Math.PI / 2) + (i * 2 * Math.PI / CFG.nArrows);
+      pts.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) });
+    }
+    return pts;
+  }
+  function drawArrow(x, y, dir) {
+    const rect = canvas.getBoundingClientRect();
+    const s = Math.min(rect.width, rect.height) * 0.055;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(dir === 'L' ? Math.PI : 0);
+    ctx.strokeStyle = 'rgba(232,232,234,0.96)';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-s, 0); ctx.lineTo(s, 0);
+    ctx.moveTo(s, 0); ctx.lineTo(s - s * 0.55, -s * 0.45);
+    ctx.moveTo(s, 0); ctx.lineTo(s - s * 0.55, s * 0.45);
+    ctx.stroke();
+    ctx.restore();
+  }
+  function drawFixation() {
+    clearScreen();
+    const rect = canvas.getBoundingClientRect();
+    const cx = rect.width / 2, cy = rect.height / 2;
+    ctx.strokeStyle = 'rgba(232,232,234,0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx - 10, cy); ctx.lineTo(cx + 10, cy);
+    ctx.moveTo(cx, cy - 10); ctx.lineTo(cx, cy + 10);
+    ctx.stroke();
+  }
+  function drawStimulus(pattern) { clearScreen(); const pts = arrowPositions(); for (let i = 0; i < pts.length; i++) drawArrow(pts[i].x, pts[i].y, pattern[i]); }
+  function drawMask() {
+    clearScreen(); const pts = arrowPositions();
+    ctx.strokeStyle = 'rgba(232,232,234,0.72)'; ctx.lineWidth = 2;
+    for (const p of pts) {
+      for (let i = 0; i < 14; i++) {
+        const a = Math.random() * 2 * Math.PI;
+        const rect = canvas.getBoundingClientRect();
+        const len = (Math.random() * 0.9 + 0.2) * Math.min(rect.width, rect.height) * 0.05;
+        ctx.beginPath();
+        ctx.moveTo(p.x + Math.cos(a) * len * 0.25, p.y + Math.sin(a) * len * 0.25);
+        ctx.lineTo(p.x + Math.cos(a) * len, p.y + Math.sin(a) * len);
+        ctx.stroke();
+      }
+    }
+  }
+  function drawPrompt() {
+    clearScreen();
+    const rect = canvas.getBoundingClientRect();
+    ctx.fillStyle = 'rgba(232,232,234,0.8)';
+    ctx.textAlign = 'center';
+    ctx.font = '600 18px system-ui, sans-serif';
+    ctx.fillText('Respond: ? or ?', rect.width / 2, rect.height / 2);
+  }
+
+  function makePattern(majorityCount) {
+    const majDir = Math.random() < 0.5 ? 'L' : 'R';
+    const minDir = majDir === 'L' ? 'R' : 'L';
+    const arr = [];
+    for (let i = 0; i < majorityCount; i++) arr.push(majDir);
+    for (let i = 0; i < CFG.nArrows - majorityCount; i++) arr.push(minDir);
+    shuffle(arr);
+    return { pattern: arr, correct: majDir };
+  }
+
+  function setStatus(text) { statusPill.textContent = text; }
+
+  function runForFrames(nFrames, drawFn, timing) {
+    return new Promise(resolve => {
+      let count = 0; let lastTs = null;
+      function step(ts) {
+        if (!running || stopRequested) return resolve();
+        if (lastTs != null) {
+          const dt = ts - lastTs;
+          if (dt > 1.5 * timing.frameMs) timing.dropped++;
+          timing.total++;
+        }
+        lastTs = ts;
+        drawFn(count, ts);
+        count++;
+        if (count >= nFrames) resolve();
+        else requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  function calibrateRefresh() {
+    return new Promise(resolve => {
+      const deltas = []; let last = null; let n = 0;
+      function step(ts) {
+        if (!running || stopRequested) return resolve(16.6667);
+        if (last != null) deltas.push(ts - last);
+        last = ts; n++;
+        if (n < 140) return requestAnimationFrame(step);
+        deltas.sort((a,b)=>a-b);
+        const mid = deltas[Math.floor(deltas.length / 2)] || 16.6667;
+        resolve(clamp(mid, 4, 33.5));
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  function waitForResponse(t0, timeoutMs, validRef) {
+    return new Promise(resolve => {
+      let done = false;
+      const deadline = performance.now() + timeoutMs;
+      responseOpen = true;
+      const onKey = (e) => {
+        if (done || e.repeat) return;
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        finish({ key: e.key, rt: performance.now() - t0 });
+      };
+      const finish = (payload) => {
+        if (done) return;
+        done = true;
+        responseOpen = false;
+        window.removeEventListener('keydown', onKey);
+        activeResolver = null;
+        resolve(payload);
+      };
+      activeResolver = finish;
+      window.addEventListener('keydown', onKey);
+      (function tick(){
+        if (done) return;
+        if (!running || stopRequested || !validRef.valid) return finish({ key: null, rt: null });
+        if (performance.now() >= deadline) return finish({ key: null, rt: null });
+        setTimeout(tick, 16);
+      })();
+    });
+  }
+
+  function publishResult(result) {
+    try {
+      localStorage.setItem(sessionKey, JSON.stringify(result));
+      localStorage.setItem(LS_LATEST, JSON.stringify(result));
+    } catch {}
+    try { window.parent && window.parent.postMessage({ type: 'iqmw.amft.result', sessionKey, result }, '*'); } catch {}
+  }
+
+  startBtn.addEventListener('click', async () => {
+    if (running) return;
+    running = true; stopRequested = false; startBtn.disabled = true; resetBtn.disabled = true;
+    setStatus('Calibrating…'); summaryEl.style.display = 'none';
+    const validRef = { valid: true };
+    let lostFocus = false;
+    let falseStarts = 0;
+    const onVis = () => { if (document.hidden) { validRef.valid = false; lostFocus = true; } };
+    const onBlur = () => { validRef.valid = false; lostFocus = true; };
+    const onPremature = (e) => {
+      if (!running || stopRequested || responseOpen || e.repeat) return;
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      falseStarts++;
+    };
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('blur', onBlur);
+    window.addEventListener('keydown', onPremature);
+
+    const timing = { dropped: 0, total: 0, frameMs: await calibrateRefresh() };
+    refreshPill.textContent = `Refresh: ~${Math.round(1000 / timing.frameMs)} Hz`;
+
+    const minStimFrames = Math.max(2, Math.round(CFG.minStimMs / timing.frameMs));
+    const maxStimFrames = Math.max(minStimFrames + 2, Math.round(CFG.maxStimMs / timing.frameMs));
+    const startStimFrames = Math.max(minStimFrames + 1, Math.min(maxStimFrames - 1, Math.round(CFG.startStimMs / timing.frameMs)));
+    const maskFrames = Math.max(3, Math.round(CFG.maskMs / timing.frameMs));
+
+    const stairs = { easy: { frames: startStimFrames, streak: 0, hist: [] }, hard: { frames: startStimFrames, streak: 0, hist: [] } };
+    const trials = [];
+    const tStart = performance.now();
+    let trialIndex = 0;
+    setStatus('Running…');
+
+    try {
+      while ((performance.now() - tStart) < CFG.totalSeconds * 1000) {
+        if (!running || stopRequested || !validRef.valid) break;
+        const cond = (trialIndex % 2 === 0) ? 'easy' : 'hard';
+        const maj = cond === 'easy' ? CFG.easyMajority : CFG.hardMajority;
+        const { pattern, correct } = makePattern(maj);
+
+        await runForFrames(Math.max(2, Math.round(CFG.fixationMs / timing.frameMs)), () => drawFixation(), timing);
+        if (!running || stopRequested || !validRef.valid) break;
+        await runForFrames(Math.max(1, Math.round(CFG.isiMs / timing.frameMs)), () => clearScreen(), timing);
+        if (!running || stopRequested || !validRef.valid) break;
+
+        const st = stairs[cond];
+        const stimFrames = st.frames;
+        let tStimOn = null;
+        await runForFrames(stimFrames, (f) => { if (f === 0) tStimOn = performance.now(); drawStimulus(pattern); }, timing);
+        if (!running || stopRequested || !validRef.valid) break;
+        await runForFrames(maskFrames, () => drawMask(), timing);
+        if (!running || stopRequested || !validRef.valid) break;
+
+        drawPrompt();
+        const resp = await waitForResponse(tStimOn || performance.now(), CFG.responseTimeoutMs, validRef);
+        if (stopRequested) break;
+
+        const responded = resp.key === 'ArrowLeft' || resp.key === 'ArrowRight';
+        const choice = !responded ? null : (resp.key === 'ArrowLeft' ? 'L' : 'R');
+        const isCorrect = responded ? (choice === correct) : false;
+        const timeout = !responded;
+        const lapse = timeout || (Number.isFinite(resp.rt) && resp.rt >= CFG.lapseThresholdMs);
+
+        st.hist.push(st.frames);
+        if (isCorrect) {
+          st.streak += 1;
+          if (st.streak >= 2) { st.frames = Math.max(minStimFrames, st.frames - CFG.stepFrames); st.streak = 0; }
+        } else {
+          st.frames = Math.min(maxStimFrames, st.frames + CFG.stepFrames);
+          st.streak = 0;
+        }
+
+        trials.push({ trial_index: trialIndex + 1, cond, stimFrames, correct, choice, isCorrect, timeout, lapse, false_start: false, rt_ms: Number.isFinite(resp.rt) ? Math.round(resp.rt) : null });
+        trialIndex++;
+      }
+    } finally {
+      document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('blur', onBlur);
+      window.removeEventListener('keydown', onPremature);
+      responseOpen = false;
+      if (activeResolver) { const r = activeResolver; activeResolver = null; r({ key: null, rt: null }); }
+    }
+
+    const droppedFrac = timing.total ? (timing.dropped / timing.total) : 1;
+    const qualityOk = !lostFocus && validRef.valid && droppedFrac <= CFG.maxDroppedFrameFrac;
+    qualityPill.textContent = `Quality: ${qualityOk ? 'OK' : 'Poor'} (${Math.round(droppedFrac * 100)}% stutter)`;
+
+    const tailMean = (hist) => hist.length ? mean(hist.slice(Math.max(0, hist.length - 20))) : null;
+    const easyFrames = tailMean(stairs.easy.hist);
+    const hardFrames = tailMean(stairs.hard.hist);
+    const easySec = Number.isFinite(easyFrames) ? (easyFrames * timing.frameMs) / 1000 : null;
+    const hardSec = Number.isFinite(hardFrames) ? (hardFrames * timing.frameMs) / 1000 : null;
+    const bpsEasy = (Number.isFinite(easySec) && easySec > 0) ? (CFG.bpsScaleK * (1 / easySec)) : null;
+    const bpsHard = (Number.isFinite(hardSec) && hardSec > 0) ? (CFG.bpsScaleK * (1 / hardSec)) : null;
+    const bps = (Number.isFinite(bpsEasy) && Number.isFinite(bpsHard)) ? ((bpsEasy + bpsHard) / 2) : (bpsEasy ?? bpsHard);
+
+    const hits = trials.filter(t => t.isCorrect && Number.isFinite(t.rt_ms));
+    const rts = hits.map(t => t.rt_ms).filter(rt => rt >= CFG.rtMinMs && rt <= CFG.rtMaxMs);
+    const rtMean = mean(rts);
+    const rtSd = sd(rts);
+    const rtMedian = median(rts);
+    const rtCv = (Number.isFinite(rtMean) && rtMean > 0) ? (rtSd / rtMean) : null;
+    const rtMad = mad(rts);
+    const rtMadScaled = Number.isFinite(rtMad) ? (rtMad * 1.4826) : null;
+    const rtLag1 = lag1Autocorr(rts);
+    const responseSpeed = rts.length ? rts.reduce((a, rt) => a + (1000 / rt), 0) / rts.length : null;
+
+    let maxRun = 0, run = 0, errCount = 0;
+    for (const t of trials) { if (!t.isCorrect) { run++; errCount++; maxRun = Math.max(maxRun, run); } else run = 0; }
+    const burstiness = trials.length ? (maxRun + (errCount / trials.length)) : null;
+    const lapses = trials.filter(t => t.lapse).length;
+    const timeouts = trials.filter(t => t.timeout).length;
+
+    const history = readHistory();
+    history.push({ ts: new Date().toISOString(), test_id: 'amft_quick_v1', duration_s: CFG.totalSeconds, qualityOk, bps: Number.isFinite(bps) ? Number(bps.toFixed(3)) : null, rtCv: Number.isFinite(rtCv) ? Number(rtCv.toFixed(3)) : null, rtLag1: Number.isFinite(rtLag1) ? Number(rtLag1.toFixed(3)) : null, burstiness: Number.isFinite(burstiness) ? Number(burstiness.toFixed(3)) : null, droppedFrameFrac: Number(droppedFrac.toFixed(4)) });
+    while (history.length > 120) history.shift();
+    writeHistory(history);
+
+    const bpsSeries = history.filter(h => h.qualityOk && Number(h.duration_s) === Number(CFG.totalSeconds) && Number.isFinite(Number(h.bps))).map(h => Number(h.bps));
+    const ew = bpsSeries.length ? ewma(bpsSeries.slice(-14), 0.25) : null;
+    let gateLabel = qualityOk ? 'Collect baseline…' : 'Invalid session';
+    let readinessBand = qualityOk ? 'calibrating' : 'red';
+    let readinessIndex = null;
+    if (qualityOk && bpsSeries.length >= 6 && Number.isFinite(bps)) {
+      const win = bpsSeries.slice(-14); const m = mean(win); const s = sd(win);
+      const z = (Number.isFinite(m) && Number.isFinite(s) && s > 0) ? ((bps - m) / s) : 0;
+      let penalty = 0;
+      if (rtCv != null && rtCv > 0.22) penalty += 0.5;
+      if (rtLag1 != null && rtLag1 > 0.35) penalty += 0.5;
+      if (burstiness != null && burstiness > 2.2) penalty += 0.5;
+      const zEff = z - penalty;
+      readinessIndex = Number(zEff.toFixed(3));
+      if (zEff >= -0.25) { gateLabel = 'Green (in band)'; readinessBand = 'green'; }
+      else if (zEff >= -0.90) { gateLabel = 'Amber (watch drift)'; readinessBand = 'amber'; }
+      else { gateLabel = 'Red (out of band)'; readinessBand = 'red'; }
+    }
+
+    const result = {
+      schemaVersion: 'amft_probe_result_v1',
+      sessionKey,
+      at: Date.now(),
+      label,
+      test_id: 'amft_quick_v1',
+      duration_s: CFG.totalSeconds,
+      trials: trials.length,
+      hits: hits.length,
+      rts,
+      meanMs: Number.isFinite(rtMean) ? Math.round(rtMean) : null,
+      medianMs: Number.isFinite(rtMedian) ? Math.round(rtMedian) : null,
+      rtSdMs: Number.isFinite(rtSd) ? Math.round(rtSd) : null,
+      rtCv: Number.isFinite(rtCv) ? Number(rtCv.toFixed(3)) : null,
+      madMs: Number.isFinite(rtMad) ? Math.round(rtMad) : null,
+      madScaledMs: Number.isFinite(rtMadScaled) ? Math.round(rtMadScaled) : null,
+      lapses,
+      falseStarts,
+      timeouts,
+      responseSpeed: Number.isFinite(responseSpeed) ? Number(responseSpeed.toFixed(3)) : null,
+      bps: Number.isFinite(bps) ? Number(bps.toFixed(3)) : null,
+      bpsEasy: Number.isFinite(bpsEasy) ? Number(bpsEasy.toFixed(3)) : null,
+      bpsHard: Number.isFinite(bpsHard) ? Number(bpsHard.toFixed(3)) : null,
+      bpsEwma: Number.isFinite(ew) ? Number(ew.toFixed(3)) : null,
+      rtLag1: Number.isFinite(rtLag1) ? Number(rtLag1.toFixed(3)) : null,
+      burstiness: Number.isFinite(burstiness) ? Number(burstiness.toFixed(3)) : null,
+      qualityOk,
+      droppedFrameFrac: Number(droppedFrac.toFixed(4)),
+      gateLabel,
+      readinessBand,
+      readinessIndex,
+      baselineCount: bpsSeries.length,
+      staircases: { easyTailFrames: Number.isFinite(easyFrames) ? Number(easyFrames.toFixed(2)) : null, hardTailFrames: Number.isFinite(hardFrames) ? Number(hardFrames.toFixed(2)) : null, frameMs: Number(timing.frameMs.toFixed(3)) },
+      trialLog: trials,
+    };
+
+    publishResult(result);
+
+    bpsNow.textContent = qualityOk ? fmt(result.bps, 2) : '—';
+    bpsEwma.textContent = fmt(result.bpsEwma, 2);
+    gateNow.textContent = gateLabel;
+    rtCvEl.textContent = qualityOk ? fmt(result.rtCv, 3) : '—';
+    rtLag1El.textContent = qualityOk ? fmt(result.rtLag1, 3) : '—';
+    burstEl.textContent = qualityOk ? fmt(result.burstiness, 2) : '—';
+    setStatus(qualityOk ? 'Done' : 'Done (invalid)');
+
+    summaryEl.style.display = 'block';
+    summaryEl.innerHTML = `<p><b>Saved result</b> for session key <code>${sessionKey}</code></p><p>BPS: <b>${fmt(result.bps, 2)}</b> | Gate: <b>${gateLabel}</b> | Quality: <b>${qualityOk ? 'OK' : 'Invalid'}</b></p><p>Median RT: <b>${result.medianMs ?? '—'}</b> ms | RT CV: <b>${fmt(result.rtCv, 3)}</b> | RT lag-1: <b>${fmt(result.rtLag1, 3)}</b> | Burstiness: <b>${fmt(result.burstiness, 2)}</b></p>`;
+
+    running = false; stopRequested = false; startBtn.disabled = false; resetBtn.disabled = false;
+  });
+
+  resetBtn.addEventListener('click', () => {
+    try { localStorage.removeItem(LS_HISTORY); } catch {}
+    bpsNow.textContent = '—'; bpsEwma.textContent = '—'; gateNow.textContent = '—'; rtCvEl.textContent = '—'; rtLag1El.textContent = '—'; burstEl.textContent = '—';
+    qualityPill.textContent = 'Quality: —'; setStatus('Idle'); summaryEl.style.display = 'none';
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if ((e.key === 'Escape' || e.code === 'Escape') && running) {
+      stopRequested = true;
+      if (activeResolver) { const r = activeResolver; activeResolver = null; r({ key: null, rt: null }); }
+    }
+  });
+
+  drawFixation();
+})();
+</script>
+</body>
+</html>
+
