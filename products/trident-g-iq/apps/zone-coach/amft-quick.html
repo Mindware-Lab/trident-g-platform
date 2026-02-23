@@ -16,7 +16,7 @@
     #wrap { padding: 12px; }
     #hint { display:none; }
     #canvasWrap { margin-top: 12px; border-radius: 14px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); background:#08090c; }
-    canvas { display:block; width:100%; height: min(56vh, 520px); }
+    canvas { display:block; width:100%; height: min(42vh, 380px); }
     #stats { margin-top:12px; padding: 12px; border-radius: 14px; background: rgba(20,20,24,0.92); border:1px solid rgba(255,255,255,0.08); display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; }
     #stats .cell { padding:10px; border-radius:12px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); }
     #stats .k { font-size:12px; opacity:0.75; margin-bottom:6px; }
@@ -30,7 +30,7 @@
 <body>
   <div id="topbar">
     <div class="left">
-      <button id="startBtn">Start probe</button>
+      <button id="startBtn">Start test</button>
       <button id="resetBtn">Reset history</button>
       <span class="pill" id="statusPill">Idle</span>
       <span class="pill" id="refreshPill">Refresh: —</span>
@@ -93,6 +93,7 @@
   const refreshPill = document.getElementById('refreshPill');
   const qualityPill = document.getElementById('qualityPill');
   document.getElementById('labelPill').textContent = label;
+  startBtn.textContent = label === 'Recheck' ? 'Start follow-up test' : 'Start test';
   const bpsNow = document.getElementById('bpsNow');
   const bpsEwma = document.getElementById('bpsEwma');
   const gateNow = document.getElementById('gateNow');

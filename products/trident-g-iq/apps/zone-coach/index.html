@@ -751,8 +751,7 @@
         const q = new URLSearchParams({
           duration: String(durationSec),
           sessionKey,
-          label: isRecheck ? 'Recheck' : 'Probe',
-          autostart: '1'
+          label: isRecheck ? 'Recheck' : 'Probe'
         });
         return `./amft-quick.html?${q.toString()}`;
       }, [durationSec, sessionKey, isRecheck]);
@@ -839,7 +838,7 @@
                   key={sessionKey}
                   src={iframeSrc}
                   title={isRecheck ? 'aMFT recheck' : 'aMFT probe'}
-                  style={{ width: '100%', height: '860px', border: 'none', display: 'block', background: '#0b0b0d' }}
+                  style={{ width: '100%', height: '720px', border: 'none', display: 'block', background: '#0b0b0d' }}
                   loading="eager"
                 />
               </div>
