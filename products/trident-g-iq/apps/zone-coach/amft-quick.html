@@ -17,6 +17,16 @@
     #hint { display:none; }
     #canvasWrap { margin-top: 12px; border-radius: 14px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); background:#08090c; }
     canvas { display:block; width:100%; height: min(42vh, 380px); }
+    #touchControls { margin-top: 10px; display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; }
+    .touchBtn {
+      min-height: 64px;
+      font-size: 28px;
+      font-weight: 800;
+      border-radius: 14px;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
     #stats { margin-top:12px; padding: 12px; border-radius: 14px; background: rgba(20,20,24,0.92); border:1px solid rgba(255,255,255,0.08); display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; }
     #stats .cell { padding:10px; border-radius:12px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); }
     #stats .k { font-size:12px; opacity:0.75; margin-bottom:6px; }
@@ -45,6 +55,10 @@
   <div id="wrap">
     <div id="hint"><b>aMFT-Quick</b> = adaptive masked majority-throughput probe. Frame-locked timing + within-person baseline makes this suitable for Zone tracking. Avoid switching tabs. If focus is lost, the session is marked invalid.</div>
     <div id="canvasWrap"><canvas id="c"></canvas></div>
+    <div id="touchControls">
+      <button id="touchLeftBtn" class="touchBtn" aria-label="Majority left">&larr;</button>
+      <button id="touchRightBtn" class="touchBtn" aria-label="Majority right">&rarr;</button>
+    </div>
     <div id="stats">
       <div class="cell"><div class="k">Scaled throughput (bps)</div><div class="v" id="bpsNow">—</div></div>
       <div class="cell"><div class="k">EWMA (history)</div><div class="v" id="bpsEwma">—</div></div>
@@ -89,6 +103,8 @@
   const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true }) || canvas.getContext('2d');
   const startBtn = document.getElementById('startBtn');
   const resetBtn = document.getElementById('resetBtn');
+  const touchLeftBtn = document.getElementById('touchLeftBtn');
+  const touchRightBtn = document.getElementById('touchRightBtn');
   const statusPill = document.getElementById('statusPill');
   const refreshPill = document.getElementById('refreshPill');
   const qualityPill = document.getElementById('qualityPill');
@@ -106,6 +122,8 @@
   let stopRequested = false;
   let responseOpen = false;
   let activeResolver = null;
+  let activeChoiceHandler = null;
+  let falseStartCounter = 0;
 
   const mean = (xs) => xs.length ? xs.reduce((a,b)=>a+b,0) / xs.length : null;
   const sd = (xs) => {
@@ -279,10 +297,11 @@
       let done = false;
       const deadline = performance.now() + timeoutMs;
       responseOpen = true;
+      activeChoiceHandler = (key) => finish({ key, rt: performance.now() - t0 });
       const onKey = (e) => {
         if (done || e.repeat) return;
         if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-        finish({ key: e.key, rt: performance.now() - t0 });
+        activeChoiceHandler?.(e.key);
       };
       const finish = (payload) => {
         if (done) return;
@@ -290,6 +309,7 @@
         responseOpen = false;
         window.removeEventListener('keydown', onKey);
         activeResolver = null;
+        activeChoiceHandler = null;
         resolve(payload);
       };
       activeResolver = finish;
@@ -301,6 +321,16 @@
         setTimeout(tick, 16);
       })();
     });
+  }
+
+  function submitChoice(key) {
+    if (key !== 'ArrowLeft' && key !== 'ArrowRight') return;
+    if (!running || stopRequested) return;
+    if (responseOpen && typeof activeChoiceHandler === 'function') {
+      activeChoiceHandler(key);
+      return;
+    }
+    falseStartCounter++;
   }
 
   function publishResult(result) {
@@ -317,13 +347,13 @@
     setStatus('Calibrating…'); summaryEl.style.display = 'none';
     const validRef = { valid: true };
     let lostFocus = false;
-    let falseStarts = 0;
+    falseStartCounter = 0;
     const onVis = () => { if (document.hidden) { validRef.valid = false; lostFocus = true; } };
     const onBlur = () => { validRef.valid = false; lostFocus = true; };
     const onPremature = (e) => {
       if (!running || stopRequested || responseOpen || e.repeat) return;
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-      falseStarts++;
+      falseStartCounter++;
     };
     document.addEventListener('visibilitychange', onVis);
     window.addEventListener('blur', onBlur);
@@ -390,6 +420,7 @@
       window.removeEventListener('blur', onBlur);
       window.removeEventListener('keydown', onPremature);
       responseOpen = false;
+      activeChoiceHandler = null;
       if (activeResolver) { const r = activeResolver; activeResolver = null; r({ key: null, rt: null }); }
     }
 
@@ -464,7 +495,7 @@
       madMs: Number.isFinite(rtMad) ? Math.round(rtMad) : null,
       madScaledMs: Number.isFinite(rtMadScaled) ? Math.round(rtMadScaled) : null,
       lapses,
-      falseStarts,
+      falseStarts: falseStartCounter,
       timeouts,
       responseSpeed: Number.isFinite(responseSpeed) ? Number(responseSpeed.toFixed(3)) : null,
       bps: Number.isFinite(bps) ? Number(bps.toFixed(3)) : null,
@@ -508,9 +539,13 @@
   window.addEventListener('keydown', (e) => {
     if ((e.key === 'Escape' || e.code === 'Escape') && running) {
       stopRequested = true;
+      activeChoiceHandler = null;
       if (activeResolver) { const r = activeResolver; activeResolver = null; r({ key: null, rt: null }); }
     }
   });
+
+  touchLeftBtn.addEventListener('click', (e) => { e.preventDefault(); submitChoice('ArrowLeft'); });
+  touchRightBtn.addEventListener('click', (e) => { e.preventDefault(); submitChoice('ArrowRight'); });
 
   drawFixation();
   if (autoStart) {
