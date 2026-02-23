@@ -15,6 +15,24 @@
     .pill { font-size:12px; padding:6px 8px; border-radius:999px; border:1px solid rgba(255,255,255,0.10); background:rgba(255,255,255,0.04); }
     #wrap { padding: 12px; }
     #hint { display:none; }
+    #primaryStartRow { margin-top: 12px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    #startBtn {
+      background: #CCFF66;
+      color:#121212;
+      border:1px solid #CCFF66;
+      font-weight: 900;
+      font-size: 18px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      box-shadow: 0 8px 22px rgba(204,255,102,0.18);
+      min-width: 220px;
+    }
+    #startBtn:disabled {
+      color:#333;
+      box-shadow:none;
+      opacity:0.65;
+    }
+    #secondaryControls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     #canvasWrap { margin-top: 12px; border-radius: 14px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); background:#08090c; }
     canvas { display:block; width:100%; height: min(42vh, 380px); }
     #touchControls { margin-top: 10px; display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; }
@@ -40,8 +58,6 @@
 <body>
   <div id="topbar">
     <div class="left">
-      <button id="startBtn">Start test</button>
-      <button id="resetBtn">Reset history</button>
       <span class="pill" id="statusPill">Idle</span>
       <span class="pill" id="refreshPill">Refresh: —</span>
       <span class="pill" id="qualityPill">Quality: —</span>
@@ -54,6 +70,13 @@
   </div>
   <div id="wrap">
     <div id="hint"><b>aMFT-Quick</b> = adaptive masked majority-throughput probe. Frame-locked timing + within-person baseline makes this suitable for Zone tracking. Avoid switching tabs. If focus is lost, the session is marked invalid.</div>
+    <div id="primaryStartRow">
+      <button id="startBtn">Start test</button>
+      <div id="secondaryControls">
+        <button id="resetBtn">Reset history</button>
+        <span class="pill">Tap or press arrows after each stimulus</span>
+      </div>
+    </div>
     <div id="canvasWrap"><canvas id="c"></canvas></div>
     <div id="touchControls">
       <button id="touchLeftBtn" class="touchBtn" aria-label="Majority left">&larr;</button>
