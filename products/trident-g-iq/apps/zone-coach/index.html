@@ -739,7 +739,7 @@
     }
     // -----------------------------
 // Replacement wrapper: embeds the aMFT-Quick probe and imports the result.
-    function AMFTProbe({ label, onComplete, brand, durationSec = 180, isRecheck = false }) {
+    function AMFTProbe({ label, onComplete, brand, durationSec = 180, isRecheck = false, baselineBps = null }) {
       const logoSrc = brand?.logoSrc || '../../../../branding/Trident-G-Icon.svg';
       const appName = brand?.appName || 'Zone Coach';
       const subtitle = brand?.subtitle || 'Quick state check -> mindful reset -> start training';
@@ -788,6 +788,10 @@
         setResult(null);
         setSessionKey(`iqmw.zone.amft.session.${Date.now()}.${Math.random().toString(36).slice(2, 8)}`);
       };
+      const currentBps = Number.isFinite(Number(result?.bps)) ? Number(result.bps) : null;
+      const baseBps = Number.isFinite(Number(baselineBps)) ? Number(baselineBps) : null;
+      const bpsDelta = (currentBps != null && baseBps != null) ? Number((currentBps - baseBps).toFixed(2)) : null;
+      const bpsDeltaLabel = bpsDelta == null ? null : `${bpsDelta >= 0 ? '+' : ''}${bpsDelta.toFixed(2)}`;
 
       return (
         <div className="screen">
@@ -807,12 +811,25 @@
           <div className="content">
             <div className="card" style={{ maxWidth: 1080, margin: '0 auto' }}>
               <div className="h1">{isRecheck ? 'Masked majority recheck' : `Masked majority readiness probe (${durationSec}s)`}</div>
-              <p className="p" style={{ marginTop: 6 }}>
-                This probe lasts <b>{durationSec} seconds</b>. On each trial, briefly shown arrows will appear in a 5-arrow set. Press <b>&larr;</b> if the <b>majority</b> point left, or <b>&rarr;</b> if the <b>majority</b> point right.
-              </p>
-              <p className="p" style={{ marginTop: 6 }}>
-                Wait for the arrows before responding (do not press early during the fixation cross). When the run finishes, the result will appear below with <b>bits/second (bps)</b>, baseline/gate, and timing stability metrics.
-              </p>
+              {isRecheck ? (
+                <>
+                  <p className="p" style={{ marginTop: 6 }}>
+                    This follow-up probe lasts just <b>{durationSec} seconds</b>. As before, on each trial, briefly shown arrows will appear in a 5-arrow set. Press <b>&larr;</b> if the <b>majority</b> point left, or <b>&rarr;</b> if the <b>majority</b> point right.
+                  </p>
+                  <p className="p" style={{ marginTop: 6 }}>
+                    Wait for the arrows before responding (do not press early during the fixation cross). When the run finishes, the result below will highlight the <b>change in BPS vs your first probe</b>.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="p" style={{ marginTop: 6 }}>
+                    This probe lasts <b>{durationSec} seconds</b>. On each trial, briefly shown arrows will appear in a 5-arrow set. Press <b>&larr;</b> if the <b>majority</b> point left, or <b>&rarr;</b> if the <b>majority</b> point right.
+                  </p>
+                  <p className="p" style={{ marginTop: 6 }}>
+                    Wait for the arrows before responding (do not press early during the fixation cross). When the run finishes, the result will appear below with <b>bits/second (bps)</b>, baseline/gate, and timing stability metrics.
+                  </p>
+                </>
+              )}
               <p className="p" style={{ marginTop: 6 }}>
                 If the arrow keys do not register, click once inside the embedded probe panel to give it keyboard focus.
               </p>
@@ -828,28 +845,39 @@
               </div>
 
               <div className="card" style={{ marginTop: 12, boxShadow: 'none' }}>
-                <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Imported result</div>
+                <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>{isRecheck ? 'Follow-up result' : 'Probe result'}</div>
                 {!result ? (
                   <p className="p" style={{ marginTop: 6 }}>
                     No completed result found yet for this run. Finish the embedded task first, then click <b>Refresh result</b>.
                   </p>
                 ) : (
                   <>
-                    <p className="p" style={{ marginTop: 6 }}>
-                      BPS: <b>{Number.isFinite(Number(result.bps)) ? Number(result.bps).toFixed(2) : '-'}</b>
-                      <span style={{ color: '#111' }}> | Gate: </span><b>{result.gateLabel || result.readinessBand || '-'}</b>
-                      <span style={{ color: '#111' }}> | Quality: </span><b>{result.qualityOk ? 'OK' : 'Invalid'}</b>
-                    </p>
-                    <p className="p" style={{ marginTop: 6 }}>
-                      Median RT: <b>{result.medianMs ?? '-'}</b> ms
-                      <span style={{ color: '#111' }}> | RT CV: </span><b>{result.rtCv ?? '-'}</b>
-                      <span style={{ color: '#111' }}> | RT lag-1: </span><b>{result.rtLag1 ?? '-'}</b>
-                      <span style={{ color: '#111' }}> | Burstiness: </span><b>{result.burstiness ?? '-'}</b>
-                    </p>
+                    {isRecheck ? (
+                      <>
+                        {bpsDelta != null ? (
+                          <p className="p" style={{ marginTop: 6 }}>
+                            Change in BPS vs first probe: <b>{bpsDeltaLabel}</b>
+                            <span style={{ color: '#111' }}> ({baseBps.toFixed(2)} -> {currentBps.toFixed(2)})</span>
+                          </p>
+                        ) : (
+                          <p className="p" style={{ marginTop: 6 }}>
+                            BPS change vs first probe will appear here after a valid first-probe BPS is available.
+                          </p>
+                        )}
+                        <p className="p" style={{ marginTop: 6 }}>
+                          Follow-up quality: <b>{result.qualityOk ? 'OK' : 'Invalid'}</b>
+                          <span style={{ color: '#111' }}> | Gate: </span><b>{result.gateLabel || result.readinessBand || '-'}</b>
+                        </p>
+                      </>
+                    ) : (
+                      <p className="p" style={{ marginTop: 6 }}>
+                        Probe result detected. Review the detailed metrics in the embedded task panel, then click <b>Continue</b>.
+                      </p>
+                    )}
                   </>
                 )}
                 <p className="p" style={{ marginTop: 6, color: 'rgba(0,0,0,0.65)' }}>
-                  Session key: <code>{sessionKey}</code>{lastPoll ? ` | Last sync: ${lastPoll}` : ''}
+                  {lastPoll ? `Last sync: ${lastPoll}` : 'Waiting for result sync...'}
                 </p>
                 <div className="btnRow" style={{ justifyContent: 'center' }}>
                   <button className="btn btnSecondary" style={{ width: 'min(300px, 100%)' }} onClick={tryLoadResult}>
@@ -1229,6 +1257,7 @@ function ZoneCoach() {
         label="Probe"
         brand={brand}
         durationSec={180}
+        baselineBps={null}
         onComplete={(result) => {
           setProbePre(result);
           setStep('results');
@@ -1256,6 +1285,7 @@ function ZoneCoach() {
         brand={brand}
         durationSec={90}
         isRecheck={true}
+        baselineBps={probePre?.bps ?? null}
         onComplete={(result) => {
           setProbePost(result);
           setStep('postBreath');
