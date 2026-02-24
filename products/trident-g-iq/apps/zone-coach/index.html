@@ -8,15 +8,25 @@
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: var(--font, system-ui, sans-serif); background: radial-gradient(circle at 15% 0%, rgba(78,160,232,.16), transparent 48%), radial-gradient(circle at 85% 10%, rgba(190,239,78,.12), transparent 40%), #090b10; color: #edf0f7; }
-    .app { max-width: 980px; margin: 0 auto; padding: 16px; }
+    body { margin: 0; font-family: var(--font, system-ui, sans-serif); background: #EFF3F8; color: #111; }
+    .zoneAppShell { background:#EFF3F8; }
+    .zoneContent { padding: 18px 20px 28px; }
+    .app { width: min(980px, 100%); margin: 0 auto; padding: 0; color: #edf0f7; }
+    .appIcon { width: 28px; height: 28px; object-fit: contain; display: block; margin: 0 auto; }
+    .topbar .title { font-weight: 900; color:#2A2A2A; }
+    .topbar .subtitle { color:#111; }
+    .topbar .chip.zoneBrandChip {
+      font-size: 13px; font-weight: 900; padding: 8px 16px; border-radius: 999px;
+      background: var(--lime, #CCFF66); color:#0B1A0B; border: 1px solid rgba(0,0,0,0.08);
+      letter-spacing: .4px;
+    }
     .top { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px; padding:12px; border:1px solid rgba(255,255,255,.08); border-radius:14px; background:rgba(15,18,26,.9); }
     .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
     .title { font-weight: 800; }
     .pill { font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04); }
     .card { border:1px solid rgba(255,255,255,.08); border-radius:16px; background:rgba(15,18,26,.9); padding:14px; }
-    .screen { display:none; }
-    .screen.active { display:block; }
+    .router-screen { display:none; }
+    .router-screen.active { display:block; }
     .btn { border:1px solid rgba(255,255,255,.12); background:#1d2230; color:#edf0f7; padding:10px 12px; border-radius:12px; font-weight:700; cursor:pointer; }
     .btn:disabled { opacity:.55; cursor:not-allowed; }
     .btn-primary { background:#CCFF66; color:#121212; border-color:#CCFF66; }
@@ -64,7 +74,8 @@
     .safety-banner.high { border:1px solid rgba(255,120,120,.35); background:rgba(255,120,120,.10); }
     .splash-panel { border-radius:20px; border:1px solid rgba(78,160,232,.32); background:linear-gradient(165deg, rgba(78,160,232,.20), rgba(15,18,26,.94) 55%); padding:18px; box-shadow:0 12px 28px rgba(0,0,0,.28); }
     .splash-head { display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:center; margin-bottom:10px; }
-    .splash-logo { width:54px; height:54px; border-radius:14px; background:#BEEF4E; color:#111; display:grid; place-items:center; font-weight:900; border:4px solid rgba(255,255,255,.5); box-shadow:0 8px 18px rgba(190,239,78,.18); }
+    .splash-logo { width:54px; height:54px; border-radius:14px; background:#BEEF4E; color:#111; display:grid; place-items:center; font-weight:900; border:4px solid rgba(255,255,255,.5); box-shadow:0 8px 18px rgba(190,239,78,.18); overflow:hidden; }
+    .splash-logo img { width:34px; height:34px; object-fit:contain; display:block; }
     .splash-kicker { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#d9ecff; opacity:.9; }
     .splash-title { margin:4px 0 0 0; font-size:clamp(24px,4vw,32px); line-height:1.05; font-weight:900; }
     .splash-sub { margin:10px 0 0 0; color:rgba(237,240,247,.86); }
@@ -79,7 +90,7 @@
     .session-step.done { opacity:.7; }
     .hidden { display:none !important; }
     @media (max-width: 700px) {
-      .app { padding: 10px; }
+      .zoneContent { padding: 12px; }
       .grid { grid-template-columns:1fr; }
       .splash-grid { grid-template-columns:1fr; }
       canvas { height:min(34vh, 260px); }
@@ -101,6 +112,18 @@
   </style>
 </head>
 <body>
+  <div class="screen zoneAppShell">
+    <div class="topbar">
+      <div class="brandleft">
+        <div class="icon"><img class="appIcon" src="../../../../branding/Trident-G-Icon.svg" alt="Trident G" /></div>
+        <div>
+          <p class="title">Zone Coach</p>
+          <p class="subtitle">MFT-M readiness router</p>
+        </div>
+      </div>
+      <span class="chip zoneBrandChip">Zone Gate</span>
+    </div>
+    <main class="content zoneContent">
   <div class="app">
     <div class="top">
       <div class="row">
@@ -115,10 +138,10 @@
     </div>
 
     <div class="card">
-      <div id="screenStart" class="screen active">
+      <div id="screenStart" class="router-screen active">
         <div class="splash-panel">
           <div class="splash-head">
-            <div class="splash-logo">TG</div>
+            <div class="splash-logo"><img src="../../../../branding/Trident-G-Icon.svg" alt="Trident G" /></div>
             <div>
               <div class="splash-kicker">Mindware Lab • IQ Mindware</div>
               <h2 class="splash-title">Zone Coach</h2>
@@ -145,7 +168,7 @@
         </div>
       </div>
 
-      <div id="screenRun" class="screen">
+      <div id="screenRun" class="router-screen">
         <div class="row">
           <span class="pill" id="runLabelPill">Running probe</span>
           <span class="pill" id="trialPill">Trials: 0</span>
@@ -163,7 +186,7 @@
         </div>
       </div>
 
-      <div id="screenResult" class="screen">
+      <div id="screenResult" class="router-screen">
         <h2 style="margin:0 0 8px 0;">Readiness result</h2>
         <div id="invalidPanel" class="block hidden">
           <h3 style="margin:0 0 6px 0;">Session not valid</h3>
@@ -217,6 +240,8 @@
         </div>
       </div>
     </div>
+  </div>
+    </main>
   </div>
 
   <script>
