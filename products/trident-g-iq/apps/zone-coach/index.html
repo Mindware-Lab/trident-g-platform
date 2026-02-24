@@ -88,6 +88,7 @@
     .session-step { display:grid; grid-template-columns:auto 1fr; gap:8px; align-items:flex-start; border:1px solid rgba(255,255,255,.06); border-radius:10px; padding:8px 10px; background:rgba(255,255,255,.02); }
     .session-step input { margin-top:2px; accent-color:#CCFF66; }
     .session-step.done { opacity:.7; }
+    .user-hidden { display:none !important; }
     .hidden { display:none !important; }
     @media (max-width: 700px) {
       .zoneContent { padding: 12px; }
@@ -118,7 +119,7 @@
         <div class="icon"><img class="appIcon" src="../../../../branding/Trident-G-Icon.svg" alt="Trident G" /></div>
         <div>
           <p class="title">Zone Coach</p>
-          <p class="subtitle">MFT-M readiness router</p>
+          <p class="subtitle">Training readiness check</p>
         </div>
       </div>
       <span class="chip zoneBrandChip">Zone Gate</span>
@@ -148,7 +149,7 @@
             </div>
           </div>
           <p class="splash-sub">3-minute readiness check for gating deep work and selecting the right stabilisation block.</p>
-          <div class="small muted" style="margin-top:8px;">Arrows flash briefly. Press <b>&larr;</b> or <b>&rarr;</b> for the majority direction. Go fast and accurate. The probe computes <span style="font-family:monospace;">BPS</span> plus lapse/variability/drift signatures.</div>
+          <div class="small muted" style="margin-top:8px;">Arrows flash briefly. Press <b>&larr;</b> or <b>&rarr;</b> for the majority direction. Go fast and accurate. This check classifies your current readiness state and recommends the next training block.</div>
           <div class="splash-grid">
             <div class="splash-tile"><div class="k">Probe length</div><div class="v">3 minutes</div></div>
             <div class="splash-tile"><div class="k">Output</div><div class="v">State + training gate</div></div>
@@ -171,8 +172,8 @@
       <div id="screenRun" class="router-screen">
         <div class="row">
           <span class="pill" id="runLabelPill">Running probe</span>
-          <span class="pill" id="trialPill">Trials: 0</span>
-          <span class="pill" id="mixPill">S:0 P:0 C:0</span>
+          <span class="pill user-hidden" id="trialPill">Trials: 0</span>
+          <span class="pill user-hidden" id="mixPill">S:0 P:0 C:0</span>
         </div>
         <div class="progress"><div id="progressFill"></div></div>
         <div class="task"><canvas id="c"></canvas></div>
@@ -196,26 +197,26 @@
 
         <div id="validPanel" class="hidden">
           <div class="grid">
-            <div class="metric"><div class="k">BPS (combined)</div><div class="v" id="mBps">-</div></div>
+            <div class="metric user-hidden"><div class="k">BPS (combined)</div><div class="v" id="mBps">-</div></div>
             <div class="metric"><div class="k">State</div><div class="v" id="mState">-</div></div>
-            <div class="metric"><div class="k">Confidence</div><div class="v" id="mConf">-</div></div>
-            <div class="metric"><div class="k">Probe trials / Catch fail</div><div class="v" id="mProbeCatch">-</div></div>
-            <div class="metric"><div class="k">Timeout rate / RT CV</div><div class="v" id="mTimeoutCv">-</div></div>
-            <div class="metric"><div class="k">PES / Burstiness</div><div class="v" id="mPesBurst">-</div></div>
+            <div class="metric"><div class="k">How sure this looks</div><div class="v" id="mConf">-</div></div>
+            <div class="metric user-hidden"><div class="k">Probe trials / Catch fail</div><div class="v" id="mProbeCatch">-</div></div>
+            <div class="metric user-hidden"><div class="k">Timeout rate / RT CV</div><div class="v" id="mTimeoutCv">-</div></div>
+            <div class="metric user-hidden"><div class="k">PES / Burstiness</div><div class="v" id="mPesBurst">-</div></div>
           </div>
           <div class="block">
             <div id="stateBadge" class="badge">-</div>
             <div id="stateWhy" class="muted" style="margin-top:8px;">-</div>
             <div id="gateBadge" class="badge">Training gate</div>
             <div id="gateChips" class="gate-row"></div>
-            <div id="reasonChips" class="chips"></div>
+            <div id="reasonChips" class="chips user-hidden"></div>
           </div>
           <div class="block" id="moduleCard"></div>
           <div class="cta">
             <button class="btn btn-primary" id="startRecommendedBtn">Start recommended session</button>
             <button class="btn" id="quickBtn">Quick re-check (75s)</button>
             <button class="btn btn-ghost" id="fullBtn">Run full check again</button>
-            <a class="btn btn-ghost" href="#" id="openLink">Open Trident module (later)</a>
+            <a class="btn btn-ghost user-hidden" href="#" id="openLink">Open Trident module (later)</a>
           </div>
           <div class="block hidden" id="sessionPanel">
             <div class="session-panel-head">
@@ -235,7 +236,7 @@
         </div>
 
         <div class="block">
-          <div class="small muted">History (local): <span id="histCount">0</span> valid sessions - BPS EWMA <span id="histBps">-</span></div>
+          <div class="small muted">History (local): <span id="histCount">0</span> valid checks saved.<span id="histBps" class="user-hidden">-</span></div>
           <div class="small muted" id="lastLine" style="margin-top:4px;">Last: -</div>
         </div>
       </div>
@@ -754,7 +755,7 @@
       dom.histBps.textContent = fmt(e, 2);
       const last = rows[rows.length-1];
       const lastState = normState(last?.router?.state);
-      dom.lastLine.textContent = last ? `Last: ${last.sessionId} • ${ROUTER_STATE_UI[lastState]?.label || lastState || '-'} • ${last.router?.confidence || '-'}` : 'Last: -';
+      dom.lastLine.textContent = last ? `Last check: ${ROUTER_STATE_UI[lastState]?.label || lastState || '-'} � ${last.router?.confidence || '-'} confidence` : 'Last check: -';
       return { rows, base: b };
     }
 
@@ -1174,4 +1175,5 @@
   </script>
 </body>
 </html>
+
 
