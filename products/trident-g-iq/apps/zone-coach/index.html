@@ -181,16 +181,16 @@
       injuryOrIllness: false
     });
     const MODULES = {
-      in_zone: { id: 'deep_portable_learning_v1', title: 'Deep Portable Learning', items: ['Relational n-back + transfer probes', 'Wrapper swaps', 'Mission-linked work'] },
-      cold: { id: 'activate_stabilise_v1', title: 'Activate and Stabilise', items: ['Vigilance / sustained attention', 'Simple speeded detection', 'Optional quick re-check'] },
-      hot_exploit: { id: 'loosen_rigidity_v1', title: 'Loosen Rigidity', items: ['Down-regulation', 'Gentle flexibility / set shifting', 'Low-stakes variability practice'] },
-      hot_explore: { id: 'constraint_paced_v1', title: 'Constraint and Stabilise', items: ['Down-regulation + pacing', 'Rhythm / structured responding', 'Consistency / inhibition practice'] }
+      in_zone: { id: 'deep_portable_learning_v1', title: 'Deep Portable Learning', items: ['Deep work / training block', 'Single-thread execution', 'Protect learning quality'] },
+      flat: { id: 'activate_stabilise_v1', title: 'Activate and Stabilise', items: ['Aerobic activation or HIIT (if enabled)', 'Quick re-check', 'No deep work until re-check'] },
+      overloaded_exploit: { id: 'loosen_rigidity_v1', title: 'Down-regulate and Broaden', items: ['Slow breathing', 'Open monitoring', 'Optional Yoga Nidra / NSDR'] },
+      overloaded_explore: { id: 'constraint_paced_v1', title: 'Down-regulate and Constrain', items: ['Slow breathing + focused attention', 'Single-thread constraint work', 'Optional Yoga Nidra / NSDR'] }
     };
     const STATE_UI = {
       in_zone: { label: 'In-zone', why: 'Signals are stable enough for deep portable learning.' },
-      cold: { label: 'Cold off-zone', why: 'Lapse / slowdown signatures suggest under-activation or state drop.' },
-      hot_exploit: { label: 'Hot–Exploit off-zone', why: 'Post-error slowing / rigid slowdown suggests overcontrol.' },
-      hot_explore: { label: 'Hot–Explore off-zone', why: 'Variability / burstiness suggests unstable execution.' },
+      flat: { label: 'Flat / Sluggish off-zone', why: 'Lapse / slowdown signatures suggest under-activation or state drop.' },
+      overloaded_exploit: { label: 'Overloaded - Exploit off-zone', why: 'Post-error slowing / rigid slowdown suggests overcontrol.' },
+      overloaded_explore: { label: 'Overloaded - Explore off-zone', why: 'Variability / burstiness suggests unstable execution.' },
       invalid: { label: 'Session not valid', why: 'Focus loss or timing instability compromised the probe.' }
     };
 
@@ -221,6 +221,10 @@
       overloaded_exploit: { label: 'Overloaded - Exploit', why: 'Post-error slowing / rigid slowdown suggests overcontrolled responding.' },
       overloaded_explore: { label: 'Overloaded - Explore', why: 'Variability / burstiness / fast errors suggest scattered execution.' },
       invalid: { label: 'Session not valid', why: 'Focus loss or timing instability compromised the probe.' }
+    });
+    const EVIDENCE_KEYS = Object.freeze({
+      pmc_stress_pfc: { label: 'Stress and prefrontal cognitive control (review)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC2907136/' },
+      jneurosci_goal_directed: { label: 'Stress shifts behavior away from goal-directed control', url: 'https://www.jneurosci.org/content/29/22/7191' }
     });
     const RECOMMENDATIONS = Object.freeze([
       {
@@ -485,6 +489,7 @@
       try { localStorage.setItem(LS_PREFS, JSON.stringify(prefs)); } catch {}
     };
     const normState = (s) => LEGACY_STATE_ALIASES[s] || s || 'invalid';
+    const stateToneClass = (s) => (s === 'in_zone' ? 'good' : s === 'flat' ? 'warn' : 'bad');
     const gateLabel = (g) => ({
       GO_DEEP: 'GO DEEP',
       NO_DEEP_TODAY: 'NO DEEP TODAY',
@@ -492,6 +497,7 @@
       TRY_AGAIN_INVALID: 'TRY AGAIN (INVALID)'
     }[g] || g || '-');
     const gateClass = (g) => (g === 'GO_DEEP' ? 'go' : g === 'TRY_AGAIN_INVALID' ? 'stop' : 'no');
+    const esc = (v) => String(v ?? '').replace(/[&<>\"']/g, (m) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;', "'":'&#39;' }[m]));
     function computeTrainingGate(routerState, confidence, baselineReady, valid){
       const state = normState(routerState);
       if (!valid || state === 'invalid') {
@@ -569,6 +575,41 @@
         return recommendationRiskRank(a) - recommendationRiskRank(b);
       });
       return candidates[0] || null;
+    }
+    function renderRecommendationCard(rec, gate){
+      if (!rec) return `<div class="muted">No recommendation available for this state yet.</div>`;
+      const cats = Array.isArray(rec.category) ? rec.category : [];
+      const tags = Array.isArray(rec.tags) ? rec.tags : [];
+      const chips = [...cats, ...tags].slice(0, 6).map((t) => `<span class="chip">${esc(t)}</span>`).join('');
+      const steps = (rec.steps || []).map((s) => `<li>${esc(s)}</li>`).join('');
+      const whyLines = [];
+      if (rec.why) whyLines.push(`<li>${esc(rec.why)}</li>`);
+      if (gate?.trainingGate === 'LOW_CONF_SOFT_NO') whyLines.push('<li>Low confidence: choose the lowest-risk stabilisation block and re-check before deep work.</li>');
+      if (rec.recheck_after) whyLines.push('<li>Re-check after this block to test for re-entry into In-zone.</li>');
+      const recEvidence = (rec.evidence || []).slice(0,3).map((e) => {
+        const item = e?.url ? e : EVIDENCE_KEYS[e] || null;
+        if (!item) return '';
+        return `<li><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.label || item.url)}</a></li>`;
+      }).join('');
+      const gateEvidence = (gate?.trainingGateEvidence || []).slice(0,3).map((key) => {
+        const item = EVIDENCE_KEYS[key];
+        if (!item) return '';
+        return `<li><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.label)}</a></li>`;
+      }).join('');
+      const safety = (rec.safety_level === 'medium' || rec.safety_level === 'high')
+        ? `<div class="safety-banner ${rec.safety_level}">Safety: ${esc(rec.safety_level.toUpperCase())}${rec.requires_opt_in ? ' • opt-in only' : ''}</div>`
+        : '';
+      return [
+        `<h3 style="margin:0 0 6px 0;">${esc(rec.title)}</h3>`,
+        `<div class="small muted">${rec.duration_min ? `${esc(rec.duration_min)} min` : 'Flexible'}${rec.requires_opt_in ? ' • opt-in only' : ''}${rec.recheck_after ? ' • re-check after' : ''}</div>`,
+        chips ? `<div class="chips">${chips}</div>` : '',
+        `<ol class="small" style="margin:10px 0 0 18px; padding:0;">${steps}</ol>`,
+        safety,
+        `<details class="evidence"><summary>Why this?</summary>`,
+        whyLines.length ? `<ul class="evidence-list">${whyLines.join('')}</ul>` : '',
+        (recEvidence || gateEvidence) ? `<ul class="evidence-list">${recEvidence}${gateEvidence}</ul>` : '',
+        `</details>`
+      ].join('');
     }
 
     function validRows(rows){ return rows.filter(r => r?.valid && Number.isFinite(r?.bps?.combined) && normState(r?.router?.state) !== 'invalid'); }
@@ -786,23 +827,35 @@
       const prefs = loadPrefs();
       const gate = summary.trainingGate || computeTrainingGate(state, summary.router.confidence, (summary.baselines?.priorValidCount || 0) >= 3, summary.valid);
       const rec = summary.recommendation || pickRecommendation(state, gate.trainingGate, summary.router.confidence, prefs);
+      summary.trainingGate = gate;
+      summary.recommendation = rec;
       dom.mBps.textContent = fmt(summary.bps.combined, 2);
       dom.mState.textContent = ui.label;
       dom.mConf.textContent = summary.router.confidence;
       dom.mProbeCatch.textContent = `${summary.features.probe.n} / ${fmtPct(summary.features.catchFailRate,1)}`;
       dom.mTimeoutCv.textContent = `${fmtPct(summary.features.probe.timeoutRate,1)} / ${fmt(summary.features.probe.rtCV,3)}`;
       dom.mPesBurst.textContent = `${Number.isFinite(summary.features.probe.PES)?Math.round(summary.features.probe.PES)+' ms':'—'} / ${fmt(summary.features.probe.errorBurstiness,2)}`;
-      dom.stateBadge.className = `badge ${summary.router.state}`;
+      dom.stateBadge.className = `badge ${state}`;
       dom.stateBadge.textContent = `${ui.label} • ${summary.router.confidence} confidence`;
       dom.stateWhy.textContent = ui.why;
+      dom.gateBadge.textContent = `Training gate: ${gateLabel(gate.trainingGate)}`;
+      dom.gateChips.innerHTML = '';
+      const primaryGateChip = document.createElement('span');
+      primaryGateChip.className = `gate-chip ${gateClass(gate.trainingGate)}`;
+      primaryGateChip.textContent = gateLabel(gate.trainingGate);
+      dom.gateChips.appendChild(primaryGateChip);
+      (gate.trainingGateWhy || []).slice(0,3).forEach((t) => {
+        const chip = document.createElement('span');
+        chip.className = 'gate-chip';
+        chip.textContent = t;
+        dom.gateChips.appendChild(chip);
+      });
       dom.reasonChips.innerHTML = '';
-      (summary.router.reasons || []).slice(0,3).forEach(t => { const s=document.createElement('span'); s.className=`chip ${summary.router.state==='in_zone'?'good':summary.router.state==='cold'?'warn':'bad'}`; s.textContent=t; dom.reasonChips.appendChild(s); });
-      const mod = MODULES[summary.router.state];
-      dom.moduleCard.innerHTML = mod
-        ? `<h3 style="margin:0 0 6px 0;">${mod.title}</h3><div class="muted small">${mod.items.map(i => `• ${i}`).join('<br>')}</div><div class="small muted" style="margin-top:8px;">Module ID: ${mod.id}</div>`
-        : `<div class="muted">No recommendation for invalid sessions.</div>`;
-      dom.startRecommendedBtn.disabled = !mod;
+      (summary.router.reasons || []).slice(0,3).forEach(t => { const s=document.createElement('span'); s.className=`chip ${stateToneClass(state)}`; s.textContent=t; dom.reasonChips.appendChild(s); });
+      dom.moduleCard.innerHTML = renderRecommendationCard(rec, gate);
+      dom.startRecommendedBtn.disabled = !rec;
       refreshHistoryUI();
+      return;
     }
     async function runProbe(durationSeconds, label){
       if (rt.running) return;
@@ -908,6 +961,8 @@
         const bps = bpsFromStairs(stairs, frameMs);
         const feats = probeFeatures(trials);
         const router = classify({ valid, invalidReason, feats, bpsCombined: bps.combined, base });
+        const trainingGate = computeTrainingGate(router.state, router.confidence, (base.count || 0) >= 3, valid);
+        const recommendation = pickRecommendation(router.state, trainingGate.trainingGate, router.confidence, loadPrefs());
         summary = {
           sessionId: new Date().toISOString(),
           schemaVersion: CFG.schemaVersion,
@@ -934,8 +989,10 @@
             catchFailRate: Number.isFinite(feats.catchFailRate)?Number(feats.catchFailRate.toFixed(4)):null
           },
           counts: { totalTrials: trials.length, stairTrials: counts.stair, probeTrials: counts.probe, catchTrials: counts.catch, falseStarts: rt.falseStarts, catchFails: feats.counts.catchFails, pesSupport: feats.counts.pesSupport },
-          router: { state: router.state, confidence: router.confidence, reasons: router.reasons, invalidReason: router.invalidReason, recommendedModuleId: router.recommendedModuleId, scores: router.scores ? { cold: Number(router.scores.cold.toFixed(3)), hot_explore: Number(router.scores.hot_explore.toFixed(3)), hot_exploit: Number(router.scores.hot_exploit.toFixed(3)) } : null },
+          router: { state: router.state, confidence: router.confidence, reasons: router.reasons, invalidReason: router.invalidReason, recommendedModuleId: router.recommendedModuleId, scores: router.scores ? { flat: Number.isFinite(router.scores.flat) ? Number(router.scores.flat.toFixed(3)) : null, overloaded_explore: Number.isFinite(router.scores.overloaded_explore) ? Number(router.scores.overloaded_explore.toFixed(3)) : null, overloaded_exploit: Number.isFinite(router.scores.overloaded_exploit) ? Number(router.scores.overloaded_exploit.toFixed(3)) : null } : null },
           baselines: { priorValidCount: base.count, bpsEwma: Number.isFinite(ewma(base.bps)) ? Number(ewma(base.bps).toFixed(3)) : null },
+          trainingGate,
+          recommendation,
           trace: { probeRtMs: feats.trace.probeRtMs.slice(0,256), probeCorrect: feats.trace.probeCorrect.slice(0,256), probeTimedOut: feats.trace.probeTimedOut.slice(0,256), catchCorrect: feats.trace.catchCorrect.slice(0,128) }
         };
         const h = loadHistory(); h.push(summary); saveHistory(h);
@@ -965,8 +1022,9 @@
     dom.stopBtn.addEventListener('click', () => { if (!rt.running) return; rt.stop = true; if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); } setStatus('Stopping…'); });
     dom.startRecommendedBtn.addEventListener('click', () => {
       const s = rt.lastSummary; if (!s?.valid) return;
-      const m = MODULES[s.router.state];
-      alert(`${m?.title || 'Recommended session'}\n\nMVP placeholder. Wire this button to a Trident module route later.`);
+      const gate = s.trainingGate || computeTrainingGate(s.router?.state, s.router?.confidence, (s.baselines?.priorValidCount || 0) >= 3, s.valid);
+      const rec = s.recommendation || pickRecommendation(s.router?.state, gate.trainingGate, s.router?.confidence, loadPrefs());
+      alert(`${rec?.title || 'Recommended session'}\n\n${(rec?.steps || []).join('\n')}\n\nMVP placeholder. Wire this button to a Trident module route later.`);
     });
     dom.openLink.addEventListener('click', (e) => e.preventDefault());
     dom.touchLeftBtn.addEventListener('click', (e) => { e.preventDefault(); submit('ArrowLeft'); });
