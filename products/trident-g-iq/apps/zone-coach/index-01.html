@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zone Coach - Mindware Lab</title>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Tailwind is optional now; keeping it for layout utilities only -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Shared branding CSS (controls colours, type, cards, buttons, topbar) -->
+ <link rel="stylesheet" href="../../../../branding/brand.css?v=2" />
+
+  <style>
+    /* Keep these minimal so brand.css remains the source of truth */
+    body { margin: 0; padding: 0; font-family: var(--font, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif); }
+    input[type="range"] { accent-color: #143a73; }
+    .sliderLabel { font-weight: 900; font-size: 28px; color: rgba(0,0,0,0.85); }
+    .sliderValue { font-weight: 900; font-size: 24px; color: var(--deep); }
+    .sliderControl {
+      width: 100%;
+      margin-top: 8px;
+      height: 12px;
+      border-radius: 999px;
+      background: #143a73;
+      appearance: none;
+      -webkit-appearance: none;
+      outline: none;
+    }
+    .sliderControl::-webkit-slider-runnable-track {
+      height: 12px;
+      border-radius: 999px;
+      background: #143a73;
+    }
+    .sliderControl::-webkit-slider-thumb {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: limegreen;
+      border: 2px solid #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.55);
+      -webkit-appearance: none;
+      margin-top: -7px;
+    }
+    .sliderControl::-moz-range-thumb {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: limegreen;
+      border: 2px solid #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.55);
+    }
+    .sliderControl::-moz-range-track {
+      height: 12px;
+      border-radius: 999px;
+      background: #143a73;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <!-- SINGLE Babel script: everything lives here -->
+  <script type="text/babel" data-presets="env,react">
+    const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+    // -----------------------------
+    // Canonical keys (pipeline-ready)
+    // -----------------------------
+    const LS_KEYS = Object.freeze({
+      ZONE_LAST: 'iqmw.zone.lastCheck',
+      ZONE_HISTORY: 'iqmw.zone.history',
+      CAPACITY_FROM_ZONE: 'iqmw.capacity.handoffFromZone',
+      PVTB_HISTORY: 'iqmw.zone.pvtb.history',
+      AMFT_HISTORY: 'iqmw.zone.amft.history'
+    });
+
+    // Optional cross-app fallback key (helps interoperability)
+    const FALLBACK_CAPACITY_KEY = 'lastCapacitySession';
+
+    // -----------------------------
+    // Mode prototypes + classifier params
+    // -----------------------------
+    const PROTOTYPES = Object.freeze({
+      SUB: Object.freeze({ E: 2, S: 3, F: 4, N: 5, O: 3, C: 3, R: 7 }),
+      PSI: Object.freeze({ E: 5, S: 3, F: 8, N: 2, O: 4, C: 3, R: 2 }),
+      ENT: Object.freeze({ E: 6, S: 6, F: 5, N: 8, O: 7, C: 8, R: 3 }),
+      MIT: Object.freeze({ E: 6, S: 8, F: 8, N: 3, O: 7, C: 2, R: 9 }),
+      DEP: Object.freeze({ E: 2, S: 7, F: 4, N: 7, O: 8, C: 6, R: 6 })
+    });
+
+    const WEIGHTS = Object.freeze({ E: 0.08, S: 0.10, F: 0.20, N: 0.18, O: 0.14, C: 0.10, R: 0.20 });
+    const TAU = 6;
+
+    const MODE_LABELS = Object.freeze({
+      SUB: 'Subcritical',
+      PSI: 'In the G Zone',
+      ENT: 'Supercritical - scattered',
+      MIT: 'Supercritical - rigid',
+      DEP: 'Depleted overload'
+    });
+
+    const ZONE_UI = Object.freeze({
+      too_hot: { title: 'Overloaded', hint: 'High strain. Keep it simple and stabilise first.' },
+      in_band: { title: 'In the G Zone', hint: 'Trainable. Good time to learn and adapt.' },
+      too_cold: { title: 'Underpowered', hint: 'Low activation. Start gently and build engagement.' },
+      shaky: { title: 'Unsteady', hint: 'Variable. Reduce volatility before increasing difficulty.' }
+    });
+
+    const CONF_UI = Object.freeze({
+      High: 'High confidence',
+      Medium: 'Medium confidence',
+      Low: 'Low confidence'
+    });
+
+    const SIGNAL_COLORS = Object.freeze({
+      Good: '#1f7a1f',
+      Mixed: '#b56a00',
+      Poor: '#b00020'
+    });
+
+    // Map classifier output to the simple gate used across the ecosystem
+    const toZoneGate = (primaryMode) => {
+      if (primaryMode === 'PSI') return 'in_band';
+      if (primaryMode === 'SUB') return 'too_cold';
+      return 'too_hot';
+    };
+
+    // Suggest Type-1 capacity focus for the downstream Capacity Training Coach
+    const suggestedCapacityFromMode = (primaryMode) => {
+      switch (primaryMode) {
+        case 'SUB': return { primary: 'Hold', secondary: 'Update' };
+        case 'PSI': return { primary: 'Update', secondary: 'Hold' };
+        case 'ENT': return { primary: 'Stop', secondary: 'Shield' };
+        case 'MIT': return { primary: 'Clear', secondary: 'Recover' };
+        case 'DEP': return { primary: 'Recover', secondary: 'Stop' };
+        default: return { primary: 'Recover', secondary: null };
+      }
+    };
+
+    // -----------------------------
+    // Breathing patterns (generated once)
+    // -----------------------------
+
+  const makeRepeat = (n, seq) => Array.from({ length: n }, () => seq).flat();
+
+  const BREATH_PATTERNS = Object.freeze({
+    upshift: Object.freeze({
+      id: 'upshift',
+      name: 'Upshift',
+      description: 'Inhale-led breathing to gently raise engagement. Breathe in through your nose, breathe out through your nose (or softly through your mouth if needed).',
+      attentionCue: 'Anchor attention on the in-breath sensation. Return gently when distracted.',
+      safety: 'If you feel dizzy or unwell, stop and return to normal breathing.',
+      phases: [
+        ...makeRepeat(10, [
+          { label: 'Inhale', durationMs: 2000, kind: 'inhale' },
+          { label: 'Exhale', durationMs: 2000, kind: 'exhale' }
+        ]),
+        ...makeRepeat(14, [
+          { label: 'Inhale', durationMs: 3000, kind: 'inhale' },
+          { label: 'Exhale', durationMs: 2000, kind: 'exhale' }
+        ]),
+        ...makeRepeat(10, [
+          { label: 'Inhale', durationMs: 4000, kind: 'inhale' },
+          { label: 'Exhale', durationMs: 3000, kind: 'exhale' }
+        ])
+      ]
+    }),
+
+    amplify: Object.freeze({
+      id: 'amplify',
+      name: 'Amplify',
+      description: 'Slow-paced breathing to stabilise. Inhale through your nose, exhale through your nose (or softly through your mouth if needed).',
+      attentionCue: 'Track the smooth rhythm. Thoughts are normal. Notice them and return to the breath.',
+      safety: 'If you feel dizzy or unwell, stop and return to normal breathing.',
+      phases: makeRepeat(18, [
+        { label: 'Inhale', durationMs: 4000, kind: 'inhale' },
+        { label: 'Exhale', durationMs: 6000, kind: 'exhale' }
+      ])
+    }),
+
+    downshift: Object.freeze({
+      id: 'downshift',
+      name: 'Downshift',
+      description: 'Cyclic sighing to reduce arousal and overload. Take two small "sip" inhales through your nose, then a long sigh out through your mouth.',
+      attentionCue: 'Count the pattern: sip, sip, long sigh. If your mind races, return to the count.',
+      safety: 'If you feel dizzy or unwell, stop and return to normal breathing.',
+      phases: makeRepeat(20, [
+        { label: 'Inhale (1)', durationMs: 1000, kind: 'inhale' },
+        { label: 'Inhale (2)', durationMs: 1000, kind: 'inhale' },
+        { label: 'Sigh out', durationMs: 7000, kind: 'exhale' }
+      ])
+    })
+  });
+    const selectBreathingPattern = (primaryMode) => {
+      if (primaryMode === 'SUB') return 'upshift';
+      if (primaryMode === 'PSI') return 'amplify';
+      return 'downshift';
+    };
+
+    // -----------------------------
+    // Ratings items
+    // -----------------------------
+    const SLIDERS = Object.freeze([
+      { key: 'E', label: 'Energy', desc: 'How much usable energy do you have right now to start and keep going?' },
+      { key: 'S', label: 'Tension', desc: 'How tense or "on edge" do you feel in your body and mind?' },
+      { key: 'F', label: 'Focus steadiness', desc: 'How easy is it to stay with one thing without forcing it?' },
+      { key: 'N', label: 'Mental chatter', desc: 'How noisy is your mind with thoughts, worries, or distractions?' },
+      { key: 'O', label: 'Mental load', desc: 'How overloaded do you feel by what you are juggling right now?' },
+      { key: 'C', label: 'Plan switching', desc: 'Are you sticking to one plan, or do you keep changing direction and second-guessing?' },
+      { key: 'R', label: 'Stuckness', desc: 'Do you feel flexible, or stuck in one way of doing things even if it is not working?' }
+    ]);
+
+    // IMPORTANT: Use an absolute URL if this relative path ever 404s.
+    const CAPACITY_TRAINING_COACH_URL = '../game-switcher/';
+
+    // -----------------------------
+    // Classifier helpers
+    // -----------------------------
+    function computeDistance(ratings, prototype, weights) {
+      let sum = 0;
+      for (const k in prototype) {
+        const diff = ratings[k] - prototype[k];
+        sum += weights[k] * diff * diff;
+      }
+      return Math.sqrt(sum);
+    }
+
+    function classifyMode(ratings, externalDistractions) {
+      const N_eff = externalDistractions ? Math.min(10, ratings.N + 2) : ratings.N;
+      const adjusted = { ...ratings, N: N_eff };
+
+      const scores = {};
+      for (const mode in PROTOTYPES) {
+        const d = computeDistance(adjusted, PROTOTYPES[mode], WEIGHTS);
+        scores[mode] = Math.exp(-(d * d) / TAU);
+      }
+
+      const total = Object.values(scores).reduce((a, b) => a + b, 0);
+      const probs = {};
+      for (const mode in scores) probs[mode] = scores[mode] / total;
+
+      const primaryMode = Object.keys(probs).reduce((a, b) => (probs[a] > probs[b] ? a : b));
+      const top = probs[primaryMode];
+      const confidence = top >= 0.60 ? 'High' : top >= 0.45 ? 'Medium' : 'Low';
+
+      return { primaryMode, modeProbs: probs, confidence, N_eff };
+    }
+
+    function computeStateConfidence({ signalClarity, probe, interruptions, ratings }) {
+      const clarity = (signalClarity ?? 7);
+
+      const tabSwitches = interruptions?.tabSwitches ?? 0;
+      const blurs = interruptions?.blurs ?? 0;
+      const interruptScore = tabSwitches + blurs;
+
+      const hits = probe?.rts?.length ?? 0;
+      const trials = probe?.trials ?? 0;
+      const falseStarts = probe?.falseStarts ?? 0;
+      const lapses = probe?.lapses ?? 0;
+
+      const lowData = (trials > 0) && (hits < Math.max(10, Math.floor(trials * 0.6)));
+      const noisyProbe = falseStarts >= 4 || lapses >= 3;
+
+      const selfSaysSteady = ratings && (ratings.F >= 6 && ratings.N <= 4 && ratings.O <= 5);
+      const variability = probe?.madScaledMs ?? probe?.madMs ?? null;
+      const behaviourSaysNoisy = noisyProbe || (variability !== null && variability >= 260);
+
+      const disagreement = selfSaysSteady && behaviourSaysNoisy;
+
+      if (clarity <= 4 || interruptScore >= 2 || lowData || disagreement) return 'Low';
+      if (clarity <= 6 || interruptScore === 1 || noisyProbe) return 'Medium';
+      return 'High';
+    }
+
+    function computeOverallConfidence(modeConfidence, stateConfidence) {
+      if (stateConfidence === 'Low') return 'Low';
+      if (stateConfidence === 'Medium' && modeConfidence === 'High') return 'Medium';
+      return modeConfidence;
+    }
+
+    function computeSignalQuality({ probe, interruptions, ratings }) {
+      const tabSwitches = interruptions?.tabSwitches ?? 0;
+      const blurs = interruptions?.blurs ?? 0;
+      const interruptScore = tabSwitches + blurs;
+
+      const hits = probe?.rts?.length ?? 0;
+      const trials = probe?.trials ?? 0;
+      if (!trials) return { label: 'Poor', reason: 'no probe data' };
+
+      const hitRate = hits / trials;
+      const lapses = probe?.lapses ?? 0;
+      const falseStarts = probe?.falseStarts ?? 0;
+      let variability = probe?.madScaledMs ?? probe?.madMs ?? null;
+      if (variability === null && Array.isArray(probe?.rts) && probe.rts.length) {
+        const mean = probe.rts.reduce((a, b) => a + b, 0) / probe.rts.length;
+        const sd = Math.sqrt(probe.rts.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / probe.rts.length);
+        variability = Math.round(sd);
+      }
+
+      const selfSaysSteady = ratings && (ratings.F >= 6 && ratings.N <= 4 && ratings.O <= 5);
+      const behaviourSaysNoisy = lapses >= 2 || falseStarts >= 2 || hitRate < 0.85 || (variability !== null && variability >= 260);
+      const disagreement = selfSaysSteady && behaviourSaysNoisy;
+
+      const lowHits = hitRate < 0.8;
+      const someHitLoss = hitRate < 0.9;
+      const manyLapses = lapses >= 3;
+      const someLapses = lapses >= 1;
+      const manyFalseStarts = falseStarts >= 3;
+      const someFalseStarts = falseStarts >= 1;
+      const highVariability = variability !== null && variability >= 260;
+      const midVariability = variability !== null && variability >= 200;
+
+      const objectivePoor = lowHits || manyLapses || manyFalseStarts || interruptScore >= 2 || highVariability;
+      const mixedFromProbe = someHitLoss || someLapses || someFalseStarts || midVariability;
+
+      let label = 'Good';
+      if (objectivePoor) {
+        label = 'Poor';
+      } else if (mixedFromProbe) {
+        label = 'Mixed';
+      }
+
+      const reasons = [];
+      if (interruptScore >= 2) {
+        reasons.push('Multiple interruptions');
+      } else if (interruptScore === 1) {
+        reasons.push('1 interruption');
+      }
+      if (lowHits) reasons.push('Low hit rate');
+      else if (someHitLoss) reasons.push('Reduced hit rate');
+      if (manyLapses) reasons.push('Several lapses');
+      else if (someLapses) reasons.push('Some lapses');
+      if (manyFalseStarts) reasons.push('Multiple early taps');
+      else if (someFalseStarts) reasons.push('Early taps');
+      if (highVariability) reasons.push('High RT variability');
+      else if (midVariability) reasons.push('Elevated RT variability');
+
+      if (label === 'Good' && disagreement) {
+        label = 'Mixed';
+        return { label, reason: 'Self-report and probe differ today' };
+      }
+
+      if (label === 'Good') {
+        return { label, reason: 'Few interruptions, consistent responses' };
+      }
+
+      if (label === 'Mixed' && reasons.length === 0) {
+        return { label, reason: 'Self-report and probe differ today' };
+      }
+
+      const reason = reasons.length ? reasons.slice(0, 2).join(' + ') : 'Mixed signals today';
+      return { label, reason };
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function safeRate(num, den) {
+      const n = Number(num);
+      const d = Number(den);
+      if (!Number.isFinite(n) || !Number.isFinite(d) || d <= 0) return null;
+      return n / d;
+    }
+
+    function relativeImprovement(preValue, postValue, floor = 0.01) {
+      if (!Number.isFinite(preValue) || !Number.isFinite(postValue)) return 0;
+      const scale = Math.max(Math.abs(preValue), floor);
+      return clamp((preValue - postValue) / scale, -1, 1);
+    }
+
+    function evaluateInterventionEffect({ preProbe, postProbe, signalQualityLabel }) {
+      if (!preProbe || !postProbe) {
+        return {
+          bucket: 'unknown',
+          score: null,
+          reliability: 0,
+          message: 'Intervention effect unavailable: missing one of the probe runs.',
+          metrics: null
+        };
+      }
+
+      const preTrials = Number(preProbe.trials || 0);
+      const postTrials = Number(postProbe.trials || 0);
+      if (preTrials < 12 || postTrials < 8) {
+        return {
+          bucket: 'unknown',
+          score: null,
+          reliability: 0,
+          message: 'Not enough probe data to estimate intervention effect yet.',
+          metrics: {
+            preTrials,
+            postTrials
+          }
+        };
+      }
+
+      const preLapseRate = safeRate(preProbe.lapses || 0, preTrials);
+      const postLapseRate = safeRate(postProbe.lapses || 0, postTrials);
+      const preFalseStartRate = safeRate(preProbe.falseStarts || 0, preTrials + Number(preProbe.falseStarts || 0));
+      const postFalseStartRate = safeRate(postProbe.falseStarts || 0, postTrials + Number(postProbe.falseStarts || 0));
+      const preCv = Number.isFinite(Number(preProbe.rtCv)) ? Number(preProbe.rtCv) : null;
+      const postCv = Number.isFinite(Number(postProbe.rtCv)) ? Number(postProbe.rtCv) : null;
+      const preMedian = Number.isFinite(Number(preProbe.medianMs)) ? Number(preProbe.medianMs) : null;
+      const postMedian = Number.isFinite(Number(postProbe.medianMs)) ? Number(postProbe.medianMs) : null;
+
+      const lapseImprovement = relativeImprovement(preLapseRate, postLapseRate, 0.05);
+      const cvImprovement = relativeImprovement(preCv, postCv, 0.08);
+      const rtImprovement = relativeImprovement(preMedian, postMedian, 180);
+      const falseStartImprovement = relativeImprovement(preFalseStartRate, postFalseStartRate, 0.03);
+
+      let reliability = 1;
+      if (signalQualityLabel === 'Poor') reliability *= 0.55;
+      else if (signalQualityLabel === 'Mixed') reliability *= 0.75;
+
+      const postHitRate = safeRate(postProbe.hits || 0, postTrials);
+      if (Number.isFinite(postHitRate) && postHitRate < 0.75) reliability *= 0.75;
+      if (postTrials < 15) reliability *= 0.9;
+      reliability = clamp(reliability, 0.4, 1);
+
+      const rawScore =
+        0.45 * lapseImprovement +
+        0.25 * cvImprovement +
+        0.20 * rtImprovement +
+        0.10 * falseStartImprovement;
+
+      const score = Number((rawScore * reliability).toFixed(3));
+
+      let bucket = 'no_clear_change';
+      if (score >= 0.18) bucket = 'improved';
+      else if (score <= -0.18) bucket = 'worsened';
+
+      const message = bucket === 'improved'
+        ? 'Good response: your post-reset probe improved versus pre-reset.'
+        : bucket === 'worsened'
+          ? 'Post-reset probe looked less stable. Use a lighter session today.'
+          : 'No clear change after reset today. That is normal; keep the plan steady.';
+
+      return {
+        bucket,
+        score,
+        reliability: Number(reliability.toFixed(2)),
+        message,
+        metrics: {
+          preTrials,
+          postTrials,
+          preLapseRate,
+          postLapseRate,
+          preFalseStartRate,
+          postFalseStartRate,
+          preCv,
+          postCv,
+          preMedian,
+          postMedian,
+          lapseDeltaPp: Number(((postLapseRate - preLapseRate) * 100).toFixed(1)),
+          falseStartDeltaPp: Number(((postFalseStartRate - preFalseStartRate) * 100).toFixed(1)),
+          cvDelta: (Number.isFinite(preCv) && Number.isFinite(postCv)) ? Number((postCv - preCv).toFixed(3)) : null,
+          medianDeltaMs: (Number.isFinite(preMedian) && Number.isFinite(postMedian)) ? Math.round(postMedian - preMedian) : null
+        }
+      };
+    }
+
+    // -----------------------------
+    // Breathing Coach component (branded + safe audio)
+    // -----------------------------
+    function BreathingCoach({ patternId, onComplete, brand }) {
+      const pattern = BREATH_PATTERNS[patternId];
+
+      const size = 260;
+      const centre = size / 2;
+      const minR = 54;
+      const maxR = 96;
+      const stroke = 10;
+
+      const targetMs = 180000; // 3 minutes
+
+      const [running, setRunning] = useState(false);
+      const [elapsedMs, setElapsedMs] = useState(0);
+      const [phaseLabel, setPhaseLabel] = useState('Ready');
+      const [phaseKind, setPhaseKind] = useState('inhale');
+      const [phaseProgress, setPhaseProgress] = useState(0);
+      const [pingEnabled, setPingEnabled] = useState(true);
+      const [audioReady, setAudioReady] = useState(false);
+
+      const rafRef = useRef(null);
+      const startRef = useRef(null);
+      const pingerRef = useRef(null);
+      const lastPhaseIndexRef = useRef(-1);
+
+      const cycleMs = useMemo(
+        () => pattern.phases.reduce((s, p) => s + p.durationMs, 0),
+        [pattern]
+      );
+
+      const getPhaseAt = useCallback((tMs) => {
+        const t = (tMs % cycleMs + cycleMs) % cycleMs;
+        let acc = 0;
+
+        for (let i = 0; i < pattern.phases.length; i++) {
+          const p = pattern.phases[i];
+          const next = acc + p.durationMs;
+
+          if (t >= acc && t < next) {
+            return {
+              index: i,
+              label: p.label,
+              kind: p.kind,
+              progress: p.durationMs > 0 ? (t - acc) / p.durationMs : 0
+            };
+          }
+          acc = next;
+        }
+
+        const last = pattern.phases[pattern.phases.length - 1];
+        return { index: pattern.phases.length - 1, label: last.label, kind: last.kind, progress: 1 };
+      }, [cycleMs, pattern]);
+
+      const ensurePinger = async () => {
+        if (pingerRef.current) return true;
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (!AudioCtx) return false;
+
+          const ctx = new AudioCtx();
+          if (ctx.state === 'suspended') await ctx.resume();
+
+          pingerRef.current = {
+            ctx,
+            ping: (freqHz = 440) => {
+              const t0 = ctx.currentTime;
+              const osc = ctx.createOscillator();
+              const g = ctx.createGain();
+
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freqHz, t0);
+
+              g.gain.setValueAtTime(0.0001, t0);
+              g.gain.exponentialRampToValueAtTime(0.08, t0 + 0.01);
+              g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09);
+
+              osc.connect(g);
+              g.connect(ctx.destination);
+
+              osc.start(t0);
+              osc.stop(t0 + 0.11);
+            }
+          };
+
+          return true;
+        } catch {
+          return false;
+        }
+      };
+
+      const stop = () => {
+        setRunning(false);
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      };
+
+      const start = async () => {
+        const ok = await ensurePinger();
+        setAudioReady(ok);
+        lastPhaseIndexRef.current = -1;
+        startRef.current = performance.now();
+        setElapsedMs(0);
+        setRunning(true);
+      };
+
+      useEffect(() => {
+        if (!running) return;
+
+        const tick = () => {
+          const now = performance.now();
+          const elapsed = now - startRef.current;
+
+          if (elapsed >= targetMs) {
+            setElapsedMs(targetMs);
+            stop();
+            onComplete?.();
+            return;
+          }
+
+          setElapsedMs(elapsed);
+
+          const ph = getPhaseAt(elapsed);
+
+          if (ph.index !== lastPhaseIndexRef.current) {
+            if (pingEnabled && pingerRef.current && audioReady) {
+              pingerRef.current.ping(ph.kind === 'inhale' ? 440 : 660);
+            }
+            lastPhaseIndexRef.current = ph.index;
+          }
+
+          setPhaseLabel(ph.label);
+          setPhaseKind(ph.kind);
+          setPhaseProgress(ph.progress);
+
+          rafRef.current = requestAnimationFrame(tick);
+        };
+
+        rafRef.current = requestAnimationFrame(tick);
+        return () => {
+          if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        };
+      }, [running, targetMs, getPhaseAt, pingEnabled, audioReady]);
+
+      const displayRadius =
+        minR + (maxR - minR) * (phaseKind === 'inhale' ? phaseProgress : 1 - phaseProgress);
+
+      const overallProgress = Math.min(1, elapsedMs / targetMs);
+      const remainingMs = Math.max(0, targetMs - elapsedMs);
+      const mm = Math.floor(remainingMs / 60000);
+      const ss = Math.floor((remainingMs % 60000) / 1000);
+
+      const ringR = (maxR + 18);
+      const ringC = 2 * Math.PI * ringR;
+      const ringFill = ringC * overallProgress;
+      const ringRest = ringC - ringFill;
+
+      return (
+        <div className="screen">
+          <div className="topbar">
+            <div className="brandleft">
+              <div className="icon">
+                <img
+                  src={brand?.logoSrc}
+                  alt="Trident logo"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              </div>
+              <div>
+                <p className="title">{brand?.appName || 'Zone Coach'}</p>
+                <p className="subtitle">{brand?.subtitle || 'Quick state check -> mindful reset -> start training'}</p>
+              </div>
+            </div>
+            <div className="chip">Reset</div>
+          </div>
+
+          <div className="content">
+            <div className="card" style={{ maxWidth: 820, margin: '0 auto' }}>
+              <div className="h1">{pattern.name}</div>
+              <p className="p">{pattern.description}</p>
+              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 12, marginTop: 10 }}>
+                <div className="card" style={{ boxShadow: 'none' }}>
+                  <div className="p" style={{ fontWeight: 800, color: 'var(--deep)' }}>Time remaining</div>
+                  <div className="h1" style={{ fontSize: 28, marginTop: 6, color: 'var(--deep)' }}>
+                    {mm}:{String(ss).padStart(2, '0')}
+                  </div>
+                  <p className="p" style={{ marginTop: 6 }}>{pattern.attentionCue}</p>
+                </div>
+
+                <div className="card" style={{ boxShadow: 'none' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+                      <circle cx={centre} cy={centre} r={maxR} fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth={stroke} />
+                      <circle cx={centre} cy={centre} r={ringR} fill="none" stroke="rgba(0,0,0,0.10)" strokeWidth={6} />
+                      <circle
+                        cx={centre}
+                        cy={centre}
+                        r={ringR}
+                        fill="none"
+                        stroke="var(--deep)"
+                        strokeOpacity="0.55"
+                        strokeWidth={6}
+                        strokeLinecap="round"
+                        strokeDasharray={`${ringFill} ${ringRest}`}
+                        transform={`rotate(-90 ${centre} ${centre})`}
+                      />
+                      <circle
+                        cx={centre}
+                        cy={centre}
+                        r={displayRadius}
+                        fill="none"
+                        stroke="var(--deep)"
+                        strokeOpacity="0.95"
+                        strokeWidth={stroke}
+                      />
+                      <text x={centre} y={centre} textAnchor="middle" fontSize="20" fontWeight="800" fill="rgba(0,0,0,0.85)">
+                        {phaseLabel}
+                      </text>
+                    </svg>
+                  </div>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={pingEnabled}
+                      onChange={(e) => setPingEnabled(e.target.checked)}
+                    />
+                    <span className="p" style={{ margin: 0, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
+                      Ping at high/low points
+                    </span>
+                  </label>
+
+                  {!audioReady && pingEnabled && (
+                    <div className="p" style={{ marginTop: 8 }}>
+                      Audio pings may be unavailable in this browser until interaction is allowed.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="card" style={{ marginTop: 12, background: 'rgba(204,255,102,0.18)', border: '1px solid rgba(0,0,0,0.06)' }}>
+                <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Safety</div>
+                <div className="p" style={{ marginTop: 6, color: 'rgba(0,0,0,0.78)' }}>{pattern.safety}</div>
+              </div>
+
+              <div className="btnRow" style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                {!running ? (
+                  <button onClick={start} className="btn btnPrimary" style={{ flex: '0 1 200px', padding: '12px 20px' }}>
+                    Start 3-minute reset
+                  </button>
+                ) : (
+                  <button onClick={stop} className="btn btnSecondary" style={{ flex: '0 1 200px', padding: '12px 20px' }}>
+                    Stop
+                  </button>
+                )}
+
+                <button onClick={() => { stop(); onComplete?.(); }} className="btn btnSecondary" style={{ flex: '0 1 200px', padding: '12px 20px' }}>
+                  I'm done
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="footer">
+            <span>Mindware Lab | Trident</span>
+            <a className="link" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">Capacity Coach</a>
+          </div>
+        </div>
+      );
+    }
+    // -----------------------------
+// Replacement wrapper: embeds the aMFT-Quick probe and imports the result.
+    function AMFTProbe({ label, onComplete, brand, durationSec = 180, isRecheck = false, baselineBps = null }) {
+      const logoSrc = brand?.logoSrc || '../../../../branding/Trident-G-Icon.svg';
+      const appName = brand?.appName || 'Zone Coach';
+      const subtitle = brand?.subtitle || 'Quick state check -> mindful reset -> start training';
+      const [sessionKey, setSessionKey] = useState(() => `iqmw.zone.amft.session.${Date.now()}.${Math.random().toString(36).slice(2, 8)}`);
+      const [result, setResult] = useState(null);
+      const [lastPoll, setLastPoll] = useState(null);
+
+      const iframeSrc = useMemo(() => {
+        const q = new URLSearchParams({
+          duration: String(durationSec),
+          sessionKey,
+          label: isRecheck ? 'Recheck' : 'Probe'
+        });
+        return `./amft-quick.html?${q.toString()}`;
+      }, [durationSec, sessionKey, isRecheck]);
+
+      const tryLoadResult = useCallback(() => {
+        try {
+          const raw = localStorage.getItem(sessionKey);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object') return null;
+          setResult(parsed);
+          setLastPoll(new Date().toLocaleTimeString());
+          return parsed;
+        } catch {
+          return null;
+        }
+      }, [sessionKey]);
+
+      useEffect(() => {
+        tryLoadResult();
+        const id = setInterval(tryLoadResult, 1000);
+        const onStorage = (e) => {
+          if (e.key === sessionKey) tryLoadResult();
+        };
+        window.addEventListener('storage', onStorage);
+        return () => {
+          clearInterval(id);
+          window.removeEventListener('storage', onStorage);
+        };
+      }, [sessionKey, tryLoadResult]);
+
+      const restartEmbeddedProbe = () => {
+        setResult(null);
+        setSessionKey(`iqmw.zone.amft.session.${Date.now()}.${Math.random().toString(36).slice(2, 8)}`);
+      };
+      const currentBps = Number.isFinite(Number(result?.bps)) ? Number(result.bps) : null;
+      const baseBps = Number.isFinite(Number(baselineBps)) ? Number(baselineBps) : null;
+      const bpsDelta = (currentBps != null && baseBps != null) ? Number((currentBps - baseBps).toFixed(2)) : null;
+      const bpsDeltaLabel = bpsDelta == null ? null : `${bpsDelta >= 0 ? '+' : ''}${bpsDelta.toFixed(2)}`;
+
+      return (
+        <div className="screen">
+          <div className="topbar">
+            <div className="brandleft">
+              <div className="icon">
+                <img src={logoSrc} alt="Trident logo" onError={(e) => { e.target.style.display = 'none'; }} />
+              </div>
+              <div>
+                <p className="title">{appName}</p>
+                <p className="subtitle">{subtitle}</p>
+              </div>
+            </div>
+            <div className="chip">{label}</div>
+          </div>
+
+          <div className="content">
+            <div className="card" style={{ maxWidth: 1080, margin: '0 auto' }}>
+              <div className="h1">{isRecheck ? 'Masked majority recheck' : `Masked majority readiness probe (${durationSec}s)`}</div>
+              {isRecheck ? (
+                <>
+                  <p className="p" style={{ marginTop: 6 }}>
+                    This follow-up probe lasts just <b>{durationSec} seconds</b>. As before, on each trial, briefly shown arrows will appear in a 5-arrow set. Press <b>&larr;</b> if the <b>majority</b> point left, or <b>&rarr;</b> if the <b>majority</b> point right.
+                  </p>
+                  <p className="p" style={{ marginTop: 6 }}>
+                    Wait for the arrows before responding (do not press early during the fixation cross). When the run finishes, the result below will highlight the <b>change in BPS vs your first probe</b>.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="p" style={{ marginTop: 6 }}>
+                    This probe lasts <b>{durationSec} seconds</b>. On each trial, briefly shown arrows will appear in a 5-arrow set. Press <b>&larr;</b> if the <b>majority</b> point left, or <b>&rarr;</b> if the <b>majority</b> point right.
+                  </p>
+                  <p className="p" style={{ marginTop: 6 }}>
+                    Wait for the arrows before responding (do not press early during the fixation cross). When the run finishes, the result will appear below with <b>bits/second (bps)</b>, baseline/gate, and timing stability metrics.
+                  </p>
+                </>
+              )}
+              <p className="p" style={{ marginTop: 6 }}>
+                If the arrow keys do not register, click once inside the embedded probe panel to give it keyboard focus.
+              </p>
+
+              <div style={{ marginTop: 12, border: '1px solid #E0E0E0', borderRadius: 14, overflow: 'hidden', background: '#0b0b0d' }}>
+                <iframe
+                  key={sessionKey}
+                  src={iframeSrc}
+                  title={isRecheck ? 'aMFT recheck' : 'aMFT probe'}
+                  style={{ width: '100%', height: '720px', border: 'none', display: 'block', background: '#0b0b0d' }}
+                  loading="eager"
+                />
+              </div>
+
+              <div className="card" style={{ marginTop: 12, boxShadow: 'none' }}>
+                <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>{isRecheck ? 'Follow-up result' : 'Probe result'}</div>
+                {!result ? (
+                  <p className="p" style={{ marginTop: 6 }}>
+                    No completed result found yet for this run. Finish the embedded task first, then click <b>Refresh result</b>.
+                  </p>
+                ) : (
+                  <>
+                    {isRecheck ? (
+                      <>
+                        {bpsDelta != null ? (
+                          <p className="p" style={{ marginTop: 6 }}>
+                            Change in BPS vs first probe: <b>{bpsDeltaLabel}</b>
+                            <span style={{ color: '#111' }}> ({baseBps.toFixed(2)} -> {currentBps.toFixed(2)})</span>
+                          </p>
+                        ) : (
+                          <p className="p" style={{ marginTop: 6 }}>
+                            BPS change vs first probe will appear here after a valid first-probe BPS is available.
+                          </p>
+                        )}
+                        <p className="p" style={{ marginTop: 6 }}>
+                          Follow-up quality: <b>{result.qualityOk ? 'OK' : 'Invalid'}</b>
+                          <span style={{ color: '#111' }}> | Gate: </span><b>{result.gateLabel || result.readinessBand || '-'}</b>
+                        </p>
+                      </>
+                    ) : (
+                      <p className="p" style={{ marginTop: 6 }}>
+                        Probe result detected. Review the detailed metrics in the embedded task panel, then click <b>Continue</b>.
+                      </p>
+                    )}
+                  </>
+                )}
+                <p className="p" style={{ marginTop: 6, color: 'rgba(0,0,0,0.65)' }}>
+                  {lastPoll ? `Last sync: ${lastPoll}` : 'Waiting for result sync...'}
+                </p>
+                <div className="btnRow" style={{ justifyContent: 'center' }}>
+                  <button className="btn btnSecondary" style={{ width: 'min(300px, 100%)' }} onClick={tryLoadResult}>
+                    Refresh result
+                  </button>
+                  <button className="btn btnSecondary" style={{ width: 'min(300px, 100%)' }} onClick={restartEmbeddedProbe}>
+                    Restart embedded probe
+                  </button>
+                  <button
+                    className="btn btnPrimary"
+                    style={{ width: 'min(300px, 100%)' }}
+                    onClick={() => result && onComplete?.(result)}
+                    disabled={!result}
+                  >
+                    Continue
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="footer">
+            <span>Mindware Lab | Trident</span>
+            <a className="link" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">Capacity Coach</a>
+          </div>
+        </div>
+      );
+    }
+
+ // -----------------------------
+// ZoneCoach app (BRANDED)
+// -----------------------------
+function ZoneCoach() {
+  const [showSplash, setShowSplash] = useState(true);
+  const [step, setStep] = useState('ratings');
+
+  const [ratings, setRatings] = useState({ E: 5, S: 5, F: 5, N: 5, O: 5, C: 5, R: 5 });
+  const [externalDistractions, setExternalDistractions] = useState(false);
+
+  const [probePre, setProbePre] = useState(null);
+  const [probePost, setProbePost] = useState(null);
+  const [interventionEffect, setInterventionEffect] = useState(null);
+
+  const [classification, setClassification] = useState(null);
+  const [breathPattern, setBreathPattern] = useState(null);
+  const [postBreathReport, setPostBreathReport] = useState(null);
+  const [zoneDecision, setZoneDecision] = useState(null);
+
+  const interruptionsRef = useRef({ tabSwitches: 0, blurs: 0 });
+
+  useEffect(() => {
+    const onBlur = () => { interruptionsRef.current.blurs += 1; };
+    const onVisibilityChange = () => {
+      if (document.hidden) interruptionsRef.current.tabSwitches += 1;
+    };
+
+    window.addEventListener('blur', onBlur);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('blur', onBlur);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
+
+  const brand = useMemo(() => ({
+    appName: 'Zone Coach',
+    subtitle: 'Quick state check -> mindful reset -> start training',
+    accent: 'var(--deep)',
+    logoSrc: '../../../../branding/Trident-G-Icon.svg'
+  }), []);
+
+  const safeJsonParse = (s, fallback) => {
+    try { return JSON.parse(s); } catch { return fallback; }
+  };
+
+  const writeZoneTelemetry = (zoneTelemetry, zoneHandoffSlim) => {
+    try {
+      const history = safeJsonParse(localStorage.getItem(LS_KEYS.ZONE_HISTORY) || '[]', []);
+      history.push(zoneTelemetry);
+      while (history.length > 30) history.shift();
+      localStorage.setItem(LS_KEYS.ZONE_HISTORY, JSON.stringify(history));
+
+      localStorage.setItem(LS_KEYS.ZONE_LAST, JSON.stringify(zoneTelemetry));
+
+      // Slim handoff for capacity coach
+      localStorage.setItem(LS_KEYS.CAPACITY_FROM_ZONE, JSON.stringify(zoneHandoffSlim));
+
+      // Cross-app fallback handoff (helps older/newer coach variants)
+      const fallback = {
+        schemaVersion: 'mw_handoff_v1',
+        timestamp: zoneTelemetry.timestamp,
+        zone: zoneHandoffSlim.gate.zone, // too_cold | in_band | too_hot
+        recommendation: zoneHandoffSlim.gate.recommendation, // proceed | light
+        capacityFocus: zoneTelemetry.suggest?.capacityFocus || null,
+        rigourBudget: zoneTelemetry.suggest?.rigourBudget || null,
+        timeboxMins: zoneTelemetry.suggest?.timeboxMins || null
+      };
+      localStorage.setItem(FALLBACK_CAPACITY_KEY, JSON.stringify(fallback));
+    } catch (e) {
+      console.error('Storage error:', e);
+    }
+  };
+
+  const handleRatingsSubmit = () => {
+    const result = classifyMode(ratings, externalDistractions);
+    const pattern = selectBreathingPattern(result.primaryMode);
+    setClassification(result);
+    setBreathPattern(pattern);
+    setStep('probePre');
+  };
+
+  const handleStartBreathing = () => setStep('breathing');
+  const handleBreathingComplete = () => setStep('probePost');
+
+  const handlePostBreathSubmit = (report) => {
+    setPostBreathReport(report);
+
+    const baseZoneGate = toZoneGate(classification.primaryMode);
+
+    const preInBand = classification.primaryMode === 'PSI';
+    const postInBand = report === 'Psi-band';
+    const stateConfidence = computeStateConfidence({
+      signalClarity: null,
+      probe: probePre,
+      interruptions: interruptionsRef.current,
+      ratings
+    });
+    const overallConfidence = computeOverallConfidence(classification.confidence, stateConfidence);
+    const signalQualityLocal = computeSignalQuality({
+      probe: probePre,
+      interruptions: interruptionsRef.current,
+      ratings
+    });
+    const proceedNormal =
+      (postInBand || preInBand)
+      && overallConfidence !== 'Low'
+      && signalQualityLocal.label !== 'Poor';
+    const baseRecommendation = proceedNormal ? 'proceed' : 'light';
+
+    const intervention = evaluateInterventionEffect({
+      preProbe: probePre,
+      postProbe: probePost,
+      signalQualityLabel: signalQualityLocal.label
+    });
+    setInterventionEffect(intervention);
+
+    let zoneGate = baseZoneGate;
+    let recommendation = baseRecommendation;
+    const canUpgrade = overallConfidence !== 'Low' && signalQualityLocal.label !== 'Poor';
+
+    // Use post-probe intervention response as a moderate decision adjuster.
+    if (intervention.bucket === 'worsened') {
+      recommendation = 'light';
+    } else if (intervention.bucket === 'improved') {
+      if (zoneGate === 'too_cold' && postInBand && canUpgrade) {
+        zoneGate = 'in_band';
+      }
+      if (zoneGate === 'in_band' && canUpgrade) {
+        recommendation = 'proceed';
+      }
+    }
+
+    // Safety lock: overloaded states never upgrade to proceed.
+    if (zoneGate === 'too_hot') {
+      recommendation = 'light';
+    }
+
+    const derived = {
+      N_eff: classification.N_eff,
+      pressure: (ratings.S + ratings.O) / 2,
+      interference: (ratings.N + ratings.C) / 2,
+      load: (ratings.O + ratings.C + ratings.R) / 3,
+      stability: (ratings.F + (10 - ratings.R)) / 2
+    };
+
+    const suggestedCapacity = suggestedCapacityFromMode(classification.primaryMode);
+
+    const zoneTelemetry = {
+      schemaVersion: 'zone_v1',
+      timestamp: new Date().toISOString(),
+      ratings,
+      externalDistractions,
+      derived,
+      classifier: {
+        primaryMode: classification.primaryMode,
+        label: MODE_LABELS[classification.primaryMode],
+        modeProbs: classification.modeProbs,
+        confidence: classification.confidence,
+        modeConfidence: classification.confidence,
+        stateConfidence,
+        overallConfidence
+      },
+      signalQuality: signalQualityLocal,
+      interruptions: { ...interruptionsRef.current },
+      breathing: {
+        patternId: breathPattern,
+        patternName: BREATH_PATTERNS[breathPattern].name,
+        completed: true,
+        postBreathSelfReport: report
+      },
+      probe: {
+        pre: probePre,
+        post: probePost
+      },
+      intervention,
+      gate: {
+        zone: zoneGate, // too_cold|in_band|too_hot
+        baseZone: baseZoneGate,
+        preInBand,
+        postInBand,
+        recommendation,
+        baseRecommendation,
+        interventionBucket: intervention.bucket
+      },
+      suggest: {
+        rigourBudget: zoneGate === 'in_band' ? 'medium' : 'low',
+        timeboxMins: zoneGate === 'in_band' ? 10 : 8,
+        capacityFocus: suggestedCapacity
+      }
+    };
+
+    const zoneHandoffSlim = {
+      schemaVersion: 'zone_to_capacity_v1',
+      timestamp: zoneTelemetry.timestamp,
+      gate: {
+        zone: zoneTelemetry.gate.zone,
+        baseZone: zoneTelemetry.gate.baseZone,
+        preInBand: zoneTelemetry.gate.preInBand,
+        postInBand: zoneTelemetry.gate.postInBand,
+        recommendation: zoneTelemetry.gate.recommendation,
+        baseRecommendation: zoneTelemetry.gate.baseRecommendation,
+        interventionBucket: zoneTelemetry.gate.interventionBucket
+      },
+      suggest: zoneTelemetry.suggest,
+      intervention: {
+        bucket: intervention.bucket,
+        score: intervention.score,
+        reliability: intervention.reliability
+      }
+    };
+
+    setZoneDecision({
+      zone: zoneGate,
+      recommendation,
+      baseZone: baseZoneGate,
+      baseRecommendation,
+      preInBand,
+      postInBand,
+      intervention,
+      suggestedCapacity
+    });
+
+    writeZoneTelemetry(zoneTelemetry, zoneHandoffSlim);
+    setStep('complete');
+  };
+
+  const stateConfidence = classification
+    ? computeStateConfidence({
+      signalClarity: null,
+      probe: probePre,
+      interruptions: interruptionsRef.current,
+      ratings
+    })
+    : null;
+  const overallConfidence = classification
+    ? computeOverallConfidence(classification.confidence, stateConfidence)
+    : null;
+  const signalQuality = classification
+    ? computeSignalQuality({
+      probe: probePre,
+      interruptions: interruptionsRef.current,
+      ratings
+    })
+    : null;
+  const interventionPreview = evaluateInterventionEffect({
+    preProbe: probePre,
+    postProbe: probePost,
+    signalQualityLabel: signalQuality?.label || null
+  });
+
+  const startNewCheck = () => {
+    setStep('ratings');
+    interruptionsRef.current = { tabSwitches: 0, blurs: 0 };
+    setPostBreathReport(null);
+    setClassification(null);
+    setBreathPattern(null);
+    setProbePre(null);
+    setProbePost(null);
+    setInterventionEffect(null);
+    setZoneDecision(null);
+  };
+
+  // ----- Shared frame (topbar + footer) -----
+  const Frame = ({ chip, children }) => (
+    <div className="screen">
+      <div className="topbar">
+        <div className="brandleft">
+          <div className="icon">
+            <img
+              src={brand.logoSrc}
+              alt="Trident logo"
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+          </div>
+          <div>
+            <p className="title">{brand.appName}</p>
+            <p className="subtitle">{brand.subtitle}</p>
+          </div>
+        </div>
+        <div className="chip">{chip}</div>
+      </div>
+
+      <div className="content">{children}</div>
+
+      <div className="footer">
+        <span>Mindware Lab | Trident</span>
+        <a className="link" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">
+          Capacity Coach
+        </a>
+      </div>
+    </div>
+  );
+
+  // ----- Splash -----
+  if (showSplash) {
+    return (
+      <div className="screen">
+        <div className="topbar">
+          <div className="brandleft">
+            <div className="icon">
+              <img
+                src={brand.logoSrc}
+                alt="Trident logo"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            </div>
+            <div>
+              <p className="title">{brand.appName}</p>
+              <p className="subtitle">{brand.subtitle}</p>
+            </div>
+          </div>
+          <div className="chip">Start</div>
+        </div>
+
+        <div className="content" style={{ justifyContent: 'center' }}>
+          <div className="card" style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
+              <div className="icon">
+                <img
+                  src={brand.logoSrc}
+                  alt="Trident logo"
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              </div>
+            </div>
+
+            <div className="h1" style={{ fontSize: 26, marginBottom: 8 }}>{brand.appName}</div>
+            <p className="p" style={{ fontSize: 14 }}>{brand.subtitle}</p>
+
+            <div className="btnRow" style={{ justifyContent: 'center' }}>
+              <button className="btn btnPrimary" style={{ width: 'min(360px, 100%)' }} onClick={() => setShowSplash(false)}>
+                Continue
+              </button>
+            </div>
+
+            <p className="p" style={{ marginTop: 10 }}>Mindware Lab | Trident</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ----- Probe pre -----
+  if (!showSplash && step === 'probePre') {
+    return (
+      <AMFTProbe
+        label="Probe"
+        brand={brand}
+        durationSec={180}
+        baselineBps={null}
+        onComplete={(result) => {
+          setProbePre(result);
+          setStep('results');
+        }}
+      />
+    );
+  }
+
+  // ----- Breathing -----
+  if (step === 'breathing') {
+    return (
+      <BreathingCoach
+        patternId={breathPattern}
+        onComplete={handleBreathingComplete}
+        brand={brand}
+      />
+    );
+  }
+
+  // ----- Probe post -----
+  if (step === 'probePost') {
+    return (
+      <AMFTProbe
+        label="Recheck"
+        brand={brand}
+        durationSec={90}
+        isRecheck={true}
+        baselineBps={probePre?.bps ?? null}
+        onComplete={(result) => {
+          setProbePost(result);
+          setStep('postBreath');
+        }}
+      />
+    );
+  }
+
+  // ----- Main flow -----
+  return (
+    <Frame chip={step === 'ratings' ? 'Check' : step === 'results' ? 'Result' : step === 'postBreath' ? 'Report' : 'Next'}>
+      <div className="card" style={{ maxWidth: 820, margin: '0 auto' }}>
+
+        {step === 'ratings' && (
+          <>
+            <div className="h1">Zone check</div>
+            <p className="p">Rate how you feel right now (0 = not at all, 10 = extremely).</p>
+
+            <div style={{ marginTop: 10 }}>
+              {SLIDERS.map(s => (
+                <div key={s.key} className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
+                    <div className="sliderLabel">{s.label}</div>
+                    <div className="sliderValue">{ratings[s.key]}</div>
+                  </div>
+                  <p className="p" style={{ marginTop: 6, marginBottom: 10 }}>{s.desc}</p>
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    value={ratings[s.key]}
+                    onChange={(e) => setRatings({ ...ratings, [s.key]: parseInt(e.target.value, 10) })}
+                    className="sliderControl"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={externalDistractions}
+                  onChange={(e) => setExternalDistractions(e.target.checked)}
+                  style={{ marginTop: 2 }}
+                />
+                <span className="p" style={{ margin: 0, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
+                  Notifications, noise, people, or interruptions are affecting me right now
+                </span>
+              </label>
+            </div>
+
+            <div className="btnRow">
+              <button onClick={handleRatingsSubmit} className="btn btnPrimary" style={{ width: '100%' }}>
+                Continue to readiness check
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 'results' && classification && (
+          <>
+            <div className="h1">Your current state</div>
+
+            <div className="card" style={{ boxShadow: 'none', background: 'rgba(34,170,255,0.08)', border: '1px solid rgba(39,100,183,0.18)', marginTop: 12 }}>
+              <div style={{ fontWeight: 900, fontSize: 36, color: 'rgba(0,0,0,0.90)' }}>
+                {MODE_LABELS[classification.primaryMode]}
+              </div>
+              <p className="p" style={{ marginTop: 6 }}>
+                Confidence: <span style={{ fontWeight: 900, color: 'var(--deep)' }}>{CONF_UI[overallConfidence || classification.confidence] || overallConfidence || classification.confidence}</span>
+              </p>
+              {signalQuality && (
+                <>
+                  <p className="p" style={{ marginTop: 6 }}>
+                    Signal quality (reliability):{' '}
+                    <span
+                      style={{ fontWeight: 900, color: SIGNAL_COLORS[signalQuality.label] || 'var(--deep)' }}
+                      title={signalQuality.reason}
+                    >
+                      {signalQuality.label}
+                    </span>
+                  </p>
+                  <p className="p" style={{ marginTop: 2, color: '#111' }}>
+                    {signalQuality.reason}
+                  </p>
+                </>
+              )}
+            </div>
+
+            <div className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
+              <div style={{ fontWeight: 900, fontSize: 20, color: 'rgba(0,0,0,0.85)' }}>Recommended reset</div>
+              <div style={{ fontWeight: 900, fontSize: 16, color: 'var(--deep)', marginTop: 6 }}>
+                {BREATH_PATTERNS[breathPattern].name}
+              </div>
+              <p className="p" style={{ marginTop: 6 }}>{BREATH_PATTERNS[breathPattern].description}</p>
+              <p className="p" style={{ marginTop: 8 }}>Do the 3-minute reset, then we will decide the best training intensity.</p>
+
+              <div className="btnRow">
+                <button onClick={handleStartBreathing} className="btn btnPrimary" style={{ width: '100%' }}>
+                  Start 3-minute reset
+                </button>
+                <button onClick={startNewCheck} className="btn btnSecondary" style={{ width: '100%' }}>
+                  Back
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {step === 'postBreath' && (
+          <>
+            <div className="h1">How do you feel now?</div>
+            <p className="p">Quick check after your breathing reset.</p>
+
+            <div className="card" style={{ boxShadow: 'none', marginTop: 12, background: 'rgba(34,170,255,0.08)', border: '1px solid rgba(39,100,183,0.18)' }}>
+              <div style={{ fontWeight: 900, fontSize: 16, color: 'rgba(0,0,0,0.90)' }}>Intervention response (pre vs post probe)</div>
+              <p className="p" style={{ marginTop: 6, color: '#111' }}>{interventionPreview.message}</p>
+              {interventionPreview.metrics ? (() => {
+                const m = interventionPreview.metrics;
+                const lapsePre = Number.isFinite(m.preLapseRate) ? (m.preLapseRate * 100).toFixed(1) + '%' : '-';
+                const lapsePost = Number.isFinite(m.postLapseRate) ? (m.postLapseRate * 100).toFixed(1) + '%' : '-';
+                const cvPre = Number.isFinite(m.preCv) ? m.preCv.toFixed(3) : '-';
+                const cvPost = Number.isFinite(m.postCv) ? m.postCv.toFixed(3) : '-';
+                const rtPre = Number.isFinite(m.preMedian) ? m.preMedian + ' ms' : '-';
+                const rtPost = Number.isFinite(m.postMedian) ? m.postMedian + ' ms' : '-';
+                return (
+                  <div style={{ marginTop: 6 }}>
+                    <p className="p" style={{ margin: 0, color: '#111' }}>
+                      Lapse rate: <b>{lapsePre}</b> -> <b>{lapsePost}</b>
+                    </p>
+                    <p className="p" style={{ marginTop: 4, color: '#111' }}>
+                      RT variability (CV): <b>{cvPre}</b> -> <b>{cvPost}</b>
+                    </p>
+                    <p className="p" style={{ marginTop: 4, color: '#111' }}>
+                      Median RT: <b>{rtPre}</b> -> <b>{rtPost}</b>
+                    </p>
+                  </div>
+                );
+              })() : null}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 10, marginTop: 12 }}>
+              {[
+                { label: 'Flat / low drive', value: 'Subcritical' },
+                { label: 'In the G Zone', value: 'Psi-band' },
+                { label: 'Overloaded & scattered', value: 'Supercritical - explore' },
+                { label: 'Over-tight & stuck', value: 'Supercritical - rigid control' },
+                { label: 'Not sure', value: 'Not sure' }
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => handlePostBreathSubmit(opt.value)}
+                  className="btn btnSecondary"
+                  style={{ textAlign: 'left', width: '100%' }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {step === 'complete' && classification && (
+          <>
+            <div className="h1">Reset complete</div>
+
+            <div className="card" style={{ boxShadow: 'none', background: 'rgba(34,170,255,0.08)', border: '1px solid rgba(39,100,183,0.18)', marginTop: 12 }}>
+              <div style={{ fontWeight: 900, fontSize: 16, color: 'rgba(0,0,0,0.90)' }}>
+                Post-breath: <span style={{ color: 'var(--deep)' }}>{postBreathReport}</span>
+              </div>
+            </div>
+
+            <div className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
+              <div style={{ fontWeight: 900, fontSize: 14, color: 'rgba(0,0,0,0.85)' }}>Next step</div>
+
+              <p className="p" style={{ marginTop: 8 }}>
+                Zone gate: <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{ZONE_UI[zoneDecision?.zone]?.title || '-'}</span>
+                <span style={{ color: '#111' }}> | Suggested focus: </span>
+                <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{zoneDecision?.suggestedCapacity?.primary || '-'}</span>
+                {zoneDecision?.suggestedCapacity?.secondary ? <span style={{ color: '#111' }}> then </span> : null}
+                {zoneDecision?.suggestedCapacity?.secondary ? <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{zoneDecision.suggestedCapacity.secondary}</span> : null}
+              </p>
+
+              {interventionEffect ? (
+                <div className="card" style={{ boxShadow: 'none', marginTop: 8, background: '#F6FBFF', border: '1px solid rgba(39,100,183,0.18)' }}>
+                  <p className="p" style={{ margin: 0, color: '#111', fontWeight: 800 }}>
+                    Intervention effect: {interventionEffect.bucket === 'improved' ? 'Improved' : interventionEffect.bucket === 'worsened' ? 'Worsened' : interventionEffect.bucket === 'no_clear_change' ? 'No clear change' : 'Unknown'}
+                  </p>
+                  <p className="p" style={{ marginTop: 6, color: '#111' }}>{interventionEffect.message}</p>
+                </div>
+              ) : null}
+
+              {zoneDecision?.recommendation === 'proceed' ? (
+                <>
+                  <p className="p" style={{ marginTop: 8, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
+                    Proceed with training.
+                  </p>
+                  <div className="btnRow">
+                    <button
+                      onClick={() => window.open(CAPACITY_TRAINING_COACH_URL, '_blank')}
+                      className="btn btnPrimary"
+                      style={{ width: '100%' }}
+                    >
+                      Go to Capacity Training Coach
+                    </button>
+                  </div>
+                  <p className="p" style={{ marginTop: 8 }}>
+                    Your zone handoff has been saved for the coach/switcher.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="p" style={{ marginTop: 8, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
+                    Light session recommended.
+                  </p>
+                  <p className="p" style={{ marginTop: 6 }}>
+                    If your reset effect was unclear today, that is okay. Keep the session short and stabilising.
+                  </p>
+
+                  <div className="btnRow">
+                    <button
+                      onClick={() => window.open(CAPACITY_TRAINING_COACH_URL, '_blank')}
+                      className="btn btnPrimary"
+                      style={{ width: '100%' }}
+                    >
+                      Proceed with a light session (Recover focus)
+                    </button>
+                  </div>
+
+                  <div className="card" style={{ boxShadow: 'none', marginTop: 10 }}>
+                    <p className="p" style={{ margin: 0 }}>
+                      If you still feel overloaded: walk, hydration, low stimulation, early night. Try again tomorrow.
+                    </p>
+                  </div>
+
+                  <p className="p" style={{ marginTop: 8 }}>
+                    Your zone handoff has been saved for the coach/switcher.
+                  </p>
+                </>
+              )}
+
+              <div className="btnRow">
+                <button onClick={startNewCheck} className="btn btnSecondary" style={{ width: '100%' }}>
+                  Start new check
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+      </div>
+    </Frame>
+  );
+}
+
+// React 18 root
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<ZoneCoach />);
