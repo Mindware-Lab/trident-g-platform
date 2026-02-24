@@ -40,15 +40,27 @@
     .block { border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px; margin-top:10px; background:rgba(255,255,255,.03); }
     .badge { display:inline-block; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.12); font-size:12px; font-weight:800; margin-top:6px; }
     .badge.in_zone { border-color: rgba(204,255,102,.35); background: rgba(204,255,102,.1); }
-    .badge.cold { border-color: rgba(120,180,255,.35); background: rgba(120,180,255,.1); }
-    .badge.hot_exploit { border-color: rgba(255,196,120,.35); background: rgba(255,196,120,.1); }
-    .badge.hot_explore { border-color: rgba(255,140,140,.35); background: rgba(255,140,140,.1); }
+    .badge.flat { border-color: rgba(120,180,255,.35); background: rgba(120,180,255,.1); }
+    .badge.overloaded_exploit { border-color: rgba(255,196,120,.35); background: rgba(255,196,120,.1); }
+    .badge.overloaded_explore { border-color: rgba(255,140,140,.35); background: rgba(255,140,140,.1); }
     .badge.invalid { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.08); }
     .chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
     .chip { font-size:12px; font-weight:700; border-radius:999px; padding:6px 9px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04); }
     .chip.bad { border-color: rgba(255,120,120,.35); background: rgba(255,120,120,.1); }
     .chip.warn { border-color: rgba(255,188,94,.35); background: rgba(255,188,94,.1); }
     .chip.good { border-color: rgba(204,255,102,.35); background: rgba(204,255,102,.1); }
+    .gate-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .gate-chip { font-size:12px; font-weight:700; border-radius:999px; padding:6px 9px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04); }
+    .gate-chip.go { border-color: rgba(204,255,102,.35); background: rgba(204,255,102,.1); }
+    .gate-chip.no { border-color: rgba(255,188,94,.35); background: rgba(255,188,94,.1); }
+    .gate-chip.stop { border-color: rgba(255,120,120,.35); background: rgba(255,120,120,.1); }
+    details.evidence { margin-top:10px; }
+    details.evidence summary { cursor:pointer; font-weight:700; }
+    .evidence-list { margin:8px 0 0 18px; padding:0; }
+    .evidence-list li { margin:4px 0; }
+    .safety-banner { margin-top:8px; padding:8px 10px; border-radius:10px; font-size:12px; }
+    .safety-banner.medium { border:1px solid rgba(255,188,94,.35); background:rgba(255,188,94,.10); }
+    .safety-banner.high { border:1px solid rgba(255,120,120,.35); background:rgba(255,120,120,.10); }
     .hidden { display:none !important; }
     @media (max-width: 700px) { .grid { grid-template-columns:1fr; } }
   </style>
@@ -62,17 +74,17 @@
         <span class="pill" id="statusPill">Idle</span>
       </div>
       <div class="row">
-        <span class="pill" id="refreshPill">Refresh: —</span>
-        <span class="pill" id="qualityPill">Quality: —</span>
+        <span class="pill" id="refreshPill">Refresh: -</span>
+        <span class="pill" id="qualityPill">Quality: -</span>
       </div>
     </div>
 
     <div class="card">
       <div id="screenStart" class="screen active">
         <h2 style="margin:0 0 8px 0;">3-minute readiness check</h2>
-        <div class="muted">Arrows flash briefly. Press <b>←</b> or <b>→</b> for the majority direction. Go as fast and accurately as you can.</div>
+        <div class="muted">Arrows flash briefly. Press <b>&larr;</b> or <b>&rarr;</b> for the majority direction. Go as fast and accurately as you can.</div>
         <div class="small muted" style="margin-top:8px;">Single-probe MFT-M router: computes <span style="font-family:monospace;">BPS</span> plus lapse/variability/drift signatures to recommend a training module.</div>
-        <div class="small muted" style="margin-top:10px;">Optional label (saved only): I feel…</div>
+        <div class="small muted" style="margin-top:10px;">Optional label (saved only): I feel...</div>
         <div class="radio">
           <label><input type="radio" name="feel" value="flat" /> Flat</label>
           <label><input type="radio" name="feel" value="normal" checked /> Normal</label>
@@ -94,8 +106,8 @@
         <div class="progress"><div id="progressFill"></div></div>
         <div class="task"><canvas id="c"></canvas></div>
         <div class="touch">
-          <button class="btn" id="touchLeftBtn">←</button>
-          <button class="btn" id="touchRightBtn">→</button>
+          <button class="btn" id="touchLeftBtn">&larr;</button>
+          <button class="btn" id="touchRightBtn">&rarr;</button>
         </div>
         <div class="cta">
           <button class="btn btn-ghost" id="stopBtn">Stop run</button>
@@ -113,16 +125,18 @@
 
         <div id="validPanel" class="hidden">
           <div class="grid">
-            <div class="metric"><div class="k">BPS (combined)</div><div class="v" id="mBps">—</div></div>
-            <div class="metric"><div class="k">State</div><div class="v" id="mState">—</div></div>
-            <div class="metric"><div class="k">Confidence</div><div class="v" id="mConf">—</div></div>
-            <div class="metric"><div class="k">Probe trials / Catch fail</div><div class="v" id="mProbeCatch">—</div></div>
-            <div class="metric"><div class="k">Timeout rate / RT CV</div><div class="v" id="mTimeoutCv">—</div></div>
-            <div class="metric"><div class="k">PES / Burstiness</div><div class="v" id="mPesBurst">—</div></div>
+            <div class="metric"><div class="k">BPS (combined)</div><div class="v" id="mBps">-</div></div>
+            <div class="metric"><div class="k">State</div><div class="v" id="mState">-</div></div>
+            <div class="metric"><div class="k">Confidence</div><div class="v" id="mConf">-</div></div>
+            <div class="metric"><div class="k">Probe trials / Catch fail</div><div class="v" id="mProbeCatch">-</div></div>
+            <div class="metric"><div class="k">Timeout rate / RT CV</div><div class="v" id="mTimeoutCv">-</div></div>
+            <div class="metric"><div class="k">PES / Burstiness</div><div class="v" id="mPesBurst">-</div></div>
           </div>
           <div class="block">
-            <div id="stateBadge" class="badge">—</div>
-            <div id="stateWhy" class="muted" style="margin-top:8px;">—</div>
+            <div id="stateBadge" class="badge">-</div>
+            <div id="stateWhy" class="muted" style="margin-top:8px;">-</div>
+            <div id="gateBadge" class="badge">Training gate</div>
+            <div id="gateChips" class="gate-row"></div>
             <div id="reasonChips" class="chips"></div>
           </div>
           <div class="block" id="moduleCard"></div>
@@ -135,8 +149,8 @@
         </div>
 
         <div class="block">
-          <div class="small muted">History (local): <span id="histCount">0</span> valid sessions • BPS EWMA <span id="histBps">—</span></div>
-          <div class="small muted" id="lastLine" style="margin-top:4px;">Last: —</div>
+          <div class="small muted">History (local): <span id="histCount">0</span> valid sessions - BPS EWMA <span id="histBps">-</span></div>
+          <div class="small muted" id="lastLine" style="margin-top:4px;">Last: -</div>
         </div>
       </div>
     </div>
@@ -157,6 +171,15 @@
       catchProbeFracMax: .16, historyKeep: 120, baselineWindow: 14
     };
     const LS_HISTORY = 'iqmw.zone.router.history.v1';
+    const LS_PREFS = 'iqmw.zone.router.prefs.v1';
+    const DEFAULT_PREFS = Object.freeze({
+      timeBudget: 10,
+      prefersExercise: true,
+      allowsHIIT: true,
+      allowsColdExposure: false,
+      allowsIntenseBreathwork: false,
+      injuryOrIllness: false
+    });
     const MODULES = {
       in_zone: { id: 'deep_portable_learning_v1', title: 'Deep Portable Learning', items: ['Relational n-back + transfer probes', 'Wrapper swaps', 'Mission-linked work'] },
       cold: { id: 'activate_stabilise_v1', title: 'Activate and Stabilise', items: ['Vigilance / sustained attention', 'Simple speeded detection', 'Optional quick re-check'] },
@@ -180,13 +203,250 @@
       runLabelPill: $('runLabelPill'), trialPill: $('trialPill'), mixPill: $('mixPill'), progressFill: $('progressFill'),
       invalidPanel: $('invalidPanel'), invalidReason: $('invalidReason'), validPanel: $('validPanel'),
       mBps: $('mBps'), mState: $('mState'), mConf: $('mConf'), mProbeCatch: $('mProbeCatch'), mTimeoutCv: $('mTimeoutCv'), mPesBurst: $('mPesBurst'),
-      stateBadge: $('stateBadge'), stateWhy: $('stateWhy'), reasonChips: $('reasonChips'), moduleCard: $('moduleCard'),
+      stateBadge: $('stateBadge'), stateWhy: $('stateWhy'), gateBadge: $('gateBadge'), gateChips: $('gateChips'), reasonChips: $('reasonChips'), moduleCard: $('moduleCard'),
       histCount: $('histCount'), histBps: $('histBps'), lastLine: $('lastLine'),
       touchLeftBtn: $('touchLeftBtn'), touchRightBtn: $('touchRightBtn'),
       canvas: $('c')
     };
     const ctx = dom.canvas.getContext('2d', { alpha:false, desynchronized:true }) || dom.canvas.getContext('2d');
     const rt = { running:false, stop:false, respOpen:false, choiceHandler:null, resolver:null, falseStarts:0, lastSummary:null };
+    const LEGACY_STATE_ALIASES = Object.freeze({
+      cold: 'flat',
+      hot_exploit: 'overloaded_exploit',
+      hot_explore: 'overloaded_explore'
+    });
+    const ROUTER_STATE_UI = Object.freeze({
+      in_zone: { label: 'In-zone', why: 'Signals are stable enough for deep portable learning.' },
+      flat: { label: 'Flat / Sluggish', why: 'Lapses / slow-tail drift suggest low activation or reduced readiness.' },
+      overloaded_exploit: { label: 'Overloaded - Exploit', why: 'Post-error slowing / rigid slowdown suggests overcontrolled responding.' },
+      overloaded_explore: { label: 'Overloaded - Explore', why: 'Variability / burstiness / fast errors suggest scattered execution.' },
+      invalid: { label: 'Session not valid', why: 'Focus loss or timing instability compromised the probe.' }
+    });
+    const RECOMMENDATIONS = Object.freeze([
+      {
+        id: 'deep_25',
+        state: 'in_zone',
+        gate: 'GO_DEEP',
+        title: 'Deep training / deep work block (25 min)',
+        duration_min: 25,
+        steps: [
+          'Choose one demanding task or training module.',
+          'Work single-threaded for 25 minutes.',
+          'Log one transfer-relevant insight before stopping.'
+        ],
+        why: 'Use a stable in-zone window for high-challenge learning and deep work.',
+        recheck_after: false,
+        requires_opt_in: false,
+        safety_level: 'low',
+        evidence: [
+          { label: 'Stress and prefrontal cognitive control (review)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC2907136/' },
+          { label: 'Stress shifts behavior away from goal-directed control', url: 'https://www.jneurosci.org/content/29/22/7191' }
+        ]
+      },
+      {
+        id: 'deep_50',
+        state: 'in_zone',
+        gate: 'GO_DEEP',
+        title: 'Deep training / deep work block (50 min)',
+        duration_min: 50,
+        steps: [
+          'Set a single mission with a clear output.',
+          'Run one 50-minute focused block.',
+          'Take a short recovery break before switching context.'
+        ],
+        why: 'Reserve long deep blocks for in-zone states to protect learning quality.',
+        recheck_after: false,
+        requires_opt_in: false,
+        safety_level: 'low',
+        evidence: [
+          { label: 'Stress and prefrontal cognitive control (review)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC2907136/' }
+        ]
+      },
+      {
+        id: 'flat_aerobic_12',
+        state: 'flat',
+        gate: 'NO_DEEP_TODAY',
+        title: 'Activate + stabilise: moderate aerobic movement',
+        duration_min: 12,
+        steps: [
+          'Do 10-15 min moderate aerobic movement (walk/cycle/row).',
+          'Keep the effort steady, not maximal.',
+          'Optional: run a 75s re-check before challenging work.'
+        ],
+        why: 'Acute aerobic exercise is a practical activation block for sluggish / lapse-heavy states.',
+        recheck_after: true,
+        requires_opt_in: false,
+        safety_level: 'low',
+        tags: ['activation', 'exercise'],
+        evidence: [
+          { label: 'Acute exercise and executive function (review)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5928534/' }
+        ]
+      },
+      {
+        id: 'flat_hiit_10',
+        state: 'flat',
+        gate: 'NO_DEEP_TODAY',
+        title: 'HIIT primer (active users)',
+        duration_min: 10,
+        steps: [
+          'Use short intervals for 8-12 minutes if medically appropriate.',
+          'Keep total time short and recover afterwards.',
+          'Run a quick re-check before deep work.'
+        ],
+        why: 'HIIT can be a stronger activation option for flat/sluggish states.',
+        recheck_after: true,
+        requires_opt_in: false,
+        safety_level: 'medium',
+        tags: ['activation', 'exercise', 'hiit'],
+        evidence: [
+          { label: 'HIIT and executive function (systematic review)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC12214962/' }
+        ]
+      },
+      {
+        id: 'flat_breathwork_optin',
+        state: 'flat',
+        gate: 'NO_DEEP_TODAY',
+        title: 'Advanced activation (opt-in): fast breathing + holds',
+        duration_min: 8,
+        steps: [
+          'Use only if familiar and medically appropriate.',
+          'Run a brief intense activation-style breathing block.',
+          'Re-check before doing challenging work.'
+        ],
+        why: 'This is an activation option (not a down-regulation default), so it stays opt-in only.',
+        recheck_after: true,
+        requires_opt_in: true,
+        optInKey: 'allowsIntenseBreathwork',
+        safety_level: 'high',
+        tags: ['activation', 'breathwork'],
+        evidence: [
+          { label: 'Fast breathing protocol can raise sympathetic activation/epinephrine', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4034215/' }
+        ]
+      },
+      {
+        id: 'flat_cold_optin',
+        state: 'flat',
+        gate: 'NO_DEEP_TODAY',
+        title: 'Cold exposure (opt-in only)',
+        duration_min: 5,
+        steps: [
+          'Optional brief cold shower / cold exposure if already practiced.',
+          'Stop if you feel unwell.',
+          'Warm up and re-check before deep work.'
+        ],
+        why: 'Cold exposure is an acute stressor; keep it optional rather than default.',
+        recheck_after: true,
+        requires_opt_in: true,
+        optInKey: 'allowsColdExposure',
+        safety_level: 'high',
+        tags: ['activation', 'cold'],
+        evidence: [
+          { label: 'Cold-water immersion review (constrained evidence)', url: 'https://pubmed.ncbi.nlm.nih.gov/34610284/' }
+        ]
+      },
+      {
+        id: 'oe_slow_open_12',
+        state: 'overloaded_exploit',
+        gate: 'NO_DEEP_TODAY',
+        title: 'Down-regulate + broaden: slow breathing + open monitoring',
+        duration_min: 12,
+        steps: [
+          '3-4 min slow breathing (~5-6 breaths/min; longer exhale).',
+          '8 min open-monitoring / forward-flow practice.',
+          'Optional 75s re-check.'
+        ],
+        why: 'Targets rigid / overcontrolled states by reducing arousal and broadening attention.',
+        recheck_after: true,
+        requires_opt_in: false,
+        safety_level: 'low',
+        tags: ['downregulate', 'broaden'],
+        evidence: [
+          { label: 'Slow breathing and vagal regulation / HRV', url: 'https://www.sciencedirect.com/science/article/pii/S0079612322001986' },
+          { label: 'Open monitoring and cognitive flexibility / creativity', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4324839/' }
+        ]
+      },
+      {
+        id: 'oe_yoganidra_20',
+        state: 'overloaded_exploit',
+        gate: 'NO_DEEP_TODAY',
+        title: 'Yoga Nidra / NSDR recovery',
+        duration_min: 20,
+        steps: [
+          'Use a guided Yoga Nidra / NSDR track for 15-25 min.',
+          'Stay in recovery mode; do not jump straight into deep work.',
+          'Re-check if you want to re-open the gate.'
+        ],
+        why: 'Useful on rigid/overloaded days when a deeper downshift is needed.',
+        recheck_after: true,
+        requires_opt_in: false,
+        safety_level: 'low',
+        tags: ['downregulate', 'recovery'],
+        evidence: [
+          { label: 'Yoga Nidra evidence for stress/sleep outcomes', url: 'https://www.sciencedirect.com/science/article/pii/S2666915323001635' }
+        ]
+      },
+      {
+        id: 'ox_fa_12',
+        state: 'overloaded_explore',
+        gate: 'NO_DEEP_TODAY',
+        title: 'Stabilise attention: slow breathing + focused-attention',
+        duration_min: 12,
+        steps: [
+          '3-4 min slow breathing (~5-6 breaths/min; longer exhale).',
+          '8 min focused-attention on the breath; gently return when distracted.',
+          'Optional 75s re-check.'
+        ],
+        why: 'Targets scattered/noisy states by reducing mind-wandering and stabilising sustained attention.',
+        recheck_after: true,
+        requires_opt_in: false,
+        safety_level: 'low',
+        tags: ['downregulate', 'constraint', 'attention'],
+        evidence: [
+          { label: 'Brief mindfulness reduces mind-wandering during SART', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5329004/' },
+          { label: 'Meditation training improves SART attention', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10940317/' }
+        ]
+      },
+      {
+        id: 'ox_constraint_work_15',
+        state: 'overloaded_explore',
+        gate: 'NO_DEEP_TODAY',
+        title: 'Constraint work: single-thread, zero novelty',
+        duration_min: 15,
+        steps: [
+          'Choose one low-novelty task.',
+          'Work single-threaded for 10-20 minutes (no switching).',
+          'Re-evaluate before escalating complexity.'
+        ],
+        why: 'Constraint and single-threading reduce scatter and stabilise execution when overloaded.',
+        recheck_after: false,
+        requires_opt_in: false,
+        safety_level: 'low',
+        tags: ['constraint', 'work'],
+        evidence: [
+          { label: 'Attention residue / task switching (source placeholder)', url: 'https://www.sciencedirect.com/' }
+        ]
+      },
+      {
+        id: 'ox_yoganidra_20',
+        state: 'overloaded_explore',
+        gate: 'NO_DEEP_TODAY',
+        title: 'Yoga Nidra / NSDR (optional deeper downshift)',
+        duration_min: 20,
+        steps: [
+          'Use if very wired and a brief FA block is not enough.',
+          'Take guided rest first.',
+          'Re-check before demanding work.'
+        ],
+        why: 'Deeper downshift option for strongly overloaded/scattered states.',
+        recheck_after: true,
+        requires_opt_in: false,
+        safety_level: 'low',
+        tags: ['downregulate', 'recovery'],
+        evidence: [
+          { label: 'Yoga Nidra evidence for stress/sleep outcomes', url: 'https://www.sciencedirect.com/science/article/pii/S2666915323001635' }
+        ]
+      }
+    ]);
 
     const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
     const mean = (xs) => xs.length ? xs.reduce((a,b)=>a+b,0)/xs.length : null;
@@ -213,8 +473,105 @@
       });
       localStorage.setItem(LS_HISTORY, JSON.stringify(trimmed));
     };
+    const loadPrefs = () => {
+      try {
+        const raw = JSON.parse(localStorage.getItem(LS_PREFS) || '{}');
+        return { ...DEFAULT_PREFS, ...(raw && typeof raw === 'object' ? raw : {}) };
+      } catch {
+        return { ...DEFAULT_PREFS };
+      }
+    };
+    const savePrefs = (prefs) => {
+      try { localStorage.setItem(LS_PREFS, JSON.stringify(prefs)); } catch {}
+    };
+    const normState = (s) => LEGACY_STATE_ALIASES[s] || s || 'invalid';
+    const gateLabel = (g) => ({
+      GO_DEEP: 'GO DEEP',
+      NO_DEEP_TODAY: 'NO DEEP TODAY',
+      LOW_CONF_SOFT_NO: 'LOW CONFIDENCE / SOFT NO',
+      TRY_AGAIN_INVALID: 'TRY AGAIN (INVALID)'
+    }[g] || g || '-');
+    const gateClass = (g) => (g === 'GO_DEEP' ? 'go' : g === 'TRY_AGAIN_INVALID' ? 'stop' : 'no');
+    function computeTrainingGate(routerState, confidence, baselineReady, valid){
+      const state = normState(routerState);
+      if (!valid || state === 'invalid') {
+        return {
+          trainingGate: 'TRY_AGAIN_INVALID',
+          trainingGateWhy: ['Session invalid', 'Focus or timing quality failed'],
+          trainingGateEvidence: []
+        };
+      }
+      if (state === 'in_zone' && (confidence === 'High' || confidence === 'Medium') && baselineReady) {
+        return {
+          trainingGate: 'GO_DEEP',
+          trainingGateWhy: ['In-zone state', 'Confidence and baseline support deep work'],
+          trainingGateEvidence: ['pmc_stress_pfc', 'jneurosci_goal_directed']
+        };
+      }
+      if (confidence === 'Low') {
+        return {
+          trainingGate: 'LOW_CONF_SOFT_NO',
+          trainingGateWhy: ['Low classification confidence', 'Use lowest-risk stabilisation and re-check'],
+          trainingGateEvidence: []
+        };
+      }
+      return {
+        trainingGate: 'NO_DEEP_TODAY',
+        trainingGateWhy: ['Out-of-zone signature detected', 'Stabilise state before deep work/training'],
+        trainingGateEvidence: ['pmc_stress_pfc']
+      };
+    }
+    function recommendationAllowed(rec, prefs){
+      if (!rec.requires_opt_in) return true;
+      if (rec.optInKey && !prefs[rec.optInKey]) return false;
+      return true;
+    }
+    function recommendationSuppressedBySafety(rec, prefs){
+      if (!prefs.injuryOrIllness) return false;
+      return Boolean(rec.tags?.includes('hiit') || rec.tags?.includes('cold') || rec.tags?.includes('breathwork'));
+    }
+    function recommendationRiskRank(rec){
+      const safety = rec.safety_level === 'high' ? 3 : rec.safety_level === 'medium' ? 2 : 1;
+      const optInPenalty = rec.requires_opt_in ? 2 : 0;
+      return safety + optInPenalty;
+    }
+    function pickRecommendation(stateRaw, gate, confidence, prefs){
+      const state = normState(stateRaw);
+      const pool = RECOMMENDATIONS
+        .filter(r => r.state === state && (r.gate === gate || (gate === 'LOW_CONF_SOFT_NO' && r.gate === 'NO_DEEP_TODAY')))
+        .filter(r => recommendationAllowed(r, prefs))
+        .filter(r => !recommendationSuppressedBySafety(r, prefs));
+      let candidates = pool.length ? pool : RECOMMENDATIONS.filter(r => r.state === state).filter(r => recommendationAllowed(r, prefs));
+      if (!candidates.length) return null;
+      if (gate === 'GO_DEEP') {
+        candidates = candidates.filter(r => r.gate === 'GO_DEEP');
+      } else if (state === 'flat') {
+        if (prefs.prefersExercise) {
+          const ex = candidates.filter(r => r.tags?.includes('exercise'));
+          if (ex.length) candidates = ex;
+        }
+        if (!prefs.allowsHIIT) candidates = candidates.filter(r => !r.tags?.includes('hiit'));
+      } else if (state === 'overloaded_exploit') {
+        const defaultSet = candidates.filter(r => r.id === 'oe_slow_open_12' || r.id === 'oe_yoganidra_20');
+        if (defaultSet.length) candidates = defaultSet;
+      } else if (state === 'overloaded_explore') {
+        const defaultSet = candidates.filter(r => r.id === 'ox_fa_12' || r.id === 'ox_constraint_work_15' || r.id === 'ox_yoganidra_20');
+        if (defaultSet.length) candidates = defaultSet;
+      }
+      if (confidence === 'Low') {
+        candidates = candidates.slice().sort((a,b) => recommendationRiskRank(a) - recommendationRiskRank(b));
+      }
+      const targetTime = Number(prefs.timeBudget || DEFAULT_PREFS.timeBudget);
+      candidates = candidates.slice().sort((a,b) => {
+        const ta = Math.abs((a.duration_min || targetTime) - targetTime);
+        const tb = Math.abs((b.duration_min || targetTime) - targetTime);
+        if (ta !== tb) return ta - tb;
+        return recommendationRiskRank(a) - recommendationRiskRank(b);
+      });
+      return candidates[0] || null;
+    }
 
-    function validRows(rows){ return rows.filter(r => r?.valid && Number.isFinite(r?.bps?.combined) && r?.router?.state !== 'invalid'); }
+    function validRows(rows){ return rows.filter(r => r?.valid && Number.isFinite(r?.bps?.combined) && normState(r?.router?.state) !== 'invalid'); }
     function baselines(rows){
       const v = validRows(rows), w = v.slice(-CFG.baselineWindow), pick = (f) => w.map(f).filter(Number.isFinite);
       return { count:v.length, bps:pick(r=>r.bps.combined), rtCV:pick(r=>r.features?.probe?.rtCV), timeout:pick(r=>r.features?.probe?.timeoutRate), fastErr:pick(r=>r.features?.probe?.fastErrorRate), pes:pick(r=>r.features?.probe?.PES), catchFail:pick(r=>r.features?.catchFailRate) };
@@ -229,7 +586,8 @@
       dom.histCount.textContent = String(b.count);
       dom.histBps.textContent = fmt(e, 2);
       const last = rows[rows.length-1];
-      dom.lastLine.textContent = last ? `Last: ${last.sessionId} • ${STATE_UI[last.router?.state]?.label || last.router?.state || '—'} • ${last.router?.confidence || '—'}` : 'Last: —';
+      const lastState = normState(last?.router?.state);
+      dom.lastLine.textContent = last ? `Last: ${last.sessionId} • ${ROUTER_STATE_UI[lastState]?.label || lastState || '-'} • ${last.router?.confidence || '-'}` : 'Last: -';
       return { rows, base: b };
     }
 
@@ -377,7 +735,7 @@
         if (Number.isFinite(p.PES) && Number.isFinite(ewPes)) exploitScore += .6*Math.max(0, p.PES-ewPes)/50;
         if (Number.isFinite(bpsCombined) && Number.isFinite(ewBps)) inZoneBpsPenalty = Math.max(0, (ewBps-bpsCombined) / Math.max(.25, bpsSd || .4));
       }
-      return { coldScore, exploreScore, exploitScore, contrib: { cold, hot_explore: explore, hot_exploit: exploit }, inZoneBpsPenalty };
+      return { coldScore, exploreScore, exploitScore, contrib: { flat: cold, overloaded_explore: explore, overloaded_exploit: exploit }, inZoneBpsPenalty };
     }
     function topReasons(state, scorePack){
       const map = { timeouts:'Many timeouts', slow:'Slow lapses', tail:'Long RT tail', rtDrift:'RT drift', errDrift:'Error drift', catchFail:'Catch failures', rtCV:'High variability', rtVol:'RT volatility', fastErr:'Fast errors', burst:'Bursty errors', fast:'Very fast responses', pes:'Strong post-error slowing', slowSteady:'Slow rigid pattern', lowFastErr:'Low fast-error profile', lowVol:'Low RT volatility' };
@@ -395,25 +753,25 @@
       let state;
       if (inZone) state = 'in_zone';
       else {
-        const arr = [['cold', sc.coldScore], ['hot_explore', sc.exploreScore], ['hot_exploit', sc.exploitScore]].sort((a,b)=>b[1]-a[1]);
+        const arr = [['flat', sc.coldScore], ['overloaded_explore', sc.exploreScore], ['overloaded_exploit', sc.exploitScore]].sort((a,b)=>b[1]-a[1]);
         state = arr[0][0];
       }
       let confidence = 'Low';
       if (state !== 'in_zone') {
-        const arr = [['cold', sc.coldScore], ['hot_explore', sc.exploreScore], ['hot_exploit', sc.exploitScore]].sort((a,b)=>b[1]-a[1]);
+        const arr = [['flat', sc.coldScore], ['overloaded_explore', sc.exploreScore], ['overloaded_exploit', sc.exploitScore]].sort((a,b)=>b[1]-a[1]);
         const margin = (arr[0]?.[1] ?? 0) - (arr[1]?.[1] ?? 0);
         confidence = margin >= 1.2 ? 'High' : margin >= .5 ? 'Medium' : 'Low';
       } else {
         confidence = base.count >= 5 ? 'Medium' : 'Low';
       }
       if ((p.n||0) < 16) confidence = 'Low';
-      if (state === 'hot_exploit' && (feats.counts?.pesSupport || 0) < 8) confidence = 'Low';
+      if (state === 'overloaded_exploit' && (feats.counts?.pesSupport || 0) < 8) confidence = 'Low';
       if (state === 'in_zone' && base.count >= 5 && confidence === 'Medium' && (p.n||0) >= 24) confidence = 'High';
       return {
         state, confidence, invalidReason: null,
         reasons: state === 'in_zone' ? ['Low lapse/catch failure', 'Low variability and burstiness', 'No dominant off-zone signature'] : topReasons(state, sc),
-        recommendedModuleId: MODULES[state]?.id || null,
-        scores: { cold: sc.coldScore, hot_explore: sc.exploreScore, hot_exploit: sc.exploitScore }
+        recommendedModuleId: null,
+        scores: { flat: sc.coldScore, overloaded_explore: sc.exploreScore, overloaded_exploit: sc.exploitScore }
       };
     }
     function renderRouterResult(summary){
@@ -423,7 +781,11 @@
       dom.validPanel.classList.toggle('hidden', !summary.valid);
       dom.qualityPill.textContent = `Quality: ${summary.valid ? 'OK' : 'Poor'} (${Math.round((summary.timing?.droppedFrac || 0)*100)}% stutter)`;
       if (!summary.valid) { dom.invalidReason.textContent = summary.invalidReason || summary.router?.invalidReason || 'Focus loss or browser timing instability'; return; }
-      const ui = STATE_UI[summary.router.state] || STATE_UI.invalid;
+      const state = normState(summary.router.state);
+      const ui = ROUTER_STATE_UI[state] || ROUTER_STATE_UI.invalid;
+      const prefs = loadPrefs();
+      const gate = summary.trainingGate || computeTrainingGate(state, summary.router.confidence, (summary.baselines?.priorValidCount || 0) >= 3, summary.valid);
+      const rec = summary.recommendation || pickRecommendation(state, gate.trainingGate, summary.router.confidence, prefs);
       dom.mBps.textContent = fmt(summary.bps.combined, 2);
       dom.mState.textContent = ui.label;
       dom.mConf.textContent = summary.router.confidence;
