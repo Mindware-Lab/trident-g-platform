@@ -1,3 +1,4 @@
+
 # The Mind-Body Dynamic Range Framework: Definitive Specification v2.2
 
 ---
@@ -83,7 +84,7 @@ The relationship between brain and body depends on environmental demand. The app
 
 $$\text{Sync Index} = (Z_{\text{mind}}^{\text{weighted}} \times V_{\text{mind}}) + (Z_{\text{body}}^{\text{weighted}} \times V_{\text{body}})$$
 
-- **Interpretation:** High positive = perfect integration—the vagus nerve quieted both heart and prefrontal noise.
+- **Interpretation:** High positive = perfect integration—the vagus nerve quieted both heart and prefrontal noise. Both systems move in the same direction (up and right in the 2D space).
 
 ### B. The "Executive Override" Index (Stress & Load)
 
@@ -93,22 +94,22 @@ $$\text{Sync Index} = (Z_{\text{mind}}^{\text{weighted}} \times V_{\text{mind}})
 
 $$\text{Override Index} = (Z_{\text{mind}}^{\text{weighted}} \times V_{\text{mind}}) - (Z_{\text{body}}^{\text{weighted}} \times V_{\text{body}})$$
 
-- **Interpretation:** High positive = elite dissociation—body redlining but cognition intact.
+- **Interpretation:** High positive = elite dissociation—body redlining but cognition intact. The mind stays sharp (positive Z_mind) while the body stresses (negative Z_body).
 
 ---
 
 ## 5. The 4‑Quadrant Attractor Landscape with Transition Dynamics
 
-The four quadrants are treated as **dynamical attractor basins** with measurable transition velocities between them.
+The four quadrants are treated as **dynamical attractor basins** with measurable transition velocities between them. These quadrants directly visualize the Sync and Override relationships.
 
 ### The Quadrants
 
-| Basin / Quadrant | Physiology | Cognition | System Interpretation |
-|------------------|------------|-----------|------------------------|
-| **The Zenith** (Top Right) | Relaxed / Open | Flow ($V_{\text{mind}} \approx 1$) | **Natural Attractor:** Deep recovery, integrated health. |
-| **The Clutch** (Bottom Right) | Stressed / Rigid | Flow ($V_{\text{mind}} \approx 1$) | **High‑Energy Override:** Elite performance. Metabolically costly. |
-| **The Drift** (Top Left) | Relaxed / Open | Decoupled / Sluggish | **Entropy Attractor:** Under‑arousal, sleep onset. |
-| **The Crash** (Bottom Left) | Stressed / Rigid | Brittle / Errors | **Defense Attractor:** System overload, panic. |
+| Basin / Quadrant | Physiology | Cognition | System Interpretation | Mind-Body Relationship |
+|------------------|------------|-----------|------------------------|------------------------|
+| **The Zenith** (Top Right) | Relaxed / Open | Flow ($V_{\text{mind}} \approx 1$) | **Natural Attractor:** Deep recovery, integrated health. | **High Sync** (both positive) |
+| **The Clutch** (Bottom Right) | Stressed / Rigid | Flow ($V_{\text{mind}} \approx 1$) | **High‑Energy Override:** Elite performance. Metabolically costly. | **High Override** (mind positive, body negative) |
+| **The Drift** (Top Left) | Relaxed / Open | Decoupled / Sluggish | **Entropy Attractor:** Under‑arousal, sleep onset. | **Low Sync** (body positive, mind negative) |
+| **The Crash** (Bottom Left) | Stressed / Rigid | Brittle / Errors | **Defense Attractor:** System overload, panic. | **Low Override** (both negative) |
 
 ### Transition Velocity
 
@@ -126,16 +127,16 @@ Recovery velocity (from Clutch/Crash toward Zenith/Drift) is a key resilience me
 
 ## 6. The Stress‑Recovery Cycle Protocol
 
-To probe latent capacity and recovery dynamics, a structured challenge protocol is used.
+To probe latent capacity and recovery dynamics, a structured challenge protocol is used. This protocol explicitly tests both **Override** (during WM challenge) and **Sync** (during pattern flow recovery).
 
 ### Protocol Structure
 
 | Phase | Duration | Task | Purpose |
 |-------|----------|------|---------|
 | **Baseline** | 3 min | MFT‑M | Establish resting state ($P_{\text{base}}$) |
-| **High Load** | 3‑5 min | WM challenge (adaptive n‑back) | Push upper bound |
+| **High Load** | 3‑5 min | WM challenge (adaptive n‑back) | Push upper bound—test Override |
 | **Probe 1** | 2 min | MFT‑M | Capture stressed state ($P_{\text{stress}}$) |
-| **Pattern Flow** | 3‑4 min | Coherent motion detection | Induce flow/recovery |
+| **Pattern Flow** | 3‑4 min | Coherent motion detection | Induce flow/recovery—test Sync |
 | **Probe 2** | 2 min | MFT‑M | Capture recovered state ($P_{\text{recover}}$) |
 
 ### Points Captured
@@ -242,7 +243,7 @@ This rewards:
 - **Secondary:** Recovery velocity trend, population percentile.
 
 ### Session View
-- Real‑time quadrant tracking.
+- Real‑time quadrant tracking—see Sync and Override relationships in action.
 - Post‑session: Stress reactivity, true elasticity score, path efficiency.
 - "You expanded your range today!" notification if $P_{\text{stress}}$ or $P_{\text{recover}}$ extends the global hull.
 
@@ -270,4 +271,5 @@ This rewards:
 
 ---
 
- 
+This specification now provides a complete, mathematically rigorous, and biologically faithful foundation for tracking mind‑body resilience across multiple timescales, with clear protocols for probing latent capacity and clear metrics for tracking improvement over time. The **Sync Index** and **Override Index** are central to the framework, capturing the two fundamental modes of mind-body coupling: integration during recovery and dissociation during stress.
+```
