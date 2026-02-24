@@ -1,1547 +1,622 @@
-﻿<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zone Coach - Mindware Lab</title>
-
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <!-- Tailwind is optional now; keeping it for layout utilities only -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Shared branding CSS (controls colours, type, cards, buttons, topbar) -->
- <link rel="stylesheet" href="../../../../branding/brand.css?v=2" />
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Zone Coach - MFT-M Router</title>
+  <link rel="stylesheet" href="../../../../branding/brand.css?v=2" />
   <style>
-    /* Keep these minimal so brand.css remains the source of truth */
-    body { margin: 0; padding: 0; font-family: var(--font, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif); }
-    input[type="range"] { accent-color: #143a73; }
-    .sliderLabel { font-weight: 900; font-size: 28px; color: rgba(0,0,0,0.85); }
-    .sliderValue { font-weight: 900; font-size: 24px; color: var(--deep); }
-    .sliderControl {
-      width: 100%;
-      margin-top: 8px;
-      height: 12px;
-      border-radius: 999px;
-      background: #143a73;
-      appearance: none;
-      -webkit-appearance: none;
-      outline: none;
-    }
-    .sliderControl::-webkit-slider-runnable-track {
-      height: 12px;
-      border-radius: 999px;
-      background: #143a73;
-    }
-    .sliderControl::-webkit-slider-thumb {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: limegreen;
-      border: 2px solid #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.55);
-      -webkit-appearance: none;
-      margin-top: -7px;
-    }
-    .sliderControl::-moz-range-thumb {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: limegreen;
-      border: 2px solid #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.55);
-    }
-    .sliderControl::-moz-range-track {
-      height: 12px;
-      border-radius: 999px;
-      background: #143a73;
-    }
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font, system-ui, sans-serif); background: #090b10; color: #edf0f7; }
+    .app { max-width: 980px; margin: 0 auto; padding: 16px; }
+    .top { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px; padding:12px; border:1px solid rgba(255,255,255,.08); border-radius:14px; background:rgba(15,18,26,.9); }
+    .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .title { font-weight: 800; }
+    .pill { font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04); }
+    .card { border:1px solid rgba(255,255,255,.08); border-radius:16px; background:rgba(15,18,26,.9); padding:14px; }
+    .screen { display:none; }
+    .screen.active { display:block; }
+    .btn { border:1px solid rgba(255,255,255,.12); background:#1d2230; color:#edf0f7; padding:10px 12px; border-radius:12px; font-weight:700; cursor:pointer; }
+    .btn:disabled { opacity:.55; cursor:not-allowed; }
+    .btn-primary { background:#CCFF66; color:#121212; border-color:#CCFF66; }
+    .btn-ghost { background:transparent; }
+    .muted { color: rgba(237,240,247,.72); }
+    .small { font-size:13px; }
+    .cta { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .task { border:1px solid rgba(255,255,255,.08); border-radius:14px; overflow:hidden; background:#07090d; }
+    canvas { display:block; width:100%; height:min(42vh, 380px); }
+    .touch { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+    .touch .btn { min-height:66px; font-size:28px; font-weight:800; }
+    .progress { height:10px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.06); border-radius:999px; overflow:hidden; margin:10px 0 12px; }
+    .progress > div { height:100%; width:0%; background:linear-gradient(90deg,#6ec6ff,#CCFF66); transition:width .12s linear; }
+    .radio { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .radio label { padding:8px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03); cursor:pointer; }
+    .radio input { accent-color:#CCFF66; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:10px; }
+    .metric { border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:10px; background:rgba(255,255,255,.03); }
+    .metric .k { font-size:12px; color:rgba(237,240,247,.7); }
+    .metric .v { font-weight:800; margin-top:6px; }
+    .block { border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px; margin-top:10px; background:rgba(255,255,255,.03); }
+    .badge { display:inline-block; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.12); font-size:12px; font-weight:800; margin-top:6px; }
+    .badge.in_zone { border-color: rgba(204,255,102,.35); background: rgba(204,255,102,.1); }
+    .badge.cold { border-color: rgba(120,180,255,.35); background: rgba(120,180,255,.1); }
+    .badge.hot_exploit { border-color: rgba(255,196,120,.35); background: rgba(255,196,120,.1); }
+    .badge.hot_explore { border-color: rgba(255,140,140,.35); background: rgba(255,140,140,.1); }
+    .badge.invalid { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.08); }
+    .chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .chip { font-size:12px; font-weight:700; border-radius:999px; padding:6px 9px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04); }
+    .chip.bad { border-color: rgba(255,120,120,.35); background: rgba(255,120,120,.1); }
+    .chip.warn { border-color: rgba(255,188,94,.35); background: rgba(255,188,94,.1); }
+    .chip.good { border-color: rgba(204,255,102,.35); background: rgba(204,255,102,.1); }
+    .hidden { display:none !important; }
+    @media (max-width: 700px) { .grid { grid-template-columns:1fr; } }
   </style>
 </head>
-
 <body>
-  <div id="root"></div>
-
-  <!-- SINGLE Babel script: everything lives here -->
-  <script type="text/babel" data-presets="env,react">
-    const { useState, useEffect, useRef, useMemo, useCallback } = React;
-
-    // -----------------------------
-    // Canonical keys (pipeline-ready)
-    // -----------------------------
-    const LS_KEYS = Object.freeze({
-      ZONE_LAST: 'iqmw.zone.lastCheck',
-      ZONE_HISTORY: 'iqmw.zone.history',
-      CAPACITY_FROM_ZONE: 'iqmw.capacity.handoffFromZone',
-      PVTB_HISTORY: 'iqmw.zone.pvtb.history',
-      AMFT_HISTORY: 'iqmw.zone.amft.history'
-    });
-
-    // Optional cross-app fallback key (helps interoperability)
-    const FALLBACK_CAPACITY_KEY = 'lastCapacitySession';
-
-    // -----------------------------
-    // Mode prototypes + classifier params
-    // -----------------------------
-    const PROTOTYPES = Object.freeze({
-      SUB: Object.freeze({ E: 2, S: 3, F: 4, N: 5, O: 3, C: 3, R: 7 }),
-      PSI: Object.freeze({ E: 5, S: 3, F: 8, N: 2, O: 4, C: 3, R: 2 }),
-      ENT: Object.freeze({ E: 6, S: 6, F: 5, N: 8, O: 7, C: 8, R: 3 }),
-      MIT: Object.freeze({ E: 6, S: 8, F: 8, N: 3, O: 7, C: 2, R: 9 }),
-      DEP: Object.freeze({ E: 2, S: 7, F: 4, N: 7, O: 8, C: 6, R: 6 })
-    });
-
-    const WEIGHTS = Object.freeze({ E: 0.08, S: 0.10, F: 0.20, N: 0.18, O: 0.14, C: 0.10, R: 0.20 });
-    const TAU = 6;
-
-    const MODE_LABELS = Object.freeze({
-      SUB: 'Subcritical',
-      PSI: 'In the G Zone',
-      ENT: 'Supercritical - scattered',
-      MIT: 'Supercritical - rigid',
-      DEP: 'Depleted overload'
-    });
-
-    const ZONE_UI = Object.freeze({
-      too_hot: { title: 'Overloaded', hint: 'High strain. Keep it simple and stabilise first.' },
-      in_band: { title: 'In the G Zone', hint: 'Trainable. Good time to learn and adapt.' },
-      too_cold: { title: 'Underpowered', hint: 'Low activation. Start gently and build engagement.' },
-      shaky: { title: 'Unsteady', hint: 'Variable. Reduce volatility before increasing difficulty.' }
-    });
-
-    const CONF_UI = Object.freeze({
-      High: 'High confidence',
-      Medium: 'Medium confidence',
-      Low: 'Low confidence'
-    });
-
-    const SIGNAL_COLORS = Object.freeze({
-      Good: '#1f7a1f',
-      Mixed: '#b56a00',
-      Poor: '#b00020'
-    });
-
-    // Map classifier output to the simple gate used across the ecosystem
-    const toZoneGate = (primaryMode) => {
-      if (primaryMode === 'PSI') return 'in_band';
-      if (primaryMode === 'SUB') return 'too_cold';
-      return 'too_hot';
-    };
-
-    // Suggest Type-1 capacity focus for the downstream Capacity Training Coach
-    const suggestedCapacityFromMode = (primaryMode) => {
-      switch (primaryMode) {
-        case 'SUB': return { primary: 'Hold', secondary: 'Update' };
-        case 'PSI': return { primary: 'Update', secondary: 'Hold' };
-        case 'ENT': return { primary: 'Stop', secondary: 'Shield' };
-        case 'MIT': return { primary: 'Clear', secondary: 'Recover' };
-        case 'DEP': return { primary: 'Recover', secondary: 'Stop' };
-        default: return { primary: 'Recover', secondary: null };
-      }
-    };
-
-    // -----------------------------
-    // Breathing patterns (generated once)
-    // -----------------------------
-
-  const makeRepeat = (n, seq) => Array.from({ length: n }, () => seq).flat();
-
-  const BREATH_PATTERNS = Object.freeze({
-    upshift: Object.freeze({
-      id: 'upshift',
-      name: 'Upshift',
-      description: 'Inhale-led breathing to gently raise engagement. Breathe in through your nose, breathe out through your nose (or softly through your mouth if needed).',
-      attentionCue: 'Anchor attention on the in-breath sensation. Return gently when distracted.',
-      safety: 'If you feel dizzy or unwell, stop and return to normal breathing.',
-      phases: [
-        ...makeRepeat(10, [
-          { label: 'Inhale', durationMs: 2000, kind: 'inhale' },
-          { label: 'Exhale', durationMs: 2000, kind: 'exhale' }
-        ]),
-        ...makeRepeat(14, [
-          { label: 'Inhale', durationMs: 3000, kind: 'inhale' },
-          { label: 'Exhale', durationMs: 2000, kind: 'exhale' }
-        ]),
-        ...makeRepeat(10, [
-          { label: 'Inhale', durationMs: 4000, kind: 'inhale' },
-          { label: 'Exhale', durationMs: 3000, kind: 'exhale' }
-        ])
-      ]
-    }),
-
-    amplify: Object.freeze({
-      id: 'amplify',
-      name: 'Amplify',
-      description: 'Slow-paced breathing to stabilise. Inhale through your nose, exhale through your nose (or softly through your mouth if needed).',
-      attentionCue: 'Track the smooth rhythm. Thoughts are normal. Notice them and return to the breath.',
-      safety: 'If you feel dizzy or unwell, stop and return to normal breathing.',
-      phases: makeRepeat(18, [
-        { label: 'Inhale', durationMs: 4000, kind: 'inhale' },
-        { label: 'Exhale', durationMs: 6000, kind: 'exhale' }
-      ])
-    }),
-
-    downshift: Object.freeze({
-      id: 'downshift',
-      name: 'Downshift',
-      description: 'Cyclic sighing to reduce arousal and overload. Take two small "sip" inhales through your nose, then a long sigh out through your mouth.',
-      attentionCue: 'Count the pattern: sip, sip, long sigh. If your mind races, return to the count.',
-      safety: 'If you feel dizzy or unwell, stop and return to normal breathing.',
-      phases: makeRepeat(20, [
-        { label: 'Inhale (1)', durationMs: 1000, kind: 'inhale' },
-        { label: 'Inhale (2)', durationMs: 1000, kind: 'inhale' },
-        { label: 'Sigh out', durationMs: 7000, kind: 'exhale' }
-      ])
-    })
-  });
-    const selectBreathingPattern = (primaryMode) => {
-      if (primaryMode === 'SUB') return 'upshift';
-      if (primaryMode === 'PSI') return 'amplify';
-      return 'downshift';
-    };
-
-    // -----------------------------
-    // Ratings items
-    // -----------------------------
-    const SLIDERS = Object.freeze([
-      { key: 'E', label: 'Energy', desc: 'How much usable energy do you have right now to start and keep going?' },
-      { key: 'S', label: 'Tension', desc: 'How tense or "on edge" do you feel in your body and mind?' },
-      { key: 'F', label: 'Focus steadiness', desc: 'How easy is it to stay with one thing without forcing it?' },
-      { key: 'N', label: 'Mental chatter', desc: 'How noisy is your mind with thoughts, worries, or distractions?' },
-      { key: 'O', label: 'Mental load', desc: 'How overloaded do you feel by what you are juggling right now?' },
-      { key: 'C', label: 'Plan switching', desc: 'Are you sticking to one plan, or do you keep changing direction and second-guessing?' },
-      { key: 'R', label: 'Stuckness', desc: 'Do you feel flexible, or stuck in one way of doing things even if it is not working?' }
-    ]);
-
-    // IMPORTANT: Use an absolute URL if this relative path ever 404s.
-    const CAPACITY_TRAINING_COACH_URL = '../game-switcher/';
-
-    // -----------------------------
-    // Classifier helpers
-    // -----------------------------
-    function computeDistance(ratings, prototype, weights) {
-      let sum = 0;
-      for (const k in prototype) {
-        const diff = ratings[k] - prototype[k];
-        sum += weights[k] * diff * diff;
-      }
-      return Math.sqrt(sum);
-    }
-
-    function classifyMode(ratings, externalDistractions) {
-      const N_eff = externalDistractions ? Math.min(10, ratings.N + 2) : ratings.N;
-      const adjusted = { ...ratings, N: N_eff };
-
-      const scores = {};
-      for (const mode in PROTOTYPES) {
-        const d = computeDistance(adjusted, PROTOTYPES[mode], WEIGHTS);
-        scores[mode] = Math.exp(-(d * d) / TAU);
-      }
-
-      const total = Object.values(scores).reduce((a, b) => a + b, 0);
-      const probs = {};
-      for (const mode in scores) probs[mode] = scores[mode] / total;
-
-      const primaryMode = Object.keys(probs).reduce((a, b) => (probs[a] > probs[b] ? a : b));
-      const top = probs[primaryMode];
-      const confidence = top >= 0.60 ? 'High' : top >= 0.45 ? 'Medium' : 'Low';
-
-      return { primaryMode, modeProbs: probs, confidence, N_eff };
-    }
-
-    function computeStateConfidence({ signalClarity, probe, interruptions, ratings }) {
-      const clarity = (signalClarity ?? 7);
-
-      const tabSwitches = interruptions?.tabSwitches ?? 0;
-      const blurs = interruptions?.blurs ?? 0;
-      const interruptScore = tabSwitches + blurs;
-
-      const hits = probe?.rts?.length ?? 0;
-      const trials = probe?.trials ?? 0;
-      const falseStarts = probe?.falseStarts ?? 0;
-      const lapses = probe?.lapses ?? 0;
-
-      const lowData = (trials > 0) && (hits < Math.max(10, Math.floor(trials * 0.6)));
-      const noisyProbe = falseStarts >= 4 || lapses >= 3;
-
-      const selfSaysSteady = ratings && (ratings.F >= 6 && ratings.N <= 4 && ratings.O <= 5);
-      const variability = probe?.madScaledMs ?? probe?.madMs ?? null;
-      const behaviourSaysNoisy = noisyProbe || (variability !== null && variability >= 260);
-
-      const disagreement = selfSaysSteady && behaviourSaysNoisy;
-
-      if (clarity <= 4 || interruptScore >= 2 || lowData || disagreement) return 'Low';
-      if (clarity <= 6 || interruptScore === 1 || noisyProbe) return 'Medium';
-      return 'High';
-    }
-
-    function computeOverallConfidence(modeConfidence, stateConfidence) {
-      if (stateConfidence === 'Low') return 'Low';
-      if (stateConfidence === 'Medium' && modeConfidence === 'High') return 'Medium';
-      return modeConfidence;
-    }
-
-    function computeSignalQuality({ probe, interruptions, ratings }) {
-      const tabSwitches = interruptions?.tabSwitches ?? 0;
-      const blurs = interruptions?.blurs ?? 0;
-      const interruptScore = tabSwitches + blurs;
-
-      const hits = probe?.rts?.length ?? 0;
-      const trials = probe?.trials ?? 0;
-      if (!trials) return { label: 'Poor', reason: 'no probe data' };
-
-      const hitRate = hits / trials;
-      const lapses = probe?.lapses ?? 0;
-      const falseStarts = probe?.falseStarts ?? 0;
-      let variability = probe?.madScaledMs ?? probe?.madMs ?? null;
-      if (variability === null && Array.isArray(probe?.rts) && probe.rts.length) {
-        const mean = probe.rts.reduce((a, b) => a + b, 0) / probe.rts.length;
-        const sd = Math.sqrt(probe.rts.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / probe.rts.length);
-        variability = Math.round(sd);
-      }
-
-      const selfSaysSteady = ratings && (ratings.F >= 6 && ratings.N <= 4 && ratings.O <= 5);
-      const behaviourSaysNoisy = lapses >= 2 || falseStarts >= 2 || hitRate < 0.85 || (variability !== null && variability >= 260);
-      const disagreement = selfSaysSteady && behaviourSaysNoisy;
-
-      const lowHits = hitRate < 0.8;
-      const someHitLoss = hitRate < 0.9;
-      const manyLapses = lapses >= 3;
-      const someLapses = lapses >= 1;
-      const manyFalseStarts = falseStarts >= 3;
-      const someFalseStarts = falseStarts >= 1;
-      const highVariability = variability !== null && variability >= 260;
-      const midVariability = variability !== null && variability >= 200;
-
-      const objectivePoor = lowHits || manyLapses || manyFalseStarts || interruptScore >= 2 || highVariability;
-      const mixedFromProbe = someHitLoss || someLapses || someFalseStarts || midVariability;
-
-      let label = 'Good';
-      if (objectivePoor) {
-        label = 'Poor';
-      } else if (mixedFromProbe) {
-        label = 'Mixed';
-      }
-
-      const reasons = [];
-      if (interruptScore >= 2) {
-        reasons.push('Multiple interruptions');
-      } else if (interruptScore === 1) {
-        reasons.push('1 interruption');
-      }
-      if (lowHits) reasons.push('Low hit rate');
-      else if (someHitLoss) reasons.push('Reduced hit rate');
-      if (manyLapses) reasons.push('Several lapses');
-      else if (someLapses) reasons.push('Some lapses');
-      if (manyFalseStarts) reasons.push('Multiple early taps');
-      else if (someFalseStarts) reasons.push('Early taps');
-      if (highVariability) reasons.push('High RT variability');
-      else if (midVariability) reasons.push('Elevated RT variability');
-
-      if (label === 'Good' && disagreement) {
-        label = 'Mixed';
-        return { label, reason: 'Self-report and probe differ today' };
-      }
-
-      if (label === 'Good') {
-        return { label, reason: 'Few interruptions, consistent responses' };
-      }
-
-      if (label === 'Mixed' && reasons.length === 0) {
-        return { label, reason: 'Self-report and probe differ today' };
-      }
-
-      const reason = reasons.length ? reasons.slice(0, 2).join(' + ') : 'Mixed signals today';
-      return { label, reason };
-    }
-
-    function clamp(value, min, max) {
-      return Math.max(min, Math.min(max, value));
-    }
-
-    function safeRate(num, den) {
-      const n = Number(num);
-      const d = Number(den);
-      if (!Number.isFinite(n) || !Number.isFinite(d) || d <= 0) return null;
-      return n / d;
-    }
-
-    function relativeImprovement(preValue, postValue, floor = 0.01) {
-      if (!Number.isFinite(preValue) || !Number.isFinite(postValue)) return 0;
-      const scale = Math.max(Math.abs(preValue), floor);
-      return clamp((preValue - postValue) / scale, -1, 1);
-    }
-
-    function evaluateInterventionEffect({ preProbe, postProbe, signalQualityLabel }) {
-      if (!preProbe || !postProbe) {
-        return {
-          bucket: 'unknown',
-          score: null,
-          reliability: 0,
-          message: 'Intervention effect unavailable: missing one of the probe runs.',
-          metrics: null
-        };
-      }
-
-      const preTrials = Number(preProbe.trials || 0);
-      const postTrials = Number(postProbe.trials || 0);
-      if (preTrials < 12 || postTrials < 8) {
-        return {
-          bucket: 'unknown',
-          score: null,
-          reliability: 0,
-          message: 'Not enough probe data to estimate intervention effect yet.',
-          metrics: {
-            preTrials,
-            postTrials
-          }
-        };
-      }
-
-      const preLapseRate = safeRate(preProbe.lapses || 0, preTrials);
-      const postLapseRate = safeRate(postProbe.lapses || 0, postTrials);
-      const preFalseStartRate = safeRate(preProbe.falseStarts || 0, preTrials + Number(preProbe.falseStarts || 0));
-      const postFalseStartRate = safeRate(postProbe.falseStarts || 0, postTrials + Number(postProbe.falseStarts || 0));
-      const preCv = Number.isFinite(Number(preProbe.rtCv)) ? Number(preProbe.rtCv) : null;
-      const postCv = Number.isFinite(Number(postProbe.rtCv)) ? Number(postProbe.rtCv) : null;
-      const preMedian = Number.isFinite(Number(preProbe.medianMs)) ? Number(preProbe.medianMs) : null;
-      const postMedian = Number.isFinite(Number(postProbe.medianMs)) ? Number(postProbe.medianMs) : null;
-
-      const lapseImprovement = relativeImprovement(preLapseRate, postLapseRate, 0.05);
-      const cvImprovement = relativeImprovement(preCv, postCv, 0.08);
-      const rtImprovement = relativeImprovement(preMedian, postMedian, 180);
-      const falseStartImprovement = relativeImprovement(preFalseStartRate, postFalseStartRate, 0.03);
-
-      let reliability = 1;
-      if (signalQualityLabel === 'Poor') reliability *= 0.55;
-      else if (signalQualityLabel === 'Mixed') reliability *= 0.75;
-
-      const postHitRate = safeRate(postProbe.hits || 0, postTrials);
-      if (Number.isFinite(postHitRate) && postHitRate < 0.75) reliability *= 0.75;
-      if (postTrials < 15) reliability *= 0.9;
-      reliability = clamp(reliability, 0.4, 1);
-
-      const rawScore =
-        0.45 * lapseImprovement +
-        0.25 * cvImprovement +
-        0.20 * rtImprovement +
-        0.10 * falseStartImprovement;
-
-      const score = Number((rawScore * reliability).toFixed(3));
-
-      let bucket = 'no_clear_change';
-      if (score >= 0.18) bucket = 'improved';
-      else if (score <= -0.18) bucket = 'worsened';
-
-      const message = bucket === 'improved'
-        ? 'Good response: your post-reset probe improved versus pre-reset.'
-        : bucket === 'worsened'
-          ? 'Post-reset probe looked less stable. Use a lighter session today.'
-          : 'No clear change after reset today. That is normal; keep the plan steady.';
-
-      return {
-        bucket,
-        score,
-        reliability: Number(reliability.toFixed(2)),
-        message,
-        metrics: {
-          preTrials,
-          postTrials,
-          preLapseRate,
-          postLapseRate,
-          preFalseStartRate,
-          postFalseStartRate,
-          preCv,
-          postCv,
-          preMedian,
-          postMedian,
-          lapseDeltaPp: Number(((postLapseRate - preLapseRate) * 100).toFixed(1)),
-          falseStartDeltaPp: Number(((postFalseStartRate - preFalseStartRate) * 100).toFixed(1)),
-          cvDelta: (Number.isFinite(preCv) && Number.isFinite(postCv)) ? Number((postCv - preCv).toFixed(3)) : null,
-          medianDeltaMs: (Number.isFinite(preMedian) && Number.isFinite(postMedian)) ? Math.round(postMedian - preMedian) : null
-        }
-      };
-    }
-
-    // -----------------------------
-    // Breathing Coach component (branded + safe audio)
-    // -----------------------------
-    function BreathingCoach({ patternId, onComplete, brand }) {
-      const pattern = BREATH_PATTERNS[patternId];
-
-      const size = 260;
-      const centre = size / 2;
-      const minR = 54;
-      const maxR = 96;
-      const stroke = 10;
-
-      const targetMs = 180000; // 3 minutes
-
-      const [running, setRunning] = useState(false);
-      const [elapsedMs, setElapsedMs] = useState(0);
-      const [phaseLabel, setPhaseLabel] = useState('Ready');
-      const [phaseKind, setPhaseKind] = useState('inhale');
-      const [phaseProgress, setPhaseProgress] = useState(0);
-      const [pingEnabled, setPingEnabled] = useState(true);
-      const [audioReady, setAudioReady] = useState(false);
-
-      const rafRef = useRef(null);
-      const startRef = useRef(null);
-      const pingerRef = useRef(null);
-      const lastPhaseIndexRef = useRef(-1);
-
-      const cycleMs = useMemo(
-        () => pattern.phases.reduce((s, p) => s + p.durationMs, 0),
-        [pattern]
-      );
-
-      const getPhaseAt = useCallback((tMs) => {
-        const t = (tMs % cycleMs + cycleMs) % cycleMs;
-        let acc = 0;
-
-        for (let i = 0; i < pattern.phases.length; i++) {
-          const p = pattern.phases[i];
-          const next = acc + p.durationMs;
-
-          if (t >= acc && t < next) {
-            return {
-              index: i,
-              label: p.label,
-              kind: p.kind,
-              progress: p.durationMs > 0 ? (t - acc) / p.durationMs : 0
-            };
-          }
-          acc = next;
-        }
-
-        const last = pattern.phases[pattern.phases.length - 1];
-        return { index: pattern.phases.length - 1, label: last.label, kind: last.kind, progress: 1 };
-      }, [cycleMs, pattern]);
-
-      const ensurePinger = async () => {
-        if (pingerRef.current) return true;
-        try {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          if (!AudioCtx) return false;
-
-          const ctx = new AudioCtx();
-          if (ctx.state === 'suspended') await ctx.resume();
-
-          pingerRef.current = {
-            ctx,
-            ping: (freqHz = 440) => {
-              const t0 = ctx.currentTime;
-              const osc = ctx.createOscillator();
-              const g = ctx.createGain();
-
-              osc.type = 'sine';
-              osc.frequency.setValueAtTime(freqHz, t0);
-
-              g.gain.setValueAtTime(0.0001, t0);
-              g.gain.exponentialRampToValueAtTime(0.08, t0 + 0.01);
-              g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.09);
-
-              osc.connect(g);
-              g.connect(ctx.destination);
-
-              osc.start(t0);
-              osc.stop(t0 + 0.11);
-            }
-          };
-
-          return true;
-        } catch {
-          return false;
-        }
-      };
-
-      const stop = () => {
-        setRunning(false);
-        if (rafRef.current) cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      };
-
-      const start = async () => {
-        const ok = await ensurePinger();
-        setAudioReady(ok);
-        lastPhaseIndexRef.current = -1;
-        startRef.current = performance.now();
-        setElapsedMs(0);
-        setRunning(true);
-      };
-
-      useEffect(() => {
-        if (!running) return;
-
-        const tick = () => {
-          const now = performance.now();
-          const elapsed = now - startRef.current;
-
-          if (elapsed >= targetMs) {
-            setElapsedMs(targetMs);
-            stop();
-            onComplete?.();
-            return;
-          }
-
-          setElapsedMs(elapsed);
-
-          const ph = getPhaseAt(elapsed);
-
-          if (ph.index !== lastPhaseIndexRef.current) {
-            if (pingEnabled && pingerRef.current && audioReady) {
-              pingerRef.current.ping(ph.kind === 'inhale' ? 440 : 660);
-            }
-            lastPhaseIndexRef.current = ph.index;
-          }
-
-          setPhaseLabel(ph.label);
-          setPhaseKind(ph.kind);
-          setPhaseProgress(ph.progress);
-
-          rafRef.current = requestAnimationFrame(tick);
-        };
-
-        rafRef.current = requestAnimationFrame(tick);
-        return () => {
-          if (rafRef.current) cancelAnimationFrame(rafRef.current);
-        };
-      }, [running, targetMs, getPhaseAt, pingEnabled, audioReady]);
-
-      const displayRadius =
-        minR + (maxR - minR) * (phaseKind === 'inhale' ? phaseProgress : 1 - phaseProgress);
-
-      const overallProgress = Math.min(1, elapsedMs / targetMs);
-      const remainingMs = Math.max(0, targetMs - elapsedMs);
-      const mm = Math.floor(remainingMs / 60000);
-      const ss = Math.floor((remainingMs % 60000) / 1000);
-
-      const ringR = (maxR + 18);
-      const ringC = 2 * Math.PI * ringR;
-      const ringFill = ringC * overallProgress;
-      const ringRest = ringC - ringFill;
-
-      return (
-        <div className="screen">
-          <div className="topbar">
-            <div className="brandleft">
-              <div className="icon">
-                <img
-                  src={brand?.logoSrc}
-                  alt="Trident logo"
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                />
-              </div>
-              <div>
-                <p className="title">{brand?.appName || 'Zone Coach'}</p>
-                <p className="subtitle">{brand?.subtitle || 'Quick state check -> mindful reset -> start training'}</p>
-              </div>
-            </div>
-            <div className="chip">Reset</div>
-          </div>
-
-          <div className="content">
-            <div className="card" style={{ maxWidth: 820, margin: '0 auto' }}>
-              <div className="h1">{pattern.name}</div>
-              <p className="p">{pattern.description}</p>
-              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 12, marginTop: 10 }}>
-                <div className="card" style={{ boxShadow: 'none' }}>
-                  <div className="p" style={{ fontWeight: 800, color: 'var(--deep)' }}>Time remaining</div>
-                  <div className="h1" style={{ fontSize: 28, marginTop: 6, color: 'var(--deep)' }}>
-                    {mm}:{String(ss).padStart(2, '0')}
-                  </div>
-                  <p className="p" style={{ marginTop: 6 }}>{pattern.attentionCue}</p>
-                </div>
-
-                <div className="card" style={{ boxShadow: 'none' }}>
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-                      <circle cx={centre} cy={centre} r={maxR} fill="none" stroke="rgba(0,0,0,0.12)" strokeWidth={stroke} />
-                      <circle cx={centre} cy={centre} r={ringR} fill="none" stroke="rgba(0,0,0,0.10)" strokeWidth={6} />
-                      <circle
-                        cx={centre}
-                        cy={centre}
-                        r={ringR}
-                        fill="none"
-                        stroke="var(--deep)"
-                        strokeOpacity="0.55"
-                        strokeWidth={6}
-                        strokeLinecap="round"
-                        strokeDasharray={`${ringFill} ${ringRest}`}
-                        transform={`rotate(-90 ${centre} ${centre})`}
-                      />
-                      <circle
-                        cx={centre}
-                        cy={centre}
-                        r={displayRadius}
-                        fill="none"
-                        stroke="var(--deep)"
-                        strokeOpacity="0.95"
-                        strokeWidth={stroke}
-                      />
-                      <text x={centre} y={centre} textAnchor="middle" fontSize="20" fontWeight="800" fill="rgba(0,0,0,0.85)">
-                        {phaseLabel}
-                      </text>
-                    </svg>
-                  </div>
-
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={pingEnabled}
-                      onChange={(e) => setPingEnabled(e.target.checked)}
-                    />
-                    <span className="p" style={{ margin: 0, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
-                      Ping at high/low points
-                    </span>
-                  </label>
-
-                  {!audioReady && pingEnabled && (
-                    <div className="p" style={{ marginTop: 8 }}>
-                      Audio pings may be unavailable in this browser until interaction is allowed.
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="card" style={{ marginTop: 12, background: 'rgba(204,255,102,0.18)', border: '1px solid rgba(0,0,0,0.06)' }}>
-                <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>Safety</div>
-                <div className="p" style={{ marginTop: 6, color: 'rgba(0,0,0,0.78)' }}>{pattern.safety}</div>
-              </div>
-
-              <div className="btnRow" style={{ flexDirection: 'row', justifyContent: 'center' }}>
-                {!running ? (
-                  <button onClick={start} className="btn btnPrimary" style={{ flex: '0 1 200px', padding: '12px 20px' }}>
-                    Start 3-minute reset
-                  </button>
-                ) : (
-                  <button onClick={stop} className="btn btnSecondary" style={{ flex: '0 1 200px', padding: '12px 20px' }}>
-                    Stop
-                  </button>
-                )}
-
-                <button onClick={() => { stop(); onComplete?.(); }} className="btn btnSecondary" style={{ flex: '0 1 200px', padding: '12px 20px' }}>
-                  I'm done
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="footer">
-            <span>Mindware Lab | Trident</span>
-            <a className="link" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">Capacity Coach</a>
-          </div>
-        </div>
-      );
-    }
-    // -----------------------------
-// Replacement wrapper: embeds the aMFT-Quick probe and imports the result.
-    function AMFTProbe({ label, onComplete, brand, durationSec = 180, isRecheck = false, baselineBps = null }) {
-      const logoSrc = brand?.logoSrc || '../../../../branding/Trident-G-Icon.svg';
-      const appName = brand?.appName || 'Zone Coach';
-      const subtitle = brand?.subtitle || 'Quick state check -> mindful reset -> start training';
-      const [sessionKey, setSessionKey] = useState(() => `iqmw.zone.amft.session.${Date.now()}.${Math.random().toString(36).slice(2, 8)}`);
-      const [result, setResult] = useState(null);
-      const [lastPoll, setLastPoll] = useState(null);
-
-      const iframeSrc = useMemo(() => {
-        const q = new URLSearchParams({
-          duration: String(durationSec),
-          sessionKey,
-          label: isRecheck ? 'Recheck' : 'Probe'
-        });
-        return `./amft-quick.html?${q.toString()}`;
-      }, [durationSec, sessionKey, isRecheck]);
-
-      const tryLoadResult = useCallback(() => {
-        try {
-          const raw = localStorage.getItem(sessionKey);
-          if (!raw) return null;
-          const parsed = JSON.parse(raw);
-          if (!parsed || typeof parsed !== 'object') return null;
-          setResult(parsed);
-          setLastPoll(new Date().toLocaleTimeString());
-          return parsed;
-        } catch {
-          return null;
-        }
-      }, [sessionKey]);
-
-      useEffect(() => {
-        tryLoadResult();
-        const id = setInterval(tryLoadResult, 1000);
-        const onStorage = (e) => {
-          if (e.key === sessionKey) tryLoadResult();
-        };
-        window.addEventListener('storage', onStorage);
-        return () => {
-          clearInterval(id);
-          window.removeEventListener('storage', onStorage);
-        };
-      }, [sessionKey, tryLoadResult]);
-
-      const restartEmbeddedProbe = () => {
-        setResult(null);
-        setSessionKey(`iqmw.zone.amft.session.${Date.now()}.${Math.random().toString(36).slice(2, 8)}`);
-      };
-      const currentBps = Number.isFinite(Number(result?.bps)) ? Number(result.bps) : null;
-      const baseBps = Number.isFinite(Number(baselineBps)) ? Number(baselineBps) : null;
-      const bpsDelta = (currentBps != null && baseBps != null) ? Number((currentBps - baseBps).toFixed(2)) : null;
-      const bpsDeltaLabel = bpsDelta == null ? null : `${bpsDelta >= 0 ? '+' : ''}${bpsDelta.toFixed(2)}`;
-
-      return (
-        <div className="screen">
-          <div className="topbar">
-            <div className="brandleft">
-              <div className="icon">
-                <img src={logoSrc} alt="Trident logo" onError={(e) => { e.target.style.display = 'none'; }} />
-              </div>
-              <div>
-                <p className="title">{appName}</p>
-                <p className="subtitle">{subtitle}</p>
-              </div>
-            </div>
-            <div className="chip">{label}</div>
-          </div>
-
-          <div className="content">
-            <div className="card" style={{ maxWidth: 1080, margin: '0 auto' }}>
-              <div className="h1">{isRecheck ? 'Masked majority recheck' : `Masked majority readiness probe (${durationSec}s)`}</div>
-              {isRecheck ? (
-                <>
-                  <p className="p" style={{ marginTop: 6 }}>
-                    This follow-up probe lasts just <b>{durationSec} seconds</b>. As before, on each trial, briefly shown arrows will appear in a 5-arrow set. Press <b>&larr;</b> if the <b>majority</b> point left, or <b>&rarr;</b> if the <b>majority</b> point right.
-                  </p>
-                  <p className="p" style={{ marginTop: 6 }}>
-                    Wait for the arrows before responding (do not press early during the fixation cross). When the run finishes, the result below will highlight the <b>change in BPS vs your first probe</b>.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="p" style={{ marginTop: 6 }}>
-                    This probe lasts <b>{durationSec} seconds</b>. On each trial, briefly shown arrows will appear in a 5-arrow set. Press <b>&larr;</b> if the <b>majority</b> point left, or <b>&rarr;</b> if the <b>majority</b> point right.
-                  </p>
-                  <p className="p" style={{ marginTop: 6 }}>
-                    Wait for the arrows before responding (do not press early during the fixation cross). When the run finishes, the result will appear below with <b>bits/second (bps)</b>, baseline/gate, and timing stability metrics.
-                  </p>
-                </>
-              )}
-              <p className="p" style={{ marginTop: 6 }}>
-                If the arrow keys do not register, click once inside the embedded probe panel to give it keyboard focus.
-              </p>
-
-              <div style={{ marginTop: 12, border: '1px solid #E0E0E0', borderRadius: 14, overflow: 'hidden', background: '#0b0b0d' }}>
-                <iframe
-                  key={sessionKey}
-                  src={iframeSrc}
-                  title={isRecheck ? 'aMFT recheck' : 'aMFT probe'}
-                  style={{ width: '100%', height: '720px', border: 'none', display: 'block', background: '#0b0b0d' }}
-                  loading="eager"
-                />
-              </div>
-
-              <div className="card" style={{ marginTop: 12, boxShadow: 'none' }}>
-                <div className="p" style={{ fontWeight: 900, color: 'rgba(0,0,0,0.85)' }}>{isRecheck ? 'Follow-up result' : 'Probe result'}</div>
-                {!result ? (
-                  <p className="p" style={{ marginTop: 6 }}>
-                    No completed result found yet for this run. Finish the embedded task first, then click <b>Refresh result</b>.
-                  </p>
-                ) : (
-                  <>
-                    {isRecheck ? (
-                      <>
-                        {bpsDelta != null ? (
-                          <p className="p" style={{ marginTop: 6 }}>
-                            Change in BPS vs first probe: <b>{bpsDeltaLabel}</b>
-                            <span style={{ color: '#111' }}> ({baseBps.toFixed(2)} -> {currentBps.toFixed(2)})</span>
-                          </p>
-                        ) : (
-                          <p className="p" style={{ marginTop: 6 }}>
-                            BPS change vs first probe will appear here after a valid first-probe BPS is available.
-                          </p>
-                        )}
-                        <p className="p" style={{ marginTop: 6 }}>
-                          Follow-up quality: <b>{result.qualityOk ? 'OK' : 'Invalid'}</b>
-                          <span style={{ color: '#111' }}> | Gate: </span><b>{result.gateLabel || result.readinessBand || '-'}</b>
-                        </p>
-                      </>
-                    ) : (
-                      <p className="p" style={{ marginTop: 6 }}>
-                        Probe result detected. Review the detailed metrics in the embedded task panel, then click <b>Continue</b>.
-                      </p>
-                    )}
-                  </>
-                )}
-                <p className="p" style={{ marginTop: 6, color: 'rgba(0,0,0,0.65)' }}>
-                  {lastPoll ? `Last sync: ${lastPoll}` : 'Waiting for result sync...'}
-                </p>
-                <div className="btnRow" style={{ justifyContent: 'center' }}>
-                  <button className="btn btnSecondary" style={{ width: 'min(300px, 100%)' }} onClick={tryLoadResult}>
-                    Refresh result
-                  </button>
-                  <button className="btn btnSecondary" style={{ width: 'min(300px, 100%)' }} onClick={restartEmbeddedProbe}>
-                    Restart embedded probe
-                  </button>
-                  <button
-                    className="btn btnPrimary"
-                    style={{ width: 'min(300px, 100%)' }}
-                    onClick={() => result && onComplete?.(result)}
-                    disabled={!result}
-                  >
-                    Continue
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="footer">
-            <span>Mindware Lab | Trident</span>
-            <a className="link" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">Capacity Coach</a>
-          </div>
-        </div>
-      );
-    }
-
- // -----------------------------
-// ZoneCoach app (BRANDED)
-// -----------------------------
-function ZoneCoach() {
-  const [showSplash, setShowSplash] = useState(true);
-  const [step, setStep] = useState('ratings');
-
-  const [ratings, setRatings] = useState({ E: 5, S: 5, F: 5, N: 5, O: 5, C: 5, R: 5 });
-  const [externalDistractions, setExternalDistractions] = useState(false);
-
-  const [probePre, setProbePre] = useState(null);
-  const [probePost, setProbePost] = useState(null);
-  const [interventionEffect, setInterventionEffect] = useState(null);
-
-  const [classification, setClassification] = useState(null);
-  const [breathPattern, setBreathPattern] = useState(null);
-  const [postBreathReport, setPostBreathReport] = useState(null);
-  const [zoneDecision, setZoneDecision] = useState(null);
-
-  const interruptionsRef = useRef({ tabSwitches: 0, blurs: 0 });
-
-  useEffect(() => {
-    const onBlur = () => { interruptionsRef.current.blurs += 1; };
-    const onVisibilityChange = () => {
-      if (document.hidden) interruptionsRef.current.tabSwitches += 1;
-    };
-
-    window.addEventListener('blur', onBlur);
-    document.addEventListener('visibilitychange', onVisibilityChange);
-    return () => {
-      window.removeEventListener('blur', onBlur);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-    };
-  }, []);
-
-  const brand = useMemo(() => ({
-    appName: 'Zone Coach',
-    subtitle: 'Quick state check -> mindful reset -> start training',
-    accent: 'var(--deep)',
-    logoSrc: '../../../../branding/Trident-G-Icon.svg'
-  }), []);
-
-  const safeJsonParse = (s, fallback) => {
-    try { return JSON.parse(s); } catch { return fallback; }
-  };
-
-  const writeZoneTelemetry = (zoneTelemetry, zoneHandoffSlim) => {
-    try {
-      const history = safeJsonParse(localStorage.getItem(LS_KEYS.ZONE_HISTORY) || '[]', []);
-      history.push(zoneTelemetry);
-      while (history.length > 30) history.shift();
-      localStorage.setItem(LS_KEYS.ZONE_HISTORY, JSON.stringify(history));
-
-      localStorage.setItem(LS_KEYS.ZONE_LAST, JSON.stringify(zoneTelemetry));
-
-      // Slim handoff for capacity coach
-      localStorage.setItem(LS_KEYS.CAPACITY_FROM_ZONE, JSON.stringify(zoneHandoffSlim));
-
-      // Cross-app fallback handoff (helps older/newer coach variants)
-      const fallback = {
-        schemaVersion: 'mw_handoff_v1',
-        timestamp: zoneTelemetry.timestamp,
-        zone: zoneHandoffSlim.gate.zone, // too_cold | in_band | too_hot
-        recommendation: zoneHandoffSlim.gate.recommendation, // proceed | light
-        capacityFocus: zoneTelemetry.suggest?.capacityFocus || null,
-        rigourBudget: zoneTelemetry.suggest?.rigourBudget || null,
-        timeboxMins: zoneTelemetry.suggest?.timeboxMins || null
-      };
-      localStorage.setItem(FALLBACK_CAPACITY_KEY, JSON.stringify(fallback));
-    } catch (e) {
-      console.error('Storage error:', e);
-    }
-  };
-
-  const handleRatingsSubmit = () => {
-    const result = classifyMode(ratings, externalDistractions);
-    const pattern = selectBreathingPattern(result.primaryMode);
-    setClassification(result);
-    setBreathPattern(pattern);
-    setStep('probePre');
-  };
-
-  const handleStartBreathing = () => setStep('breathing');
-  const handleBreathingComplete = () => setStep('probePost');
-
-  const handlePostBreathSubmit = (report) => {
-    setPostBreathReport(report);
-
-    const baseZoneGate = toZoneGate(classification.primaryMode);
-
-    const preInBand = classification.primaryMode === 'PSI';
-    const postInBand = report === 'Psi-band';
-    const stateConfidence = computeStateConfidence({
-      signalClarity: null,
-      probe: probePre,
-      interruptions: interruptionsRef.current,
-      ratings
-    });
-    const overallConfidence = computeOverallConfidence(classification.confidence, stateConfidence);
-    const signalQualityLocal = computeSignalQuality({
-      probe: probePre,
-      interruptions: interruptionsRef.current,
-      ratings
-    });
-    const proceedNormal =
-      (postInBand || preInBand)
-      && overallConfidence !== 'Low'
-      && signalQualityLocal.label !== 'Poor';
-    const baseRecommendation = proceedNormal ? 'proceed' : 'light';
-
-    const intervention = evaluateInterventionEffect({
-      preProbe: probePre,
-      postProbe: probePost,
-      signalQualityLabel: signalQualityLocal.label
-    });
-    setInterventionEffect(intervention);
-
-    let zoneGate = baseZoneGate;
-    let recommendation = baseRecommendation;
-    const canUpgrade = overallConfidence !== 'Low' && signalQualityLocal.label !== 'Poor';
-
-    // Use post-probe intervention response as a moderate decision adjuster.
-    if (intervention.bucket === 'worsened') {
-      recommendation = 'light';
-    } else if (intervention.bucket === 'improved') {
-      if (zoneGate === 'too_cold' && postInBand && canUpgrade) {
-        zoneGate = 'in_band';
-      }
-      if (zoneGate === 'in_band' && canUpgrade) {
-        recommendation = 'proceed';
-      }
-    }
-
-    // Safety lock: overloaded states never upgrade to proceed.
-    if (zoneGate === 'too_hot') {
-      recommendation = 'light';
-    }
-
-    const derived = {
-      N_eff: classification.N_eff,
-      pressure: (ratings.S + ratings.O) / 2,
-      interference: (ratings.N + ratings.C) / 2,
-      load: (ratings.O + ratings.C + ratings.R) / 3,
-      stability: (ratings.F + (10 - ratings.R)) / 2
-    };
-
-    const suggestedCapacity = suggestedCapacityFromMode(classification.primaryMode);
-
-    const zoneTelemetry = {
-      schemaVersion: 'zone_v1',
-      timestamp: new Date().toISOString(),
-      ratings,
-      externalDistractions,
-      derived,
-      classifier: {
-        primaryMode: classification.primaryMode,
-        label: MODE_LABELS[classification.primaryMode],
-        modeProbs: classification.modeProbs,
-        confidence: classification.confidence,
-        modeConfidence: classification.confidence,
-        stateConfidence,
-        overallConfidence
-      },
-      signalQuality: signalQualityLocal,
-      interruptions: { ...interruptionsRef.current },
-      breathing: {
-        patternId: breathPattern,
-        patternName: BREATH_PATTERNS[breathPattern].name,
-        completed: true,
-        postBreathSelfReport: report
-      },
-      probe: {
-        pre: probePre,
-        post: probePost
-      },
-      intervention,
-      gate: {
-        zone: zoneGate, // too_cold|in_band|too_hot
-        baseZone: baseZoneGate,
-        preInBand,
-        postInBand,
-        recommendation,
-        baseRecommendation,
-        interventionBucket: intervention.bucket
-      },
-      suggest: {
-        rigourBudget: zoneGate === 'in_band' ? 'medium' : 'low',
-        timeboxMins: zoneGate === 'in_band' ? 10 : 8,
-        capacityFocus: suggestedCapacity
-      }
-    };
-
-    const zoneHandoffSlim = {
-      schemaVersion: 'zone_to_capacity_v1',
-      timestamp: zoneTelemetry.timestamp,
-      gate: {
-        zone: zoneTelemetry.gate.zone,
-        baseZone: zoneTelemetry.gate.baseZone,
-        preInBand: zoneTelemetry.gate.preInBand,
-        postInBand: zoneTelemetry.gate.postInBand,
-        recommendation: zoneTelemetry.gate.recommendation,
-        baseRecommendation: zoneTelemetry.gate.baseRecommendation,
-        interventionBucket: zoneTelemetry.gate.interventionBucket
-      },
-      suggest: zoneTelemetry.suggest,
-      intervention: {
-        bucket: intervention.bucket,
-        score: intervention.score,
-        reliability: intervention.reliability
-      }
-    };
-
-    setZoneDecision({
-      zone: zoneGate,
-      recommendation,
-      baseZone: baseZoneGate,
-      baseRecommendation,
-      preInBand,
-      postInBand,
-      intervention,
-      suggestedCapacity
-    });
-
-    writeZoneTelemetry(zoneTelemetry, zoneHandoffSlim);
-    setStep('complete');
-  };
-
-  const stateConfidence = classification
-    ? computeStateConfidence({
-      signalClarity: null,
-      probe: probePre,
-      interruptions: interruptionsRef.current,
-      ratings
-    })
-    : null;
-  const overallConfidence = classification
-    ? computeOverallConfidence(classification.confidence, stateConfidence)
-    : null;
-  const signalQuality = classification
-    ? computeSignalQuality({
-      probe: probePre,
-      interruptions: interruptionsRef.current,
-      ratings
-    })
-    : null;
-  const interventionPreview = evaluateInterventionEffect({
-    preProbe: probePre,
-    postProbe: probePost,
-    signalQualityLabel: signalQuality?.label || null
-  });
-
-  const startNewCheck = () => {
-    setStep('ratings');
-    interruptionsRef.current = { tabSwitches: 0, blurs: 0 };
-    setPostBreathReport(null);
-    setClassification(null);
-    setBreathPattern(null);
-    setProbePre(null);
-    setProbePost(null);
-    setInterventionEffect(null);
-    setZoneDecision(null);
-  };
-
-  // ----- Shared frame (topbar + footer) -----
-  const Frame = ({ chip, children }) => (
-    <div className="screen">
-      <div className="topbar">
-        <div className="brandleft">
-          <div className="icon">
-            <img
-              src={brand.logoSrc}
-              alt="Trident logo"
-              onError={(e) => { e.target.style.display = 'none'; }}
-            />
-          </div>
-          <div>
-            <p className="title">{brand.appName}</p>
-            <p className="subtitle">{brand.subtitle}</p>
-          </div>
-        </div>
-        <div className="chip">{chip}</div>
+  <div class="app">
+    <div class="top">
+      <div class="row">
+        <div class="title">Zone Coach - MFT-M State Router</div>
+        <span class="pill" id="phasePill">Ready</span>
+        <span class="pill" id="statusPill">Idle</span>
       </div>
-
-      <div className="content">{children}</div>
-
-      <div className="footer">
-        <span>Mindware Lab | Trident</span>
-        <a className="link" href={CAPACITY_TRAINING_COACH_URL} target="_blank" rel="noreferrer">
-          Capacity Coach
-        </a>
+      <div class="row">
+        <span class="pill" id="refreshPill">Refresh: —</span>
+        <span class="pill" id="qualityPill">Quality: —</span>
       </div>
     </div>
-  );
 
-  // ----- Splash -----
-  if (showSplash) {
-    return (
-      <div className="screen">
-        <div className="topbar">
-          <div className="brandleft">
-            <div className="icon">
-              <img
-                src={brand.logoSrc}
-                alt="Trident logo"
-                onError={(e) => { e.target.style.display = 'none'; }}
-              />
-            </div>
-            <div>
-              <p className="title">{brand.appName}</p>
-              <p className="subtitle">{brand.subtitle}</p>
-            </div>
-          </div>
-          <div className="chip">Start</div>
+    <div class="card">
+      <div id="screenStart" class="screen active">
+        <h2 style="margin:0 0 8px 0;">3-minute readiness check</h2>
+        <div class="muted">Arrows flash briefly. Press <b>←</b> or <b>→</b> for the majority direction. Go as fast and accurately as you can.</div>
+        <div class="small muted" style="margin-top:8px;">Single-probe MFT-M router: computes <span style="font-family:monospace;">BPS</span> plus lapse/variability/drift signatures to recommend a training module.</div>
+        <div class="small muted" style="margin-top:10px;">Optional label (saved only): I feel…</div>
+        <div class="radio">
+          <label><input type="radio" name="feel" value="flat" /> Flat</label>
+          <label><input type="radio" name="feel" value="normal" checked /> Normal</label>
+          <label><input type="radio" name="feel" value="wired" /> Wired</label>
         </div>
+        <div class="cta">
+          <button class="btn btn-primary" id="startBtn">Start readiness check</button>
+          <button class="btn" id="resetHistoryBtn">Reset local history</button>
+        </div>
+        <div class="small muted" style="margin-top:12px;">Keyboard and touch supported. Do not switch tabs during the run.</div>
+      </div>
 
-        <div className="content" style={{ justifyContent: 'center' }}>
-          <div className="card" style={{ maxWidth: 560, margin: '0 auto', textAlign: 'center' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
-              <div className="icon">
-                <img
-                  src={brand.logoSrc}
-                  alt="Trident logo"
-                  onError={(e) => { e.target.style.display = 'none'; }}
-                />
-              </div>
-            </div>
-
-            <div className="h1" style={{ fontSize: 26, marginBottom: 8 }}>{brand.appName}</div>
-            <p className="p" style={{ fontSize: 14 }}>{brand.subtitle}</p>
-
-            <div className="btnRow" style={{ justifyContent: 'center' }}>
-              <button className="btn btnPrimary" style={{ width: 'min(360px, 100%)' }} onClick={() => setShowSplash(false)}>
-                Continue
-              </button>
-            </div>
-
-            <p className="p" style={{ marginTop: 10 }}>Mindware Lab | Trident</p>
-          </div>
+      <div id="screenRun" class="screen">
+        <div class="row">
+          <span class="pill" id="runLabelPill">Running probe</span>
+          <span class="pill" id="trialPill">Trials: 0</span>
+          <span class="pill" id="mixPill">S:0 P:0 C:0</span>
+        </div>
+        <div class="progress"><div id="progressFill"></div></div>
+        <div class="task"><canvas id="c"></canvas></div>
+        <div class="touch">
+          <button class="btn" id="touchLeftBtn">←</button>
+          <button class="btn" id="touchRightBtn">→</button>
+        </div>
+        <div class="cta">
+          <button class="btn btn-ghost" id="stopBtn">Stop run</button>
+          <span class="pill">Tap or press arrows after each stimulus</span>
         </div>
       </div>
-    );
-  }
 
-  // ----- Probe pre -----
-  if (!showSplash && step === 'probePre') {
-    return (
-      <AMFTProbe
-        label="Probe"
-        brand={brand}
-        durationSec={180}
-        baselineBps={null}
-        onComplete={(result) => {
-          setProbePre(result);
-          setStep('results');
-        }}
-      />
-    );
-  }
+      <div id="screenResult" class="screen">
+        <h2 style="margin:0 0 8px 0;">Readiness result</h2>
+        <div id="invalidPanel" class="block hidden">
+          <h3 style="margin:0 0 6px 0;">Session not valid</h3>
+          <div id="invalidReason" class="muted">Focus loss or timing instability.</div>
+          <div class="cta"><button class="btn btn-primary" id="tryAgainBtn">Try again</button></div>
+        </div>
 
-  // ----- Breathing -----
-  if (step === 'breathing') {
-    return (
-      <BreathingCoach
-        patternId={breathPattern}
-        onComplete={handleBreathingComplete}
-        brand={brand}
-      />
-    );
-  }
+        <div id="validPanel" class="hidden">
+          <div class="grid">
+            <div class="metric"><div class="k">BPS (combined)</div><div class="v" id="mBps">—</div></div>
+            <div class="metric"><div class="k">State</div><div class="v" id="mState">—</div></div>
+            <div class="metric"><div class="k">Confidence</div><div class="v" id="mConf">—</div></div>
+            <div class="metric"><div class="k">Probe trials / Catch fail</div><div class="v" id="mProbeCatch">—</div></div>
+            <div class="metric"><div class="k">Timeout rate / RT CV</div><div class="v" id="mTimeoutCv">—</div></div>
+            <div class="metric"><div class="k">PES / Burstiness</div><div class="v" id="mPesBurst">—</div></div>
+          </div>
+          <div class="block">
+            <div id="stateBadge" class="badge">—</div>
+            <div id="stateWhy" class="muted" style="margin-top:8px;">—</div>
+            <div id="reasonChips" class="chips"></div>
+          </div>
+          <div class="block" id="moduleCard"></div>
+          <div class="cta">
+            <button class="btn btn-primary" id="startRecommendedBtn">Start recommended session</button>
+            <button class="btn" id="quickBtn">Quick re-check (75s)</button>
+            <button class="btn btn-ghost" id="fullBtn">Run full check again</button>
+            <a class="btn btn-ghost" href="#" id="openLink">Open Trident module (later)</a>
+          </div>
+        </div>
 
-  // ----- Probe post -----
-  if (step === 'probePost') {
-    return (
-      <AMFTProbe
-        label="Recheck"
-        brand={brand}
-        durationSec={90}
-        isRecheck={true}
-        baselineBps={probePre?.bps ?? null}
-        onComplete={(result) => {
-          setProbePost(result);
-          setStep('postBreath');
-        }}
-      />
-    );
-  }
-
-  // ----- Main flow -----
-  return (
-    <Frame chip={step === 'ratings' ? 'Check' : step === 'results' ? 'Result' : step === 'postBreath' ? 'Report' : 'Next'}>
-      <div className="card" style={{ maxWidth: 820, margin: '0 auto' }}>
-
-        {step === 'ratings' && (
-          <>
-            <div className="h1">Zone check</div>
-            <p className="p">Rate how you feel right now (0 = not at all, 10 = extremely).</p>
-
-            <div style={{ marginTop: 10 }}>
-              {SLIDERS.map(s => (
-                <div key={s.key} className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 10 }}>
-                    <div className="sliderLabel">{s.label}</div>
-                    <div className="sliderValue">{ratings[s.key]}</div>
-                  </div>
-                  <p className="p" style={{ marginTop: 6, marginBottom: 10 }}>{s.desc}</p>
-
-                  <input
-                    type="range"
-                    min="0"
-                    max="10"
-                    value={ratings[s.key]}
-                    onChange={(e) => setRatings({ ...ratings, [s.key]: parseInt(e.target.value, 10) })}
-                    className="sliderControl"
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={externalDistractions}
-                  onChange={(e) => setExternalDistractions(e.target.checked)}
-                  style={{ marginTop: 2 }}
-                />
-                <span className="p" style={{ margin: 0, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
-                  Notifications, noise, people, or interruptions are affecting me right now
-                </span>
-              </label>
-            </div>
-
-            <div className="btnRow">
-              <button onClick={handleRatingsSubmit} className="btn btnPrimary" style={{ width: '100%' }}>
-                Continue to readiness check
-              </button>
-            </div>
-          </>
-        )}
-
-        {step === 'results' && classification && (
-          <>
-            <div className="h1">Your current state</div>
-
-            <div className="card" style={{ boxShadow: 'none', background: 'rgba(34,170,255,0.08)', border: '1px solid rgba(39,100,183,0.18)', marginTop: 12 }}>
-              <div style={{ fontWeight: 900, fontSize: 36, color: 'rgba(0,0,0,0.90)' }}>
-                {MODE_LABELS[classification.primaryMode]}
-              </div>
-              <p className="p" style={{ marginTop: 6 }}>
-                Confidence: <span style={{ fontWeight: 900, color: 'var(--deep)' }}>{CONF_UI[overallConfidence || classification.confidence] || overallConfidence || classification.confidence}</span>
-              </p>
-              {signalQuality && (
-                <>
-                  <p className="p" style={{ marginTop: 6 }}>
-                    Signal quality (reliability):{' '}
-                    <span
-                      style={{ fontWeight: 900, color: SIGNAL_COLORS[signalQuality.label] || 'var(--deep)' }}
-                      title={signalQuality.reason}
-                    >
-                      {signalQuality.label}
-                    </span>
-                  </p>
-                  <p className="p" style={{ marginTop: 2, color: '#111' }}>
-                    {signalQuality.reason}
-                  </p>
-                </>
-              )}
-            </div>
-
-            <div className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
-              <div style={{ fontWeight: 900, fontSize: 20, color: 'rgba(0,0,0,0.85)' }}>Recommended reset</div>
-              <div style={{ fontWeight: 900, fontSize: 16, color: 'var(--deep)', marginTop: 6 }}>
-                {BREATH_PATTERNS[breathPattern].name}
-              </div>
-              <p className="p" style={{ marginTop: 6 }}>{BREATH_PATTERNS[breathPattern].description}</p>
-              <p className="p" style={{ marginTop: 8 }}>Do the 3-minute reset, then we will decide the best training intensity.</p>
-
-              <div className="btnRow">
-                <button onClick={handleStartBreathing} className="btn btnPrimary" style={{ width: '100%' }}>
-                  Start 3-minute reset
-                </button>
-                <button onClick={startNewCheck} className="btn btnSecondary" style={{ width: '100%' }}>
-                  Back
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-
-        {step === 'postBreath' && (
-          <>
-            <div className="h1">How do you feel now?</div>
-            <p className="p">Quick check after your breathing reset.</p>
-
-            <div className="card" style={{ boxShadow: 'none', marginTop: 12, background: 'rgba(34,170,255,0.08)', border: '1px solid rgba(39,100,183,0.18)' }}>
-              <div style={{ fontWeight: 900, fontSize: 16, color: 'rgba(0,0,0,0.90)' }}>Intervention response (pre vs post probe)</div>
-              <p className="p" style={{ marginTop: 6, color: '#111' }}>{interventionPreview.message}</p>
-              {interventionPreview.metrics ? (() => {
-                const m = interventionPreview.metrics;
-                const lapsePre = Number.isFinite(m.preLapseRate) ? (m.preLapseRate * 100).toFixed(1) + '%' : '-';
-                const lapsePost = Number.isFinite(m.postLapseRate) ? (m.postLapseRate * 100).toFixed(1) + '%' : '-';
-                const cvPre = Number.isFinite(m.preCv) ? m.preCv.toFixed(3) : '-';
-                const cvPost = Number.isFinite(m.postCv) ? m.postCv.toFixed(3) : '-';
-                const rtPre = Number.isFinite(m.preMedian) ? m.preMedian + ' ms' : '-';
-                const rtPost = Number.isFinite(m.postMedian) ? m.postMedian + ' ms' : '-';
-                return (
-                  <div style={{ marginTop: 6 }}>
-                    <p className="p" style={{ margin: 0, color: '#111' }}>
-                      Lapse rate: <b>{lapsePre}</b> -> <b>{lapsePost}</b>
-                    </p>
-                    <p className="p" style={{ marginTop: 4, color: '#111' }}>
-                      RT variability (CV): <b>{cvPre}</b> -> <b>{cvPost}</b>
-                    </p>
-                    <p className="p" style={{ marginTop: 4, color: '#111' }}>
-                      Median RT: <b>{rtPre}</b> -> <b>{rtPost}</b>
-                    </p>
-                  </div>
-                );
-              })() : null}
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 10, marginTop: 12 }}>
-              {[
-                { label: 'Flat / low drive', value: 'Subcritical' },
-                { label: 'In the G Zone', value: 'Psi-band' },
-                { label: 'Overloaded & scattered', value: 'Supercritical - explore' },
-                { label: 'Over-tight & stuck', value: 'Supercritical - rigid control' },
-                { label: 'Not sure', value: 'Not sure' }
-              ].map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => handlePostBreathSubmit(opt.value)}
-                  className="btn btnSecondary"
-                  style={{ textAlign: 'left', width: '100%' }}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        {step === 'complete' && classification && (
-          <>
-            <div className="h1">Reset complete</div>
-
-            <div className="card" style={{ boxShadow: 'none', background: 'rgba(34,170,255,0.08)', border: '1px solid rgba(39,100,183,0.18)', marginTop: 12 }}>
-              <div style={{ fontWeight: 900, fontSize: 16, color: 'rgba(0,0,0,0.90)' }}>
-                Post-breath: <span style={{ color: 'var(--deep)' }}>{postBreathReport}</span>
-              </div>
-            </div>
-
-            <div className="card" style={{ boxShadow: 'none', marginTop: 12 }}>
-              <div style={{ fontWeight: 900, fontSize: 14, color: 'rgba(0,0,0,0.85)' }}>Next step</div>
-
-              <p className="p" style={{ marginTop: 8 }}>
-                Zone gate: <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{ZONE_UI[zoneDecision?.zone]?.title || '-'}</span>
-                <span style={{ color: '#111' }}> | Suggested focus: </span>
-                <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{zoneDecision?.suggestedCapacity?.primary || '-'}</span>
-                {zoneDecision?.suggestedCapacity?.secondary ? <span style={{ color: '#111' }}> then </span> : null}
-                {zoneDecision?.suggestedCapacity?.secondary ? <span style={{ fontWeight: 900, color: 'rgba(0,0,0,0.90)' }}>{zoneDecision.suggestedCapacity.secondary}</span> : null}
-              </p>
-
-              {interventionEffect ? (
-                <div className="card" style={{ boxShadow: 'none', marginTop: 8, background: '#F6FBFF', border: '1px solid rgba(39,100,183,0.18)' }}>
-                  <p className="p" style={{ margin: 0, color: '#111', fontWeight: 800 }}>
-                    Intervention effect: {interventionEffect.bucket === 'improved' ? 'Improved' : interventionEffect.bucket === 'worsened' ? 'Worsened' : interventionEffect.bucket === 'no_clear_change' ? 'No clear change' : 'Unknown'}
-                  </p>
-                  <p className="p" style={{ marginTop: 6, color: '#111' }}>{interventionEffect.message}</p>
-                </div>
-              ) : null}
-
-              {zoneDecision?.recommendation === 'proceed' ? (
-                <>
-                  <p className="p" style={{ marginTop: 8, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
-                    Proceed with training.
-                  </p>
-                  <div className="btnRow">
-                    <button
-                      onClick={() => window.open(CAPACITY_TRAINING_COACH_URL, '_blank')}
-                      className="btn btnPrimary"
-                      style={{ width: '100%' }}
-                    >
-                      Go to Capacity Training Coach
-                    </button>
-                  </div>
-                  <p className="p" style={{ marginTop: 8 }}>
-                    Your zone handoff has been saved for the coach/switcher.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="p" style={{ marginTop: 8, color: 'rgba(0,0,0,0.80)', fontWeight: 800 }}>
-                    Light session recommended.
-                  </p>
-                  <p className="p" style={{ marginTop: 6 }}>
-                    If your reset effect was unclear today, that is okay. Keep the session short and stabilising.
-                  </p>
-
-                  <div className="btnRow">
-                    <button
-                      onClick={() => window.open(CAPACITY_TRAINING_COACH_URL, '_blank')}
-                      className="btn btnPrimary"
-                      style={{ width: '100%' }}
-                    >
-                      Proceed with a light session (Recover focus)
-                    </button>
-                  </div>
-
-                  <div className="card" style={{ boxShadow: 'none', marginTop: 10 }}>
-                    <p className="p" style={{ margin: 0 }}>
-                      If you still feel overloaded: walk, hydration, low stimulation, early night. Try again tomorrow.
-                    </p>
-                  </div>
-
-                  <p className="p" style={{ marginTop: 8 }}>
-                    Your zone handoff has been saved for the coach/switcher.
-                  </p>
-                </>
-              )}
-
-              <div className="btnRow">
-                <button onClick={startNewCheck} className="btn btnSecondary" style={{ width: '100%' }}>
-                  Start new check
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-
+        <div class="block">
+          <div class="small muted">History (local): <span id="histCount">0</span> valid sessions • BPS EWMA <span id="histBps">—</span></div>
+          <div class="small muted" id="lastLine" style="margin-top:4px;">Last: —</div>
+        </div>
       </div>
-    </Frame>
-  );
-}
+    </div>
+  </div>
 
-// React 18 root
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<ZoneCoach />);
+  <script>
+  (() => {
+    const CFG = {
+      appVersion: 'mftm_router_mvp1',
+      schemaVersion: 1,
+      totalSeconds: 180,
+      quickSeconds: 75,
+      nArrows: 5, easyMajority: 4, hardMajority: 3, catchMajority: 5,
+      fixationMs: 350, isiMs: 150, responseTimeoutMs: 1500, maskMs: 100,
+      startStimMs: 80, minStimMs: 25, maxStimMs: 220, stepFrames: 1,
+      bpsScaleK: 0.28, rtMinMs: 150, rtMaxMs: 1500, fastMs: 250, slowFloorMs: 1000,
+      maxDroppedFrameFrac: 0.06, bootstrapWarmupSeconds: 40, streamMix: { stair: .75, probe: .20, catch: .05 },
+      catchProbeFracMax: .16, historyKeep: 120, baselineWindow: 14
+    };
+    const LS_HISTORY = 'iqmw.zone.router.history.v1';
+    const MODULES = {
+      in_zone: { id: 'deep_portable_learning_v1', title: 'Deep Portable Learning', items: ['Relational n-back + transfer probes', 'Wrapper swaps', 'Mission-linked work'] },
+      cold: { id: 'activate_stabilise_v1', title: 'Activate and Stabilise', items: ['Vigilance / sustained attention', 'Simple speeded detection', 'Optional quick re-check'] },
+      hot_exploit: { id: 'loosen_rigidity_v1', title: 'Loosen Rigidity', items: ['Down-regulation', 'Gentle flexibility / set shifting', 'Low-stakes variability practice'] },
+      hot_explore: { id: 'constraint_paced_v1', title: 'Constraint and Stabilise', items: ['Down-regulation + pacing', 'Rhythm / structured responding', 'Consistency / inhibition practice'] }
+    };
+    const STATE_UI = {
+      in_zone: { label: 'In-zone', why: 'Signals are stable enough for deep portable learning.' },
+      cold: { label: 'Cold off-zone', why: 'Lapse / slowdown signatures suggest under-activation or state drop.' },
+      hot_exploit: { label: 'Hot–Exploit off-zone', why: 'Post-error slowing / rigid slowdown suggests overcontrol.' },
+      hot_explore: { label: 'Hot–Explore off-zone', why: 'Variability / burstiness suggests unstable execution.' },
+      invalid: { label: 'Session not valid', why: 'Focus loss or timing instability compromised the probe.' }
+    };
 
+    const $ = (id) => document.getElementById(id);
+    const dom = {
+      phasePill: $('phasePill'), statusPill: $('statusPill'), refreshPill: $('refreshPill'), qualityPill: $('qualityPill'),
+      screenStart: $('screenStart'), screenRun: $('screenRun'), screenResult: $('screenResult'),
+      startBtn: $('startBtn'), resetHistoryBtn: $('resetHistoryBtn'), stopBtn: $('stopBtn'), tryAgainBtn: $('tryAgainBtn'),
+      quickBtn: $('quickBtn'), fullBtn: $('fullBtn'), startRecommendedBtn: $('startRecommendedBtn'), openLink: $('openLink'),
+      runLabelPill: $('runLabelPill'), trialPill: $('trialPill'), mixPill: $('mixPill'), progressFill: $('progressFill'),
+      invalidPanel: $('invalidPanel'), invalidReason: $('invalidReason'), validPanel: $('validPanel'),
+      mBps: $('mBps'), mState: $('mState'), mConf: $('mConf'), mProbeCatch: $('mProbeCatch'), mTimeoutCv: $('mTimeoutCv'), mPesBurst: $('mPesBurst'),
+      stateBadge: $('stateBadge'), stateWhy: $('stateWhy'), reasonChips: $('reasonChips'), moduleCard: $('moduleCard'),
+      histCount: $('histCount'), histBps: $('histBps'), lastLine: $('lastLine'),
+      touchLeftBtn: $('touchLeftBtn'), touchRightBtn: $('touchRightBtn'),
+      canvas: $('c')
+    };
+    const ctx = dom.canvas.getContext('2d', { alpha:false, desynchronized:true }) || dom.canvas.getContext('2d');
+    const rt = { running:false, stop:false, respOpen:false, choiceHandler:null, resolver:null, falseStarts:0, lastSummary:null };
+
+    const clamp = (v,min,max) => Math.max(min, Math.min(max, v));
+    const mean = (xs) => xs.length ? xs.reduce((a,b)=>a+b,0)/xs.length : null;
+    const median = (xs) => { if (!xs.length) return null; const s=[...xs].sort((a,b)=>a-b), m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; };
+    const sd = (xs) => { if (xs.length<2) return 0; const m=mean(xs); return Math.sqrt(Math.max(0, xs.reduce((a,x)=>a+(x-m)*(x-m),0)/(xs.length-1))); };
+    const pct = (xs,p) => { if (!xs.length) return null; const s=[...xs].sort((a,b)=>a-b); const i=clamp((s.length-1)*p,0,s.length-1); const lo=Math.floor(i), hi=Math.ceil(i); if (lo===hi) return s[lo]; const t=i-lo; return s[lo]*(1-t)+s[hi]*t; };
+    const ewma = (xs,a=.25) => { if (!xs.length) return null; let s=xs[0]; for (let i=1;i<xs.length;i++) s=a*xs[i]+(1-a)*s; return s; };
+    const fmt = (x,d=2) => (x==null || !Number.isFinite(Number(x))) ? '—' : Number(x).toFixed(d);
+    const fmtPct = (x,d=1) => (x==null || !Number.isFinite(Number(x))) ? '—' : `${(x*100).toFixed(d)}%`;
+    const shuffle = (a) => { for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+    const show = (name) => ['Start','Run','Result'].forEach(k => dom[`screen${k}`].classList.toggle('active', k.toLowerCase() === name));
+    const setPhase = (t) => dom.phasePill.textContent = t;
+    const setStatus = (t) => dom.statusPill.textContent = t;
+    const feelLabel = () => (document.querySelector('input[name="feel"]:checked')?.value || 'normal');
+    const loadHistory = () => { try { const x=JSON.parse(localStorage.getItem(LS_HISTORY)||'[]'); return Array.isArray(x)?x:[]; } catch { return []; } };
+    const saveHistory = (rows) => {
+      const trimmed = rows.slice(-CFG.historyKeep).map((row, idx, arr) => {
+        if (!row || typeof row !== 'object') return row;
+        if (idx < Math.max(0, arr.length - 30)) {
+          const { trace, ...rest } = row;
+          return rest;
+        }
+        return row;
+      });
+      localStorage.setItem(LS_HISTORY, JSON.stringify(trimmed));
+    };
+
+    function validRows(rows){ return rows.filter(r => r?.valid && Number.isFinite(r?.bps?.combined) && r?.router?.state !== 'invalid'); }
+    function baselines(rows){
+      const v = validRows(rows), w = v.slice(-CFG.baselineWindow), pick = (f) => w.map(f).filter(Number.isFinite);
+      return { count:v.length, bps:pick(r=>r.bps.combined), rtCV:pick(r=>r.features?.probe?.rtCV), timeout:pick(r=>r.features?.probe?.timeoutRate), fastErr:pick(r=>r.features?.probe?.fastErrorRate), pes:pick(r=>r.features?.probe?.PES), catchFail:pick(r=>r.features?.catchFailRate) };
+    }
+    function lastProbeFrames(rows){
+      for (let i=rows.length-1;i>=0;i--) { const p=rows[i]?.probeDurFrames; if (rows[i]?.valid && p && Number.isFinite(p.easy) && Number.isFinite(p.hard)) return { easy:Math.round(p.easy), hard:Math.round(p.hard) }; }
+      return null;
+    }
+
+    function refreshHistoryUI() {
+      const rows = loadHistory(), b = baselines(rows), e = ewma(b.bps);
+      dom.histCount.textContent = String(b.count);
+      dom.histBps.textContent = fmt(e, 2);
+      const last = rows[rows.length-1];
+      dom.lastLine.textContent = last ? `Last: ${last.sessionId} • ${STATE_UI[last.router?.state]?.label || last.router?.state || '—'} • ${last.router?.confidence || '—'}` : 'Last: —';
+      return { rows, base: b };
+    }
+
+    function resizeCanvas() {
+      const r = dom.canvas.getBoundingClientRect(), dpr = Math.max(1, window.devicePixelRatio||1);
+      dom.canvas.width = Math.max(1, Math.floor(r.width*dpr)); dom.canvas.height = Math.max(1, Math.floor(r.height*dpr)); ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    function clearScreen() { resizeCanvas(); const r = dom.canvas.getBoundingClientRect(); ctx.fillStyle = '#0b0b0d'; ctx.fillRect(0,0,r.width,r.height); }
+    function drawFix() { clearScreen(); const r=dom.canvas.getBoundingClientRect(), cx=r.width/2, cy=r.height/2; ctx.strokeStyle='rgba(232,232,234,.92)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(cx-10,cy); ctx.lineTo(cx+10,cy); ctx.moveTo(cx,cy-10); ctx.lineTo(cx,cy+10); ctx.stroke(); }
+    function pts() { const r=dom.canvas.getBoundingClientRect(), cx=r.width/2, cy=r.height/2, rad=Math.min(r.width,r.height)*.22, out=[]; for (let i=0;i<5;i++){ const a=(-Math.PI/2)+i*2*Math.PI/5; out.push({x:cx+rad*Math.cos(a), y:cy+rad*Math.sin(a)}); } return out; }
+    function drawArrow(x,y,dir){ const r=dom.canvas.getBoundingClientRect(), s=Math.min(r.width,r.height)*.055; ctx.save(); ctx.translate(x,y); ctx.rotate(dir==='L'?Math.PI:0); ctx.strokeStyle='rgba(232,232,234,.97)'; ctx.lineWidth=3; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(-s,0); ctx.lineTo(s,0); ctx.moveTo(s,0); ctx.lineTo(s-s*.55,-s*.45); ctx.moveTo(s,0); ctx.lineTo(s-s*.55,s*.45); ctx.stroke(); ctx.restore(); }
+    function drawStim(pattern){ clearScreen(); const ps=pts(); for (let i=0;i<ps.length;i++) drawArrow(ps[i].x, ps[i].y, pattern[i]); }
+    function drawMask(){ clearScreen(); const r=dom.canvas.getBoundingClientRect(), ps=pts(); ctx.strokeStyle='rgba(232,232,234,.75)'; ctx.lineWidth=2; for (const p of ps){ for (let i=0;i<14;i++){ const a=Math.random()*2*Math.PI, len=(Math.random()*.9+.2)*Math.min(r.width,r.height)*.05; ctx.beginPath(); ctx.moveTo(p.x+Math.cos(a)*len*.25,p.y+Math.sin(a)*len*.25); ctx.lineTo(p.x+Math.cos(a)*len,p.y+Math.sin(a)*len); ctx.stroke(); } } }
+    function drawPrompt(){ clearScreen(); const r=dom.canvas.getBoundingClientRect(); ctx.fillStyle='rgba(232,232,234,.82)'; ctx.textAlign='center'; ctx.font='600 18px system-ui,sans-serif'; ctx.fillText('Respond: ← or →', r.width/2, r.height/2); }
+    function pattern(majorityCount){ const maj=Math.random()<.5?'L':'R', min=maj==='L'?'R':'L', a=[]; for(let i=0;i<majorityCount;i++)a.push(maj); for(let i=0;i<CFG.nArrows-majorityCount;i++)a.push(min); shuffle(a); return { pattern:a, correct:maj }; }
+
+    function runForFrames(n, drawFn, timing) {
+      return new Promise(resolve => {
+        let c=0, last=null;
+        function step(ts){
+          if (!rt.running || rt.stop) return resolve();
+          if (last!=null) { const dt=ts-last; if (dt > 1.5*timing.frameMs) timing.dropped++; timing.total++; }
+          last=ts; drawFn(c, ts); c++; if (c>=n) resolve(); else requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+    }
+    function calibrate() {
+      return new Promise(resolve => {
+        const ds=[]; let last=null, n=0;
+        function step(ts){ if (!rt.running || rt.stop) return resolve(16.6667); if (last!=null) ds.push(ts-last); last=ts; n++; if (n<140) return requestAnimationFrame(step); ds.sort((a,b)=>a-b); resolve(clamp(ds[Math.floor(ds.length/2)]||16.6667,4,33.5)); }
+        requestAnimationFrame(step);
+      });
+    }
+    function submit(key){ if (!rt.running || rt.stop) return; if (rt.respOpen && rt.choiceHandler) return rt.choiceHandler(key); rt.falseStarts++; }
+    function waitResp(t0, timeoutMs, validRef) {
+      return new Promise(resolve => {
+        let done=false; const endAt=performance.now()+timeoutMs;
+        const finish = (p) => { if (done) return; done=true; rt.respOpen=false; rt.choiceHandler=null; rt.resolver=null; window.removeEventListener('keydown', onKey); resolve(p); };
+        const onKey = (e) => { if (done || e.repeat) return; if (e.key!=='ArrowLeft' && e.key!=='ArrowRight') return; rt.choiceHandler && rt.choiceHandler(e.key); };
+        rt.respOpen=true; rt.choiceHandler=(key)=>finish({ key, rt: performance.now()-t0 }); rt.resolver=finish; window.addEventListener('keydown', onKey);
+        (function tick(){ if (done) return; if (!rt.running || rt.stop || !validRef.valid) return finish({ key:null, rt:null }); if (performance.now()>=endAt) return finish({ key:null, rt:null }); setTimeout(tick,16); })();
+      });
+    }
+
+    function tailMean(hist, n=20){ return hist.length ? mean(hist.slice(Math.max(0, hist.length-n))) : null; }
+    function bpsFromStairs(stairs, frameMs){
+      const ef = tailMean(stairs.easy.hist), hf = tailMean(stairs.hard.hist);
+      const es = Number.isFinite(ef) ? (ef*frameMs/1000) : null, hs = Number.isFinite(hf) ? (hf*frameMs/1000) : null;
+      const easy = (Number.isFinite(es)&&es>0) ? CFG.bpsScaleK*(1/es) : null;
+      const hard = (Number.isFinite(hs)&&hs>0) ? CFG.bpsScaleK*(1/hs) : null;
+      return { easy, hard, combined: (Number.isFinite(easy)&&Number.isFinite(hard)) ? (easy+hard)/2 : (easy ?? hard), ef, hf };
+    }
+    function rtLag1(xs){
+      if (xs.length < 6) return null;
+      const m = mean(xs), s = sd(xs);
+      if (!Number.isFinite(m) || !Number.isFinite(s) || s <= 0) return null;
+      let num=0, den=0;
+      for (let i=1;i<xs.length;i++){ num += (xs[i]-m)*(xs[i-1]-m); den += (xs[i-1]-m)*(xs[i-1]-m); }
+      return den<=0 ? null : (num/den);
+    }
+    function thirdsSlope(probes){
+      if (!probes.length) return { rtSlope:null, errSlope:null };
+      const size = Math.ceil(probes.length/3), chunks = [0,1,2].map(i => probes.slice(i*size,(i+1)*size)).filter(c => c.length);
+      if (chunks.length < 2) return { rtSlope:null, errSlope:null };
+      const rt = chunks.map(c => mean(c.filter(t => Number.isFinite(t.rtMs)).map(t => t.rtMs)));
+      const er = chunks.map(c => c.filter(t => !t.isCorrect).length / c.length);
+      return {
+        rtSlope: Number.isFinite(rt[0]) && Number.isFinite(rt[rt.length-1]) ? (rt[rt.length-1]-rt[0]) / Math.max(1, chunks.length-1) : null,
+        errSlope: Number.isFinite(er[0]) && Number.isFinite(er[er.length-1]) ? (er[er.length-1]-er[0]) / Math.max(1, chunks.length-1) : null
+      };
+    }
+    function probeFeatures(trials){
+      const probe = trials.filter(t => t.stream==='probe');
+      const catchT = trials.filter(t => t.stream==='catch');
+      const n = probe.length, cn = catchT.length;
+      const rtAll = probe.filter(t => Number.isFinite(t.rtMs)).map(t => t.rtMs);
+      const rtBound = rtAll.filter(x => x>=CFG.rtMinMs && x<=CFG.rtMaxMs);
+      const acc = n ? probe.filter(t => t.isCorrect).length / n : null;
+      const rtMed = median(rtBound), rtMean = mean(rtBound);
+      const cv = (Number.isFinite(rtMean)&&rtMean>0) ? (sd(rtBound)/rtMean) : null;
+      const timeoutRate = n ? probe.filter(t => t.timedOut).length / n : null;
+      const p90 = pct(rtBound, .9), rtTailIndex = (Number.isFinite(p90)&&Number.isFinite(rtMed)) ? (p90-rtMed) : null;
+      const slowThresh = Number.isFinite(rtMed) ? Math.max(CFG.slowFloorMs, 3*rtMed) : CFG.slowFloorMs;
+      const slowLapseRate = n ? probe.filter(t => Number.isFinite(t.rtMs) && t.rtMs > slowThresh).length / n : null;
+      const fastRate = n ? probe.filter(t => Number.isFinite(t.rtMs) && t.rtMs < CFG.fastMs).length / n : null;
+      const fastErrorRate = n ? probe.filter(t => !t.isCorrect && Number.isFinite(t.rtMs) && t.rtMs < CFG.fastMs).length / n : null;
+      let rtVolatility = null;
+      if (rtBound.length >= 3) {
+        const diffs = []; for (let i=1;i<rtBound.length;i++) diffs.push(Math.abs(rtBound[i]-rtBound[i-1]));
+        rtVolatility = median(diffs);
+      }
+      let run=0, maxRun=0;
+      for (const t of probe) { if (!t.isCorrect) { run++; if (run>maxRun) maxRun=run; } else run=0; }
+      const binCount = Math.min(5, Math.max(2, Math.floor(n/4)||0)), errBins = [];
+      if (binCount >= 2) {
+        const bs = Math.ceil(n/binCount);
+        for (let i=0;i<binCount;i++){ const c = probe.slice(i*bs,(i+1)*bs); if (c.length) errBins.push(c.filter(t => !t.isCorrect).length / c.length); }
+      }
+      const errorBurstiness = n ? (maxRun + Math.pow(sd(errBins),2) * 10) : null;
+      const { rtSlope, errSlope } = thirdsSlope(probe);
+      const afterErr=[], afterOk=[];
+      for (let i=1;i<probe.length;i++) { const p=probe[i-1], c=probe[i]; if (!Number.isFinite(c.rtMs)) continue; (p.isCorrect ? afterOk : afterErr).push(c.rtMs); }
+      const PES = (afterErr.length && afterOk.length) ? (mean(afterErr)-mean(afterOk)) : null;
+      const catchFailRate = cn ? (catchT.filter(t => !t.isCorrect).length / cn) : null;
+      return {
+        probe: { n, acc, rtMed, rtCV: cv, timeoutRate, slowLapseRate, rtTailIndex, fastRate, fastErrorRate, rtVolatility, errorBurstiness, rtSlope, errSlope, PES, rtLag1: rtLag1(rtAll), throughputProxy: (Number.isFinite(acc)&&Number.isFinite(rtMed)&&rtMed>0) ? (acc/(rtMed/1000)) : null },
+        catchFailRate,
+        counts: { catchN: cn, catchFails: catchT.filter(t => !t.isCorrect).length, pesSupport: afterErr.length },
+        trace: { probeRtMs: probe.map(t => Number.isFinite(t.rtMs) ? Math.round(t.rtMs) : null), probeCorrect: probe.map(t => t.isCorrect ? 1 : 0), probeTimedOut: probe.map(t => t.timedOut ? 1 : 0), catchCorrect: catchT.map(t => t.isCorrect ? 1 : 0) }
+      };
+    }
+    function s01(v, lo, hi){ if (!Number.isFinite(v)) return 0; return clamp((v-lo)/Math.max(.0001, hi-lo), 0, 2); }
+    function routerScores(feats, bpsCombined, base){
+      const p = feats.probe || {};
+      const cold = {
+        timeouts: 2.4*s01(p.timeoutRate, .02, .12),
+        slow: 2.0*s01(p.slowLapseRate, .02, .10),
+        tail: 1.4*s01(p.rtTailIndex, 100, 320),
+        rtDrift: 1.2*s01(p.rtSlope, 20, 120),
+        errDrift: 1.2*s01(p.errSlope, .02, .10),
+        catchFail: 2.4*s01(feats.catchFailRate, .01, .12)
+      };
+      const explore = {
+        rtCV: 1.8*s01(p.rtCV, .18, .34),
+        rtVol: 1.6*s01(p.rtVolatility, 45, 140),
+        fastErr: 2.2*s01(p.fastErrorRate, .01, .10),
+        burst: 1.8*s01(p.errorBurstiness, 1.2, 4.0),
+        fast: .8*s01(p.fastRate, .06, .22)
+      };
+      const slowSteady = 1.0*s01(p.rtMed, 480, 800) + .8*s01(-(p.rtVolatility ?? 0), -130, -35) + .6*s01(-(p.fastErrorRate ?? 0), -.10, -.01);
+      const exploit = {
+        pes: 2.2*s01(p.PES, 20, 130),
+        slowSteady,
+        lowFastErr: .6*s01(-(p.fastErrorRate ?? 0), -.10, -.005),
+        lowVol: .6*s01(-(p.rtVolatility ?? 0), -140, -40)
+      };
+      const sumObj = (o) => Object.values(o).reduce((a,b)=>a+b,0);
+      let coldScore = sumObj(cold), exploreScore = sumObj(explore), exploitScore = sumObj(exploit), inZoneBpsPenalty = 0;
+      if ((base.count||0) >= 3) {
+        const ewTimeout = ewma(base.timeout), ewRtCV = ewma(base.rtCV), ewPes = ewma(base.pes), ewBps = ewma(base.bps), bpsSd = sd(base.bps);
+        if (Number.isFinite(p.timeoutRate) && Number.isFinite(ewTimeout)) coldScore += .8*Math.max(0, p.timeoutRate-ewTimeout)*10;
+        if (Number.isFinite(p.rtCV) && Number.isFinite(ewRtCV)) exploreScore += .8*Math.max(0, p.rtCV-ewRtCV)*8;
+        if (Number.isFinite(p.PES) && Number.isFinite(ewPes)) exploitScore += .6*Math.max(0, p.PES-ewPes)/50;
+        if (Number.isFinite(bpsCombined) && Number.isFinite(ewBps)) inZoneBpsPenalty = Math.max(0, (ewBps-bpsCombined) / Math.max(.25, bpsSd || .4));
+      }
+      return { coldScore, exploreScore, exploitScore, contrib: { cold, hot_explore: explore, hot_exploit: exploit }, inZoneBpsPenalty };
+    }
+    function topReasons(state, scorePack){
+      const map = { timeouts:'Many timeouts', slow:'Slow lapses', tail:'Long RT tail', rtDrift:'RT drift', errDrift:'Error drift', catchFail:'Catch failures', rtCV:'High variability', rtVol:'RT volatility', fastErr:'Fast errors', burst:'Bursty errors', fast:'Very fast responses', pes:'Strong post-error slowing', slowSteady:'Slow rigid pattern', lowFastErr:'Low fast-error profile', lowVol:'Low RT volatility' };
+      const src = scorePack?.contrib?.[state]; if (!src) return [];
+      return Object.entries(src).filter(([,v]) => Number.isFinite(v)&&v>.4).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k]) => map[k] || k);
+    }
+    function classify({ valid, invalidReason, feats, bpsCombined, base }){
+      if (!valid) return { state:'invalid', confidence:'Low', reasons:[invalidReason || 'Timing/focus quality failed'], invalidReason, recommendedModuleId:null, scores:null };
+      const p = feats.probe || {}, sc = routerScores(feats, bpsCombined, base);
+      const ewBps = ewma(base.bps), bpsSd = sd(base.bps);
+      const bpsOK = (base.count<3) || !Number.isFinite(ewBps) || !Number.isFinite(bpsCombined) || (bpsCombined >= ewBps - Math.max(.25, .5*(bpsSd || .5)));
+      const inZone = (base.count<2)
+        ? ((p.n||0)>=18 && sc.coldScore<1.5 && sc.exploreScore<1.7 && sc.exploitScore<1.6 && (!Number.isFinite(feats.catchFailRate) || feats.catchFailRate<=.02))
+        : ((p.n||0)>=18 && sc.coldScore<2.0 && sc.exploreScore<2.2 && sc.exploitScore<2.1 && (!Number.isFinite(feats.catchFailRate) || feats.catchFailRate<=.02) && bpsOK);
+      let state;
+      if (inZone) state = 'in_zone';
+      else {
+        const arr = [['cold', sc.coldScore], ['hot_explore', sc.exploreScore], ['hot_exploit', sc.exploitScore]].sort((a,b)=>b[1]-a[1]);
+        state = arr[0][0];
+      }
+      let confidence = 'Low';
+      if (state !== 'in_zone') {
+        const arr = [['cold', sc.coldScore], ['hot_explore', sc.exploreScore], ['hot_exploit', sc.exploitScore]].sort((a,b)=>b[1]-a[1]);
+        const margin = (arr[0]?.[1] ?? 0) - (arr[1]?.[1] ?? 0);
+        confidence = margin >= 1.2 ? 'High' : margin >= .5 ? 'Medium' : 'Low';
+      } else {
+        confidence = base.count >= 5 ? 'Medium' : 'Low';
+      }
+      if ((p.n||0) < 16) confidence = 'Low';
+      if (state === 'hot_exploit' && (feats.counts?.pesSupport || 0) < 8) confidence = 'Low';
+      if (state === 'in_zone' && base.count >= 5 && confidence === 'Medium' && (p.n||0) >= 24) confidence = 'High';
+      return {
+        state, confidence, invalidReason: null,
+        reasons: state === 'in_zone' ? ['Low lapse/catch failure', 'Low variability and burstiness', 'No dominant off-zone signature'] : topReasons(state, sc),
+        recommendedModuleId: MODULES[state]?.id || null,
+        scores: { cold: sc.coldScore, hot_explore: sc.exploreScore, hot_exploit: sc.exploitScore }
+      };
+    }
+    function renderRouterResult(summary){
+      rt.lastSummary = summary;
+      show('result'); setPhase('Result'); setStatus(summary.valid ? 'Complete' : 'Invalid');
+      dom.invalidPanel.classList.toggle('hidden', summary.valid);
+      dom.validPanel.classList.toggle('hidden', !summary.valid);
+      dom.qualityPill.textContent = `Quality: ${summary.valid ? 'OK' : 'Poor'} (${Math.round((summary.timing?.droppedFrac || 0)*100)}% stutter)`;
+      if (!summary.valid) { dom.invalidReason.textContent = summary.invalidReason || summary.router?.invalidReason || 'Focus loss or browser timing instability'; return; }
+      const ui = STATE_UI[summary.router.state] || STATE_UI.invalid;
+      dom.mBps.textContent = fmt(summary.bps.combined, 2);
+      dom.mState.textContent = ui.label;
+      dom.mConf.textContent = summary.router.confidence;
+      dom.mProbeCatch.textContent = `${summary.features.probe.n} / ${fmtPct(summary.features.catchFailRate,1)}`;
+      dom.mTimeoutCv.textContent = `${fmtPct(summary.features.probe.timeoutRate,1)} / ${fmt(summary.features.probe.rtCV,3)}`;
+      dom.mPesBurst.textContent = `${Number.isFinite(summary.features.probe.PES)?Math.round(summary.features.probe.PES)+' ms':'—'} / ${fmt(summary.features.probe.errorBurstiness,2)}`;
+      dom.stateBadge.className = `badge ${summary.router.state}`;
+      dom.stateBadge.textContent = `${ui.label} • ${summary.router.confidence} confidence`;
+      dom.stateWhy.textContent = ui.why;
+      dom.reasonChips.innerHTML = '';
+      (summary.router.reasons || []).slice(0,3).forEach(t => { const s=document.createElement('span'); s.className=`chip ${summary.router.state==='in_zone'?'good':summary.router.state==='cold'?'warn':'bad'}`; s.textContent=t; dom.reasonChips.appendChild(s); });
+      const mod = MODULES[summary.router.state];
+      dom.moduleCard.innerHTML = mod
+        ? `<h3 style="margin:0 0 6px 0;">${mod.title}</h3><div class="muted small">${mod.items.map(i => `• ${i}`).join('<br>')}</div><div class="small muted" style="margin-top:8px;">Module ID: ${mod.id}</div>`
+        : `<div class="muted">No recommendation for invalid sessions.</div>`;
+      dom.startRecommendedBtn.disabled = !mod;
+      refreshHistoryUI();
+    }
+    async function runProbe(durationSeconds, label){
+      if (rt.running) return;
+      rt.running = true; rt.stop = false; rt.falseStarts = 0;
+      dom.startBtn.disabled = true; dom.resetHistoryBtn.disabled = true; dom.quickBtn.disabled = true; dom.fullBtn.disabled = true; dom.tryAgainBtn.disabled = true; dom.stopBtn.disabled = false;
+      show('run'); setPhase('Running'); setStatus('Calibrating…'); dom.qualityPill.textContent = 'Quality: —'; dom.refreshPill.textContent = 'Refresh: —';
+      dom.runLabelPill.textContent = `${label} (${durationSeconds}s)`;
+      dom.progressFill.style.width = '0%'; dom.trialPill.textContent = 'Trials: 0'; dom.mixPill.textContent = 'S:0 P:0 C:0';
+      drawFix();
+
+      const histAtStart = loadHistory(); const base = baselines(histAtStart); const feel = feelLabel();
+      const validRef = { valid: true }; let focusLost = false; let invalidReason = null;
+      const onVis = () => { if (document.hidden) { validRef.valid = false; focusLost = true; invalidReason = 'Tab switched or page hidden during probe'; } };
+      const onBlur = () => { validRef.valid = false; focusLost = true; invalidReason = 'Window lost focus during probe'; };
+      const onPremature = (e) => { if (!rt.running || rt.stop || rt.respOpen || e.repeat) return; if (e.key==='ArrowLeft' || e.key==='ArrowRight') rt.falseStarts++; };
+      document.addEventListener('visibilitychange', onVis); window.addEventListener('blur', onBlur); window.addEventListener('keydown', onPremature);
+
+      let summary = null;
+      try {
+        const frameMs = await calibrate(); dom.refreshPill.textContent = `Refresh: ~${Math.round(1000/frameMs)} Hz`; setStatus('Running…');
+        const timing = { dropped:0, total:0, frameMs };
+        const minF = Math.max(2, Math.round(CFG.minStimMs/frameMs));
+        const maxF = Math.max(minF+2, Math.round(CFG.maxStimMs/frameMs));
+        const startF = Math.max(minF+1, Math.min(maxF-1, Math.round(CFG.startStimMs/frameMs)));
+        const fixF = Math.max(2, Math.round(CFG.fixationMs/frameMs));
+        const isiF = Math.max(1, Math.round(CFG.isiMs/frameMs));
+        const maskF = Math.max(3, Math.round(CFG.maskMs/frameMs));
+
+        const stairs = { easy:{ frames:startF, streak:0, hist:[] }, hard:{ frames:startF, streak:0, hist:[] } };
+        const prevFrames = lastProbeFrames(histAtStart);
+        const probeDur = prevFrames ? { policy:'use_last_threshold', frozen:true, easy:prevFrames.easy, hard:prevFrames.hard, catch:Math.round((prevFrames.easy+prevFrames.hard)/2), freezeAtMs:0 }
+                                  : { policy:'bootstrap_then_freeze', frozen:false, easy:startF, hard:startF, catch:startF, freezeAtMs:null };
+        const planState = { nextStair:'easy', nextProbe:'easy', counts:{ stair:0, probe:0, catch:0 } };
+        const chooseTrial = (elapsedMs) => {
+          if (!probeDur.frozen && elapsedMs < CFG.bootstrapWarmupSeconds*1000) {
+            const cond = planState.nextStair; planState.nextStair = cond==='easy' ? 'hard' : 'easy'; return { stream:'stair', cond };
+          }
+          let stream = (() => { const m=CFG.streamMix, total=m.stair+m.probe+m.catch; let r=Math.random()*total; for (const k of ['stair','probe','catch']) { r -= m[k]; if (r<=0) return k; } return 'stair'; })();
+          const probeLike = planState.counts.probe + planState.counts.catch; const catchFrac = probeLike ? (planState.counts.catch/probeLike) : 0;
+          const total = planState.counts.stair + planState.counts.probe + planState.counts.catch;
+          if (!probeDur.frozen) stream='stair';
+          if (stream==='catch' && (catchFrac > CFG.catchProbeFracMax || total < 8)) stream='probe';
+          if (stream==='stair') { const cond=planState.nextStair; planState.nextStair = cond==='easy'?'hard':'easy'; return { stream, cond }; }
+          if (stream==='probe') { const cond=planState.nextProbe; planState.nextProbe = cond==='easy'?'hard':'easy'; return { stream, cond }; }
+          return { stream:'catch', cond:'catch' };
+        };
+        const freezeProbe = (elapsedMs) => {
+          if (probeDur.frozen) return;
+          probeDur.easy = Math.max(2, Math.round(tailMean(stairs.easy.hist) ?? startF));
+          probeDur.hard = Math.max(2, Math.round(tailMean(stairs.hard.hist) ?? startF));
+          probeDur.catch = Math.max(2, Math.round((probeDur.easy + probeDur.hard)/2));
+          probeDur.frozen = true; probeDur.freezeAtMs = Math.round(elapsedMs);
+        };
+
+        const t0 = performance.now();
+        const trials = [];
+        const counts = { stair:0, probe:0, catch:0 };
+        let idx = 0;
+
+        while ((performance.now()-t0) < durationSeconds*1000) {
+          if (!rt.running || rt.stop || !validRef.valid) break;
+          const elapsed = performance.now()-t0;
+          if (!probeDur.frozen && elapsed >= CFG.bootstrapWarmupSeconds*1000) freezeProbe(elapsed);
+          const plan = chooseTrial(elapsed);
+          const stream = plan.stream, cond = plan.cond;
+          const majN = cond==='easy' ? CFG.easyMajority : cond==='hard' ? CFG.hardMajority : CFG.catchMajority;
+          const pat = pattern(majN);
+          let stimFrames = stream==='stair' ? stairs[cond].frames : stream==='probe' ? (cond==='easy'?probeDur.easy:probeDur.hard) : probeDur.catch;
+          stimFrames = Math.max(minF, Math.min(maxF, Math.round(stimFrames)));
+
+          await runForFrames(fixF, () => drawFix(), timing); if (!rt.running || rt.stop || !validRef.valid) break;
+          await runForFrames(isiF, () => clearScreen(), timing); if (!rt.running || rt.stop || !validRef.valid) break;
+          let tStim = null;
+          await runForFrames(stimFrames, (f) => { if (f===0) tStim = performance.now(); drawStim(pat.pattern); }, timing); if (!rt.running || rt.stop || !validRef.valid) break;
+          await runForFrames(maskF, () => drawMask(), timing); if (!rt.running || rt.stop || !validRef.valid) break;
+          drawPrompt();
+          const resp = await waitResp(tStim || performance.now(), CFG.responseTimeoutMs, validRef); if (rt.stop) break;
+
+          const responded = resp.key==='ArrowLeft' || resp.key==='ArrowRight';
+          const choice = responded ? (resp.key==='ArrowLeft' ? 'L' : 'R') : null;
+          const rtMs = Number.isFinite(resp.rt) ? Math.round(resp.rt) : null;
+          const isCorrect = responded ? (choice===pat.correct) : false;
+          const timedOut = !responded;
+
+          if (stream==='stair') {
+            const st = stairs[cond]; st.hist.push(st.frames);
+            if (isCorrect) { st.streak++; if (st.streak >= 2) { st.frames = Math.max(minF, st.frames - CFG.stepFrames); st.streak = 0; } }
+            else { st.frames = Math.min(maxF, st.frames + CFG.stepFrames); st.streak = 0; }
+          }
+
+          counts[stream]++; planState.counts[stream]++; idx++;
+          trials.push({ tMs: Math.round(performance.now()-t0), stream, cond, stimFrames, stimSec: Number((stimFrames*frameMs/1000).toFixed(4)), correct: pat.correct, choice, rtMs, timedOut, isCorrect });
+          dom.trialPill.textContent = `Trials: ${idx}`; dom.mixPill.textContent = `S:${counts.stair} P:${counts.probe} C:${counts.catch}`;
+          dom.progressFill.style.width = `${(clamp((performance.now()-t0)/(durationSeconds*1000), 0, 1)*100).toFixed(1)}%`;
+        }
+        if (!probeDur.frozen) freezeProbe(performance.now()-t0);
+
+        const droppedFrac = timing.total ? (timing.dropped/timing.total) : 1;
+        const timingPoor = droppedFrac > CFG.maxDroppedFrameFrac;
+        if (timingPoor && !invalidReason) invalidReason = `Browser timing unstable (${Math.round(droppedFrac*100)}% stutter)`;
+        const valid = !focusLost && !timingPoor && validRef.valid;
+
+        const bps = bpsFromStairs(stairs, frameMs);
+        const feats = probeFeatures(trials);
+        const router = classify({ valid, invalidReason, feats, bpsCombined: bps.combined, base });
+        summary = {
+          sessionId: new Date().toISOString(),
+          schemaVersion: CFG.schemaVersion,
+          appVersion: CFG.appVersion,
+          mode: 'single_probe_router',
+          durationSeconds,
+          label,
+          selfFeelLabel: feel,
+          valid,
+          invalidReason: valid ? null : (invalidReason || 'Timing/focus quality failed'),
+          timing: { frameMs: Number(frameMs.toFixed(3)), hz: Number((1000/frameMs).toFixed(1)), droppedFrac: Number(droppedFrac.toFixed(4)) },
+          bps: { easy: Number.isFinite(bps.easy)?Number(bps.easy.toFixed(3)):null, hard: Number.isFinite(bps.hard)?Number(bps.hard.toFixed(3)):null, combined: Number.isFinite(bps.combined)?Number(bps.combined.toFixed(3)):null, k: CFG.bpsScaleK, thresholdEasyFrames: Number.isFinite(bps.ef)?Number(bps.ef.toFixed(2)):null, thresholdHardFrames: Number.isFinite(bps.hf)?Number(bps.hf.toFixed(2)):null },
+          probeDurFrames: { policy: probeDur.policy, easy: probeDur.easy, hard: probeDur.hard, catch: probeDur.catch, frozen: probeDur.frozen, freezeAtMs: probeDur.freezeAtMs },
+          features: {
+            probe: {
+              n: feats.probe.n, acc: Number.isFinite(feats.probe.acc)?Number(feats.probe.acc.toFixed(4)):null, rtMed: Number.isFinite(feats.probe.rtMed)?Math.round(feats.probe.rtMed):null,
+              rtCV: Number.isFinite(feats.probe.rtCV)?Number(feats.probe.rtCV.toFixed(4)):null, timeoutRate: Number.isFinite(feats.probe.timeoutRate)?Number(feats.probe.timeoutRate.toFixed(4)):null,
+              slowLapseRate: Number.isFinite(feats.probe.slowLapseRate)?Number(feats.probe.slowLapseRate.toFixed(4)):null, rtTailIndex: Number.isFinite(feats.probe.rtTailIndex)?Math.round(feats.probe.rtTailIndex):null,
+              fastRate: Number.isFinite(feats.probe.fastRate)?Number(feats.probe.fastRate.toFixed(4)):null, fastErrorRate: Number.isFinite(feats.probe.fastErrorRate)?Number(feats.probe.fastErrorRate.toFixed(4)):null,
+              rtVolatility: Number.isFinite(feats.probe.rtVolatility)?Math.round(feats.probe.rtVolatility):null, errorBurstiness: Number.isFinite(feats.probe.errorBurstiness)?Number(feats.probe.errorBurstiness.toFixed(3)):null,
+              rtSlope: Number.isFinite(feats.probe.rtSlope)?Number(feats.probe.rtSlope.toFixed(2)):null, errSlope: Number.isFinite(feats.probe.errSlope)?Number(feats.probe.errSlope.toFixed(4)):null,
+              PES: Number.isFinite(feats.probe.PES)?Math.round(feats.probe.PES):null, rtLag1: Number.isFinite(feats.probe.rtLag1)?Number(feats.probe.rtLag1.toFixed(4)):null, throughputProxy: Number.isFinite(feats.probe.throughputProxy)?Number(feats.probe.throughputProxy.toFixed(4)):null
+            },
+            catchFailRate: Number.isFinite(feats.catchFailRate)?Number(feats.catchFailRate.toFixed(4)):null
+          },
+          counts: { totalTrials: trials.length, stairTrials: counts.stair, probeTrials: counts.probe, catchTrials: counts.catch, falseStarts: rt.falseStarts, catchFails: feats.counts.catchFails, pesSupport: feats.counts.pesSupport },
+          router: { state: router.state, confidence: router.confidence, reasons: router.reasons, invalidReason: router.invalidReason, recommendedModuleId: router.recommendedModuleId, scores: router.scores ? { cold: Number(router.scores.cold.toFixed(3)), hot_explore: Number(router.scores.hot_explore.toFixed(3)), hot_exploit: Number(router.scores.hot_exploit.toFixed(3)) } : null },
+          baselines: { priorValidCount: base.count, bpsEwma: Number.isFinite(ewma(base.bps)) ? Number(ewma(base.bps).toFixed(3)) : null },
+          trace: { probeRtMs: feats.trace.probeRtMs.slice(0,256), probeCorrect: feats.trace.probeCorrect.slice(0,256), probeTimedOut: feats.trace.probeTimedOut.slice(0,256), catchCorrect: feats.trace.catchCorrect.slice(0,128) }
+        };
+        const h = loadHistory(); h.push(summary); saveHistory(h);
+      } finally {
+        document.removeEventListener('visibilitychange', onVis); window.removeEventListener('blur', onBlur); window.removeEventListener('keydown', onPremature);
+        rt.respOpen = false; rt.choiceHandler = null;
+        if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); }
+        rt.running = false; rt.stop = false;
+        dom.startBtn.disabled = false; dom.resetHistoryBtn.disabled = false; dom.quickBtn.disabled = false; dom.fullBtn.disabled = false; dom.tryAgainBtn.disabled = false; dom.stopBtn.disabled = true;
+      }
+      if (!summary) {
+        summary = {
+          valid: false,
+          invalidReason: 'Probe ended before a result could be computed',
+          timing: { droppedFrac: 1 },
+          router: { state: 'invalid', confidence: 'Low', reasons: ['Probe interrupted'], invalidReason: 'Probe interrupted' }
+        };
+      }
+      renderRouterResult(summary);
+    }
+
+    dom.startBtn.addEventListener('click', () => runProbe(CFG.totalSeconds, 'Full probe'));
+    dom.quickBtn.addEventListener('click', () => runProbe(CFG.quickSeconds, 'Quick re-check'));
+    dom.fullBtn.addEventListener('click', () => runProbe(CFG.totalSeconds, 'Full probe'));
+    dom.tryAgainBtn.addEventListener('click', () => { show('start'); setPhase('Ready'); setStatus('Idle'); });
+    dom.resetHistoryBtn.addEventListener('click', () => { localStorage.removeItem(LS_HISTORY); refreshHistoryUI(); show('start'); setPhase('Ready'); setStatus('Idle'); dom.refreshPill.textContent='Refresh: —'; dom.qualityPill.textContent='Quality: —'; drawFix(); });
+    dom.stopBtn.addEventListener('click', () => { if (!rt.running) return; rt.stop = true; if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); } setStatus('Stopping…'); });
+    dom.startRecommendedBtn.addEventListener('click', () => {
+      const s = rt.lastSummary; if (!s?.valid) return;
+      const m = MODULES[s.router.state];
+      alert(`${m?.title || 'Recommended session'}\n\nMVP placeholder. Wire this button to a Trident module route later.`);
+    });
+    dom.openLink.addEventListener('click', (e) => e.preventDefault());
+    dom.touchLeftBtn.addEventListener('click', (e) => { e.preventDefault(); submit('ArrowLeft'); });
+    dom.touchRightBtn.addEventListener('click', (e) => { e.preventDefault(); submit('ArrowRight'); });
+    window.addEventListener('keydown', (e) => {
+      if (rt.running && (e.key==='Escape' || e.code==='Escape')) {
+        rt.stop = true; if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); }
+      }
+    });
+
+    resizeCanvas(); drawFix(); refreshHistoryUI(); setPhase('Ready'); setStatus('Idle'); dom.stopBtn.disabled = true;
+  })();
+  </script>
+</body>
+</html>
