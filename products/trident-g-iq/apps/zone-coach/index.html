@@ -1193,14 +1193,8 @@
       border: 1px solid rgba(110,198,255,.28);
       background: rgba(110,198,255,.08);
     }
-    .note.note-strong { border-color: #6ec6ff; background: #d9ecff; color: #08121c; box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
-    .note.note-strong strong { color: #06101a; }
     .note.note-neutral { border-color: #cfd8e3; background: #edf1f5; color: #0f1720; box-shadow: inset 0 0 0 1px rgba(255,255,255,.45); }
     .note.note-neutral strong { color: #0a111a; }
-    .note-compare { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 12px; }
-    .note-compare .note { margin-top: 0; }
-    .note-label { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .78; margin-bottom: 6px; }
-    @media (max-width: 720px) { .note-compare { grid-template-columns: 1fr; } }
     .muted { color: rgba(237,240,247,.75); }
     .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
     button {
@@ -1271,7 +1265,7 @@
           <li>An in-app recommended next step</li>
         </ul>
 
-        <div class="note">
+        <div class="note note-neutral">
           <strong>Tip:</strong> Over time, repeated valid CCC checks make your local profile more useful for understanding your patterns and improving next-step recommendations.
         </div>
         <p class="muted">This screen is informational only and does not change your saved data.</p>
@@ -1337,15 +1331,8 @@
           <li>Local history on your device to build a better personal profile over time</li>
         </ul>
 
-        <div class="note-compare">
-          <div class="note note-strong">
-            <div class="note-label">Blue option</div>
+        <div class="note note-neutral">
             <strong>Bottom line:</strong> CCC is an established, effective behavioural cognitive capacity probe. This Zone Coach app uses it as a practical signal for estimating whether you are in-zone or in a specific out-of-zone pattern, so the app can recommend a better next step. Brain training when out of the zone is not recommended, as it can lead to 'thin automation' and undermine far transfer.
-          </div>
-          <div class="note note-neutral">
-            <div class="note-label">Light grey option</div>
-            <strong>Bottom line:</strong> CCC is an established, effective behavioural cognitive capacity probe. This Zone Coach app uses it as a practical signal for estimating whether you are in-zone or in a specific out-of-zone pattern, so the app can recommend a better next step. Brain training when out of the zone is not recommended, as it can lead to 'thin automation' and undermine far transfer.
-          </div>
         </div>
         <p class="muted">Research references mentioned in this summary include Chen et al. (2019) and Wu et al. (2016) on MFT/MFT-M performance and related executive-control evidence.</p>
         <p class="muted">Wu, T., Dufford, A. J., Mackie, M.-A., Egan, L. J., &amp; Fan, J. (2016). The capacity of cognitive control estimated from a perceptual decision making task. <em>Scientific Reports</em>, 6, Article 34025. https://doi.org/10.1038/srep34025</p>
