@@ -1488,6 +1488,21 @@
 </body>
 </html>`);
       doc.close();
+      const resizePopupToContent = () => {
+        try {
+          if (!win || win.closed) return;
+          const root = doc.documentElement;
+          const body = doc.body;
+          const contentH = Math.max(root?.scrollHeight || 0, body?.scrollHeight || 0);
+          const minH = 420;
+          const maxH = Math.max(minH, (win.screen?.availHeight || 900) - 80);
+          const targetH = Math.max(minH, Math.min(maxH, contentH + 48));
+          const targetW = Math.max(820, Math.min(920, win.outerWidth || 860));
+          if (Number.isFinite(targetH) && targetH > 0) win.resizeTo(targetW, Math.round(targetH));
+        } catch (_) {}
+      };
+      setTimeout(resizePopupToContent, 40);
+      setTimeout(resizePopupToContent, 180);
     }
 
     function openCccInstructionsScreen(){
