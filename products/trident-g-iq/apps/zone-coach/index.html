@@ -78,6 +78,9 @@
     .metric { border:1px solid var(--zc-border-soft); border-radius:12px; padding:10px; background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.018)); box-shadow:inset 0 1px 0 rgba(255,255,255,.02); }
     .metric .k { font-size:12px; color:var(--zc-text-label); }
     .metric .v { font-weight:800; margin-top:6px; }
+    .metric-inline { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:6px; }
+    .metric-inline .v { margin-top:0; }
+    .metric-inline .btn { flex:0 0 auto; padding:6px 8px; font-size:12px; line-height:1.1; border-radius:10px; }
     .block { border:1px solid var(--zc-border); border-radius:12px; padding:12px; margin-top:10px; background:linear-gradient(180deg, rgba(255,255,255,.028), rgba(255,255,255,.016)); box-shadow:inset 0 1px 0 rgba(255,255,255,.02); }
     .badge { display:inline-block; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.12); font-size:12px; font-weight:800; margin-top:6px; }
     .badge.in_zone { border-color: rgba(204,255,102,.35); background: rgba(204,255,102,.1); }
@@ -252,7 +255,7 @@
 
         <div id="validPanel" class="hidden">
           <div class="grid result-metrics" id="resultMetricsRow">
-            <div class="metric"><div class="k">Bits / second (CCC)</div><div class="v" id="mBps">-</div></div>
+            <div class="metric"><div class="k">Bits / second (CCC)</div><div class="metric-inline"><div class="v" id="mBps">-</div><button type="button" class="btn btn-ghost" id="showBpsTraceBtn" title="Show session-to-session CCC bits/second graph" aria-label="Show bits per second history graph">Graph</button></div></div>
             <div class="metric"><div class="k">State</div><div class="v" id="mState">-</div></div>
             <div class="metric"><div class="k">Confidence Level</div><div class="v" id="mConf">-</div></div>
             <div class="metric user-hidden"><div class="k">Probe trials / Catch fail</div><div class="v" id="mProbeCatch">-</div></div>
@@ -346,7 +349,7 @@
       quickBtn: $('quickBtn'), fullBtn: $('fullBtn'), startRecommendedBtn: $('startRecommendedBtn'), openLink: $('openLink'),
       runLabelPill: $('runLabelPill'), trialPill: $('trialPill'), mixPill: $('mixPill'), progressFill: $('progressFill'),
       invalidPanel: $('invalidPanel'), invalidReason: $('invalidReason'), validPanel: $('validPanel'), resultMetricsRow: $('resultMetricsRow'),
-      mBps: $('mBps'), mState: $('mState'), mConf: $('mConf'), mProbeCatch: $('mProbeCatch'), mTimeoutCv: $('mTimeoutCv'), mPesBurst: $('mPesBurst'),
+      mBps: $("mBps"), showBpsTraceBtn: $("showBpsTraceBtn"), mState: $('mState'), mConf: $('mConf'), mProbeCatch: $('mProbeCatch'), mTimeoutCv: $('mTimeoutCv'), mPesBurst: $('mPesBurst'),
       stateBadge: $('stateBadge'), stateWhy: $('stateWhy'), gateBadge: $('gateBadge'), gateChips: $('gateChips'), reasonChips: $('reasonChips'), moduleCard: $('moduleCard'),
       sessionPanel: $('sessionPanel'), sessionPanelTitle: $('sessionPanelTitle'), sessionPanelWhy: $('sessionPanelWhy'), sessionPanelMeta: $('sessionPanelMeta'),
       sessionPanelGateChips: $('sessionPanelGateChips'), sessionPanelSteps: $('sessionPanelSteps'), sessionPanelCloseBtn: $('sessionPanelCloseBtn'), sessionPanelResetChecksBtn: $('sessionPanelResetChecksBtn'),
@@ -1401,6 +1404,64 @@
       renderRouterResult(summary);
     }
 
+    function openBpsTraceScreen(){
+      const rows = validRows(loadHistory());
+      const pts = rows.map((r, i) => ({
+        idx: i + 1,
+        bps: Number(r?.bps?.combined),
+        label: r?.label || 'Probe',
+        when: r?.sessionId ? String(r.sessionId) : ''
+      })).filter(p => Number.isFinite(p.bps));
+      if (!pts.length) {
+        openInfoScreen('CCC Bits / Second Trace', `
+          <div class="kicker">Mindware Lab - Trident G IQ</div>
+          <h1>CCC Bits / Second Trace</h1>
+          <p>No valid completed sessions are saved yet.</p>
+          <p class="muted">Complete a full check or quick re-check to build your local BPS trace.</p>
+        `);
+        return;
+      }
+      const values = pts.map(p => p.bps);
+      const minV = Math.min(...values), maxV = Math.max(...values);
+      const pad = Math.max(0.08, (maxV - minV) * 0.15);
+      const yMin = minV - pad, yMax = maxV + pad;
+      const W = 780, H = 260, L = 44, R = 14, T = 12, B = 30;
+      const plotW = W - L - R, plotH = H - T - B;
+      const xFor = (i) => pts.length === 1 ? (L + plotW/2) : (L + (i/(pts.length-1))*plotW);
+      const yFor = (v) => T + (1 - ((v - yMin) / Math.max(0.0001, (yMax - yMin)))) * plotH;
+      const poly = pts.map((p,i) => `${xFor(i).toFixed(1)},${yFor(p.bps).toFixed(1)}`).join(' ');
+      const grid = [0,1,2,3,4].map((k) => {
+        const y = T + (k/4)*plotH;
+        const v = yMax - (k/4)*(yMax-yMin);
+        return `<g><line x1="${L}" y1="${y.toFixed(1)}" x2="${(W-R)}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,.10)" stroke-width="1" /><text x="${L-8}" y="${(y+4).toFixed(1)}" text-anchor="end" fill="rgba(213,220,235,.88)" font-size="11">${esc(fmt(v,2))}</text></g>`;
+      }).join('');
+      const dots = pts.map((p,i) => {
+        const x = xFor(i), y = yFor(p.bps);
+        return `<g><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="#CCFF66" stroke="#0b1118" stroke-width="1.5" /><title>Session ${p.idx}: ${fmt(p.bps,2)} bps</title></g>`;
+      }).join('');
+      const avg = mean(values);
+      const latest = pts[pts.length - 1];
+      const axisLabels = pts.length <= 12
+        ? pts.map((p,i) => `<text x="${xFor(i).toFixed(1)}" y="${(H-8).toFixed(1)}" text-anchor="middle" fill="rgba(183,194,214,.95)" font-size="10">${p.idx}</text>`).join('')
+        : `<text x="${L}" y="${(H-8).toFixed(1)}" text-anchor="start" fill="rgba(183,194,214,.95)" font-size="10">1</text><text x="${(W-R)}" y="${(H-8).toFixed(1)}" text-anchor="end" fill="rgba(183,194,214,.95)" font-size="10">${pts.length}</text>`;
+      const svg = `
+        <svg viewBox="0 0 ${W} ${H}" width="100%" height="260" role="img" aria-label="Session to session CCC bits per second trace">
+          <rect x="0.5" y="0.5" width="${W-1}" height="${H-1}" rx="12" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.10)" />
+          ${grid}
+          <line x1="${L}" y1="${(H-B)}" x2="${(W-R)}" y2="${(H-B)}" stroke="rgba(255,255,255,.18)" stroke-width="1" />
+          <polyline points="${poly}" fill="none" stroke="#6ec6ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          ${dots}
+          ${axisLabels}
+        </svg>`;
+      openInfoScreen('CCC Bits / Second Trace', `
+        <div class="kicker">Mindware Lab - Trident G IQ</div>
+        <h1>CCC Bits / Second Trace</h1>
+        <p>Session-to-session local history of valid CCC bits/second scores (full checks and quick re-checks).</p>
+        <div class="note note-neutral"><strong>Sessions:</strong> ${pts.length} &nbsp; <strong>Latest:</strong> ${esc(fmt(latest.bps,2))} bps &nbsp; <strong>Average:</strong> ${esc(fmt(avg,2))} bps</div>
+        <div style="margin-top:12px;">${svg}</div>
+        <p class="muted">X-axis = session number in local valid history. Y-axis = CCC bits/second.</p>
+      `);
+    }
     function openInfoScreen(title, bodyHtml){
       const win = window.open('', '_blank', 'width=860,height=780,resizable=yes,scrollbars=yes');
       if (!win) { window.alert('Please allow pop-ups to view this screen.'); return; }
@@ -1567,6 +1628,7 @@
       if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); }
       setStatus('Skipping to preview…');
     });
+    if (dom.showBpsTraceBtn) dom.showBpsTraceBtn.addEventListener('click', () => openBpsTraceScreen());
     dom.startRecommendedBtn.addEventListener('click', () => {
       const s = rt.lastSummary; if (!s?.valid) return;
       const gate = s.trainingGate || computeTrainingGate(s.router?.state, s.router?.confidence, (s.baselines?.priorValidCount || 0) >= 3, s.valid);
