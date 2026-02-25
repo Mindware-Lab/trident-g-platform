@@ -7,6 +7,20 @@
   <link rel="stylesheet" href="../../../../branding/brand.css?v=2" />
   <style>
     :root { color-scheme: dark; }
+    :root {
+      --zc-text: #edf0f7;
+      --zc-text-muted: #d5dceb;
+      --zc-text-label: #b7c2d6;
+      --zc-border: rgba(255,255,255,.10);
+      --zc-border-soft: rgba(255,255,255,.07);
+      --zc-surface-elevated: #1d2230;
+      --zc-blue: #6ec6ff;
+      --zc-blue-deep: #4ea0e8;
+      --zc-blue-soft: #d9ecff;
+      --zc-lime: #CCFF66;
+      --zc-ink: #0b0b0d;
+      --zc-focus-ring: 0 0 0 2px rgba(11,17,24,.95), 0 0 0 4px rgba(110,198,255,.80), 0 0 0 8px rgba(110,198,255,.20);
+    }
     * { box-sizing: border-box; }
     body { margin: 0; font-family: var(--font, system-ui, sans-serif); background: #EFF3F8; color: #111; }
     .zoneAppShell { background:#EFF3F8; }
@@ -27,11 +41,20 @@
     .card { border:1px solid rgba(255,255,255,.08); border-radius:16px; background:rgba(15,18,26,.9); padding:14px; }
     .router-screen { display:none; }
     .router-screen.active { display:block; }
-    .btn { border:1px solid rgba(255,255,255,.12); background:#1d2230; color:#edf0f7; padding:10px 12px; border-radius:12px; font-weight:700; cursor:pointer; }
+    .btn { border:1px solid var(--zc-border); background:var(--zc-surface-elevated); color:var(--zc-text); padding:10px 12px; border-radius:12px; font-weight:700; cursor:pointer; transition:transform .08s ease, filter .12s ease, border-color .12s ease, box-shadow .12s ease; box-shadow:inset 0 1px 0 rgba(255,255,255,.03); }
     .btn:disabled { opacity:.55; cursor:not-allowed; }
-    .btn-primary { background:#CCFF66; color:#121212; border-color:#CCFF66; }
+    .btn:hover:not(:disabled) { filter:brightness(1.04); border-color:rgba(255,255,255,.18); }
+    .btn:active:not(:disabled) { transform:translateY(1px); }
+    .btn:focus-visible,
+    .radio input:focus-visible,
+    .radio label:focus-within {
+      outline:none;
+      box-shadow:var(--zc-focus-ring);
+    }
+    .btn-primary { background:var(--zc-lime); color:#121212; border-color:var(--zc-lime); box-shadow:0 0 0 1px rgba(204,255,102,.14), 0 8px 22px rgba(190,239,78,.14); }
+    .btn-info { background:var(--zc-blue); border-color:var(--zc-blue); color:var(--zc-ink); box-shadow:0 0 0 1px rgba(110,198,255,.18), 0 8px 22px rgba(78,160,232,.16); }
     .btn-ghost { background:transparent; }
-    .muted { color: rgba(237,240,247,.72); }
+    .muted { color: var(--zc-text-muted); }
     .small { font-size:13px; }
     .cta { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
     .cta > .btn, .cta > a.btn { flex:1 1 210px; text-align:center; }
@@ -42,7 +65,7 @@
     .progress { height:10px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.06); border-radius:999px; overflow:hidden; margin:10px 0 12px; }
     .progress > div { height:100%; width:0%; background:linear-gradient(90deg,#6ec6ff,#CCFF66); transition:width .12s linear; }
     .radio { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
-    .radio label { padding:8px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03); cursor:pointer; }
+    .radio label { padding:8px 10px; border-radius:999px; border:1px solid var(--zc-border); background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02)); color:var(--zc-text); cursor:pointer; box-shadow:inset 0 1px 0 rgba(255,255,255,.025); }
     .radio input { accent-color:#CCFF66; }
     .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:10px; }
     .result-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); }
@@ -73,19 +96,20 @@
     .safety-banner { margin-top:8px; padding:8px 10px; border-radius:10px; font-size:12px; }
     .safety-banner.medium { border:1px solid rgba(255,188,94,.35); background:rgba(255,188,94,.10); }
     .safety-banner.high { border:1px solid rgba(255,120,120,.35); background:rgba(255,120,120,.10); }
-    .splash-panel { border-radius:20px; border:1px solid rgba(78,160,232,.32); background:linear-gradient(165deg, rgba(78,160,232,.20), rgba(15,18,26,.94) 55%); padding:18px; box-shadow:0 12px 28px rgba(0,0,0,.28); }
+    .splash-panel { border-radius:20px; border:1px solid rgba(110,198,255,.22); background:radial-gradient(1100px 360px at -10% -20%, rgba(110,198,255,.14), transparent 55%), linear-gradient(165deg, rgba(78,160,232,.12), rgba(15,18,26,.96) 55%); padding:18px; box-shadow:0 14px 34px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04); }
     .splash-head { display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:center; margin-bottom:10px; }
     .splash-logo { width:54px; height:54px; border-radius:14px; background:#BEEF4E; color:#111; display:grid; place-items:center; font-weight:900; border:4px solid rgba(255,255,255,.5); box-shadow:0 8px 18px rgba(190,239,78,.18); overflow:hidden; }
     .splash-logo img { width:34px; height:34px; object-fit:contain; display:block; }
-    .splash-kicker { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#d9ecff; opacity:.9; }
+    .splash-kicker { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--zc-blue-soft); opacity:1; }
     .splash-title { margin:4px 0 0 0; font-size:clamp(24px,4vw,32px); line-height:1.05; font-weight:900; }
-    .splash-sub { margin:10px 0 0 0; font-size:15px; font-weight:700; color:#fff; }
+    .splash-sub { margin:10px 0 0 0; font-size:15px; font-weight:700; line-height:1.4; color:var(--zc-text); }
+    .splash-prompt { margin-top:12px; font-size:15px; font-weight:700; color:var(--zc-text); }
     .splash-info-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-    .splash-info-actions .btn { background:#6ec6ff; border-color:#6ec6ff; color:#0b0b0d; }
+    .splash-info-actions .btn-info { background:var(--zc-blue); border-color:var(--zc-blue); color:var(--zc-ink); }
     .splash-info-actions .btn:hover { filter:brightness(1.03); }
     .splash-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:12px; }
-    .splash-tile { border-radius:12px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); padding:10px; }
-    .splash-tile .k { font-size:12px; color:rgba(237,240,247,.68); }
+    .splash-tile { border-radius:12px; border:1px solid rgba(255,255,255,.10); background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02)); padding:10px; box-shadow:inset 0 1px 0 rgba(255,255,255,.025); }
+    .splash-tile .k { font-size:12px; color:var(--zc-text-label); }
     .splash-tile .v { margin-top:4px; font-weight:800; font-size:13px; }
     .session-panel-head { display:flex; justify-content:space-between; gap:8px; align-items:flex-start; flex-wrap:wrap; }
     .session-steps { list-style:none; margin:10px 0 0 0; padding:0; display:grid; gap:8px; }
@@ -164,15 +188,15 @@
           </div>
           <p class="splash-sub">3 minute valid Cognitive Control Capacity (CCC) check for assessing your brain state and recommending next steps.</p>
           <div class="splash-info-actions">
-            <button type="button" class="btn" id="instructionsBtn">Instructions</button>
-            <button type="button" class="btn" id="learnAboutTestBtn">Learn about this test</button>
+            <button type="button" class="btn btn-info" id="instructionsBtn">Instructions</button>
+            <button type="button" class="btn btn-info" id="learnAboutTestBtn">Learn about this test</button>
           </div>
           <div class="splash-grid">
             <div class="splash-tile"><div class="k">Probe length</div><div class="v">3 minutes</div></div>
             <div class="splash-tile"><div class="k">Output</div><div class="v">State + training gate</div></div>
             <div class="splash-tile"><div class="k">Next step</div><div class="v">In-app recommendation</div></div>
           </div>
-          <div style="margin-top:12px; font-size:15px; font-weight:700; color:#fff;">First note how your cognitive state feels right now....</div>
+          <div class="splash-prompt">First note how your cognitive state feels right now....</div>
           <div class="radio">
             <label><input type="radio" name="feel" value="flat" /> Flat</label>
             <label><input type="radio" name="feel" value="normal" checked /> In the Zone</label>
