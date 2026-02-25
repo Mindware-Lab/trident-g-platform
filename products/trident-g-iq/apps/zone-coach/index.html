@@ -134,7 +134,8 @@
     .result-guide-goal-text { margin-top:6px; font-weight:800; font-size:14px; }
     .result-guide-note { border:1px solid rgba(255,188,94,.30); background:linear-gradient(180deg, rgba(255,188,94,.10), rgba(255,188,94,.07)); border-radius:12px; padding:10px 12px; color:#f4eee5; box-shadow:inset 0 1px 0 rgba(255,255,255,.03); }
     .result-guide-next { margin:2px 0 0 0; font-size:clamp(20px,2.6vw,26px); line-height:1.05; font-weight:900; }
-    .result-guide-actions { display:flex; gap:10px; flex-wrap:wrap; }
+    .result-guide-helper { margin:12px 0 0 0; color:var(--zc-text-muted); }
+    .result-guide-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
     .result-guide-actions .btn { flex:1 1 180px; }
     .user-hidden { display:none !important; }
     .hidden { display:none !important; }
@@ -250,7 +251,7 @@
         </div>
 
         <div id="validPanel" class="hidden">
-          <div class="grid result-metrics">
+          <div class="grid result-metrics hidden" id="resultMetricsRow">
             <div class="metric"><div class="k">Bits / second (CCC)</div><div class="v" id="mBps">-</div></div>
             <div class="metric"><div class="k">State</div><div class="v" id="mState">-</div></div>
             <div class="metric"><div class="k">Confidence Level</div><div class="v" id="mConf">-</div></div>
@@ -344,7 +345,7 @@
       startBtn: $('startBtn'), resetHistoryBtn: $('resetHistoryBtn'), stopBtn: $('stopBtn'), skipToResultBtn: $('skipToResultBtn'), tryAgainBtn: $('tryAgainBtn'),
       quickBtn: $('quickBtn'), fullBtn: $('fullBtn'), startRecommendedBtn: $('startRecommendedBtn'), openLink: $('openLink'),
       runLabelPill: $('runLabelPill'), trialPill: $('trialPill'), mixPill: $('mixPill'), progressFill: $('progressFill'),
-      invalidPanel: $('invalidPanel'), invalidReason: $('invalidReason'), validPanel: $('validPanel'),
+      invalidPanel: $('invalidPanel'), invalidReason: $('invalidReason'), validPanel: $('validPanel'), resultMetricsRow: $('resultMetricsRow'),
       mBps: $('mBps'), mState: $('mState'), mConf: $('mConf'), mProbeCatch: $('mProbeCatch'), mTimeoutCv: $('mTimeoutCv'), mPesBurst: $('mPesBurst'),
       stateBadge: $('stateBadge'), stateWhy: $('stateWhy'), gateBadge: $('gateBadge'), gateChips: $('gateChips'), reasonChips: $('reasonChips'), moduleCard: $('moduleCard'),
       sessionPanel: $('sessionPanel'), sessionPanelTitle: $('sessionPanelTitle'), sessionPanelWhy: $('sessionPanelWhy'), sessionPanelMeta: $('sessionPanelMeta'),
@@ -372,7 +373,7 @@
       in_zone: {
         label: 'In the Zone',
         mechanism: 'balanced integration, flexible control intact',
-        trainingGoal: 'leverage a stable window for deep, portable learning',
+        trainingGoal: 'harness being in the zone for far transfer learning and deep work.',
         training: {
           title: 'Trident G - IQ Training',
           description: 'High-challenge relational n-back and structured reasoning.',
@@ -489,6 +490,7 @@
         '<h3 class="result-guide-title">Recommended Next Cognitive Block (1-4 hours)</h3>',
         `<p class="result-guide-copy">${esc(goalText)}</p>`,
         lowConfidenceNote,
+        '<p class="result-guide-helper">Click on one of the buttons below for more details</p>',
         `<div class="result-guide-actions"><button class="btn btn-primary" type="button" data-guide-section="training">Cognitive Training</button><button class="btn" type="button" data-guide-section="work">Work</button><button class="btn btn-ghost" type="button" data-guide-section="other">Other</button></div>`,
         '</div>',
         '</div>'
@@ -1168,6 +1170,16 @@
       show('result'); setPhase('Result'); setStatus(summary.valid ? 'Complete' : 'Invalid');
       dom.invalidPanel.classList.toggle('hidden', summary.valid);
       dom.validPanel.classList.toggle('hidden', !summary.valid);
+      const showMetricRow = !!(summary.valid && summary.mode === 'single_probe_router');
+      if (dom.resultMetricsRow) dom.resultMetricsRow.classList.toggle('hidden', !showMetricRow);
+      if (!showMetricRow) {
+        dom.mBps.textContent = '-';
+        dom.mState.textContent = '-';
+        dom.mConf.textContent = '-';
+        dom.mProbeCatch.textContent = '-';
+        dom.mTimeoutCv.textContent = '-';
+        dom.mPesBurst.textContent = '-';
+      }
       const detailBlock = dom.stateBadge?.closest('.block');
       if (detailBlock) detailBlock.classList.add('hidden');
       dom.startRecommendedBtn.classList.add('hidden');
