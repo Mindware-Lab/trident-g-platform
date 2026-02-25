@@ -1283,11 +1283,57 @@
     });
     if (dom.instructionsBtn) dom.instructionsBtn.addEventListener('click', () => openCccInstructionsScreen());
     if (dom.learnAboutTestBtn) dom.learnAboutTestBtn.addEventListener('click', () => {
-      openInfoScreen('Learn about the CCC test', `
+      openInfoScreen('About the CCC Test', `
         <div class="kicker">Mindware Lab - Trident G IQ</div>
-        <h1>Learn about the CCC test</h1>
-        <p>Content for this screen is coming next.</p>
-        <p class="muted">Use the Instructions screen for step-by-step directions before running the check.</p>
+        <h1>About the CCC Test</h1>
+        <p>This test is the <strong>Majority Function Test - Masked (MFT-M)</strong> (Wu et al., 2016), which is a valid measure of <strong>CCC</strong> (Cognitive Control Capacity).</p>
+        <p><strong>CCC (Cognitive Control Capacity)</strong> is a behavioral throughput estimate: how much task-relevant information a person can bring under control per unit time in this paradigm. In this task, that throughput is estimated in <strong>bits per second</strong> using uncertainty (entropy) and brief exposure-time manipulations.</p>
+        <p>This makes CCC a practical readiness probe for Trident G because it measures how efficiently you are turning uncertain input into a controlled decision under time pressure and when you are in a brain critical state, your efficiency is maximal.</p>
+
+        <h2>What CCC is (and is not)</h2>
+        <ul>
+          <li><strong>What it is:</strong> a research-grounded behavioral proxy for current control-throughput quality under uncertainty.</li>
+          <li><strong>What it is not:</strong> a direct "criticality meter," diagnosis, or a full measure of intelligence by itself.</li>
+          <li>It is especially useful for readiness because fatigue, overload, and hyperarousal often reduce controlled throughput and stability.</li>
+        </ul>
+
+        <h2>Why Trident G uses CCC</h2>
+        <p>For readiness and cognitive zone estimation, CCC is a stronger fit than many simple attention-bias probes because the task is time-pressured, uncertainty-heavy, and produces rich behavioral signals (accuracy, reaction time variability, lapses, error bursts, and recovery patterns).</p>
+        <p>Our version uses the CCC-style majority-direction probe plus timing/quality signals to estimate whether you are in your optimal operating corridor or in one of several out-of-zone patterns.</p>
+
+        <h2>How Trident G interprets zones (behavioral estimate)</h2>
+        <ul>
+          <li><strong>In the Zone:</strong> stable control, good readiness, and efficient lock-in for focused work/training.</li>
+          <li><strong>Out of the Zone - Flat / Groggy / Sluggish:</strong> lower activation, slower or inconsistent control, and often relatively lower drive/motivation to engage.</li>
+          <li><strong>Out of the Zone - Keyed Up (Over-controlling / Exploit):</strong> tunnel vision, rigid control, reduced flexibility/creativity, and difficulty adapting.</li>
+          <li><strong>Out of the Zone - Keyed Up (Over-exploratory / Planning):</strong> idea generation or planning energy is high, but sustained lock-in and execution focus are weaker.</li>
+        </ul>
+        <p class="muted">These are behavioral state estimates for guidance in the app, not clinical labels.</p>
+
+        <h2>Evidence links with executive control and IQ-related measures</h2>
+        <p>Published work on masked Majority Function Task (MFT-M) based CCC estimates shows meaningful relationships with other cognitive-control and ability measures (for example, as reported in Chen et al., 2019, and related work).</p>
+        <ul>
+          <li><strong>Executive control / flanker-style conflict:</strong> positive correlation with ANT-R executive control (about <strong>r ~ .22</strong>).</li>
+          <li><strong>Working memory (WAIS-IV WMI):</strong> correlation of about <strong>r ~ .46</strong>.</li>
+          <li><strong>Complex span (for example OSpan / Symmetry Span):</strong> around <strong>r ~ .36</strong> (OSpan reported).</li>
+          <li><strong>Spatial n-back:</strong> around <strong>r ~ .32</strong>.</li>
+          <li><strong>WAIS Full Scale IQ:</strong> around <strong>r ~ .39</strong> in that sample.</li>
+        </ul>
+        <p>These correlations do <strong>not</strong> mean CCC is the same thing as IQ. They do support CCC as a valid neighboring measure of cognitive control efficiency with meaningful links to broader executive-function and reasoning performance.</p>
+
+        <h2>What our version adds</h2>
+        <ul>
+          <li>Fast, repeatable local checks for day-to-day readiness</li>
+          <li>Quality checks (for example focus loss/timing instability) so invalid runs can be flagged</li>
+          <li>State + training-gate recommendations in Trident G terms</li>
+          <li>Local history on your device to build a better personal profile over time</li>
+        </ul>
+
+        <div class="note">
+          <strong>Bottom line:</strong> CCC is an established, useful behavioral control-throughput probe. Trident G uses it as a practical signal for estimating whether you are in-zone or in a specific out-of-zone pattern, so the app can recommend a better next step.
+        </div>
+        <p class="muted">Research references mentioned in this summary include Chen et al. (2019) and Wu et al. (2016) on MFT/MFT-M performance and related executive-control evidence.</p>
+        <p class="muted">Wu, T., Dufford, A. J., Mackie, M.-A., Egan, L. J., &amp; Fan, J. (2016). The capacity of cognitive control estimated from a perceptual decision making task. <em>Scientific Reports</em>, 6, Article 34025. https://doi.org/10.1038/srep34025</p>
       `);
     });
     dom.openLink.addEventListener('click', (e) => e.preventDefault());
