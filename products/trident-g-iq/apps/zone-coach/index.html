@@ -745,6 +745,14 @@
     const fmtPct = (x,d=1) => (x==null || !Number.isFinite(Number(x))) ? '—' : `${(x*100).toFixed(d)}%`;
     const shuffle = (a) => { for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
     const show = (name) => ['Start','Run','Result'].forEach(k => dom[`screen${k}`].classList.toggle('active', k.toLowerCase() === name));
+    const clearResultMetricSlots = () => {
+      dom.mBps.textContent = '-';
+      dom.mState.textContent = '-';
+      dom.mConf.textContent = '-';
+      dom.mProbeCatch.textContent = '-';
+      dom.mTimeoutCv.textContent = '-';
+      dom.mPesBurst.textContent = '-';
+    };
     const setPhase = (t) => dom.phasePill.textContent = t;
     const setStatus = (t) => dom.statusPill.textContent = t;
     const feelLabel = () => (document.querySelector('input[name="feel"]:checked')?.value || 'normal');
@@ -956,6 +964,7 @@
       dom.canvas.width = Math.max(1, Math.floor(r.width*dpr)); dom.canvas.height = Math.max(1, Math.floor(r.height*dpr)); ctx.setTransform(dpr,0,0,dpr,0,0);
     }
     window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('pageshow', () => { if (!rt.running) { clearResultMetricSlots(); rt.lastSummary = null; } });
     function clearScreen() { resizeCanvas(); const r = dom.canvas.getBoundingClientRect(); ctx.fillStyle = '#0b0b0d'; ctx.fillRect(0,0,r.width,r.height); }
     function drawFix() { clearScreen(); const r=dom.canvas.getBoundingClientRect(), cx=r.width/2, cy=r.height/2; ctx.strokeStyle='rgba(232,232,234,.92)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(cx-10,cy); ctx.lineTo(cx+10,cy); ctx.moveTo(cx,cy-10); ctx.lineTo(cx,cy+10); ctx.stroke(); }
     function pts() { const r=dom.canvas.getBoundingClientRect(), cx=r.width/2, cy=r.height/2, rad=Math.min(r.width,r.height)*.22, out=[]; for (let i=0;i<5;i++){ const a=(-Math.PI/2)+i*2*Math.PI/5; out.push({x:cx+rad*Math.cos(a), y:cy+rad*Math.sin(a)}); } return out; }
@@ -1225,6 +1234,8 @@
     async function runProbe(durationSeconds, label){
       if (rt.running) return;
       rt.running = true; rt.stop = false; rt.falseStarts = 0; rt.skipSummary = null;
+      clearResultMetricSlots();
+      rt.lastSummary = null;
       dom.startBtn.disabled = true; dom.resetHistoryBtn.disabled = true; dom.quickBtn.disabled = true; dom.fullBtn.disabled = true; dom.tryAgainBtn.disabled = true; dom.stopBtn.disabled = false; if (dom.skipToResultBtn) dom.skipToResultBtn.disabled = false;
       show('run'); setPhase('Running'); setStatus('Calibrating…'); dom.qualityPill.textContent = 'Quality: —'; dom.refreshPill.textContent = 'Refresh: —';
       dom.runLabelPill.textContent = `${label} (${durationSeconds}s)`;
@@ -1530,8 +1541,8 @@
     dom.startBtn.addEventListener('click', () => { hideSessionPanel(); runProbe(CFG.totalSeconds, 'Full probe'); });
     dom.quickBtn.addEventListener('click', () => { hideSessionPanel(); runProbe(CFG.quickSeconds, 'Quick re-check'); });
     dom.fullBtn.addEventListener('click', () => { hideSessionPanel(); runProbe(CFG.totalSeconds, 'Full probe'); });
-    dom.tryAgainBtn.addEventListener('click', () => { hideSessionPanel(); show('start'); setPhase('Ready'); setStatus('Idle'); });
-    dom.resetHistoryBtn.addEventListener('click', () => { hideSessionPanel(); localStorage.removeItem(LS_HISTORY); refreshHistoryUI(); show('start'); setPhase('Ready'); setStatus('Idle'); dom.refreshPill.textContent='Refresh: —'; dom.qualityPill.textContent='Quality: —'; drawFix(); });
+    dom.tryAgainBtn.addEventListener('click', () => { hideSessionPanel(); clearResultMetricSlots(); rt.lastSummary = null; show('start'); setPhase('Ready'); setStatus('Idle'); });
+    dom.resetHistoryBtn.addEventListener('click', () => { hideSessionPanel(); clearResultMetricSlots(); rt.lastSummary = null; localStorage.removeItem(LS_HISTORY); refreshHistoryUI(); show('start'); setPhase('Ready'); setStatus('Idle'); dom.refreshPill.textContent='Refresh: —'; dom.qualityPill.textContent='Quality: —'; drawFix(); });
     dom.stopBtn.addEventListener('click', () => { if (!rt.running) return; rt.stop = true; if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); } setStatus('Stopping…'); });
     if (dom.skipToResultBtn) dom.skipToResultBtn.addEventListener('click', () => {
       if (!rt.running) return;
@@ -1617,7 +1628,7 @@
       }
     });
 
-    resizeCanvas(); drawFix(); refreshHistoryUI(); setPhase('Ready'); setStatus('Idle'); dom.stopBtn.disabled = true; if (dom.skipToResultBtn) dom.skipToResultBtn.disabled = true;
+    clearResultMetricSlots(); rt.lastSummary = null; resizeCanvas(); drawFix(); refreshHistoryUI(); setPhase('Ready'); setStatus('Idle'); dom.stopBtn.disabled = true; if (dom.skipToResultBtn) dom.skipToResultBtn.disabled = true;
   })();
   </script>
 </body>
