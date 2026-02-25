@@ -303,6 +303,7 @@
       sessionPanelGateChips: $('sessionPanelGateChips'), sessionPanelSteps: $('sessionPanelSteps'), sessionPanelCloseBtn: $('sessionPanelCloseBtn'), sessionPanelResetChecksBtn: $('sessionPanelResetChecksBtn'),
       histCount: $('histCount'), histBps: $('histBps'), lastLine: $('lastLine'),
       touchLeftBtn: $('touchLeftBtn'), touchRightBtn: $('touchRightBtn'),
+      instructionsBtn: $('instructionsBtn'), learnAboutTestBtn: $('learnAboutTestBtn'),
       canvas: $('c')
     };
     const ctx = dom.canvas.getContext('2d', { alpha:false, desynchronized:true }) || dom.canvas.getContext('2d');
@@ -1148,6 +1149,126 @@
       renderRouterResult(summary);
     }
 
+    function openInfoScreen(title, bodyHtml){
+      const win = window.open('', '_blank', 'width=860,height=780,resizable=yes,scrollbars=yes');
+      if (!win) { window.alert('Please allow pop-ups to view this screen.'); return; }
+      try { win.opener = null; } catch (_) {}
+      const doc = win.document;
+      doc.open();
+      doc.write(`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>${title}</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font, system-ui, sans-serif);
+      background: #0b1118;
+      color: #edf0f7;
+      line-height: 1.45;
+      padding: 20px;
+    }
+    .wrap { max-width: 860px; margin: 0 auto; }
+    .card {
+      border: 1px solid rgba(110,198,255,.28);
+      border-radius: 18px;
+      background: linear-gradient(165deg, rgba(78,160,232,.16), rgba(15,18,26,.95) 55%);
+      box-shadow: 0 12px 28px rgba(0,0,0,.28);
+      padding: 18px;
+    }
+    .kicker { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #d9ecff; opacity: .9; }
+    h1 { margin: 8px 0 10px; font-size: 28px; line-height: 1.1; }
+    h2 { margin: 16px 0 8px; font-size: 16px; color: #fff; }
+    p { margin: 8px 0; color: rgba(237,240,247,.92); }
+    ul { margin: 8px 0 0 18px; padding: 0; }
+    li { margin: 6px 0; }
+    .note {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(110,198,255,.28);
+      background: rgba(110,198,255,.08);
+    }
+    .muted { color: rgba(237,240,247,.75); }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    button {
+      border: 1px solid #6ec6ff;
+      background: #6ec6ff;
+      color: #0b0b0d;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      ${bodyHtml}
+      <div class="row">
+        <button type="button" onclick="window.close()">Close</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`);
+      doc.close();
+    }
+
+    function openCccInstructionsScreen(){
+      openInfoScreen('CCC Test Instructions', `
+        <div class="kicker">Mindware Lab - Trident G IQ</div>
+        <h1>CCC Test Instructions</h1>
+        <p><strong>Cognitive Control Capacity (CCC) check</strong> is a short readiness check (about 3 minutes) that estimates your current brain state and recommends what to do next.</p>
+
+        <h2>How to respond</h2>
+        <ul>
+          <li><strong>Desktop / laptop:</strong> use the <strong>Left Arrow</strong> and <strong>Right Arrow</strong> keys.</li>
+          <li><strong>Mobile / tablet:</strong> use the on-screen <strong>left / right buttons</strong>.</li>
+          <li>On each trial, arrows will flash briefly. Choose the majority direction - that is the direction <strong>MOST</strong> arrows are pointing - left or right.</li>
+        </ul>
+
+        <h2>What matters during the check</h2>
+        <ul>
+          <li>Be as <strong>fast</strong> and as <strong>accurate</strong> as possible.</li>
+          <li>Complete <strong>all trials</strong> without stopping.</li>
+          <li>Some trials may feel uncertain or too quick to judge clearly. This is normal.</li>
+          <li>If you are unsure, make your <strong>best decision anyway</strong> rather than waiting too long.</li>
+        </ul>
+
+        <h2>During the test</h2>
+        <ul>
+          <li>Stay focused on the screen and avoid multitasking.</li>
+          <li>Do not switch tabs/apps or leave the window during the run.</li>
+          <li>Try to test in similar conditions each time (similar posture, lighting, and distraction level).</li>
+        </ul>
+
+        <h2>Consistency matters (important)</h2>
+        <ul>
+          <li>Use the <strong>same device and operating system</strong> each time you take the CCC test.</li>
+          <li>Your history is stored <strong>locally on your device</strong>, so changing device/OS (and some browser settings) can break continuity.</li>
+          <li>Repeated checks under consistent conditions help build a better personal profile of your brain state over time.</li>
+        </ul>
+
+        <h2>What you get after the test</h2>
+        <ul>
+          <li>A validity / status result (whether the run is usable)</li>
+          <li>Your current state / readiness classification</li>
+          <li>A training gate recommendation (for example proceed, adjust, or hold)</li>
+          <li>An in-app recommended next step</li>
+        </ul>
+
+        <div class="note">
+          <strong>Tip:</strong> Over time, repeated valid CCC checks make your local profile more useful for understanding your patterns and improving next-step recommendations.
+        </div>
+        <p class="muted">This screen is informational only and does not change your saved data.</p>
+      `);
+    }
     dom.startBtn.addEventListener('click', () => { hideSessionPanel(); runProbe(CFG.totalSeconds, 'Full probe'); });
     dom.quickBtn.addEventListener('click', () => { hideSessionPanel(); runProbe(CFG.quickSeconds, 'Quick re-check'); });
     dom.fullBtn.addEventListener('click', () => { hideSessionPanel(); runProbe(CFG.totalSeconds, 'Full probe'); });
@@ -1159,6 +1280,15 @@
       const gate = s.trainingGate || computeTrainingGate(s.router?.state, s.router?.confidence, (s.baselines?.priorValidCount || 0) >= 3, s.valid);
       const rec = s.recommendation || pickRecommendation(s.router?.state, gate.trainingGate, s.router?.confidence, loadPrefs());
       openSessionPanel(s, rec, gate);
+    });
+    if (dom.instructionsBtn) dom.instructionsBtn.addEventListener('click', () => openCccInstructionsScreen());
+    if (dom.learnAboutTestBtn) dom.learnAboutTestBtn.addEventListener('click', () => {
+      openInfoScreen('Learn about the CCC test', `
+        <div class="kicker">Mindware Lab - Trident G IQ</div>
+        <h1>Learn about the CCC test</h1>
+        <p>Content for this screen is coming next.</p>
+        <p class="muted">Use the Instructions screen for step-by-step directions before running the check.</p>
+      `);
     });
     dom.openLink.addEventListener('click', (e) => e.preventDefault());
     dom.sessionPanelCloseBtn.addEventListener('click', () => hideSessionPanel());
