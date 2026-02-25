@@ -1088,6 +1088,12 @@
         }
         if (!probeDur.frozen) freezeProbe(performance.now()-t0);
 
+        const elapsedMs = performance.now()-t0;
+        if (rt.stop && elapsedMs < (durationSeconds*1000) - Math.max(250, frameMs*3)) {
+          validRef.valid = false;
+          if (!invalidReason) invalidReason = `Probe stopped early (${trials.length} trials completed). Repeat the full check.`;
+        }
+
         const droppedFrac = timing.total ? (timing.dropped/timing.total) : 1;
         const timingPoor = droppedFrac > CFG.maxDroppedFrameFrac;
         if (timingPoor && !invalidReason) invalidReason = `Browser timing unstable (${Math.round(droppedFrac*100)}% stutter)`;
