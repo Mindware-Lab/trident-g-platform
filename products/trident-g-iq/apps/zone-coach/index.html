@@ -483,6 +483,10 @@
         ? `<div class="result-guide-note">Low confidence result: use the lowest-risk option for this state and repeat a full check before demanding training or deep work.</div>`
         : '';
       const goalText = guide.trainingGoal ? (guide.trainingGoal.charAt(0).toUpperCase() + guide.trainingGoal.slice(1)) : '';
+      const inZone = normState(state) === 'in_zone';
+      const trainingBtnClass = inZone ? 'btn btn-primary' : 'btn';
+      const workBtnClass = inZone ? 'btn' : 'btn btn-primary';
+      const otherBtnClass = inZone ? 'btn btn-ghost' : 'btn btn-primary';
       return [
         '<div class="result-guide">',
         `<div class="result-guide-card"><h3 class="result-guide-title">Mechanism</h3><p class="result-guide-copy">${esc(guide.mechanism)}</p></div>`,
@@ -491,7 +495,7 @@
         `<p class="result-guide-copy">${esc(goalText)}</p>`,
         lowConfidenceNote,
         '<p class="result-guide-helper">Click on one of the buttons below for more details</p>',
-        `<div class="result-guide-actions"><button class="btn btn-primary" type="button" data-guide-section="training">Cognitive Training</button><button class="btn" type="button" data-guide-section="work">Work</button><button class="btn btn-ghost" type="button" data-guide-section="other">Other</button></div>`,
+        `<div class="result-guide-actions"><button class="${trainingBtnClass}" type="button" data-guide-section="training">Cognitive Training</button><button class="${workBtnClass}" type="button" data-guide-section="work">Work</button><button class="${otherBtnClass}" type="button" data-guide-section="other">Other</button></div>`,
         '</div>',
         '</div>'
       ].join('');
