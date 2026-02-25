@@ -91,6 +91,15 @@
     .session-step { display:grid; grid-template-columns:auto 1fr; gap:8px; align-items:flex-start; border:1px solid rgba(255,255,255,.06); border-radius:10px; padding:8px 10px; background:rgba(255,255,255,.02); }
     .session-step input { margin-top:2px; accent-color:#CCFF66; }
     .session-step.done { opacity:.7; }
+    .result-guide { display:grid; gap:10px; }
+    .result-guide-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; }
+    .result-guide-title { margin:0; font-size:clamp(22px,3.2vw,30px); line-height:1.05; }
+    .result-guide-sub { margin:6px 0 0 0; color:rgba(237,240,247,.85); }
+    .result-guide-goal { border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.02); border-radius:12px; padding:10px 12px; }
+    .result-guide-note { border:1px solid rgba(255,188,94,.28); background:rgba(255,188,94,.08); border-radius:12px; padding:10px 12px; color:#f2eadf; }
+    .result-guide-cta { border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); border-radius:12px; padding:10px 12px; font-weight:700; }
+    .result-guide-actions { display:flex; gap:10px; flex-wrap:wrap; }
+    .result-guide-actions .btn { flex:1 1 180px; }
     .user-hidden { display:none !important; }
     .hidden { display:none !important; }
     @media (max-width: 700px) {
@@ -282,10 +291,10 @@
       overloaded_explore: { id: 'constraint_paced_v1', title: 'Down-regulate and Constrain', items: ['Slow breathing + focused attention', 'Single-thread constraint work', 'Optional Yoga Nidra / NSDR'] }
     };
     const STATE_UI = {
-      in_zone: { label: 'In-zone', why: 'Signals are stable enough for deep portable learning.' },
-      flat: { label: 'Flat / Sluggish off-zone', why: 'Lapse / slowdown signatures suggest under-activation or state drop.' },
-      overloaded_exploit: { label: 'Overloaded - Exploit off-zone', why: 'Post-error slowing / rigid slowdown suggests overcontrol.' },
-      overloaded_explore: { label: 'Overloaded - Explore off-zone', why: 'Variability / burstiness suggests unstable execution.' },
+      in_zone: { label: 'In the Zone', why: 'Balanced integration and flexible control appear intact.' },
+      flat: { label: 'Flat', why: 'Under-arousal and lapse/slow-tail patterns suggest reduced engagement.' },
+      overloaded_exploit: { label: 'Locked In', why: 'Rigid, over-controlled responding suggests exploit-dominant tunnel vision.' },
+      overloaded_explore: { label: 'Spun Out', why: 'High variability and unstable execution suggest explore-dominant noise.' },
       invalid: { label: 'Session not valid', why: 'Focus loss or timing instability compromised the probe.' }
     };
 
@@ -314,12 +323,145 @@
       hot_explore: 'overloaded_explore'
     });
     const ROUTER_STATE_UI = Object.freeze({
-      in_zone: { label: 'In-zone', why: 'Signals are stable enough for deep portable learning.' },
-      flat: { label: 'Flat / Sluggish', why: 'Lapses / slow-tail drift suggest low activation or reduced readiness.' },
-      overloaded_exploit: { label: 'Overloaded - Exploit', why: 'Post-error slowing / rigid slowdown suggests overcontrolled responding.' },
-      overloaded_explore: { label: 'Overloaded - Explore', why: 'Variability / burstiness / fast errors suggest scattered execution.' },
+      in_zone: { label: 'In the Zone', why: 'Balanced integration and flexible control are intact.' },
+      flat: { label: 'Flat', why: 'Under-arousal, lapses, and slow-tail responses suggest reduced readiness.' },
+      overloaded_exploit: { label: 'Locked In', why: 'Rigid, over-controlled responding suggests exploit-dominant tunnel vision.' },
+      overloaded_explore: { label: 'Spun Out', why: 'High variability and unstable execution suggest explore-dominant noise.' },
       invalid: { label: 'Session not valid', why: 'Focus loss or timing instability compromised the probe.' }
     });
+    const USER_RESULT_STATE_GUIDE = Object.freeze({
+      in_zone: {
+        label: 'In the Zone',
+        mechanism: 'balanced integration, flexible control intact',
+        trainingGoal: 'leverage a stable window for deep, portable learning',
+        training: {
+          title: 'Trident G - IQ Training',
+          description: 'High-challenge relational n-back and structured reasoning.',
+          rationale: 'Complex, far-transfer learning depends on intact prefrontal control and flexible integration - this is the window to use it.'
+        },
+        work: ['Deep work (25-50 min block)', 'Strategic thinking', 'Writing, coding, modelling', 'High-level learning'],
+        other: ['Protect the state', 'Minimal distraction', 'Avoid unnecessary stimulation'],
+        callToAction: 'This is your deep window - commit to meaningful, high-challenge work now.'
+      },
+      flat: {
+        label: 'Flat',
+        mechanism: 'under-arousal, lapses, slow-tail responses',
+        trainingGoal: 'restore engagement and stabilise attention',
+        training: {
+          title: 'Closed-Loop Attention Trainer',
+          description: 'Blended-image vigilance task that increases distractor load when errors occur.',
+          rationale: 'Adaptive perceptual load and sustained target detection re-engage tonic attention and reduce lapse-driven instability.'
+        },
+        work: ['Structured, low-novelty tasks', 'Clear checklists', 'Short 10-20 min blocks', 'Avoid complex reasoning'],
+        other: ['10-15 min moderate aerobic exercise', 'Optional short HIIT (for trained users)', 'Brief re-check before deep work'],
+        callToAction: 'Activate first - stabilise your signal before attempting anything demanding.'
+      },
+      overloaded_exploit: {
+        label: 'Locked In',
+        mechanism: 'rigid, over-controlled, exploit-dominant',
+        trainingGoal: 'increase flexibility and loosen narrow optimisation',
+        training: {
+          title: 'Semantic Expansion Game (Forward Flow Mode)',
+          description: 'Generate coherent but progressively more distant associations from a seed word.',
+          rationale: 'Rewarding meaningful semantic expansion reduces policy rigidity and trains controlled flexibility without chaos.'
+        },
+        work: ['Brainstorm alternatives', 'Reframe assumptions', 'Generate multiple solution paths', 'Avoid narrow optimisation tasks'],
+        other: ['Slow-paced coherence breathing (5-6 breaths/min)', 'Open monitoring meditation', 'Forward-flow / visual streaming', 'Yoga Nidra (if tightly wound)'],
+        callToAction: 'Loosen the grip - widen your thinking before committing to decisions.'
+      },
+      overloaded_explore: {
+        label: 'Spun Out',
+        mechanism: 'high variability, unstable execution, explore-dominant',
+        trainingGoal: 'tighten constraint and restore response stability',
+        training: {
+          title: 'Rhythm-Based Precision + Inhibition Game',
+          description: 'Respond in synchrony to a steady beat while inhibiting off-beat or mismatch cues.',
+          rationale: 'External pacing reduces variability, reinforces executive gating, and stabilises noisy response patterns.'
+        },
+        work: ['Single-thread execution', 'One tab, one task', 'Time-boxed 15-20 min block', 'Avoid novelty and idea-hopping'],
+        other: ['Focused-attention meditation (breath anchor)', '3-5 min slow breathing downshift', 'Yoga Nidra if highly wired', 'Avoid high-arousal breathwork/cold exposure by default'],
+        callToAction: 'Reduce noise - stabilise execution before expanding again.'
+      },
+      invalid: {
+        label: 'Session not valid',
+        mechanism: 'timing or focus quality failed',
+        trainingGoal: 'repeat the check before making state-based decisions',
+        training: { title: 'Repeat the check', description: 'Complete a full CCC check without interruption.', rationale: 'A valid run is required before making a state-based recommendation.' },
+        work: ['Use conservative, low-risk tasks until you have a valid result'],
+        other: ['Stay on one screen', 'Avoid switching tabs/apps during the run', 'Repeat the full check'],
+        callToAction: 'Repeat the full CCC check to get a usable readiness result.'
+      }
+    });
+    function userResultGuide(stateRaw){
+      return USER_RESULT_STATE_GUIDE[normState(stateRaw)] || USER_RESULT_STATE_GUIDE.invalid;
+    }
+    function renderStateGuideList(items){
+      const rows = (items || []).map((txt) => `<li>${esc(txt)}</li>`).join('');
+      return `<ul>${rows}</ul>`;
+    }
+    function openStateGuidePopup(stateRaw, sectionKey){
+      const state = normState(stateRaw);
+      const guide = userResultGuide(state);
+      const meta = `<div class="note note-neutral"><div><strong>Mechanism:</strong> ${esc(guide.mechanism)}</div><div style="margin-top:6px;"><strong>Training goal:</strong> ${esc(guide.trainingGoal)}</div></div>`;
+      const cta = `<div class="note note-neutral"><strong>Call to action:</strong> ${esc(guide.callToAction)}</div>`;
+      if (sectionKey === 'training') {
+        openInfoScreen(`${guide.label} - Cognitive Training`, `
+          <div class="kicker">Mindware Lab - Trident G IQ</div>
+          <h1>${esc(guide.label)} - Cognitive Training</h1>
+          ${meta}
+          <h2>${esc(guide.training.title)}</h2>
+          <p>${esc(guide.training.description)}</p>
+          <p><strong>Rationale:</strong> ${esc(guide.training.rationale)}</p>
+          ${cta}
+        `);
+        return;
+      }
+      if (sectionKey === 'work') {
+        openInfoScreen(`${guide.label} - Work`, `
+          <div class="kicker">Mindware Lab - Trident G IQ</div>
+          <h1>${esc(guide.label)} - Work</h1>
+          ${meta}
+          <p>Use work modes matched to this state to reduce friction and protect performance quality.</p>
+          ${renderStateGuideList(guide.work)}
+          ${cta}
+        `);
+        return;
+      }
+      openInfoScreen(`${guide.label} - Other`, `
+        <div class="kicker">Mindware Lab - Trident G IQ</div>
+        <h1>${esc(guide.label)} - Other</h1>
+        ${meta}
+        <p>Use these supporting actions to shift or protect state before the next check or block.</p>
+        ${renderStateGuideList(guide.other)}
+        ${cta}
+      `);
+    }
+    function renderUserResultCard(summary, state, gate){
+      const guide = userResultGuide(state);
+      const confidence = summary?.router?.confidence || 'Low';
+      const tone = stateToneClass(state);
+      const lowConfidenceNote = confidence === 'Low'
+        ? `<div class="result-guide-note">Low confidence result: use the lowest-risk option for this state and repeat a full check before demanding training or deep work.</div>`
+        : '';
+      const gateHint = gate?.trainingGate === 'GO_DEEP'
+        ? 'Deep work / high-challenge learning is appropriate if conditions stay stable.'
+        : 'Stabilise first, then re-check before committing to demanding training or deep work.';
+      return [
+        '<div class="result-guide">',
+        `<div class="result-guide-head"><div><h3 class="result-guide-title">${esc(guide.label)}</h3><p class="result-guide-sub"><strong>Mechanism:</strong> ${esc(guide.mechanism)}</p></div><span class="chip ${tone}">${esc(confidence)} confidence</span></div>`,
+        `<div class="result-guide-goal"><strong>Training goal:</strong> ${esc(guide.trainingGoal)}</div>`,
+        lowConfidenceNote,
+        `<div class="result-guide-actions"><button class="btn btn-primary" type="button" data-guide-section="training">Cognitive Training</button><button class="btn" type="button" data-guide-section="work">Work</button><button class="btn btn-ghost" type="button" data-guide-section="other">Other</button></div>`,
+        `<div class="result-guide-cta"><strong>Next step:</strong> ${esc(guide.callToAction)}</div>`,
+        `<div class="small muted">${esc(gateHint)}</div>`,
+        '</div>'
+      ].join('');
+    }
+    function bindUserResultCardActions(stateRaw){
+      dom.moduleCard.querySelectorAll('[data-guide-section]').forEach((btn) => {
+        btn.addEventListener('click', () => openStateGuidePopup(stateRaw, btn.dataset.guideSection));
+      });
+    }
     const EVIDENCE_KEYS = Object.freeze({
       pmc_stress_pfc: { label: 'Stress and prefrontal cognitive control (review)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC2907136/' },
       jneurosci_goal_directed: { label: 'Stress shifts behavior away from goal-directed control', url: 'https://www.jneurosci.org/content/29/22/7191' }
@@ -955,8 +1097,16 @@
       show('result'); setPhase('Result'); setStatus(summary.valid ? 'Complete' : 'Invalid');
       dom.invalidPanel.classList.toggle('hidden', summary.valid);
       dom.validPanel.classList.toggle('hidden', !summary.valid);
+      const detailBlock = dom.stateBadge?.closest('.block');
+      if (detailBlock) detailBlock.classList.add('hidden');
+      dom.startRecommendedBtn.classList.add('hidden');
+      dom.openLink.classList.add('hidden');
       dom.qualityPill.textContent = `Quality: ${summary.valid ? 'OK' : 'Poor'} (${Math.round((summary.timing?.droppedFrac || 0)*100)}% stutter)`;
-      if (!summary.valid) { dom.invalidReason.textContent = summary.invalidReason || summary.router?.invalidReason || 'Focus loss or browser timing instability'; return; }
+      if (!summary.valid) {
+        dom.invalidReason.textContent = summary.invalidReason || summary.router?.invalidReason || 'Focus loss or browser timing instability';
+        refreshHistoryUI();
+        return;
+      }
       const state = normState(summary.router.state);
       const ui = ROUTER_STATE_UI[state] || ROUTER_STATE_UI.invalid;
       const prefs = loadPrefs();
@@ -964,30 +1114,24 @@
       const rec = summary.recommendation || pickRecommendation(state, gate.trainingGate, summary.router.confidence, prefs);
       summary.trainingGate = gate;
       summary.recommendation = rec;
+
       dom.mBps.textContent = fmt(summary.bps.combined, 2);
       dom.mState.textContent = ui.label;
       dom.mConf.textContent = summary.router.confidence;
       dom.mProbeCatch.textContent = `${summary.features.probe.n} / ${fmtPct(summary.features.catchFailRate,1)}`;
       dom.mTimeoutCv.textContent = `${fmtPct(summary.features.probe.timeoutRate,1)} / ${fmt(summary.features.probe.rtCV,3)}`;
-      dom.mPesBurst.textContent = `${Number.isFinite(summary.features.probe.PES)?Math.round(summary.features.probe.PES)+' ms':'—'} / ${fmt(summary.features.probe.errorBurstiness,2)}`;
+      dom.mPesBurst.textContent = `${Number.isFinite(summary.features.probe.PES)?Math.round(summary.features.probe.PES)+' ms':'-'} / ${fmt(summary.features.probe.errorBurstiness,2)}`;
+
       dom.stateBadge.className = `badge ${state}`;
-      dom.stateBadge.textContent = `${ui.label} • ${summary.router.confidence} confidence`;
+      dom.stateBadge.textContent = `${ui.label} - ${summary.router.confidence} confidence`;
       dom.stateWhy.textContent = ui.why;
       dom.gateBadge.textContent = `Training gate: ${gateLabel(gate.trainingGate)}`;
       dom.gateChips.innerHTML = '';
-      const primaryGateChip = document.createElement('span');
-      primaryGateChip.className = `gate-chip ${gateClass(gate.trainingGate)}`;
-      primaryGateChip.textContent = gateLabel(gate.trainingGate);
-      dom.gateChips.appendChild(primaryGateChip);
-      (gate.trainingGateWhy || []).slice(0,3).forEach((t) => {
-        const chip = document.createElement('span');
-        chip.className = 'gate-chip';
-        chip.textContent = t;
-        dom.gateChips.appendChild(chip);
-      });
       dom.reasonChips.innerHTML = '';
-      (summary.router.reasons || []).slice(0,3).forEach(t => { const s=document.createElement('span'); s.className=`chip ${stateToneClass(state)}`; s.textContent=t; dom.reasonChips.appendChild(s); });
-      dom.moduleCard.innerHTML = renderRecommendationCard(rec, gate);
+
+      dom.moduleCard.innerHTML = renderUserResultCard(summary, state, gate);
+      bindUserResultCardActions(state);
+
       dom.startRecommendedBtn.disabled = !rec;
       refreshHistoryUI();
       return;
