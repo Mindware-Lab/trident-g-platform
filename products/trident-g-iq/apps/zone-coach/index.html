@@ -202,6 +202,9 @@
           <button class="btn btn-ghost" id="stopBtn">Stop run</button>
           <span class="pill">Tap or press arrows after each stimulus</span>
         </div>
+        <div class="small muted" style="margin-top:8px;text-align:center;">
+          <button class="btn btn-ghost" id="skipToResultBtn" style="padding:6px 10px;font-size:12px;border-radius:10px;">Skip test (preview result)</button>
+        </div>
       </div>
 
       <div id="screenResult" class="router-screen">
@@ -304,7 +307,7 @@
     const dom = {
       phasePill: $('phasePill'), statusPill: $('statusPill'), refreshPill: $('refreshPill'), qualityPill: $('qualityPill'),
       screenStart: $('screenStart'), screenRun: $('screenRun'), screenResult: $('screenResult'),
-      startBtn: $('startBtn'), resetHistoryBtn: $('resetHistoryBtn'), stopBtn: $('stopBtn'), tryAgainBtn: $('tryAgainBtn'),
+      startBtn: $('startBtn'), resetHistoryBtn: $('resetHistoryBtn'), stopBtn: $('stopBtn'), skipToResultBtn: $('skipToResultBtn'), tryAgainBtn: $('tryAgainBtn'),
       quickBtn: $('quickBtn'), fullBtn: $('fullBtn'), startRecommendedBtn: $('startRecommendedBtn'), openLink: $('openLink'),
       runLabelPill: $('runLabelPill'), trialPill: $('trialPill'), mixPill: $('mixPill'), progressFill: $('progressFill'),
       invalidPanel: $('invalidPanel'), invalidReason: $('invalidReason'), validPanel: $('validPanel'),
@@ -318,7 +321,7 @@
       canvas: $('c')
     };
     const ctx = dom.canvas.getContext('2d', { alpha:false, desynchronized:true }) || dom.canvas.getContext('2d');
-    const rt = { running:false, stop:false, respOpen:false, choiceHandler:null, resolver:null, falseStarts:0, lastSummary:null };
+    const rt = { running:false, stop:false, respOpen:false, choiceHandler:null, resolver:null, falseStarts:0, lastSummary:null, skipSummary:null };
     const LEGACY_STATE_ALIASES = Object.freeze({
       cold: 'flat',
       hot_exploit: 'overloaded_exploit',
@@ -1089,6 +1092,40 @@
         scores: { flat: sc.coldScore, overloaded_explore: sc.exploreScore, overloaded_exploit: sc.exploitScore }
       };
     }
+    function buildSkipPreviewSummary(){
+      const feel = feelLabel();
+      const state = feel === 'flat' ? 'flat' : feel === 'wired' ? 'overloaded_explore' : 'in_zone';
+      const confidence = state === 'in_zone' ? 'Medium' : 'Low';
+      const sample = ({
+        in_zone: { bps: 1.72, n: 26, catchFailRate: 0.0, timeoutRate: 0.01, rtCV: 0.19, PES: 24, errorBurstiness: 0.9 },
+        flat: { bps: 0.86, n: 22, catchFailRate: 0.05, timeoutRate: 0.11, rtCV: 0.33, PES: 46, errorBurstiness: 2.1 },
+        overloaded_exploit: { bps: 1.08, n: 24, catchFailRate: 0.03, timeoutRate: 0.04, rtCV: 0.21, PES: 96, errorBurstiness: 1.2 },
+        overloaded_explore: { bps: 1.02, n: 23, catchFailRate: 0.04, timeoutRate: 0.05, rtCV: 0.38, PES: 34, errorBurstiness: 3.0 }
+      })[state] || { bps: 1.0, n: 22, catchFailRate: 0.03, timeoutRate: 0.05, rtCV: 0.25, PES: 40, errorBurstiness: 1.8 };
+      const base = baselines(loadHistory());
+      const summary = {
+        sessionId: new Date().toISOString(),
+        schemaVersion: CFG.schemaVersion,
+        appVersion: CFG.appVersion,
+        mode: 'skip_preview',
+        durationSeconds: 0,
+        label: 'Skip preview',
+        selfFeelLabel: feel,
+        valid: true,
+        invalidReason: null,
+        timing: { frameMs: 16.667, hz: 60, droppedFrac: 0 },
+        bps: { easy: null, hard: null, combined: sample.bps, k: CFG.bpsScaleK, thresholdEasyFrames: null, thresholdHardFrames: null },
+        features: { probe: { n: sample.n, timeoutRate: sample.timeoutRate, rtCV: sample.rtCV, PES: sample.PES, errorBurstiness: sample.errorBurstiness }, catchFailRate: sample.catchFailRate },
+        counts: { totalTrials: sample.n, stairTrials: 0, probeTrials: sample.n, catchTrials: 0, falseStarts: 0, catchFails: 0, pesSupport: 0 },
+        router: { state, confidence, reasons: ['Preview result (skip test)'], invalidReason: null, recommendedModuleId: null, scores: null },
+        baselines: { priorValidCount: base.count, bpsEwma: Number.isFinite(ewma(base.bps)) ? Number(ewma(base.bps).toFixed(3)) : null },
+        trace: { probeRtMs: [], probeCorrect: [], probeTimedOut: [], catchCorrect: [] }
+      };
+      const gate = computeTrainingGate(state, confidence, (base.count || 0) >= 3, true);
+      summary.trainingGate = gate;
+      summary.recommendation = pickRecommendation(state, gate.trainingGate, confidence, loadPrefs());
+      return summary;
+    }
     function renderRouterResult(summary){
       rt.lastSummary = summary;
       hideSessionPanel();
@@ -1136,8 +1173,8 @@
     }
     async function runProbe(durationSeconds, label){
       if (rt.running) return;
-      rt.running = true; rt.stop = false; rt.falseStarts = 0;
-      dom.startBtn.disabled = true; dom.resetHistoryBtn.disabled = true; dom.quickBtn.disabled = true; dom.fullBtn.disabled = true; dom.tryAgainBtn.disabled = true; dom.stopBtn.disabled = false;
+      rt.running = true; rt.stop = false; rt.falseStarts = 0; rt.skipSummary = null;
+      dom.startBtn.disabled = true; dom.resetHistoryBtn.disabled = true; dom.quickBtn.disabled = true; dom.fullBtn.disabled = true; dom.tryAgainBtn.disabled = true; dom.stopBtn.disabled = false; if (dom.skipToResultBtn) dom.skipToResultBtn.disabled = false;
       show('run'); setPhase('Running'); setStatus('Calibrating…'); dom.qualityPill.textContent = 'Quality: —'; dom.refreshPill.textContent = 'Refresh: —';
       dom.runLabelPill.textContent = `${label} (${durationSeconds}s)`;
       dom.progressFill.style.width = '0%'; dom.trialPill.textContent = 'Trials: 0'; dom.mixPill.textContent = 'S:0 P:0 C:0';
@@ -1278,13 +1315,17 @@
           recommendation,
           trace: { probeRtMs: feats.trace.probeRtMs.slice(0,256), probeCorrect: feats.trace.probeCorrect.slice(0,256), probeTimedOut: feats.trace.probeTimedOut.slice(0,256), catchCorrect: feats.trace.catchCorrect.slice(0,128) }
         };
-        const h = loadHistory(); h.push(summary); saveHistory(h);
+        if (!rt.skipSummary) { const h = loadHistory(); h.push(summary); saveHistory(h); }
       } finally {
         document.removeEventListener('visibilitychange', onVis); window.removeEventListener('blur', onBlur); window.removeEventListener('keydown', onPremature);
         rt.respOpen = false; rt.choiceHandler = null;
         if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); }
         rt.running = false; rt.stop = false;
-        dom.startBtn.disabled = false; dom.resetHistoryBtn.disabled = false; dom.quickBtn.disabled = false; dom.fullBtn.disabled = false; dom.tryAgainBtn.disabled = false; dom.stopBtn.disabled = true;
+        dom.startBtn.disabled = false; dom.resetHistoryBtn.disabled = false; dom.quickBtn.disabled = false; dom.fullBtn.disabled = false; dom.tryAgainBtn.disabled = false; dom.stopBtn.disabled = true; if (dom.skipToResultBtn) dom.skipToResultBtn.disabled = true;
+      }
+      if (rt.skipSummary) {
+        summary = rt.skipSummary;
+        rt.skipSummary = null;
       }
       if (!summary) {
         summary = {
@@ -1425,6 +1466,13 @@
     dom.tryAgainBtn.addEventListener('click', () => { hideSessionPanel(); show('start'); setPhase('Ready'); setStatus('Idle'); });
     dom.resetHistoryBtn.addEventListener('click', () => { hideSessionPanel(); localStorage.removeItem(LS_HISTORY); refreshHistoryUI(); show('start'); setPhase('Ready'); setStatus('Idle'); dom.refreshPill.textContent='Refresh: —'; dom.qualityPill.textContent='Quality: —'; drawFix(); });
     dom.stopBtn.addEventListener('click', () => { if (!rt.running) return; rt.stop = true; if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); } setStatus('Stopping…'); });
+    if (dom.skipToResultBtn) dom.skipToResultBtn.addEventListener('click', () => {
+      if (!rt.running) return;
+      rt.skipSummary = buildSkipPreviewSummary();
+      rt.stop = true;
+      if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); }
+      setStatus('Skipping to preview…');
+    });
     dom.startRecommendedBtn.addEventListener('click', () => {
       const s = rt.lastSummary; if (!s?.valid) return;
       const gate = s.trainingGate || computeTrainingGate(s.router?.state, s.router?.confidence, (s.baselines?.priorValidCount || 0) >= 3, s.valid);
@@ -1502,7 +1550,7 @@
       }
     });
 
-    resizeCanvas(); drawFix(); refreshHistoryUI(); setPhase('Ready'); setStatus('Idle'); dom.stopBtn.disabled = true;
+    resizeCanvas(); drawFix(); refreshHistoryUI(); setPhase('Ready'); setStatus('Idle'); dom.stopBtn.disabled = true; if (dom.skipToResultBtn) dom.skipToResultBtn.disabled = true;
   })();
   </script>
 </body>
