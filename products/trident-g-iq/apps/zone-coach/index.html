@@ -45,6 +45,7 @@
     .radio label { padding:8px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03); cursor:pointer; }
     .radio input { accent-color:#CCFF66; }
     .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:10px; }
+    .result-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); }
     .metric { border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:10px; background:rgba(255,255,255,.03); }
     .metric .k { font-size:12px; color:rgba(237,240,247,.7); }
     .metric .v { font-weight:800; margin-top:6px; }
@@ -174,7 +175,7 @@
           <div class="radio">
             <label><input type="radio" name="feel" value="flat" /> Flat</label>
             <label><input type="radio" name="feel" value="normal" checked /> In the Zone</label>
-            <label><input type="radio" name="feel" value="wired" /> Keyed Up</label>
+            <label><input type="radio" name="feel" value="wired" /> Spun Out</label>
           </div>
           <div class="cta">
             <button class="btn btn-primary" id="startBtn">Start Cogniutive Control Capacity check</button>
@@ -211,8 +212,8 @@
         </div>
 
         <div id="validPanel" class="hidden">
-          <div class="grid">
-            <div class="metric user-hidden"><div class="k">BPS (combined)</div><div class="v" id="mBps">-</div></div>
+          <div class="grid result-metrics">
+            <div class="metric"><div class="k">Bits / second (CCC)</div><div class="v" id="mBps">-</div></div>
             <div class="metric"><div class="k">State</div><div class="v" id="mState">-</div></div>
             <div class="metric"><div class="k">How sure this looks</div><div class="v" id="mConf">-</div></div>
             <div class="metric user-hidden"><div class="k">Probe trials / Catch fail</div><div class="v" id="mProbeCatch">-</div></div>
@@ -1457,8 +1458,8 @@
         <ul>
           <li><strong>In the Zone:</strong> stable control and efficient lock-in for focused work/training, as well as flexibility and adaptability.</li>
           <li><strong>Out of the Zone - Flat / Groggy / Sluggish:</strong> lower activation, slower or inconsistent control, and often relatively lower drive/motivation to engage.</li>
-          <li><strong>Out of the Zone - Keyed Up (Over-controlling / Exploit):</strong> tunnel vision, rigid control, reduced flexibility/creativity, and difficulty adapting.</li>
-          <li><strong>Out of the Zone - Keyed Up (Over-exploratory / Planning):</strong> idea generation or planning energy is high, but sustained lock-in and execution focus are weaker.</li>
+          <li><strong>Out of the Zone - Locked In (Over-controlling / Exploit):</strong> tunnel vision, rigid control, reduced flexibility/creativity, and difficulty adapting.</li>
+          <li><strong>Out of the Zone - Spun Out (Over-exploratory / Planning):</strong> idea generation or planning energy is high, but sustained lock-in and execution focus are weaker.</li>
         </ul>
         <p class="muted">These are behavioural state estimates for guidance in the app, not clinical labels.</p>
 
