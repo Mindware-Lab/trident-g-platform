@@ -1406,20 +1406,22 @@
 
     function openBpsTraceScreen(){
       const rows = validRows(loadHistory());
-      const pts = rows.map((r, i) => ({
+      let pts = rows.map((r, i) => ({
         idx: i + 1,
         bps: Number(r?.bps?.combined),
         label: r?.label || 'Probe',
         when: r?.sessionId ? String(r.sessionId) : ''
       })).filter(p => Number.isFinite(p.bps));
+      let usingDemoPts = false;
       if (!pts.length) {
-        openInfoScreen('CCC Bits / Second Trace', `
-          <div class="kicker">Mindware Lab - Trident G IQ</div>
-          <h1>CCC Bits / Second Trace</h1>
-          <p>No valid completed sessions are saved yet.</p>
-          <p class="muted">Complete a full check or quick re-check to build your local BPS trace.</p>
-        `);
-        return;
+        usingDemoPts = true;
+        const demoBps = [1.08, 1.12, 1.18, 1.16, 1.24, 1.29, 1.27, 1.35, 1.41, 1.46];
+        pts = demoBps.map((bps, i) => ({
+          idx: i + 1,
+          bps,
+          label: 'Demo',
+          when: `Day ${i+1}`
+        }));
       }
       const values = pts.map(p => p.bps);
       const minV = Math.min(...values), maxV = Math.max(...values);
@@ -1457,7 +1459,8 @@
         <div class="kicker">Mindware Lab - Trident G IQ</div>
         <h1>CCC Bits / Second Trace</h1>
         <p>Session-to-session local history of valid CCC bits/second scores (full checks and quick re-checks).</p>
-        <div class="note note-neutral"><strong>Sessions:</strong> ${pts.length} &nbsp; <strong>Latest:</strong> ${esc(fmt(latest.bps,2))} bps &nbsp; <strong>Average:</strong> ${esc(fmt(avg,2))} bps</div>
+        ${usingDemoPts ? '<p class="muted"><strong>Demo preview:</strong> showing sample 10-session scores so you can preview the graph layout. These are not your saved results.</p>' : ''}
+        <div class="note note-neutral"><strong>${usingDemoPts ? 'Demo sessions' : 'Sessions'}:</strong> ${pts.length} &nbsp; <strong>Latest:</strong> ${esc(fmt(latest.bps,2))} bps &nbsp; <strong>Average:</strong> ${esc(fmt(avg,2))} bps</div>
         <div style="margin-top:12px;">${svg}</div>
         <p class="muted">X-axis = session number in local valid history. Y-axis = CCC bits/second.</p>
       `);
