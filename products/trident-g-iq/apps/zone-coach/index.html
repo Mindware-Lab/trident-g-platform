@@ -251,7 +251,7 @@
         </div>
 
         <div id="validPanel" class="hidden">
-          <div class="grid result-metrics hidden" id="resultMetricsRow">
+          <div class="grid result-metrics" id="resultMetricsRow">
             <div class="metric"><div class="k">Bits / second (CCC)</div><div class="v" id="mBps">-</div></div>
             <div class="metric"><div class="k">State</div><div class="v" id="mState">-</div></div>
             <div class="metric"><div class="k">Confidence Level</div><div class="v" id="mConf">-</div></div>
@@ -1171,7 +1171,6 @@
       dom.invalidPanel.classList.toggle('hidden', summary.valid);
       dom.validPanel.classList.toggle('hidden', !summary.valid);
       const showMetricRow = !!(summary.valid && summary.mode === 'single_probe_router');
-      if (dom.resultMetricsRow) dom.resultMetricsRow.classList.toggle('hidden', !showMetricRow);
       if (!showMetricRow) {
         dom.mBps.textContent = '-';
         dom.mState.textContent = '-';
