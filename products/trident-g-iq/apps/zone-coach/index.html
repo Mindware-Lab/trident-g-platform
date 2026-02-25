@@ -79,6 +79,9 @@
     .splash-kicker { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:#d9ecff; opacity:.9; }
     .splash-title { margin:4px 0 0 0; font-size:clamp(24px,4vw,32px); line-height:1.05; font-weight:900; }
     .splash-sub { margin:10px 0 0 0; color:rgba(237,240,247,.86); }
+    .splash-info-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .splash-info-actions .btn { background:#6ec6ff; border-color:#6ec6ff; color:#0b0b0d; }
+    .splash-info-actions .btn:hover { filter:brightness(1.03); }
     .splash-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:12px; }
     .splash-tile { border-radius:12px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); padding:10px; }
     .splash-tile .k { font-size:12px; color:rgba(237,240,247,.68); }
@@ -144,12 +147,15 @@
           <div class="splash-head">
             <div class="splash-logo"><img src="../../../../branding/Trident-G-Icon.svg" alt="Trident G" /></div>
             <div>
-              <div class="splash-kicker">Mindware Lab • IQ Mindware</div>
+              <div class="splash-kicker">Mindware Lab - Trident G IQ</div>
               <h2 class="splash-title">Zone Coach</h2>
             </div>
           </div>
-          <p class="splash-sub">3-minute readiness check for gating deep work and selecting the right stabilisation block.</p>
-          <div class="small muted" style="margin-top:8px;">Arrows flash briefly. Press <b>&larr;</b> or <b>&rarr;</b> for the majority direction. Go fast and accurate. This check classifies your current readiness state and recommends the next training block.</div>
+          <p class="splash-sub">3 minute valid Cognitive Control Capacity (CCC) check for assessing your brain state and recommending next steps.</p>
+          <div class="splash-info-actions">
+            <button type="button" class="btn" id="instructionsBtn">Instructions</button>
+            <button type="button" class="btn" id="learnAboutTestBtn">Learn about this test</button>
+          </div>
           <div class="splash-grid">
             <div class="splash-tile"><div class="k">Probe length</div><div class="v">3 minutes</div></div>
             <div class="splash-tile"><div class="k">Output</div><div class="v">State + training gate</div></div>
