@@ -113,9 +113,140 @@
     .tg-theme .text-blue-600{ color: #6ec6ff !important; }
     .tg-theme .shadow-lg,
     .tg-theme .shadow-md{ box-shadow: 0 14px 34px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.03) !important; }
+
+
+    .tg-panel-icon{
+      width: 52px;
+      height: 52px;
+      border-radius: 999px;
+      border: 1px solid rgba(110,198,255,.24);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.012)), rgba(15,18,26,.92);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.04);
+      flex: 0 0 auto;
+    }
+    .tg-panel-icon img{
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+      display: block;
+    }
+    .tg-panel-icon--sm{
+      width: 48px;
+      height: 48px;
+    }
+    .tg-panel-icon--sm img{
+      width: 28px;
+      height: 28px;
+    }
+
+    .tg-desktop-chrome{ display: none; }
+    @media (min-width: 960px){
+      body{
+        background: #dfe3e8 !important;
+        padding-top: 90px;
+      }
+      .tg-shell{
+        background: transparent !important;
+        min-height: calc(100vh - 90px) !important;
+      }
+      .tg-desktop-chrome{
+        display: block;
+        position: fixed;
+        inset: 0 0 auto 0;
+        z-index: 50;
+      }
+      .tg-topbar{
+        height: 90px;
+        background: linear-gradient(180deg, rgba(33,38,47,.98), rgba(36,42,52,.98));
+        border-bottom: 1px solid rgba(255,255,255,.07);
+        box-shadow: 0 8px 24px rgba(0,0,0,.18);
+      }
+      .tg-topbar__inner{
+        height: 100%;
+        width: min(1280px, 100%);
+        margin: 0 auto;
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .tg-topbar__brand{
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+      }
+      .tg-topbar__icon{
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        border: 1px solid rgba(110,198,255,.22);
+        background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)), rgba(15,18,26,.94);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+        flex: 0 0 auto;
+      }
+      .tg-topbar__icon img{
+        width: 30px;
+        height: 30px;
+        object-fit: contain;
+      }
+      .tg-topbar__meta{ min-width: 0; }
+      .tg-topbar__title{
+        color: #edf0f7;
+        font-weight: 800;
+        font-size: 16px;
+        line-height: 1.1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tg-topbar__subtitle{
+        margin-top: 4px;
+        color: #b7c2d6;
+        font-size: 12px;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tg-topbar__pill{
+        border-radius: 999px;
+        background: #ccff66;
+        color: #0b0b0d;
+        border: 1px solid #ccff66;
+        padding: 9px 16px;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: .02em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+    }
+
   </style>
 </head>
 <body class="bg-gray-50">
+  <header class="tg-desktop-chrome" aria-hidden="true">
+    <div class="tg-topbar">
+      <div class="tg-topbar__inner">
+        <div class="tg-topbar__brand">
+          <span class="tg-topbar__icon"><img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="" /></span>
+          <div class="tg-topbar__meta">
+            <div class="tg-topbar__title">SgS-12 B</div>
+            <div class="tg-topbar__subtitle">Short g Scale assessment</div>
+          </div>
+        </div>
+        <span class="tg-topbar__pill">Trident G - IQ</span>
+      </div>
+    </div>
+  </header>
   <div id="root"></div>
 
   <script type="text/babel">
@@ -488,9 +619,14 @@
         <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
           <div className="tg-card bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
             <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
-              <h1 className="text-4xl font-bold text-gray-800 text-center sm:text-left flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <span className="tg-panel-icon">
+                  <img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="Trident G" />
+                </span>
+                <h1 className="text-4xl font-bold text-gray-800 text-center sm:text-left flex-1 min-w-0">
               Short g Scale – SgS-12 B
-              </h1>
+                </h1>
+              </div>
               <button
                 type="button"
                 onClick={onOpenDetails}
