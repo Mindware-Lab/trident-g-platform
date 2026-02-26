@@ -42,8 +42,43 @@
       border-radius: 12px;
       border: 1px solid rgba(0,0,0,.10);
       padding: 10px;
-      display: inline-block;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: min(100%, 280px);
       box-shadow: 0 8px 18px rgba(0,0,0,.16);
+    }
+    .tg-image-loading{
+      font-size: 13px;
+      color: #334155;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .tg-image-error{
+      width: min(100%, 520px);
+      margin-bottom: 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(220,38,38,.18);
+      background: rgba(248,113,113,.08);
+      padding: 10px 12px;
+      color: #7f1d1d;
+      text-align: left;
+    }
+    .tg-image-error p{
+      margin: 0;
+      line-height: 1.35;
+      font-size: 13px;
+    }
+    .tg-image-retry{
+      margin-top: 8px;
+      border: 1px solid #6ec6ff;
+      background: #6ec6ff;
+      color: #0b0b0d;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-weight: 700;
+      cursor: pointer;
     }
     .tg-theme button:focus-visible{
       outline: none;
@@ -84,7 +119,7 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState } = React;
+    const { useEffect, useState } = React;
 
     // Item definitions – SgS-12 Form A
     // Matrix items (ICAR q-IDs in comments):
@@ -219,6 +254,101 @@
       return descriptions[band];
     }
 
+    const STEM_IMAGE_URLS = ITEMS.filter(item => !!item.stemImageUrl).map(item => item.stemImageUrl);
+
+    function addRetryParam(url, token) {
+      const sep = url.includes('?') ? '&' : '?';
+      return `${url}${sep}img_retry=${encodeURIComponent(token)}`;
+    }
+
+    function preloadImage(url, retries = 1) {
+      return new Promise((resolve) => {
+        let attempt = 0;
+        const seed = Date.now();
+        const run = () => {
+          const img = new Image();
+          img.decoding = 'async';
+          img.onload = () => resolve(true);
+          img.onerror = () => {
+            if (attempt < retries) {
+              attempt += 1;
+              img.src = addRetryParam(url, `${seed}_${attempt}`);
+            } else {
+              resolve(false);
+            }
+          };
+          img.src = attempt === 0 ? url : addRetryParam(url, `${seed}_${attempt}`);
+        };
+        run();
+      });
+    }
+
+    function prewarmImages(urls) {
+      const list = Array.from(new Set((urls || []).filter(Boolean)));
+      if (!list.length) return;
+      Promise.allSettled(list.map((u) => preloadImage(u, 1)))
+        .then(() => Promise.allSettled(list.map((u) => preloadImage(u, 0))))
+        .catch(() => {});
+    }
+
+    function StemImage({ src, alt }) {
+      const [attempt, setAttempt] = useState(0);
+      const [seed, setSeed] = useState(() => Date.now());
+      const [loaded, setLoaded] = useState(false);
+      const [failed, setFailed] = useState(false);
+
+      useEffect(() => {
+        setAttempt(0);
+        setSeed(Date.now());
+        setLoaded(false);
+        setFailed(false);
+      }, [src]);
+
+      const resolvedSrc = attempt === 0 ? src : addRetryParam(src, `${seed}_${attempt}`);
+
+      return (
+        <div className="tg-image-frame">
+          {!loaded && !failed && (
+            <div className="tg-image-loading" aria-live="polite">Loading image...</div>
+          )}
+          {failed && (
+            <div className="tg-image-error" role="status">
+              <p><strong>Image did not load.</strong> This can happen if the network is slow. You can retry without losing your place.</p>
+              <button
+                type="button"
+                className="tg-image-retry"
+                onClick={() => {
+                  setSeed(Date.now());
+                  setAttempt(1);
+                  setLoaded(false);
+                  setFailed(false);
+                }}
+              >
+                Retry image
+              </button>
+            </div>
+          )}
+          <img
+            src={resolvedSrc}
+            alt={alt}
+            className="max-w-full h-auto mx-auto max-h-96 object-contain"
+            loading="eager"
+            decoding="async"
+            style={{ display: failed ? 'none' : 'block', opacity: loaded ? 1 : 0.01, transition: 'opacity .12s ease' }}
+            onLoad={() => { setLoaded(true); setFailed(false); }}
+            onError={() => {
+              if (attempt < 2) {
+                setAttempt((a) => a + 1);
+                setLoaded(false);
+              } else {
+                setFailed(true);
+              }
+            }}
+          />
+        </div>
+      );
+    }
+
     // Start screen
     function StartScreen({ onStart }) {
       return (
@@ -274,13 +404,10 @@
               {/* Stem */}
               {item.kind === 'matrix' || item.kind === 'rotation' ? (
                 <div className="mb-8 text-center">
-                  <div className="tg-image-frame">
-                    <img
-                      src={item.stemImageUrl}
-                      alt="Reasoning puzzle"
-                      className="max-w-full h-auto mx-auto max-h-96 object-contain"
-                    />
-                  </div>
+                  <StemImage
+                    src={item.stemImageUrl}
+                    alt="Reasoning puzzle"
+                  />
                 </div>
               ) : (
                 <p className="text-lg text-gray-700 mb-8 leading-relaxed">
@@ -417,6 +544,17 @@
       const [screen, setScreen] = useState('start'); // 'start', 'test', 'results'
       const [currentItemIndex, setCurrentItemIndex] = useState(0);
       const [answers, setAnswers] = useState(new Array(ITEMS.length).fill(null));
+
+      useEffect(() => {
+        prewarmImages(STEM_IMAGE_URLS);
+      }, []);
+
+      useEffect(() => {
+        if (screen !== 'test') return;
+        const current = ITEMS[currentItemIndex];
+        const next = ITEMS[currentItemIndex + 1];
+        prewarmImages([current?.stemImageUrl, next?.stemImageUrl]);
+      }, [screen, currentItemIndex]);
 
       const handleStart = () => {
         setScreen('test');
