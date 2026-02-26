@@ -349,15 +349,90 @@
       );
     }
 
+    function openSgs12ATestDetails() {
+      const ua = String(navigator.userAgent || '');
+      const isMobileLike = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+      let win = null;
+      try {
+        win = isMobileLike
+          ? window.open('', '_blank')
+          : window.open('', '_blank', 'width=860,height=780,resizable=yes,scrollbars=yes');
+        if (!win) win = window.open('', '_blank');
+      } catch (_) {
+        win = null;
+      }
+      if (!win) {
+        window.alert('Please allow pop-ups to view Test Details.');
+        return;
+      }
+      const title = 'SgS-12 Test Details';
+      win.document.open();
+      win.document.write(`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>${title}</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: radial-gradient(1200px 420px at -10% -15%, rgba(110,198,255,.10), transparent 55%), #0b1118; color: #edf0f7; }
+    .wrap { width: min(920px, 100%); margin: 0 auto; padding: 18px; }
+    .card { border-radius: 18px; border: 1px solid rgba(110,198,255,.22); background: radial-gradient(1100px 360px at -10% -20%, rgba(110,198,255,.14), transparent 55%), linear-gradient(165deg, rgba(78,160,232,.10), rgba(15,18,26,.96) 55%); box-shadow: 0 14px 34px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04); padding: 18px; }
+    .kicker { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #d9ecff; margin: 0 0 8px 0; }
+    h1 { margin: 0; font-size: 28px; line-height: 1.08; }
+    h2 { margin: 18px 0 8px 0; font-size: 16px; }
+    p, li { color: #d5dceb; line-height: 1.45; }
+    ul { margin: 8px 0 0 18px; padding: 0; }
+    .sub { margin-top: 10px; border-radius: 12px; padding: 12px 14px; border: 1px solid rgba(255,255,255,.10); background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.012)); }
+    .note { margin-top: 12px; border-radius: 12px; padding: 12px 14px; border: 1px solid rgba(255,120,140,.30); background: rgba(255,170,190,.10); color: #edf0f7; }
+    .note p { margin: 0; color: #edf0f7; }
+    .btnRow { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+    button { border: 1px solid #6ec6ff; background: #6ec6ff; color: #0b0b0d; padding: 10px 12px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <p class="kicker">Mindware Lab - Trident G IQ</p>
+      <h1>Short g Scale (SgS-12)</h1>
+      <div class="sub"><p><strong>What it is:</strong> A brief reasoning check that looks at how well you solve unfamiliar problems using patterns and simple rules.</p></div>
+      <h2>What it measures</h2>
+      <p>SgS-12 is designed to capture <strong>fluid reasoning</strong>. That is your ability to spot patterns, infer rules, and work things out when you have not seen the problem before.</p>
+      <h2>How it works</h2>
+      <p>You answer <strong>12 multiple-choice questions</strong>. Items include things like <strong>pattern matrices</strong>, <strong>letter-number sequences</strong>, <strong>mental rotation</strong>, and a few <strong>short verbal reasoning</strong> questions. There are <strong>two versions (Form A and Form B)</strong> so you can repeat it later without seeing the exact same items.</p>
+      <h2>Taking the test</h2>
+      <p>There is <strong>no time limit</strong>, so it is about careful thinking rather than rushing. Most people finish in just a few minutes, but you can take a little longer if you need to.</p>
+      <h2>Current validation status (working summary)</h2>
+      <div class="note"><p>SgS-12 is built from public-domain items drawn from the International Cognitive Ability Resource (ICAR) test bank - specifically ICAR Matrix Reasoning items, plus the same ICAR family of Verbal Reasoning and Letter-Number Series item types, alongside ICAR's Three-Dimensional Rotation (R3D) items. These ICAR/R3D item sets have published psychometrics and large-sample norms, so the questions are not home-made puzzles but established item types with known difficulty and reliability characteristics. Because SgS-12 uses only 12 items, it is best treated as a practical reasoning snapshot and for tracking change over time, rather than as a definitive IQ test.</p></div>
+      <h2>Intended use</h2>
+      <p><strong>Good for:</strong> self-tracking, baseline vs follow-up measurement in Trident G - IQ training, and product/research use.<br /><strong>Not for:</strong> clinical diagnosis or high-stakes decisions.</p>
+      <div class="btnRow"><button type="button" onclick="window.close()">Close</button></div>
+    </div>
+  </div>
+</body>
+</html>`);
+      win.document.close();
+    }
+
     // Start screen
-    function StartScreen({ onStart }) {
+    function StartScreen({ onStart, onOpenDetails }) {
       return (
         <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
           <div className="tg-card bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
-            <h1 className="text-4xl font-bold text-gray-800 mb-4 text-center">
+            <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
+              <h1 className="text-4xl font-bold text-gray-800 text-center sm:text-left flex-1 min-w-0">
               Short g Scale – SgS-12 A
-            </h1>
-            <p className="text-gray-600 text-lg mb-8 text-center leading-relaxed">
+              </h1>
+              <button
+                type="button"
+                onClick={onOpenDetails}
+                className="px-4 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors whitespace-nowrap"
+              >
+                Test Details
+              </button>
+            </div>
+            <p className="text-gray-600 text-lg mb-8 text-center sm:text-left leading-relaxed">
               A 12-item reasoning snapshot measuring matrices, verbal, series and 3D rotation.
               There are no time limits, but most people finish in around 5–10 minutes.
             </p>
@@ -590,7 +665,7 @@
       };
 
       if (screen === 'start') {
-        return <StartScreen onStart={handleStart} />;
+        return <StartScreen onStart={handleStart} onOpenDetails={openSgs12ATestDetails} />;
       }
 
       if (screen === 'test') {
