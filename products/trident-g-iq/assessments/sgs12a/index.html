@@ -147,6 +147,18 @@
       display: block;
     }
 
+    .tg-panel-kicker{
+      display: block;
+      margin: 0 0 4px 0;
+      color: #d9ecff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+
     .tg-desktop-chrome{ display: none; }
     @media (min-width: 960px){
       body{
@@ -555,9 +567,12 @@
                 <span className="tg-panel-icon">
                   <img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="Trident G" />
                 </span>
-                <h1 className="text-4xl font-bold text-gray-800 text-center sm:text-left flex-1 min-w-0">
+                <div className="flex-1 min-w-0">
+                  <span className="tg-panel-kicker">Mindware Lab - Trident G IQ</span>
+                  <h1 className="text-4xl font-bold text-gray-800 text-center sm:text-left min-w-0">
               Short g Scale – SgS-12 A
-                </h1>
+                  </h1>
+                </div>
               </div>
               <button
                 type="button"
