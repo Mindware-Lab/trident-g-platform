@@ -455,6 +455,7 @@
             const [currentQuestion, setCurrentQuestion] = useState(0);
             const [answers, setAnswers] = useState({});
             const [showResults, setShowResults] = useState(false);
+            const [hasStarted, setHasStarted] = useState(false);
 
             const handleAnswer = (questionId, value) => {
                 setAnswers(prev => ({
@@ -481,6 +482,7 @@
                 setCurrentQuestion(0);
                 setAnswers({});
                 setShowResults(false);
+                setHasStarted(false);
             };
 
 
@@ -721,7 +723,7 @@
             return (
                 <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-blue-50 p-4 py-8">
                     <div className="max-w-3xl mx-auto">
-                        {currentQuestion === 0 && Object.keys(answers).length === 0 ? (
+                        {!hasStarted ? (
                             <div className="tg-card bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-8">
                                 <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
                                     <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -769,7 +771,10 @@
                                 </div>
 
                                 <button
-                                    onClick={() => setCurrentQuestion(0)}
+                                    onClick={() => {
+                                        setCurrentQuestion(0);
+                                        setHasStarted(true);
+                                    }}
                                     className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-between group"
                                 >
                                     <span className="text-lg">Begin Assessment</span>
@@ -785,6 +790,7 @@
                             </div>
                         ) : null}
 
+                        {hasStarted ? (
                         <div className="tg-card bg-white rounded-2xl shadow-xl p-8 md:p-12">
                             <div className="mb-8">
                                 <div className="flex items-center justify-between mb-4">
@@ -878,6 +884,7 @@
                                 </div>
                             )}
                         </div>
+                        ) : null}
                     </div>
                 </div>
             );
