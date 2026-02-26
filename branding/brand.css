@@ -6,6 +6,7 @@
   --z-p1: #0f121a;
   --z-p2: #1d2230;
   --z-p3: #2a3345;
+  --z-page-light: #dfe3e8;
   --z-ink: #0b0b0d;
 
   --z-t0: #edf0f7;
@@ -30,7 +31,7 @@
   --lime: var(--z-lime-400);
   --white: #ffffff;
 
-  --brand-bg-page: var(--z-p0);
+  --brand-bg-page: var(--z-page-light);
   --brand-bg-shell: #0d1118;
   --brand-surface-card: rgba(15,18,26,.92);
   --brand-surface-soft: rgba(255,255,255,.03);
@@ -90,7 +91,7 @@ html, body{
 body{
   margin:0;
   font-family: var(--font);
-  background: radial-gradient(1200px 500px at -10% -15%, rgba(110,198,255,.08), transparent 55%), var(--brand-bg-page);
+  background: var(--brand-bg-page);
   color: var(--brand-text);
 }
 
@@ -99,6 +100,15 @@ body{
   display:flex;
   flex-direction:column;
   background: transparent;
+}
+
+.appShell{
+  min-height: 100vh;
+  background: transparent;
+}
+
+.appShellTopband{
+  padding-top: 72px;
 }
 
 .content{
@@ -262,6 +272,74 @@ summary:focus-visible{
   background: transparent;
   border: 1px solid var(--brand-border);
   color: var(--brand-text);
+}
+
+/* Shared app top band (Zone Coach / assessment shell pattern) */
+.appTopBand,
+.tg-topbar{
+  height: 72px;
+  background: linear-gradient(180deg, rgba(33,38,47,.98), rgba(36,42,52,.98));
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+}
+
+.appTopBandChrome,
+.tg-desktop-chrome{
+  display: block;
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+}
+
+.appTopBand__inner,
+.tg-topbar__inner{
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.appTopBand__icon,
+.tg-topbar__icon{
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(110,198,255,.22);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
+    rgba(15,18,26,.94);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.appTopBand__icon img,
+.tg-topbar__icon img{
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  display: block;
+}
+
+.appTopBand__pill,
+.tg-topbar__pill{
+  border-radius: 999px;
+  background: var(--brand-primary);
+  color: var(--brand-text-on-bright);
+  border: 1px solid var(--brand-primary);
+  padding: 8px 12px;
+  font: 800 11px/1 var(--font);
+  letter-spacing: .04em;
+  box-shadow: var(--shadow-primary);
+  white-space: nowrap;
+  text-decoration: none;
 }
 
 .topbar{
