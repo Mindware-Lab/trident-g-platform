@@ -1576,19 +1576,42 @@
       doc.close();
       const resizePopupToContent = () => {
         try {
-          if (!win || win.closed) return;
-          const root = doc.documentElement;
+          if (!win || win.closed || isMobileLike) return;
           const body = doc.body;
-          const contentH = Math.max(root?.scrollHeight || 0, body?.scrollHeight || 0);
-          const minH = 420;
-          const maxH = Math.max(minH, (win.screen?.availHeight || 900) - 80);
-          const targetH = Math.max(minH, Math.min(maxH, contentH + 48));
-          const targetW = Math.max(820, Math.min(920, win.outerWidth || 860));
-          if (Number.isFinite(targetH) && targetH > 0) win.resizeTo(targetW, Math.round(targetH));
+          const wrap = body?.querySelector('.wrap');
+          const card = body?.querySelector('.card');
+          const cs = body ? win.getComputedStyle(body) : null;
+          const padX = (parseFloat(cs?.paddingLeft || '0') || 0) + (parseFloat(cs?.paddingRight || '0') || 0);
+          const padY = (parseFloat(cs?.paddingTop || '0') || 0) + (parseFloat(cs?.paddingBottom || '0') || 0);
+          const wrapRect = wrap?.getBoundingClientRect();
+          const cardRect = card?.getBoundingClientRect();
+          const contentH = Math.max(
+            Math.ceil((wrapRect?.height || 0) + padY),
+            Math.ceil((cardRect?.height || 0) + padY),
+            Math.ceil((wrap?.scrollHeight || 0) + padY),
+            Math.ceil((card?.scrollHeight || 0) + padY)
+          );
+          const contentW = Math.max(
+            560,
+            Math.ceil((wrapRect?.width || 0) + padX),
+            Math.ceil((cardRect?.width || 0) + padX),
+            Math.ceil((wrap?.scrollWidth || 0) + padX),
+            Math.ceil((card?.scrollWidth || 0) + padX)
+          );
+          const chromeW = Math.max(0, (win.outerWidth || 0) - (win.innerWidth || 0));
+          const chromeH = Math.max(0, (win.outerHeight || 0) - (win.innerHeight || 0));
+          const maxOuterW = Math.max(620, (win.screen?.availWidth || 1280) - 40);
+          const maxOuterH = Math.max(360, (win.screen?.availHeight || 900) - 40);
+          const targetOuterW = Math.min(maxOuterW, Math.max(620, contentW + chromeW + 8));
+          const targetOuterH = Math.min(maxOuterH, Math.max(320, contentH + chromeH + 8));
+          if (Number.isFinite(targetOuterW) && Number.isFinite(targetOuterH) && targetOuterW > 0 && targetOuterH > 0) {
+            win.resizeTo(Math.round(targetOuterW), Math.round(targetOuterH));
+          }
         } catch (_) {}
       };
       setTimeout(resizePopupToContent, 40);
       setTimeout(resizePopupToContent, 180);
+      setTimeout(resizePopupToContent, 420);
     }
 
     function openFeelStatesScreen(){
