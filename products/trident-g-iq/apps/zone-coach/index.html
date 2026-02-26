@@ -114,6 +114,9 @@
     .splash-title { margin:4px 0 0 0; font-size:clamp(24px,4vw,32px); line-height:1.05; font-weight:900; }
     .splash-sub { margin:10px 0 0 0; font-size:15px; font-weight:700; line-height:1.4; color:var(--zc-text); }
     .splash-prompt { margin-top:12px; font-size:15px; font-weight:700; color:var(--zc-text); }
+    .splash-feel-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+    .splash-feel-row .radio { margin-top:0; flex:1 1 420px; }
+    .splash-feel-help { flex:0 0 auto; padding:8px 10px; border-radius:999px; font-size:13px; line-height:1.1; white-space:nowrap; }
     .splash-info-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
     .splash-info-actions .btn-info { background:var(--zc-blue); border-color:var(--zc-blue); color:var(--zc-ink); }
     .splash-info-actions .btn:hover { filter:brightness(1.03); }
@@ -211,10 +214,14 @@
             <div class="splash-tile"><div class="k">Next step</div><div class="v">In-app recommendation</div></div>
           </div>
           <div class="splash-prompt">First note how your cognitive state feels right now....</div>
-          <div class="radio">
-            <label><input type="radio" name="feel" value="flat" /> Flat</label>
-            <label><input type="radio" name="feel" value="normal" checked /> In the Zone</label>
-            <label><input type="radio" name="feel" value="wired" /> Spun Out</label>
+          <div class="splash-feel-row">
+            <div class="radio">
+              <label><input type="radio" name="feel" value="flat" /> Flat</label>
+              <label><input type="radio" name="feel" value="normal" checked /> In the Zone</label>
+              <label><input type="radio" name="feel" value="locked_in" /> Locked In</label>
+              <label><input type="radio" name="feel" value="wired" /> Spun Out</label>
+            </div>
+            <button type="button" class="btn btn-info splash-feel-help" id="feelStatesBtn">What are these?</button>
           </div>
           <div class="cta">
             <button class="btn btn-primary" id="startBtn">Start Cognitive Control Capacity check</button>
@@ -355,7 +362,7 @@
       sessionPanelGateChips: $('sessionPanelGateChips'), sessionPanelSteps: $('sessionPanelSteps'), sessionPanelCloseBtn: $('sessionPanelCloseBtn'), sessionPanelResetChecksBtn: $('sessionPanelResetChecksBtn'),
       histCount: $('histCount'), histBps: $('histBps'), lastLine: $('lastLine'),
       touchLeftBtn: $('touchLeftBtn'), touchRightBtn: $('touchRightBtn'),
-      instructionsBtn: $('instructionsBtn'), learnAboutTestBtn: $('learnAboutTestBtn'),
+      instructionsBtn: $('instructionsBtn'), learnAboutTestBtn: $('learnAboutTestBtn'), feelStatesBtn: $('feelStatesBtn'),
       canvas: $('c')
     };
     const ctx = dom.canvas.getContext('2d', { alpha:false, desynchronized:true }) || dom.canvas.getContext('2d');
@@ -1148,7 +1155,7 @@
     }
     function buildSkipPreviewSummary(){
       const feel = feelLabel();
-      const state = feel === 'flat' ? 'flat' : feel === 'wired' ? 'overloaded_explore' : 'in_zone';
+      const state = feel === 'flat' ? 'flat' : feel === 'locked_in' ? 'overloaded_exploit' : feel === 'wired' ? 'overloaded_explore' : 'in_zone';
       const confidence = state === 'in_zone' ? 'Medium' : 'Low';
       const sample = ({
         in_zone: { bps: 1.72, n: 26, catchFailRate: 0.0, timeoutRate: 0.01, rtCV: 0.19, PES: 24, errorBurstiness: 0.9 },
@@ -1574,6 +1581,36 @@
       setTimeout(resizePopupToContent, 180);
     }
 
+    function openFeelStatesScreen(){
+      openInfoScreen('What are these cognitive states?', `
+        <div class="kicker">Mindware Lab - Trident G IQ</div>
+        <h1>What are these cognitive states?</h1>
+        <p>These state labels describe common coaching patterns of arousal, control, and network balance that can shift day to day.</p>
+
+        <h2>In the Zone</h2>
+        <p><strong>Mind + motivation:</strong> Calm, energised focus with high absorption. Attention feels steady but flexible. You can stay on task, notice errors quickly, and shift strategy smoothly when needed, without feeling strained.</p>
+        <p><strong>Criticality (Trident-G):</strong> Near-critical. The system sits in the "sweet spot" where dynamic range and information processing are close to optimal.</p>
+        <p><strong>Networks most involved:</strong> Efficient switching by the salience network (anterior insula + ACC) between executive control/frontoparietal network (dlPFC + posterior parietal) and default mode network (mPFC, PCC/precuneus, IPL), with attention systems (for example, dorsal attention) well engaged.</p>
+
+        <h2>Flat</h2>
+        <p><strong>Mind + motivation:</strong> Low arousal and low drive. Thinking feels slowed and effortful, with more mind-wandering and weaker "get started" momentum. You can do the task, but it takes more effort to sustain focus and respond sharply.</p>
+        <p><strong>Criticality (Trident-G):</strong> Subcritical. Gain is too low, so signals do not propagate efficiently and throughput drops.</p>
+        <p><strong>Networks most involved:</strong> Reduced engagement/coordination of prefrontal + frontoparietal control systems, with more DMN dominance/intrusion and weaker salience-driven switching (often discussed in fatigue/sleep-loss work).</p>
+
+        <h2>Locked In</h2>
+        <p><strong>Mind + motivation:</strong> High effortful control with narrowed attention. You feel strongly goal-driven and "on task", but less flexible: switching, updating, and exploring alternatives can feel harder, and you may persevere even when the situation changes.</p>
+        <p><strong>Criticality (Trident-G):</strong> Supercritical (control-heavy). Gain is too high and the system becomes over-stabilised, reducing flexibility.</p>
+        <p><strong>Networks most involved:</strong> Salience network upshift (anterior insula/ACC) with stronger suppression of DMN and heavy reliance on executive control networks (dlPFC-parietal), a pattern often seen as arousal/stress rises.</p>
+
+        <h2>Spun Out</h2>
+        <p><strong>Mind + motivation:</strong> High arousal with unstable control. Attention becomes jumpy, thoughts can feel fast or crowded, and you may slip into hypervigilance with more impulsive responding or error bursts. It is harder to hold a stable plan long enough to execute cleanly.</p>
+        <p><strong>Criticality (Trident-G):</strong> Supercritical (entropy-heavy). Gain is too high and activity becomes runaway/unstable, harming reliable decision control.</p>
+        <p><strong>Networks most involved:</strong> Salience network hyper-reactivity (insula/ACC) plus stronger internal/self-referential processing and poorer coordination between salience and DMN has been reported in anxiety-related network findings, consistent with "too much salience, too little stability".</p>
+
+        <div class="note note-neutral"><strong>Note:</strong> These are coaching states, not diagnoses. They describe common patterns of arousal, control, and network balance that can shift day to day.</div>
+      `);
+    }
+
     function openCccInstructionsScreen(){
       openInfoScreen('CCC Test Instructions', `
         <div class="kicker">Mindware Lab - Trident G IQ</div>
@@ -1643,6 +1680,7 @@
       const rec = s.recommendation || pickRecommendation(s.router?.state, gate.trainingGate, s.router?.confidence, loadPrefs());
       openSessionPanel(s, rec, gate);
     });
+    if (dom.feelStatesBtn) dom.feelStatesBtn.addEventListener('click', () => openFeelStatesScreen());
     if (dom.instructionsBtn) dom.instructionsBtn.addEventListener('click', () => openCccInstructionsScreen());
     if (dom.learnAboutTestBtn) dom.learnAboutTestBtn.addEventListener('click', () => {
       openInfoScreen('About the CCC Test', `
