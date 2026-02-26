@@ -1,224 +1,142 @@
-# Ψ Zone Coach (Trident-G) 
+﻿# Zone Coach (Trident G IQ)
 
-Ψ Zone Coach is a quick **cognitive readiness check** you can run **once per day**:
+Zone Coach is a short **Cognitive Control Capacity (CCC)** check that helps you understand your current brain state before doing demanding work or training.
 
-1) **As a standalone test** to gauge whether you’re in a **near-critical, highly trainable “Ψ Zone”** for general, wide-ranging cognitive work (deep work, study, creative problem solving, decision-making), and/or  
-2) **As a pre-training state gate** before any Trident-G training session.
+It is designed to answer a practical question:
 
-Its job is simple:
+**"Am I in the right state right now for high-quality cognitive work or training?"**
 
-- Help you start in a **trainable mental state** (the “Ψ/G Zone”), instead of guessing.
-- Reduce **state drift** (overload, scatteredness, low drive, shaky control) before you train or do demanding cognitive work.
-- Protect learning quality by recommending either a normal session, a lighter stabilising session, or a **recovery day** when training would be low quality.
+The app runs a brief masked arrow task (MFT-M / CCC-style probe), estimates your current state, and gives a simple next-step recommendation.
 
-Trident-G compounds by **training consistently in the right state**, not by grinding harder.
+## What the app is for
 
----
+Zone Coach helps you:
 
-## What you’ll do (the full flow)
+- Check your current cognitive state in about **3 minutes**
+- See whether you look more like:
+  - **In the Zone**
+  - **Flat**
+  - **Locked In**
+  - **Spun Out**
+- Get a practical recommendation for what to do next
+- Avoid doing high-challenge training when you are in a poor state for transferable learning
+- Track your **CCC bits/second** trend over time (locally, on your device)
 
-### 0) Optional: Pair a Polar H10 (or similar chest strap) for RR + heart rate
-If you have a **Polar H10**, you can pair it once per session to record:
+## What you get after a valid check
 
-- **RR intervals** (for the baseline DFA α1 trend)
-- **Heart rate** during the dot probes (before and after breathing)
+After the test, Zone Coach shows:
 
-If you’re already wearing the strap, this is usually quick: tap **Pair sensor** and select your strap.
+- **Bits / second (CCC)**
+- **Cognitive State**
+- **Confidence Level**
+- A short explanation of the likely mechanism/state pattern
+- A recommended next cognitive block (1-4 hours)
+- Three guidance areas:
+  - **Cognitive Training**
+  - **Work**
+  - **Other Intervention**
 
-- You’ll be asked for permission by the browser
-- Works best in **Chrome/Edge** (desktop or Android). Safari does not support this pairing method.
+You can also open a small graph (`See Data`) to view your local session-to-session CCC bits/second trend.
 
-**Good news:** Ψ Zone Coach uses the **standard Bluetooth Heart Rate service**, so the same pairing method and code usually works with other devices that expose **Heart Rate Measurement + RR intervals** (many chest straps do).  
-If a device does not broadcast RR intervals, Ψ Zone Coach will still run normally (you’ll just skip DFA α1 baseline trending).
+## Important (local storage)
 
-You can also skip pairing and run Ψ Zone Coach using only the dot probe + self-ratings.
+Zone Coach stores results in **local browser storage** on your device.
 
----
+This means:
 
-### 1) Daily Prime (≈20–30 seconds)
-Three quick ratings that shape today’s session:
+- Your data is **not** automatically synced across devices
+- To track your trend over time, use the **same device and same browser** each time
+- If you clear browser storage/site data, your local history will be reset
 
-- **Confidence (η):** “How capable do I feel today?”
-- **Consistency (χ):** “How coherent/settled do I feel?”
-- **Support (λ):** “How supportive is my environment right now?”
+## How to use Zone Coach
 
-These aren’t diagnoses. They’re a short daily “set” that helps you start cleanly and consistently.
+## 1. Start on the splash screen
 
----
+- (Optional) Select how your state feels right now:
+  - `Flat`
+  - `In the Zone`
+  - `Locked In`
+  - `Spun Out`
+- Use **What are these?** if you want a quick explanation of the state labels
+- Use **Instructions** for the test instructions and usage notes
 
-### 2) Baseline complexity (DFA α1) — trend only (≈2 minutes, optional)
-If RR intervals are available, Ψ Zone Coach can take a calm baseline reading of **DFA α1** (a heart-rhythm complexity/correlation metric).
+Then press:
 
-- Normal breathing (not paced)
-- Same posture each day if possible
-- No “pass/fail” here: this is tracked as a **long-run trend** across days/weeks
+- **Start Cognitive Control Capacity check**
 
-> Important: this baseline is **not** used as the immediate “in the zone today” verdict.
+## 2. Complete the CCC check
 
-If no sensor is paired (or RR isn’t available), Ψ Zone Coach skips this step and continues.
+The task briefly shows arrow patterns.
+Your job is to decide the **majority direction** (left or right) as quickly and accurately as possible.
 
----
+### Controls
 
-### 3) Dot probe (≈60–90 seconds) + heart rate (optional)
-A short reaction-time check to sample steadiness and impulse control.
+- **Desktop / laptop:** use the **Left Arrow** and **Right Arrow** keys
+- **Mobile / tablet:** use the on-screen **left / right** buttons
 
-- Press **only** when the **GO dot** appears (e.g., white)
-- **Do not press** for the **NO-GO dot** (e.g., lime)
-- Don’t “pre-tap” while waiting
+### During the run
 
-If a strap is paired, Ψ Zone Coach also records **average heart rate during the dot probe** as a supporting arousal signal.
+- Respond **fast and accurately**
+- Complete the full run if possible
+- Do not switch tabs/apps during the test
+- If unsure on a trial, make your best decision anyway
 
----
+## 3. Read your result
 
-### 4) Quick self-ratings (0–10)
-A fast snapshot of trainability **right now** (reduced set):
+After the run, the app shows your **Brain State Result**.
 
-- **Energy (E):** usable energy to start and keep going
-- **Tension (S):** how tense/on edge you feel
-- **Mental chatter (N):** how noisy your mind feels
-- **Plan switching / second-guessing (C):** changing direction, indecision
-- **Stuckness / rigidity (R):** flexibility vs getting locked into one way
+From there you can:
 
-Keep it quick and honest.
+- Review your state and confidence
+- Open more detail for:
+  - **Cognitive Training**
+  - **Work**
+  - **Other Intervention**
+- Re-run the test (full or quick re-check)
+- Open the CCC bits/second graph (`See Data`)
 
----
+## Quick re-check
 
-### 5) You get a state label + readout quality
-Ψ Zone Coach shows:
+Zone Coach also supports a shorter **Quick re-check (75s)** to reassess your state after an intervention (for example: breathing, movement, attention reset).
 
-- Your **state label** (your current readiness “mode”)
-- A simple **read quality** signal (how trustworthy today’s reading is)
-- A simple **certainty** signal (how confidently the app is classifying your state)
+Completed quick re-checks are also included in your local CCC graph history.
 
-These are there to prevent over-interpreting noisy readings.
+## Using the recommendations well
 
----
+The app is intended to help you make better decisions about timing and state, for example:
 
-### 6) Breathing reset (3 minutes)
-Ψ Zone Coach offers **three mindful breathing options** (3 minutes each).  
-The app selects one automatically based on your current mode, but you can treat them as simple tools:
+- Use **In the Zone** windows for demanding work and high-challenge training
+- Use **Flat / Locked In / Spun Out** recommendations to stabilise, widen, or constrain state first
+- Re-check before starting high-challenge cognitive training if you are out of the zone
 
-- **Upshift:** inhale-led, gentle activation (2–4s inhale, 2–3s exhale)  
-- **Stabilise (4–6):** slow stabilising rhythm (4s inhale, 6s exhale)  
-- **Downshift:** cyclic sighing (two 1s inhales, 7s exhale)
+The app may warn against doing Trident G IQ training while out of the zone because low-quality state can promote **thin automation** (surface-feature task strategies rather than broader transferable gains).
 
-If you feel dizzy or unwell at any point, stop and return to normal breathing.
+## Privacy and safety
 
----
+- Zone Coach is a **coaching/readiness tool**, not a diagnosis tool
+- State labels are **not medical or psychiatric diagnoses**
+- Use common sense and stop if you are overly fatigued, distressed, or unable to focus safely
 
-### 7) Recheck (≈30–60 seconds) + quick self-check
-After breathing:
+## Technical notes
 
-- A short **recheck dot probe**
-- One simple question: **Do you feel more / neutral / less in the zone than before?**
+- Built as a browser app (`index.html`) with local storage history
+- Pop-up/help windows are used for instructions, explanations, and graph views
+- On mobile, the app uses a mobile-safe open path for these info screens
 
-If a strap is paired, Ψ Zone Coach also records **average heart rate** during the recheck dot probe.
+## Running the app
 
-Ψ Zone Coach then computes a simple “today improved?” readout based primarily on:
-- dot probe change (fewer false alarms, steadier responses)
-- your subjective shift (more/neutral/less)
+If you are using this from the repository:
 
-Heart rate is treated as secondary corroboration only.
+- Open `products/trident-g-iq/apps/zone-coach/index.html` in a modern browser
+- Allow popups/new tabs for the info/help screens if prompted
 
----
+## Related files in this folder
 
-### 8) Your recommendation (what to do next)
-Ψ Zone Coach ends with one clear output:
+- `index.html` - main app
+- `SCIENCE.md` - science notes / references
+- `STATES.md` - state definitions / mapping notes
+- `MARKET.md` - product/positioning notes
 
-- **Proceed** (normal training or demanding cognitive work), or
-- **Light session recommended** (shorter, stabilising, lower intensity), or
-- **Recovery day** (rest day) if you look strongly dysregulated and do not re-enter after a reset attempt, or
-- **Re-run later** if read quality was poor (don’t over-interpret today)
+## License / ownership
 
-If you choose **Proceed** or **Light**, a button sends you to the **Capacity Training Coach** (n-back).
-
----
-
-## What the labels mean (plain English)
-
-### In the Ψ/G Zone (in-band)
-Alert enough, steady enough, not overloaded. Best for normal training and deeper work.
-
-### Too cold (underpowered)
-Low activation/drive. You can still do useful work, but keep it gentle. Goal is engagement and consistency.
-
-### Too hot (overloaded)
-High strain or scatteredness. Training quality often drops unless you downshift first.
-
-### Shaky (unstable)
-Fluctuating control and inconsistent responding. The goal is stabilisation and clean reps.
-
----
-
-## What “Recovery day” means (and what to do)
-A recovery day is not failure. It is **training hygiene**.
-
-If Ψ Zone Coach recommends **Recovery day**, aim for 2–3 simple behaviours:
-
-- **Skip capacity training** today (protect learning quality)
-- **10–30 minutes easy movement** (walk, mobility)
-- **Hydrate and eat properly**
-- **Protect sleep** (earlier night if you can)
-- If you must work: choose **low-stakes admin**, avoid high-stakes decisions
-
----
-
-## How to useΨ Ψ Zone Coach (the compounding method)
-
-Run it **once per day** before training, or before a demanding work block.
-
-Make it clean:
-- Phone on silent
-- Close extra tabs
-- Sit comfortably
-- Take it seriously, but keep it light
-
-Follow the recommendation.
-A “light” day or “recovery” day is often what keeps the whole system progressing over weeks.
-
----
-
-## What Ψ Zone Coach stores (privacy)
-Ψ Zone Coach stores your recent check results **locally in your own browser** (via `localStorage`) so the next app can read the handoff.
-
-- No account needed
-- No cloud upload by default
-- Your browser holds recent history (rolling window)
-
-If you clear browser storage, your local history resets.
-
----
-
-## Safety notes
-- This tool is for **training readiness**, not medical assessment.
-- If you feel dizzy, panicky, or unwell during breathing, **stop** and breathe normally.
-- If you have medical concerns (especially respiratory/cardiovascular), use common sense and seek appropriate professional advice.
-
----
-
-## Troubleshooting
-
-**Bluetooth pairing doesn’t appear**
-- Use **Chrome or Edge**
-- Make sure Bluetooth is enabled on your device
-- Wear the strap (it must be awake) and disconnect it from other apps
-- Your site must be on **https** (or `localhost`) for pairing
-
-**Read quality seems inconsistent**
-- Sit still for the baseline (if using it)
-- Don’t pre-tap during the dot probe
-- Avoid interruptions (don’t tab away)
-- Try to measure at a similar time each day
-
-**GitHub Pages shows an old version**
-- Hard refresh: `Ctrl + F5` (Windows) / `Cmd + Shift + R` (Mac)
-- It can take a minute or two for Pages to serve the newest build.
-
----
-
-## What this app is really doing (one sentence)
-Ψ Zone Coach helps you **enter and maintain a near-critical trainable corridor** for wide-ranging cognitive performance and Trident-G training, while (optionally) tracking baseline mind–body dynamics as a long-run trend using RR/heart rate (and, in future, EEG).
-
----
-
-© Mindware Lab • IQ Mindware
+Mindware Lab / Trident G IQ
