@@ -14,6 +14,35 @@
 
   <style>
     /* Hub-specific helpers (keeps brand.css clean) */
+    body{
+      background: #dfe3e8 !important;
+      padding-top: 72px;
+    }
+
+    .screen{
+      min-height: calc(100vh - 72px);
+    }
+
+    @media (min-width: 960px){
+      body{ padding-top: 90px; }
+      .screen{ min-height: calc(100vh - 90px); }
+      .tg-topbar{ height: 90px; }
+      .tg-topbar__inner{ padding: 0 14px; }
+      .tg-topbar__icon{
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+      }
+      .tg-topbar__icon img{
+        width: 30px;
+        height: 30px;
+      }
+      .tg-topbar__pill{
+        padding: 9px 16px;
+        font-size: 12px;
+      }
+    }
+
     .grid { display: grid; gap: 12px; }
     .grid2 { grid-template-columns: 1fr; }
 
@@ -325,6 +354,14 @@
 </head>
 
 <body>
+  <header class="tg-desktop-chrome" aria-hidden="true">
+    <div class="tg-topbar">
+      <div class="tg-topbar__inner">
+        <span class="tg-topbar__icon"><img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="" /></span>
+        <span class="tg-topbar__pill">Trident G - IQ</span>
+      </div>
+    </div>
+  </header>
   <div id="root"></div>
   <script type="text/babel" data-presets="env,react">
     const { useEffect, useMemo, useState } = React;
