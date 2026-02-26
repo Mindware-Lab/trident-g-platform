@@ -81,6 +81,9 @@
     .metric-head { display:grid; grid-template-columns:42px minmax(0,1fr); gap:12px; align-items:start; }
     .metric-icon { width:42px; height:42px; display:block; object-fit:contain; }
     .metric-content { min-width:0; }
+    .metric-head-bps { grid-template-columns:42px minmax(0,1fr) auto; align-items:center; }
+    .metric-head-bps .metric-content { display:flex; flex-direction:column; justify-content:center; min-height:42px; }
+    .metric-head-bps .metric-content .v { margin-top:6px; }
     .metric .k { font-size:12px; color:var(--zc-text-label); }
     .result-metrics > .metric .metric-head .k { font-size:13px; font-weight:700; color:var(--zc-text); line-height:1.15; }
     .metric .v { font-weight:800; margin-top:6px; }
@@ -270,7 +273,7 @@
 
         <div id="validPanel" class="hidden">
           <div class="grid result-metrics" id="resultMetricsRow">
-            <div class="metric"><div class="metric-head"><img class="metric-icon" src="../../../../branding/icons/bits-per-second.svg" alt="" aria-hidden="true" /><div class="metric-content"><div class="k">Bits / second (CCC)</div><div class="metric-inline"><div class="v" id="mBps">-</div><button type="button" class="btn btn-ghost metric-graph-btn" id="showBpsTraceBtn" title="Show session-to-session CCC bits/second graph" aria-label="Show bits per second history graph"><img src="../../../../branding/icons/graph.svg" alt="" aria-hidden="true" /><span>See Data</span></button></div></div></div></div>
+            <div class="metric metric-bps"><div class="metric-head metric-head-bps"><img class="metric-icon" src="../../../../branding/icons/bits-per-second.svg" alt="" aria-hidden="true" /><div class="metric-content"><div class="k">Bits / second (CCC)</div><div class="v" id="mBps">-</div></div><button type="button" class="btn btn-ghost metric-graph-btn" id="showBpsTraceBtn" title="Show session-to-session CCC bits/second graph" aria-label="Show bits per second history graph"><img src="../../../../branding/icons/graph.svg" alt="" aria-hidden="true" /><span>See Data</span></button></div></div>
             <div class="metric"><div class="metric-head"><img class="metric-icon" src="../../../../branding/icons/brain-state.svg" alt="" aria-hidden="true" /><div class="metric-content"><div class="k">Cognitive State</div><div class="v" id="mState">-</div></div></div></div>
             <div class="metric"><div class="metric-head"><img class="metric-icon" src="../../../../branding/icons/confidence-level.svg" alt="" aria-hidden="true" /><div class="metric-content"><div class="k">Confidence Level</div><div class="v" id="mConf">-</div></div></div></div>
             <div class="metric user-hidden"><div class="k">Probe trials / Catch fail</div><div class="v" id="mProbeCatch">-</div></div>
