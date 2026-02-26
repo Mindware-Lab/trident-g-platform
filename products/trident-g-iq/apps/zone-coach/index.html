@@ -1463,7 +1463,15 @@
       `);
     }
     function openInfoScreen(title, bodyHtml){
-      const win = window.open('', '_blank', 'width=860,height=780,resizable=yes,scrollbars=yes');
+      const ua = String(navigator.userAgent || '');
+      const isMobileLike = /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || (window.matchMedia && window.matchMedia('(max-width: 900px)').matches);
+      let win = null;
+      try {
+        win = isMobileLike
+          ? window.open('', '_blank')
+          : window.open('', '_blank', 'width=860,height=780,resizable=yes,scrollbars=yes');
+        if (!win) win = window.open('', '_blank');
+      } catch (_) { win = null; }
       if (!win) { window.alert('Please allow pop-ups to view this screen.'); return; }
       try { win.opener = null; } catch (_) {}
       const doc = win.document;
