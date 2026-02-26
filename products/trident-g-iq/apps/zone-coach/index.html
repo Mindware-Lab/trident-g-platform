@@ -1625,7 +1625,6 @@
         if (!win) win = window.open('', '_blank');
       } catch (_) { win = null; }
       if (!win) { window.alert('Please allow pop-ups to view this screen.'); return; }
-      try { win.opener = null; } catch (_) {}
       const doc = win.document;
       doc.open();
       doc.write(`<!doctype html>
