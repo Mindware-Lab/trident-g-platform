@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>Spun Out</title>
+  <rect width="64" height="64" rx="13" fill="#1a1f2b"/>
+  <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="12.25" fill="none" stroke="#22AAFF" stroke-width="1.5" stroke-opacity="0.7"/>
+
+  <!-- outer chaos arc — large, partial -->
+  <path d="M32 12 a20 20 0 1 1 -14.14 5.86" fill="none" stroke="#22AAFF" stroke-width="2.2" stroke-linecap="round" opacity="0.45"/>
+  <!-- mid arc -->
+  <path d="M32 18 a14 14 0 1 1 -9.9 4.1" fill="none" stroke="#22AAFF" stroke-width="2.2" stroke-linecap="round" opacity="0.7"/>
+  <!-- inner arc -->
+  <path d="M32 24 a8 8 0 1 1 -5.66 2.34" fill="none" stroke="#22AAFF" stroke-width="2.2" stroke-linecap="round"/>
+
+  <!-- arrowhead on inner arc — pointing chaotically outward -->
+  <path d="M24 29 L26.3 26.4 L28.8 29.6" fill="none" stroke="#22AAFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- centre dot — overloaded -->
+  <circle cx="32" cy="32" r="2.5" fill="#22AAFF"/>
+</svg>

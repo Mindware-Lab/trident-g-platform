@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>CCC — Cognitive Control Capacity</title>
+  <rect width="64" height="64" rx="13" fill="#1a1f2b"/>
+  <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="12.25" fill="none" stroke="#22AAFF" stroke-width="1.5" stroke-opacity="0.7"/>
+
+  <!-- three stacked C arcs, slightly offset to suggest depth / layering -->
+  <!-- back C — dim -->
+  <path d="M41 20 a11 11 0 1 0 0 24" fill="none" stroke="#22AAFF" stroke-width="2.8" stroke-linecap="round" opacity="0.2"/>
+  <!-- mid C -->
+  <path d="M37 22 a10 10 0 1 0 0 20" fill="none" stroke="#22AAFF" stroke-width="2.8" stroke-linecap="round" opacity="0.55"/>
+  <!-- front C — full brightness -->
+  <path d="M33 24 a9 9 0 1 0 0 18" fill="none" stroke="#22AAFF" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- subtle label beneath -->
+  <text x="32" y="57" font-family="'DM Mono','Courier New',monospace" font-size="7.5" fill="#22AAFF" opacity="0.45" text-anchor="middle" letter-spacing="2">CCC</text>
+</svg>
