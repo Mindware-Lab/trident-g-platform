@@ -68,6 +68,8 @@
     canvas { display:block; width:100%; height:min(42vh, 380px); }
     .touch { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
     .touch .btn { min-height:66px; font-size:28px; font-weight:800; }
+    .run-stop-row { display:flex; justify-content:center; margin-top:12px; }
+    .run-stop-row .btn { flex:0 0 auto; min-width:160px; }
     .progress { height:10px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.06); border-radius:999px; overflow:hidden; margin:10px 0 12px; }
     .progress > div { height:100%; width:0%; background:linear-gradient(90deg,#6ec6ff,#CCFF66); transition:width .12s linear; }
     .radio { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
@@ -243,9 +245,8 @@
           <button class="btn" id="touchLeftBtn">&larr;</button>
           <button class="btn" id="touchRightBtn">&rarr;</button>
         </div>
-        <div class="cta">
+        <div class="run-stop-row">
           <button class="btn btn-ghost" id="stopBtn">Stop run</button>
-          <span class="pill">Tap or press arrows after each stimulus</span>
         </div>
         <div class="small muted" style="margin-top:8px;text-align:center;">
           <button class="btn btn-ghost" id="skipToResultBtn" style="padding:6px 10px;font-size:12px;border-radius:10px;">Skip test (preview result)</button>
@@ -257,7 +258,7 @@
         <div id="invalidPanel" class="block hidden">
           <h3 style="margin:0 0 6px 0;">Session not valid</h3>
           <div id="invalidReason" class="muted">Focus loss or timing instability.</div>
-          <div class="cta"><button class="btn btn-primary" id="tryAgainBtn">Try again</button></div>
+          <div class="cta"><button class="btn btn-primary" id="tryAgainBtn">Try again</button><button class="btn btn-ghost" id="returnStartBtn">Return to start</button></div>
         </div>
 
         <div id="validPanel" class="hidden">
@@ -352,7 +353,7 @@
     const dom = {
       phasePill: $('phasePill'), statusPill: $('statusPill'), refreshPill: $('refreshPill'), qualityPill: $('qualityPill'),
       screenStart: $('screenStart'), screenRun: $('screenRun'), screenResult: $('screenResult'),
-      startBtn: $('startBtn'), resetHistoryBtn: $('resetHistoryBtn'), stopBtn: $('stopBtn'), skipToResultBtn: $('skipToResultBtn'), tryAgainBtn: $('tryAgainBtn'),
+      startBtn: $('startBtn'), resetHistoryBtn: $('resetHistoryBtn'), stopBtn: $('stopBtn'), skipToResultBtn: $('skipToResultBtn'), tryAgainBtn: $('tryAgainBtn'), returnStartBtn: $('returnStartBtn'),
       quickBtn: $('quickBtn'), fullBtn: $('fullBtn'), startRecommendedBtn: $('startRecommendedBtn'), openLink: $('openLink'),
       runLabelPill: $('runLabelPill'), trialPill: $('trialPill'), mixPill: $('mixPill'), progressFill: $('progressFill'),
       invalidPanel: $('invalidPanel'), invalidReason: $('invalidReason'), validPanel: $('validPanel'), resultMetricsRow: $('resultMetricsRow'),
@@ -1247,7 +1248,7 @@
       rt.running = true; rt.stop = false; rt.falseStarts = 0; rt.skipSummary = null;
       clearResultMetricSlots();
       rt.lastSummary = null;
-      dom.startBtn.disabled = true; dom.resetHistoryBtn.disabled = true; dom.quickBtn.disabled = true; dom.fullBtn.disabled = true; dom.tryAgainBtn.disabled = true; dom.stopBtn.disabled = false; if (dom.skipToResultBtn) dom.skipToResultBtn.disabled = false;
+      dom.startBtn.disabled = true; dom.resetHistoryBtn.disabled = true; dom.quickBtn.disabled = true; dom.fullBtn.disabled = true; dom.tryAgainBtn.disabled = true; if (dom.returnStartBtn) dom.returnStartBtn.disabled = true; dom.stopBtn.disabled = false; if (dom.skipToResultBtn) dom.skipToResultBtn.disabled = false;
       show('run'); setPhase('Running'); setStatus('Calibrating…'); dom.qualityPill.textContent = 'Quality: —'; dom.refreshPill.textContent = 'Refresh: —';
       dom.runLabelPill.textContent = `${label} (${durationSeconds}s)`;
       dom.progressFill.style.width = '0%'; dom.trialPill.textContent = 'Trials: 0'; dom.mixPill.textContent = 'S:0 P:0 C:0';
@@ -1394,7 +1395,7 @@
         rt.respOpen = false; rt.choiceHandler = null;
         if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); }
         rt.running = false; rt.stop = false;
-        dom.startBtn.disabled = false; dom.resetHistoryBtn.disabled = false; dom.quickBtn.disabled = false; dom.fullBtn.disabled = false; dom.tryAgainBtn.disabled = false; dom.stopBtn.disabled = true; if (dom.skipToResultBtn) dom.skipToResultBtn.disabled = true;
+        dom.startBtn.disabled = false; dom.resetHistoryBtn.disabled = false; dom.quickBtn.disabled = false; dom.fullBtn.disabled = false; dom.tryAgainBtn.disabled = false; if (dom.returnStartBtn) dom.returnStartBtn.disabled = false; dom.stopBtn.disabled = true; if (dom.skipToResultBtn) dom.skipToResultBtn.disabled = true;
       }
       if (rt.skipSummary) {
         summary = rt.skipSummary;
@@ -1663,7 +1664,9 @@
     dom.startBtn.addEventListener('click', () => { hideSessionPanel(); runProbe(CFG.totalSeconds, 'Full probe'); });
     dom.quickBtn.addEventListener('click', () => { hideSessionPanel(); runProbe(CFG.quickSeconds, 'Quick re-check'); });
     dom.fullBtn.addEventListener('click', () => { hideSessionPanel(); runProbe(CFG.totalSeconds, 'Full probe'); });
-    dom.tryAgainBtn.addEventListener('click', () => { hideSessionPanel(); clearResultMetricSlots(); rt.lastSummary = null; show('start'); setPhase('Ready'); setStatus('Idle'); });
+    const returnToStart = () => { hideSessionPanel(); clearResultMetricSlots(); rt.lastSummary = null; show('start'); setPhase('Ready'); setStatus('Idle'); };
+    dom.tryAgainBtn.addEventListener('click', () => { returnToStart(); });
+    if (dom.returnStartBtn) dom.returnStartBtn.addEventListener('click', () => { returnToStart(); });
     dom.resetHistoryBtn.addEventListener('click', () => { hideSessionPanel(); clearResultMetricSlots(); rt.lastSummary = null; localStorage.removeItem(LS_HISTORY); refreshHistoryUI(); show('start'); setPhase('Ready'); setStatus('Idle'); dom.refreshPill.textContent='Refresh: —'; dom.qualityPill.textContent='Quality: —'; drawFix(); });
     dom.stopBtn.addEventListener('click', () => { if (!rt.running) return; rt.stop = true; if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); } setStatus('Stopping…'); });
     if (dom.skipToResultBtn) dom.skipToResultBtn.addEventListener('click', () => {
