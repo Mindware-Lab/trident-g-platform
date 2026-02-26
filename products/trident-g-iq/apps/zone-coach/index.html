@@ -1423,6 +1423,8 @@
     }
 
     function openBpsTraceScreen(){
+      const iconUrl = (name) => new URL(`../../../../branding/icons/${name}`, window.location.href).href;
+      const bpsTraceIcon = iconUrl('bits-per-second.svg');
       const rows = validRows(loadHistory());
       const pts = rows.map((r, i) => ({
         idx: i + 1,
@@ -1433,7 +1435,7 @@
       if (!pts.length) {
         openInfoScreen('CCC Bits / Second Trace', `
           <div class="kicker">Mindware Lab - Trident G IQ</div>
-          <h1>CCC Bits / Second Trace</h1>
+          <div class="popup-title-row"><img src="${esc(bpsTraceIcon)}" alt="" aria-hidden="true" /><h1>CCC Bits / Second Trace</h1></div>
           <p>No valid completed sessions are saved yet.</p>
           <p class="muted">Complete a full check or quick re-check to build your local BPS trace.</p>
         `);
@@ -1473,7 +1475,7 @@
         </svg>`;
       openInfoScreen('CCC Bits / Second Trace', `
         <div class="kicker">Mindware Lab - Trident G IQ</div>
-        <h1>CCC Bits / Second Trace</h1>
+        <div class="popup-title-row"><img src="${esc(bpsTraceIcon)}" alt="" aria-hidden="true" /><h1>CCC Bits / Second Trace</h1></div>
         <p>Session-to-session local history of valid CCC bits/second scores (full checks and quick re-checks).</p>
         <div class="note note-neutral"><strong>Sessions:</strong> ${pts.length} &nbsp; <strong>Latest:</strong> ${esc(fmt(latest.bps,2))} bps &nbsp; <strong>Average:</strong> ${esc(fmt(avg,2))} bps</div>
         <div style="margin-top:12px;">${svg}</div>
@@ -1530,7 +1532,10 @@
       padding: 18px;
     }
     .kicker { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #d9ecff; opacity: 1; }
+    .popup-title-row { display:flex; align-items:center; gap:12px; margin: 8px 0 10px; }
+    .popup-title-row img { width: 34px; height: 34px; object-fit: contain; display:block; }
     h1 { margin: 8px 0 10px; font-size: 28px; line-height: 1.1; }
+    .popup-title-row h1 { margin: 0; }
     h2 { margin: 16px 0 8px; font-size: 16px; color: #fff; }
     .state-head { display:flex; align-items:center; gap:10px; margin-top:16px; }
     .state-head h2 { margin: 0; }
