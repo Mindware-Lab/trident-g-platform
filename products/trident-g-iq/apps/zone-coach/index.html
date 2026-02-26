@@ -1433,61 +1433,185 @@
     function openBpsTraceScreen(){
       const iconUrl = (name) => new URL(`../../../../branding/icons/${name}`, window.location.href).href;
       const bpsTraceIcon = iconUrl('bits-per-second.svg');
-      const rows = validRows(loadHistory());
-      const pts = rows.map((r, i) => ({
-        idx: i + 1,
-        bps: Number(r?.bps?.combined),
-        label: r?.label || 'Probe',
-        when: r?.sessionId ? String(r.sessionId) : ''
-      })).filter(p => Number.isFinite(p.bps));
-      if (!pts.length) {
-        openInfoScreen('CCC Bits / Second Trace', `
-          <div class="kicker">Mindware Lab - Trident G IQ</div>
-          <div class="popup-title-row"><img src="${esc(bpsTraceIcon)}" alt="" aria-hidden="true" /><h1>CCC Bits / Second Trace</h1></div>
-          <p>No valid completed sessions are saved yet.</p>
-          <p class="muted">Complete a full check or quick re-check to build your local BPS trace.</p>
-        `);
-        return;
+      const rows = validRows(loadHistory()).slice().sort((a,b) => new Date(a?.sessionId || 0).getTime() - new Date(b?.sessionId || 0).getTime());
+
+      const DAY_MS = 24 * 60 * 60 * 1000;
+      const WINDOW_DAYS = 24;
+      const toLocalDay = (dLike) => {
+        const d = new Date(dLike);
+        if (!Number.isFinite(d.getTime())) return null;
+        d.setHours(0,0,0,0);
+        return d;
+      };
+      const dayKey = (dLike) => {
+        const d = toLocalDay(dLike);
+        if (!d) return '';
+        const y = d.getFullYear();
+        const m = String(d.getMonth()+1).padStart(2,'0');
+        const da = String(d.getDate()).padStart(2,'0');
+        return `${y}-${m}-${da}`;
+      };
+      const dayLabel = (dLike) => {
+        const d = toLocalDay(dLike);
+        if (!d) return '-';
+        return `${d.getMonth()+1}/${d.getDate()}`;
+      };
+
+      const today = toLocalDay(new Date()) || new Date();
+      const startDay = new Date(today.getTime() - (WINDOW_DAYS - 1) * DAY_MS);
+      const dayBuckets = Array.from({ length: WINDOW_DAYS }, (_, i) => {
+        const date = new Date(startDay.getTime() + i * DAY_MS);
+        return { idx: i, date, key: dayKey(date), rows: [], latest: null };
+      });
+      const bucketMap = new Map(dayBuckets.map(b => [b.key, b]));
+
+      rows.forEach((r) => {
+        const k = dayKey(r?.sessionId);
+        const b = bucketMap.get(k);
+        if (!b) return;
+        b.rows.push(r);
+        b.latest = r;
+      });
+
+      const series = dayBuckets.map((b) => {
+        const latest = b.latest;
+        const bps = Number(latest?.bps?.combined);
+        const state = normState(latest?.router?.state);
+        const conf = latest?.router?.confidence || '-';
+        return {
+          idx: b.idx,
+          date: b.date,
+          key: b.key,
+          dateLabel: dayLabel(b.date),
+          count: b.rows.length,
+          bps: Number.isFinite(bps) ? bps : null,
+          state,
+          stateLabel: ROUTER_STATE_UI[state]?.label || state || '-',
+          confidence: conf,
+          mode: latest?.label || ''
+        };
+      });
+      const pts = series.filter(p => Number.isFinite(p.bps));
+
+      const inZoneVals = rows
+        .filter(r => normState(r?.router?.state) === 'in_zone')
+        .map(r => Number(r?.bps?.combined))
+        .filter(Number.isFinite);
+      let inZoneBand = null;
+      if (inZoneVals.length >= 3) {
+        const centre = mean(inZoneVals);
+        const sigma = sd(inZoneVals);
+        const halfWidth = Math.max(0.12, Math.min(0.45, Number.isFinite(sigma) && sigma > 0 ? sigma : 0.18));
+        if (Number.isFinite(centre)) {
+          inZoneBand = {
+            lo: centre - halfWidth,
+            hi: centre + halfWidth,
+            centre,
+            n: inZoneVals.length
+          };
+        }
       }
-      const values = pts.map(p => p.bps);
-      const minV = Math.min(...values), maxV = Math.max(...values);
+
+      const ySeed = pts.map(p => p.bps);
+      if (inZoneBand) { ySeed.push(inZoneBand.lo, inZoneBand.hi); }
+      if (!ySeed.length) ySeed.push(0.8, 1.8);
+      const minV = Math.min(...ySeed), maxV = Math.max(...ySeed);
       const pad = Math.max(0.08, (maxV - minV) * 0.15);
       const yMin = minV - pad, yMax = maxV + pad;
-      const W = 780, H = 260, L = 44, R = 14, T = 12, B = 30;
+
+      const W = 860, H = 290, L = 48, R = 18, T = 14, B = 38;
       const plotW = W - L - R, plotH = H - T - B;
-      const xFor = (i) => pts.length === 1 ? (L + plotW/2) : (L + (i/(pts.length-1))*plotW);
+      const xForIdx = (i) => dayBuckets.length <= 1 ? (L + plotW/2) : (L + (i/(dayBuckets.length-1))*plotW);
       const yFor = (v) => T + (1 - ((v - yMin) / Math.max(0.0001, (yMax - yMin)))) * plotH;
-      const poly = pts.map((p,i) => `${xFor(i).toFixed(1)},${yFor(p.bps).toFixed(1)}`).join(' ');
-      const grid = [0,1,2,3,4].map((k) => {
+
+      const yGrid = [0,1,2,3,4].map((k) => {
         const y = T + (k/4)*plotH;
         const v = yMax - (k/4)*(yMax-yMin);
         return `<g><line x1="${L}" y1="${y.toFixed(1)}" x2="${(W-R)}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,.10)" stroke-width="1" /><text x="${L-8}" y="${(y+4).toFixed(1)}" text-anchor="end" fill="rgba(213,220,235,.88)" font-size="11">${esc(fmt(v,2))}</text></g>`;
       }).join('');
-      const dots = pts.map((p,i) => {
-        const x = xFor(i), y = yFor(p.bps);
-        return `<g><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="#CCFF66" stroke="#0b1118" stroke-width="1.5" /><title>Session ${p.idx}: ${fmt(p.bps,2)} bps</title></g>`;
+
+      const xGrid = dayBuckets.map((b, i) => {
+        const x = xForIdx(i);
+        const labelNow = i === 0 || i === dayBuckets.length - 1 || (i % 4 === 0);
+        return `<g><line x1="${x.toFixed(1)}" y1="${T}" x2="${x.toFixed(1)}" y2="${(H-B)}" stroke="rgba(255,255,255,.05)" stroke-width="1" />${labelNow ? `<text x="${x.toFixed(1)}" y="${(H-10).toFixed(1)}" text-anchor="middle" fill="rgba(183,194,214,.95)" font-size="10">${esc(dayLabel(b.date))}</text>` : ''}</g>`;
       }).join('');
-      const avg = mean(values);
-      const latest = pts[pts.length - 1];
-      const axisLabels = pts.length <= 12
-        ? pts.map((p,i) => `<text x="${xFor(i).toFixed(1)}" y="${(H-8).toFixed(1)}" text-anchor="middle" fill="rgba(183,194,214,.95)" font-size="10">${p.idx}</text>`).join('')
-        : `<text x="${L}" y="${(H-8).toFixed(1)}" text-anchor="start" fill="rgba(183,194,214,.95)" font-size="10">1</text><text x="${(W-R)}" y="${(H-8).toFixed(1)}" text-anchor="end" fill="rgba(183,194,214,.95)" font-size="10">${pts.length}</text>`;
+
+      const bandShade = inZoneBand
+        ? (() => {
+            const yHi = yFor(inZoneBand.hi);
+            const yLo = yFor(inZoneBand.lo);
+            const h = Math.max(1.5, yLo - yHi);
+            return `
+              <g>
+                <rect x="${L}" y="${yHi.toFixed(1)}" width="${plotW.toFixed(1)}" height="${h.toFixed(1)}" rx="8" fill="rgba(255,170,190,.14)" stroke="rgba(255,170,190,.18)" />
+                <line x1="${L}" y1="${yHi.toFixed(1)}" x2="${(W-R)}" y2="${yHi.toFixed(1)}" stroke="rgba(255,190,205,.35)" stroke-width="1" stroke-dasharray="4 3" />
+                <line x1="${L}" y1="${yLo.toFixed(1)}" x2="${(W-R)}" y2="${yLo.toFixed(1)}" stroke="rgba(255,190,205,.35)" stroke-width="1" stroke-dasharray="4 3" />
+              </g>`;
+          })()
+        : '';
+
+      const segments = [];
+      let current = [];
+      series.forEach((p) => {
+        if (Number.isFinite(p.bps)) current.push(p);
+        else if (current.length) { segments.push(current); current = []; }
+      });
+      if (current.length) segments.push(current);
+      const lineSegments = segments.map((seg) => {
+        const ptsStr = seg.map((p) => `${xForIdx(p.idx).toFixed(1)},${yFor(p.bps).toFixed(1)}`).join(' ');
+        return `<polyline points="${ptsStr}" fill="none" stroke="#6ec6ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />`;
+      }).join('');
+
+      const latestPt = pts.length ? pts[pts.length - 1] : null;
+      const dots = pts.map((p) => {
+        const x = xForIdx(p.idx), y = yFor(p.bps);
+        const inBand = !!(inZoneBand && p.bps >= inZoneBand.lo && p.bps <= inZoneBand.hi);
+        const isLatest = latestPt && p.key === latestPt.key && p.bps === latestPt.bps;
+        const fill = inBand ? '#CCFF66' : '#ffb3c8';
+        const r = isLatest ? 4.6 : 3.6;
+        const stroke = isLatest ? '#ffffff' : '#0b1118';
+        const suffix = p.count > 1 ? ` (${p.count} recordings)` : '';
+        const title = `${p.dateLabel}: ${fmt(p.bps,2)} bps - ${p.stateLabel} - ${p.confidence} confidence${suffix}`;
+        return `<g><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.6" /><title>${esc(title)}</title></g>`;
+      }).join('');
+
+      const noDataOverlay = !pts.length
+        ? `<text x="${(L + plotW/2).toFixed(1)}" y="${(T + plotH/2).toFixed(1)}" text-anchor="middle" fill="rgba(213,220,235,.88)" font-size="13">No valid recordings yet in this 24-day window</text>`
+        : '';
+
       const svg = `
-        <svg viewBox="0 0 ${W} ${H}" width="100%" height="260" role="img" aria-label="Session to session CCC bits per second trace">
+        <svg viewBox="0 0 ${W} ${H}" width="100%" height="290" role="img" aria-label="Last 24 days CCC bits per second trace">
           <rect x="0.5" y="0.5" width="${W-1}" height="${H-1}" rx="12" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.10)" />
-          ${grid}
+          ${bandShade}
+          ${yGrid}
+          ${xGrid}
           <line x1="${L}" y1="${(H-B)}" x2="${(W-R)}" y2="${(H-B)}" stroke="rgba(255,255,255,.18)" stroke-width="1" />
-          <polyline points="${poly}" fill="none" stroke="#6ec6ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          ${lineSegments}
           ${dots}
-          ${axisLabels}
+          ${noDataOverlay}
         </svg>`;
+
+      const latestLine = latestPt
+        ? `<strong>Latest:</strong> ${esc(fmt(latestPt.bps,2))} bps (${esc(latestPt.dateLabel)})`
+        : `<strong>Latest:</strong> ?`;
+      const avgLine = pts.length ? `<strong>Window average:</strong> ${esc(fmt(mean(pts.map(p => p.bps)),2))} bps` : `<strong>Window average:</strong> ?`;
+      const bandLine = inZoneBand
+        ? `<strong>In the Zone band:</strong> ${esc(fmt(inZoneBand.lo,2))} to ${esc(fmt(inZoneBand.hi,2))} bps (from ${inZoneBand.n} in-zone recordings)`
+        : `<strong>In the Zone band:</strong> appears after at least 3 valid in-zone recordings`;
+      const noDataNote = !pts.length
+        ? `<p class="muted">This graph always shows the last 24 days. The first point appears after your first completed valid check (full check or quick re-check).</p>`
+        : '';
+
       openInfoScreen('CCC Bits / Second Trace', `
         <div class="kicker">Mindware Lab - Trident G IQ</div>
         <div class="popup-title-row"><img src="${esc(bpsTraceIcon)}" alt="" aria-hidden="true" /><h1>CCC Bits / Second Trace</h1></div>
-        <p>Session-to-session local history of valid CCC bits/second scores (full checks and quick re-checks).</p>
-        <div class="note note-neutral"><strong>Sessions:</strong> ${pts.length} &nbsp; <strong>Latest:</strong> ${esc(fmt(latest.bps,2))} bps &nbsp; <strong>Average:</strong> ${esc(fmt(avg,2))} bps</div>
+        <p>Last 24 days of local valid CCC bits/second recordings (full checks and quick re-checks). Days without a recording are left blank.</p>
+        ${noDataNote}
+        <div class="note note-neutral"><strong>Window:</strong> ${esc(dayLabel(dayBuckets[0].date))} to ${esc(dayLabel(dayBuckets[dayBuckets.length-1].date))} &nbsp; <strong>Recorded days:</strong> ${pts.length} / ${WINDOW_DAYS}</div>
+        <div class="note note-neutral">${latestLine} &nbsp; ${avgLine}</div>
+        <div class="note note-important" style="margin-top:10px;">${inZoneBand ? `<strong>In the Zone band:</strong> ${esc(fmt(inZoneBand.lo,2))} to ${esc(fmt(inZoneBand.hi,2))} bps (estimated from ${inZoneBand.n} prior in-zone recordings)` : '<strong>In the Zone band:</strong> Appears after at least 3 valid in-zone recordings.'}</div>
         <div style="margin-top:12px;">${svg}</div>
-        <p class="muted">X-axis = session number in local valid history. Y-axis = CCC bits/second.</p>
+        <p class="muted">Shaded pink band = estimated In the Zone CCC range based on your local in-zone history. Points inside the band are likely in-range; points outside are above/below that range.</p>
       `);
     }
     function openInfoScreen(title, bodyHtml){

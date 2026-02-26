@@ -36,7 +36,7 @@ After the test, Zone Coach shows:
   - **Work**
   - **Other Intervention**
 
-You can also open a small graph (`See Data`) to view your local session-to-session CCC bits/second trend.
+You can also open a small graph (`See Data`) to view a rolling 24-day local CCC bits/second trace, including an estimated In the Zone band once enough in-zone recordings exist.
 
 ## Important (local storage)
 

@@ -278,7 +278,7 @@ Recent history is used for:
 
 - baseline-relative score adjustments
 - BPS plausibility checks for in-zone assignment
-- local trend graph (bits/second trace)
+- local trend graph (24-day bits/second trace, with an estimated In the Zone band once enough in-zone history exists)
 
 ### Important implementation note
 
@@ -332,6 +332,8 @@ This helps the app distinguish **different kinds of out-of-zone states**, not ju
 ### 3) Personal baseline context (local trend)
 
 As you use the app, it builds a local history on your device and compares today’s result with your own recent pattern.
+
+The app can also visualise a rolling 24-day CCC trace and, after enough in-zone recordings, show a simple estimated In the Zone band for reference.
 
 That helps the app become more personally meaningful over time, rather than relying only on generic thresholds.
 
