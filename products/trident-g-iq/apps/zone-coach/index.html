@@ -466,12 +466,19 @@
       const guide = userResultGuide(state);
       const meta = `<div class="note note-neutral"><div><strong>Mechanism:</strong> ${esc(guide.mechanism)}</div><div style="margin-top:6px;"><strong>Training goal:</strong> ${esc(guide.trainingGoal)}</div></div>`;
       const cta = `<div class="note note-neutral"><strong>Call to action:</strong> ${esc(guide.callToAction)}</div>`;
+      const thinAutomationWarning = ['flat','overloaded_exploit','overloaded_explore'].includes(state)
+        ? `<div class="note note-important"><strong>Warning:</strong> Do not use the Trident G IQ training program while you are out of the zone. This can lead to <strong>thin automation</strong> - learning performance strategies based on surface features of the training tasks rather than broader transferable gains. Use a state-matched intervention first, then re-check before doing Trident G IQ training.</div>`
+        : '';
+      const trainingTitleLine = state === 'invalid'
+        ? `<p><strong>Recommended next step:</strong> ${esc(guide.training.title)}</p>`
+        : `<p><strong>Recommended training game:</strong> ${esc(guide.training.title)} <strong>(coming soon)</strong></p>`;
       if (sectionKey === 'training') {
         openInfoScreen(`${guide.label} - Cognitive Training`, `
           <div class="kicker">Mindware Lab - Trident G IQ</div>
           <h1>${esc(guide.label)} - Cognitive Training</h1>
           ${meta}
-          <h2>${esc(guide.training.title)}</h2>
+          ${thinAutomationWarning}
+          ${trainingTitleLine}
           <p>${esc(guide.training.description)}</p>
           <p><strong>Rationale:</strong> ${esc(guide.training.rationale)}</p>
           ${cta}
