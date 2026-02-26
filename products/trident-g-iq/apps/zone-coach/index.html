@@ -1548,6 +1548,8 @@
     }
     .note.note-neutral { border-color: #cfd8e3; background: #edf1f5; color: #0f1720; box-shadow: inset 0 0 0 1px rgba(255,255,255,.45); }
     .note.note-neutral strong { color: #0a111a; }
+    .note.note-important { border-color: rgba(255,140,160,.45); background: rgba(255,170,190,.18); color: #ffeef3; box-shadow: inset 0 0 0 1px rgba(255,210,220,.10); }
+    .note.note-important strong { color: #fff6f8; }
     .muted { color: var(--zc-text-muted); }
     .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
     button {
@@ -1659,6 +1661,7 @@
       openInfoScreen('CCC Test Instructions', `
         <div class="kicker">Mindware Lab - Trident G IQ</div>
         <h1>CCC Test Instructions</h1>
+        <div class="note note-important"><strong>Important:</strong> This app stores your results locally on your device/browser. To track your CCC data over time and build a consistent profile, use the same device and the same browser each time.</div>
         <p><strong>Cognitive Control Capacity (CCC) check</strong> is a short readiness check (about 3 minutes) that estimates your current brain state and recommends what to do next.</p>
 
         <h2>How to respond</h2>
