@@ -401,8 +401,9 @@
           rationale: 'Complex, far-transfer learning depends on intact prefrontal control and flexible integration - this is the window to use it.'
         },
         work: ['Deep work (25-50 min block)', 'Strategic thinking', 'Writing, coding, modelling', 'High-level learning'],
-        other: ['Protect the state', 'Minimal distraction', 'Avoid unnecessary stimulation'],
-        callToAction: 'This is your deep window - commit to meaningful, high-challenge work now.'
+        other: ['Protect the state; avoid wasting the window of optimal performance', 'Engage in any kind of high challenge training or intervention you want', 'Ensure good rest after the focused work'],
+        otherIntro: 'Use these supporting actions to shift or protect state before the next check or time block.',
+        callToAction: 'This is your deep window - commit to meaningful, high-challenge work and training now - and be sure to build in rest following it.'
       },
       flat: {
         label: 'Flat',
@@ -488,11 +489,11 @@
         `);
         return;
       }
-      openInfoScreen(`${guide.label} - Other`, `
+      openInfoScreen(`${guide.label} - Other Intervention`, `
         <div class="kicker">Mindware Lab - Trident G IQ</div>
-        <h1>${esc(guide.label)} - Other</h1>
+        <h1>${esc(guide.label)} - Other Intervention</h1>
         ${meta}
-        <p>Use these supporting actions to shift or protect state before the next check or block.</p>
+        <p>${esc(guide.otherIntro || 'Use these supporting actions to shift or protect state before the next check or block.')}</p>
         ${renderStateGuideList(guide.other)}
         ${cta}
       `);
@@ -516,7 +517,7 @@
         `<p class="result-guide-copy">${esc(goalText)}</p>`,
         lowConfidenceNote,
         '<p class="result-guide-helper">Click on one of the buttons below for more details</p>',
-        `<div class="result-guide-actions"><button class="${trainingBtnClass}" type="button" data-guide-section="training">Cognitive Training</button><button class="${workBtnClass}" type="button" data-guide-section="work">Work</button><button class="${otherBtnClass}" type="button" data-guide-section="other">Other</button></div>`,
+        `<div class="result-guide-actions"><button class="${trainingBtnClass}" type="button" data-guide-section="training">Cognitive Training</button><button class="${workBtnClass}" type="button" data-guide-section="work">Work</button><button class="${otherBtnClass}" type="button" data-guide-section="other">Other Intervention</button></div>`,
         '</div>',
         '</div>'
       ].join('');
