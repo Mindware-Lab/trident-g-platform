@@ -8,11 +8,124 @@
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../../../../branding/brand.css">
     <style>
+        :root { color-scheme: dark; }
         body {
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background:
+                radial-gradient(1200px 520px at -10% -15%, rgba(110,198,255,.10), transparent 55%),
+                #0b1118;
+            color: #edf0f7;
         }
+
+        .tg-theme{ color: var(--brand-text); }
+        .tg-shell{
+            background:
+                radial-gradient(1200px 520px at -10% -15%, rgba(110,198,255,.10), transparent 55%),
+                #0b1118 !important;
+        }
+        .tg-card{
+            border: 1px solid rgba(110,198,255,.22) !important;
+            background:
+                radial-gradient(1100px 360px at -10% -20%, rgba(110,198,255,.14), transparent 55%),
+                linear-gradient(165deg, rgba(78,160,232,.10), rgba(15,18,26,.96) 55%) !important;
+            box-shadow: 0 14px 34px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04) !important;
+            color: var(--brand-text) !important;
+        }
+
+        .tg-theme button:focus-visible,
+        .tg-theme input:focus-visible,
+        .tg-theme select:focus-visible {
+            outline: none;
+            box-shadow: var(--brand-focus-ring) !important;
+        }
+        .tg-theme input[type="checkbox"],
+        .tg-theme input[type="radio"]{ accent-color: #6ec6ff; }
+
+        .tg-theme .shadow-xl{
+            box-shadow: 0 14px 34px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.03) !important;
+        }
+        .tg-theme .bg-white{
+            background:
+                linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.012)),
+                rgba(15,18,26,.92) !important;
+            color: var(--brand-text) !important;
+        }
+        .tg-theme .bg-gray-50{ background: linear-gradient(180deg, rgba(255,255,255,.024), rgba(255,255,255,.012)) !important; }
+        .tg-theme .bg-gray-200{ background: rgba(255,255,255,.10) !important; }
+        .tg-theme .bg-purple-50,
+        .tg-theme .bg-blue-50,
+        .tg-theme .bg-orange-50,
+        .tg-theme .bg-green-50,
+        .tg-theme .bg-red-50{ background: rgba(255,255,255,.035) !important; }
+        .tg-theme .bg-gradient-to-br.from-purple-50.to-blue-50,
+        .tg-theme .bg-gradient-to-r.from-purple-50.to-blue-50{
+            background:
+                radial-gradient(900px 300px at 0% 0%, rgba(110,198,255,.10), transparent 55%),
+                linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.008)) !important;
+        }
+
+        .tg-theme .bg-purple-600,
+        .tg-theme .hover\:bg-purple-700:hover{ background: #6ec6ff !important; color:#0b0b0d !important; }
+        .tg-theme .bg-purple-700{ background: #4ea0e8 !important; color:#0b0b0d !important; }
+        .tg-theme .bg-blue-500,
+        .tg-theme .hover\:bg-blue-600:hover{ background: #6ec6ff !important; color:#0b0b0d !important; }
+        .tg-theme .bg-blue-600{ background: #4ea0e8 !important; color:#0b0b0d !important; }
+        .tg-theme .bg-orange-500,
+        .tg-theme .hover\:bg-orange-600:hover{ background: #ffc478 !important; color:#0b0b0d !important; }
+        .tg-theme .bg-orange-600{ background: #f0ab5c !important; color:#0b0b0d !important; }
+
+        .tg-theme .border-gray-200,
+        .tg-theme .border-gray-300{ border-color: rgba(255,255,255,.12) !important; }
+        .tg-theme .border-purple-200,
+        .tg-theme .border-purple-300,
+        .tg-theme .border-purple-500,
+        .tg-theme .border-purple-600,
+        .tg-theme .hover\:border-purple-300:hover{ border-color: rgba(110,198,255,.35) !important; }
+        .tg-theme .border-blue-200,
+        .tg-theme .border-blue-300,
+        .tg-theme .border-blue-400,
+        .tg-theme .border-blue-500,
+        .tg-theme .border-blue-600,
+        .tg-theme .hover\:border-blue-300:hover,
+        .tg-theme .hover\:border-blue-400:hover{ border-color: rgba(110,198,255,.35) !important; }
+        .tg-theme .border-orange-200,
+        .tg-theme .border-orange-300,
+        .tg-theme .border-orange-500,
+        .tg-theme .border-orange-600,
+        .tg-theme .hover\:border-orange-300:hover{ border-color: rgba(255,188,94,.35) !important; }
+        .tg-theme .border-green-200{ border-color: rgba(204,255,102,.35) !important; }
+
+        .tg-theme .text-gray-900{ color:#edf0f7 !important; }
+        .tg-theme .text-gray-800{ color:#dfe6f3 !important; }
+        .tg-theme .text-gray-700{ color:#d5dceb !important; }
+        .tg-theme .text-gray-600{ color:#b7c2d6 !important; }
+        .tg-theme .text-gray-500{ color:#93a0b4 !important; }
+        .tg-theme .text-gray-400{ color:#93a0b4 !important; }
+        .tg-theme .text-purple-600,
+        .tg-theme .hover\:text-purple-700:hover,
+        .tg-theme .text-blue-600,
+        .tg-theme .hover\:text-blue-700:hover{ color:#6ec6ff !important; }
+        .tg-theme .text-orange-600{ color:#ffc478 !important; }
+        .tg-theme .text-green-600{ color:#ccff66 !important; }
+        .tg-theme .text-red-600{ color:#ffb3c8 !important; }
+        .tg-theme .text-green-800{ color:#0b1a0b !important; }
+        .tg-theme .text-red-800{ color:#3c1018 !important; }
+        .tg-theme .text-yellow-800{ color:#332300 !important; }
+        .tg-theme .text-orange-800{ color:#352000 !important; }
+        .tg-theme .text-blue-800{ color:#d9ecff !important; }
+
+        .tg-theme .bg-green-100{ background: rgba(204,255,102,.95) !important; }
+        .tg-theme .bg-red-100{ background: rgba(255,179,200,.92) !important; }
+        .tg-theme .bg-yellow-100{ background: rgba(255,230,150,.92) !important; }
+        .tg-theme .bg-orange-100{ background: rgba(255,196,120,.92) !important; }
+        .tg-theme .bg-blue-100{ background: rgba(110,198,255,.14) !important; }
+
+        .tg-theme .hover\:bg-gray-50:hover{ background: rgba(255,255,255,.05) !important; }
+        .tg-theme .transition-colors,
+        .tg-theme .transition-all{ transition-duration: .14s !important; }
     </style>
 </head>
 <body>
@@ -379,9 +492,9 @@
 
             if (stage === 'intro') {
                 return (
-                    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
+                    <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
                         <div className="max-w-3xl mx-auto pt-12">
-                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                            <div className="tg-card bg-white rounded-2xl shadow-xl p-8 md:p-12">
                                 <div className="flex items-center gap-3 mb-4">
                                     <Brain className="w-10 h-10 text-purple-600" />
                                     <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
@@ -499,9 +612,9 @@
                 const aiResults = includeAI && usesAI ? calculateAIResults() : null;
 
                 return (
-                    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 py-8">
+                    <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 py-8">
                         <div className="max-w-4xl mx-auto">
-                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                            <div className="tg-card bg-white rounded-2xl shadow-xl p-8 md:p-12">
                                 <div className="flex items-center justify-between mb-8">
                                     <h1 className="text-3xl font-bold text-gray-900">Your Results</h1>
                                     <button
@@ -659,9 +772,9 @@
                 const progress = ((currentQuestion + 1) / PSI_CBS.core.questions.length) * 100;
 
                 return (
-                    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 py-8">
+                    <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 py-8">
                         <div className="max-w-3xl mx-auto">
-                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                            <div className="tg-card bg-white rounded-2xl shadow-xl p-8 md:p-12">
                                 <div className="mb-8">
                                     <div className="flex items-center justify-between mb-4">
                                         <h2 className="text-sm font-semibold text-purple-600">
@@ -759,9 +872,9 @@
                 const progress = ((currentQuestion + 1) / flatQuestions.length) * 100;
 
                 return (
-                    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 py-8">
+                    <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 py-8">
                         <div className="max-w-3xl mx-auto">
-                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                            <div className="tg-card bg-white rounded-2xl shadow-xl p-8 md:p-12">
                                 <div className="mb-8">
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
@@ -866,9 +979,9 @@
                 const progress = ((currentQuestion + 1) / flatQuestions.length) * 100;
 
                 return (
-                    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 py-8">
+                    <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 py-8">
                         <div className="max-w-3xl mx-auto">
-                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
+                            <div className="tg-card bg-white rounded-2xl shadow-xl p-8 md:p-12">
                                 <div className="mb-8">
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
