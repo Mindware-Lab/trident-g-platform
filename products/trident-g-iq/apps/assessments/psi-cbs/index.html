@@ -399,6 +399,73 @@
                 setUsesAI(null);
             };
 
+            const openTestDetails = () => {
+                const win = window.open('', '_blank', 'width=860,height=760,resizable=yes,scrollbars=yes');
+                if (!win) {
+                    window.alert('Please allow pop-ups to view Test Details.');
+                    return;
+                }
+                const title = 'Psi-CBS Test Details';
+                win.document.open();
+                win.document.write(`<!doctype html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\" />
+  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />
+  <title>${title}</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: radial-gradient(1200px 420px at -10% -15%, rgba(110,198,255,.10), transparent 55%), #0b1118; color: #edf0f7; }
+    .wrap { width: min(920px, 100%); margin: 0 auto; padding: 18px; }
+    .card { border-radius: 18px; border: 1px solid rgba(110,198,255,.22); background: radial-gradient(1100px 360px at -10% -20%, rgba(110,198,255,.14), transparent 55%), linear-gradient(165deg, rgba(78,160,232,.10), rgba(15,18,26,.96) 55%); box-shadow: 0 14px 34px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04); padding: 18px; }
+    .kicker { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #d9ecff; margin: 0 0 8px 0; }
+    h1 { margin: 0; font-size: 28px; line-height: 1.08; }
+    h2 { margin: 18px 0 8px 0; font-size: 16px; }
+    p, li { color: #d5dceb; line-height: 1.45; }
+    ul { margin: 8px 0 0 18px; padding: 0; }
+    .note { margin-top: 12px; border-radius: 12px; padding: 12px 14px; border: 1px solid rgba(255,120,140,.30); background: rgba(255,170,190,.10); color: #edf0f7; }
+    .note p { margin: 0; color: #edf0f7; }
+    .sub { margin-top: 10px; border-radius: 12px; padding: 12px 14px; border: 1px solid rgba(255,255,255,.10); background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.012)); }
+    .btnRow { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+    button { border: 1px solid #6ec6ff; background: #6ec6ff; color: #0b0b0d; padding: 10px 12px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class=\"wrap\">
+    <div class=\"card\">
+      <p class=\"kicker\">Mindware Lab - Trident G IQ</p>
+      <h1>Psi-Band Cognitive Bandwidth Scale (Psi-CBS)</h1>
+      <div class=\"sub\"><p><strong>What it is:</strong> A brief self-report measure for tracking everyday cognitive performance over the past two weeks.</p></div>
+      <h2>What the sections measure</h2>
+      <ul>
+        <li><strong>Psi-CBS Core - Applied General Intelligence (G):</strong> Focus stability, error resistance, active processing, and learning/transfer in everyday work/study/project contexts.</li>
+        <li><strong>Psi-CBS-AD - Cognitive Health &amp; Resilience:</strong> Supplementary items tracking allostatic dysregulation / state-instability patterns.</li>
+        <li><strong>Psi-CBS-AI - AI-Use Intelligence:</strong> Supplementary items tracking how AI tool use helps or hinders cognitive performance and workflow quality.</li>
+      </ul>
+      <h2>How it works</h2>
+      <ul>
+        <li>Responses use a 5-point frequency scale (Never to Very often).</li>
+        <li>The Core score is summarised from focus and processing subscales.</li>
+        <li>Some Core items are reverse-scored internally to maintain correct score direction.</li>
+        <li>Optional AD and AI sections provide additional pattern information rather than a diagnosis.</li>
+      </ul>
+      <h2>Current validation status (working summary)</h2>
+      <div class=\"note\"><p>Pilot evidence supports the intended structure and internal consistency of Psi-CBS, but current evidence is still limited (including smaller samples). Treat it as a practical tracking tool while further validation studies are ongoing.</p></div>
+      <h2>Intended use</h2>
+      <ul>
+        <li>Self-tracking and product/research use</li>
+        <li>Tracking change over time (especially with consistent testing conditions)</li>
+        <li>Not a clinical or diagnostic assessment</li>
+      </ul>
+      <div class=\"btnRow\"><button type=\"button\" onclick=\"window.close()\">Close</button></div>
+    </div>
+  </div>
+</body>
+</html>`);
+                win.document.close();
+            };
+
             const calculateCoreResults = () => {
                 const focusItems = PSI_CBS.core.questions.filter(q => q.factor === 'focus');
                 const processingItems = PSI_CBS.core.questions.filter(q => q.factor === 'processing');
@@ -495,11 +562,20 @@
                     <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
                         <div className="max-w-3xl mx-auto pt-12">
                             <div className="tg-card bg-white rounded-2xl shadow-xl p-8 md:p-12">
-                                <div className="flex items-center gap-3 mb-4">
+                                <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
+                                    <div className="flex items-center gap-3 min-w-0">
                                     <img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="Trident G" className="w-10 h-10 object-contain" />
                                     <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
                                         Ψ-Band Cognitive Bandwidth Scale
                                     </h1>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={openTestDetails}
+                                        className="px-4 py-2 rounded-lg font-semibold bg-blue-500 hover:bg-blue-600 text-white transition-colors whitespace-nowrap"
+                                    >
+                                        Test Details
+                                    </button>
                                 </div>
                                 <p className="text-lg text-gray-600 mb-2">Mindware Lab, 2025</p>
                                 <p className="text-gray-500 mb-8">License: CC BY 4.0</p>
