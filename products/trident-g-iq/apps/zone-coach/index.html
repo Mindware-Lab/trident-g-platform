@@ -78,11 +78,17 @@
     .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:10px; }
     .result-metrics { grid-template-columns:repeat(3,minmax(0,1fr)); }
     .metric { border:1px solid var(--zc-border-soft); border-radius:12px; padding:10px; background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.018)); box-shadow:inset 0 1px 0 rgba(255,255,255,.02); }
+    .metric-head { display:grid; grid-template-columns:34px minmax(0,1fr); gap:10px; align-items:center; }
+    .metric-icon { width:34px; height:34px; display:block; object-fit:contain; }
+    .metric-content { min-width:0; }
     .metric .k { font-size:12px; color:var(--zc-text-label); }
     .metric .v { font-weight:800; margin-top:6px; }
     .metric-inline { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:6px; }
     .metric-inline .v { margin-top:0; }
     .metric-inline .btn { flex:0 0 auto; padding:6px 8px; font-size:12px; line-height:1.1; border-radius:10px; }
+    .metric-graph-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-width:60px; padding:4px 6px; }
+    .metric-graph-btn img { width:17px; height:17px; display:block; object-fit:contain; }
+    .metric-graph-btn span { font-size:10px; line-height:1; color:var(--zc-text-label); }
     .block { border:1px solid var(--zc-border); border-radius:12px; padding:12px; margin-top:10px; background:linear-gradient(180deg, rgba(255,255,255,.028), rgba(255,255,255,.016)); box-shadow:inset 0 1px 0 rgba(255,255,255,.02); }
     .badge { display:inline-block; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.12); font-size:12px; font-weight:800; margin-top:6px; }
     .badge.in_zone { border-color: rgba(204,255,102,.35); background: rgba(204,255,102,.1); }
@@ -263,9 +269,9 @@
 
         <div id="validPanel" class="hidden">
           <div class="grid result-metrics" id="resultMetricsRow">
-            <div class="metric"><div class="k">Bits / second (CCC)</div><div class="metric-inline"><div class="v" id="mBps">-</div><button type="button" class="btn btn-ghost" id="showBpsTraceBtn" title="Show session-to-session CCC bits/second graph" aria-label="Show bits per second history graph">Graph</button></div></div>
-            <div class="metric"><div class="k">State</div><div class="v" id="mState">-</div></div>
-            <div class="metric"><div class="k">Confidence Level</div><div class="v" id="mConf">-</div></div>
+            <div class="metric"><div class="metric-head"><img class="metric-icon" src="../../../../branding/icons/bits-per-second.svg" alt="" aria-hidden="true" /><div class="metric-content"><div class="k">Bits / second (CCC)</div><div class="metric-inline"><div class="v" id="mBps">-</div><button type="button" class="btn btn-ghost metric-graph-btn" id="showBpsTraceBtn" title="Show session-to-session CCC bits/second graph" aria-label="Show bits per second history graph"><img src="../../../../branding/icons/graph.svg" alt="" aria-hidden="true" /><span>See Data</span></button></div></div></div></div>
+            <div class="metric"><div class="metric-head"><img class="metric-icon" src="../../../../branding/icons/brain-state.svg" alt="" aria-hidden="true" /><div class="metric-content"><div class="k">Cognitive State</div><div class="v" id="mState">-</div></div></div></div>
+            <div class="metric"><div class="metric-head"><img class="metric-icon" src="../../../../branding/icons/confidence-level.svg" alt="" aria-hidden="true" /><div class="metric-content"><div class="k">Confidence Level</div><div class="v" id="mConf">-</div></div></div></div>
             <div class="metric user-hidden"><div class="k">Probe trials / Catch fail</div><div class="v" id="mProbeCatch">-</div></div>
             <div class="metric user-hidden"><div class="k">Timeout rate / RT CV</div><div class="v" id="mTimeoutCv">-</div></div>
             <div class="metric user-hidden"><div class="k">PES / Burstiness</div><div class="v" id="mPesBurst">-</div></div>
