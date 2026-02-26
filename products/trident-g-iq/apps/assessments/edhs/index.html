@@ -697,7 +697,9 @@
     .card { border-radius: 18px; border: 1px solid rgba(110,198,255,.22); background: radial-gradient(1100px 360px at -10% -20%, rgba(110,198,255,.14), transparent 55%), linear-gradient(165deg, rgba(78,160,232,.10), rgba(15,18,26,.96) 55%); box-shadow: 0 14px 34px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04); padding: 18px; }
     .kicker { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #d9ecff; margin: 0 0 8px 0; }
     h1 { margin: 0; font-size: 28px; line-height: 1.08; }
-    p { color: #d5dceb; line-height: 1.45; }
+    h2 { margin: 18px 0 8px 0; font-size: 16px; }
+    p, li { color: #d5dceb; line-height: 1.45; }
+    ul { margin: 8px 0 0 18px; padding: 0; }
     .sub { margin-top: 10px; border-radius: 12px; padding: 12px 14px; border: 1px solid rgba(255,255,255,.10); background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.012)); }
     .note { margin-top: 12px; border-radius: 12px; padding: 12px 14px; border: 1px solid rgba(255,120,140,.30); background: rgba(255,170,190,.10); color: #edf0f7; }
     .note p { margin: 0; color: #edf0f7; }
@@ -710,8 +712,20 @@
     <div class="card">
       <p class="kicker">Mindware Lab - Trident G IQ</p>
       <h1>Everyday Decision Habits Scale (EDHS)</h1>
-      <div class="sub"><p><strong>Test Details</strong> content will be added here. This placeholder keeps EDHS visually consistent with the other Trident G IQ assessments.</p></div>
-      <div class="note"><p><strong>Coming soon:</strong> overview, what EDHS measures, scoring summary, validation status, and intended use.</p></div>
+      <div class="sub"><p><strong>What it is:</strong> A brief, non-clinical questionnaire that helps you reflect on your <strong>everyday decision habits</strong> across common situations (work, health, money, planning, follow-through).</p></div>
+      <h2>What it measures</h2>
+      <p>EDHS captures four practical ingredients of effective self-regulation:</p>
+      <ul>
+        <li><strong>Planning &amp; prioritisation</strong> (choosing what matters most rather than reacting)</li>
+        <li><strong>Facing hard decisions vs avoidance</strong> (taking a concrete step on uncomfortable tasks)</li>
+        <li><strong>Considering future consequences</strong> (balancing "now" with longer-term outcomes)</li>
+        <li><strong>Concrete follow-through planning</strong> (turning intentions into specific plans, cues, and reminders)</li>
+      </ul>
+      <h2>How it works</h2>
+      <p>You read a set of short real-life scenarios and pick the option (A-D) that best matches what you <strong>usually</strong> do. There are <strong>no right or wrong answers</strong>. EDHS includes <strong>two versions (A and B)</strong> so it can be repeated over time without using the exact same situations.</p>
+      <h2>Current validation status (working summary)</h2>
+      <p>EDHS is <strong>research-informed by design</strong>, with its four habit areas adapted from established work on decision-making styles, present-vs-future focus, and planning/implementation habits. Because it is brief, it is best treated as a <strong>practical snapshot</strong> for self-reflection and tracking patterns over time, rather than a definitive assessment.</p>
+      <div class="note"><p><strong>Intended use:</strong> Self-tracking, training/intervention evaluation, and product/research monitoring of habit change.<br><strong>Not</strong> a clinical or diagnostic tool.</p></div>
       <div class="btnRow"><button type="button" onclick="window.close()">Close</button></div>
     </div>
   </div>
@@ -775,23 +789,23 @@
           <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 py-8">
             <div className="max-w-3xl mx-auto">
               <div className="tg-card bg-white rounded-2xl shadow-xl p-8 md:p-12">
-                <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <span className="tg-panel-icon tg-panel-icon--sm"><img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="Trident G" /></span>
-                    <div className="min-w-0">
-                      <span className="tg-panel-kicker">Mindware Lab - Trident G IQ</span>
-                      <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-                        Everyday Decision Habits Scale
-                      </h1>
+                <div className="flex items-start gap-3 mb-6">
+                  <span className="tg-panel-icon tg-panel-icon--sm"><img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="Trident G" /></span>
+                  <div className="min-w-0 flex-1">
+                    <span className="tg-panel-kicker">Mindware Lab - Trident G IQ</span>
+                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                      Everyday Decision Habits Scale
+                    </h1>
+                    <div className="mt-4">
+                      <button
+                        type="button"
+                        onClick={openTestDetails}
+                        className="px-4 py-2 rounded-lg font-semibold bg-blue-500 hover:bg-blue-600 text-white transition-colors whitespace-nowrap"
+                      >
+                        Test Details
+                      </button>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={openTestDetails}
-                    className="px-4 py-2 rounded-lg font-semibold bg-blue-500 hover:bg-blue-600 text-white transition-colors whitespace-nowrap"
-                  >
-                    Test Details
-                  </button>
                 </div>
                 <div className="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8">
                   <p className="text-gray-700 leading-relaxed">
