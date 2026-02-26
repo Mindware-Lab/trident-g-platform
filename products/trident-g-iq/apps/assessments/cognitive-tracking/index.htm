@@ -18,7 +18,7 @@
     .grid2 { grid-template-columns: 1fr; }
 
     .content{
-      max-width: 940px;
+      max-width: 1040px;
       width: 100%;
       margin: 0 auto;
     }
@@ -27,14 +27,15 @@
       margin: 4px 2px 0;
       font-weight: 900;
       font-size: 22px;
-      letter-spacing: 0.2px;
-      color: #111;
+      line-height: 1.15;
+      letter-spacing: -0.2px;
+      color: var(--brand-text);
     }
 
     .sectionNote{
       margin: 4px 2px 0;
-      font-size: 18px;
-      color: var(--grey-600);
+      font-size: 15px;
+      color: var(--brand-text-muted);
       line-height: 1.45;
     }
 
@@ -46,8 +47,9 @@
       gap: 10px;
       padding: 12px;
       border-radius: 14px;
-      background: rgba(224,224,224,0.35);
-      border: 1px solid rgba(0,0,0,0.05);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border: 1px solid var(--brand-border-soft);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
 
     .testMeta{
@@ -59,32 +61,35 @@
 
     .testName{
       font-weight: 900;
-      font-size: 24px;
+      font-size: 22px;
       margin: 0;
+      color: var(--brand-text);
     }
 
     .testDesc{
       margin: 0;
-      font-size: 18px;
-      color: var(--grey-600);
+      font-size: 15px;
+      color: var(--brand-text-muted);
       line-height: 1.45;
     }
 
     .tagRow{ display:flex; gap:6px; flex-wrap:wrap; margin-top: 4px; }
     .tag{
-      font-size: 18px;
+      font-size: 12px;
       font-weight: 800;
-      padding: 7px 12px;
+      padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(39,100,183,0.08);
-      border: 1px solid rgba(39,100,183,0.18);
-      color: var(--deep);
+      background: rgba(110,198,255,0.08);
+      border: 1px solid rgba(110,198,255,0.22);
+      color: var(--brand-text);
       white-space: nowrap;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
     .tagDone{
       background: rgba(204,255,102,0.95);
       border: 1px solid rgba(0,0,0,0.08);
       color:#0B1A0B;
+      box-shadow: 0 0 0 1px rgba(204,255,102,.14), 0 8px 22px rgba(190,239,78,.12);
     }
 
     .rightCol{
@@ -100,21 +105,32 @@
     .btnSmall{
       padding: 10px 12px;
       border-radius: 12px;
-      font-size: 18px;
-      font-weight: 900;
+      font-size: 14px;
+      font-weight: 800;
     }
 
     .input{
       width: 100%;
       border-radius: 12px;
-      border: 1px solid rgba(0,0,0,0.10);
-      padding: 8px 10px;
-      font-size: 16px;
+      border: 1px solid var(--brand-border);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.018));
+      color: var(--brand-text);
+      padding: 9px 10px;
+      font-size: 14px;
       outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
     .input:focus{
-      border-color: rgba(34,170,255,0.65);
-      box-shadow: 0 0 0 3px rgba(34,170,255,0.12);
+      border-color: rgba(110,198,255,.45);
+      box-shadow: var(--brand-focus-ring);
+    }
+    .input::placeholder{
+      color: var(--brand-text-quiet);
+      opacity: 1;
+    }
+    .input option{
+      background: #121722;
+      color: var(--brand-text);
     }
 
     .twoCol{
@@ -134,8 +150,8 @@
 
     .whenLine{
       margin: 8px 0 0 0;
-      font-size: 16px;
-      color: #111;
+      font-size: 14px;
+      color: var(--brand-text);
       line-height: 1.4;
     }
 
@@ -153,26 +169,27 @@
 
     .scoreReadout{
       margin-top: 8px;
-      border: 1px solid rgba(0,0,0,0.1);
+      border: 1px solid var(--brand-border-soft);
       border-radius: 12px;
-      background: rgba(255,255,255,0.42);
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.014));
       padding: 8px 10px;
       max-width: 760px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
 
     .scoreReadoutTitle{
       margin: 0;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 900;
-      color: #111;
+      color: var(--brand-text-label);
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.5px;
     }
 
     .scoreReadoutLine{
       margin-top: 4px;
-      font-size: 16px;
-      color: var(--grey-600);
+      font-size: 14px;
+      color: var(--brand-text-muted);
       line-height: 1.35;
     }
 
@@ -185,18 +202,24 @@
     }
 
     .infoBlock{
-      border: 1px solid rgba(0,0,0,0.1);
+      border: 1px solid var(--brand-border-soft);
       border-radius: 12px;
-      background: rgba(255,255,255,0.4);
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.014));
       padding: 8px 10px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
 
     .infoBlock summary{
       cursor: pointer;
       font-weight: 800;
-      font-size: 16px;
-      color: #111;
+      font-size: 14px;
+      color: var(--brand-text);
       user-select: none;
+    }
+    .infoBlock summary:focus-visible{
+      outline: none;
+      box-shadow: var(--brand-focus-ring);
+      border-radius: 8px;
     }
 
     .infoBlock p{
@@ -206,56 +229,61 @@
     .checkList{
       margin: 8px 0 0 18px;
       padding: 0;
-      font-size: 16px;
-      color: var(--grey-600);
+      font-size: 14px;
+      color: var(--brand-text-muted);
       line-height: 1.35;
     }
 
     .contextHint{
       margin-top: 8px;
-      font-size: 15px;
-      color: #1E4F8A;
+      font-size: 13px;
+      color: var(--z-blue-200);
       font-weight: 700;
     }
 
     .historyHint{
       margin-top: 8px;
-      font-size: 15px;
-      color: var(--grey-600);
+      font-size: 13px;
+      color: var(--brand-text-muted);
       line-height: 1.35;
     }
 
     .muted{
-      font-size: 18px;
-      color: var(--grey-600);
+      font-size: 14px;
+      color: var(--brand-text-muted);
       line-height: 1.45;
       margin: 0;
     }
 
     .danger{
-      background: rgba(0,0,0,0.04);
-      border: 1px dashed rgba(0,0,0,0.15);
+      background: rgba(255,170,190,.10);
+      border: 1px solid rgba(255,120,140,.28);
       padding: 10px 12px;
       border-radius: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
 
     .gSplashCard{
       max-width: 640px;
       margin: 0 auto;
       border-radius: 24px;
-      border: none;
-      background: var(--primary);
-      color: #FFFFFF;
+      border: 1px solid rgba(110,198,255,.22);
+      background:
+        radial-gradient(1100px 360px at -10% -20%, rgba(110,198,255,.14), transparent 55%),
+        linear-gradient(165deg, rgba(78,160,232,.12), rgba(15,18,26,.96) 55%);
+      color: var(--brand-text);
       text-align: center;
       padding: 26px 22px;
-      box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+      box-shadow: 0 14px 34px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04);
     }
 
     .gSplashIcon{
       width: 56px;
       height: 56px;
       border-radius: 14px;
-      background: rgba(255,255,255,0.88);
+      background: #BEEF4E;
+      border: 4px solid rgba(255,255,255,.50);
+      box-shadow: 0 8px 18px rgba(190,239,78,.18);
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -274,14 +302,14 @@
       font-size: 46px;
       line-height: 1;
       font-weight: 900;
-      color: #FFFFFF;
+      color: var(--brand-text);
     }
 
     .gSplashSub{
       margin: 12px 0 0 0;
-      font-size: 24px;
+      font-size: 20px;
       line-height: 1.35;
-      color: rgba(255,255,255,0.96);
+      color: var(--brand-text-muted);
       font-weight: 600;
     }
 
@@ -292,9 +320,11 @@
 
     .gSplashFoot{
       margin: 14px 0 0 0;
-      color: rgba(255,255,255,0.95);
-      font-size: 20px;
+      color: var(--z-blue-200);
+      font-size: 12px;
       font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
     }
 
     @media (max-width: 600px){
