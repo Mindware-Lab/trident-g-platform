@@ -483,6 +483,93 @@
     .dueLine{ margin: 0; font-size: 13px; font-weight: 700; color: var(--brand-text); }
 
     .adminCard{ opacity: .95; }
+    .adminHeaderRow{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .adminHeaderRow .sectionHeader{ margin: 0; }
+    .adminHelpBtn{ min-width: 98px; }
+
+    .adminHelpOverlay{
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(3,8,14,.72);
+      backdrop-filter: blur(2px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .adminHelpModal{
+      width: min(740px, 100%);
+      max-height: min(86vh, 760px);
+      overflow: auto;
+      border-radius: 18px;
+      border: 1px solid rgba(110,198,255,.3);
+      background:
+        radial-gradient(110% 110% at -10% -20%, rgba(110,198,255,.10), transparent 55%),
+        linear-gradient(160deg, rgba(74,146,255,.10), rgba(15,18,26,.96) 58%);
+      box-shadow: 0 20px 44px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
+      color: var(--brand-text);
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .adminHelpTop{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .adminHelpTitle{
+      margin: 0;
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--brand-text);
+    }
+
+    .adminHelpLead{
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--brand-text-muted);
+    }
+
+    .adminHelpBlock{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      padding: 10px 12px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .adminHelpLabel{
+      margin: 0;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--brand-text);
+    }
+
+    .adminHelpText{
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--brand-text-muted);
+    }
+
+    .adminHelpWarn{
+      border: 1px solid rgba(255,120,140,.34);
+      background: rgba(255,170,190,.12);
+    }
 
     @media (max-width: 900px){
       .programGrid{ grid-template-columns: 1fr; }
@@ -1389,6 +1476,7 @@
       const [showSplash, setShowSplash] = useState(true);
       const [draftByKey, setDraftByKey] = useState({});
       const [openPanels, setOpenPanels] = useState({});
+      const [showAdminHelp, setShowAdminHelp] = useState(false);
 
       useEffect(() => {
         saveState(state);
@@ -1399,6 +1487,15 @@
         const timer = setTimeout(() => setToast(""), 2200);
         return () => clearTimeout(timer);
       }, [toast]);
+
+      useEffect(() => {
+        if(!showAdminHelp) return;
+        const onKeyDown = (event) => {
+          if(event.key === "Escape") setShowAdminHelp(false);
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+      }, [showAdminHelp]);
 
       const outcomeCards = useMemo(() => OUTCOME_CARD_DEFS.map((def) => buildOutcomeCardState(def, state)), [state]);
       const repeatableCards = useMemo(() => REPEATABLE_CARD_DEFS.map((def) => buildRepeatableCardState(def, state)), [state]);
@@ -1788,7 +1885,10 @@
             </div>
 
             <div className="card adminCard">
-              <h2 className="sectionHeader">Admin</h2>
+              <div className="adminHeaderRow">
+                <h2 className="sectionHeader">Admin</h2>
+                <button className="btn btnInfo adminHelpBtn" onClick={() => setShowAdminHelp(true)}>Help</button>
+              </div>
               <p className="sectionSub">Export/import/reset controls for this tracker only.</p>
               <div className="btnRow">
                 <button className="btn btnSecondary" onClick={exportJSON}>Export JSON</button>
@@ -1801,6 +1901,39 @@
                 </p>
               </div>
             </div>
+
+            {showAdminHelp && (
+              <div className="adminHelpOverlay" role="dialog" aria-modal="true" aria-labelledby="adminHelpTitle" onClick={() => setShowAdminHelp(false)}>
+                <div className="adminHelpModal" onClick={(event) => event.stopPropagation()}>
+                  <div className="adminHelpTop">
+                    <h3 id="adminHelpTitle" className="adminHelpTitle">Admin help</h3>
+                    <button className="btn btnSecondary" onClick={() => setShowAdminHelp(false)}>Close</button>
+                  </div>
+                  <p className="adminHelpLead">
+                    These controls apply only to this G Tracker data on this device and browser.
+                  </p>
+                  <div className="adminHelpBlock">
+                    <p className="adminHelpLabel">Export JSON</p>
+                    <p className="adminHelpText">
+                      Downloads your full tracker data file (`g-tracker-export.json`) so you can keep a backup or move data to another device.
+                    </p>
+                  </div>
+                  <div className="adminHelpBlock">
+                    <p className="adminHelpLabel">Import JSON</p>
+                    <p className="adminHelpText">
+                      Replaces the current tracker state with the JSON you paste. Use this to restore from a backup or transfer data.
+                    </p>
+                  </div>
+                  <div className="adminHelpBlock adminHelpWarn">
+                    <p className="adminHelpLabel">Reset hub data</p>
+                    <p className="adminHelpText">
+                      Permanently clears all saved tracker entries, notes, cadence settings, and programme settings for this tracker in local storage.
+                      This cannot be undone, so export first if you may need your data later.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
