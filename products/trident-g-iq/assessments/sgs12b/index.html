@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SgS-12 B â€“ Short g Scale</title>
+  <title>SgS-12 B - Short g Scale</title>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -339,7 +339,7 @@
     const { useEffect, useState } = React;
 
     // -----------------------------
-    // Item definitions â€“ SgS-12 B
+    // Item definitions - SgS-12 B
     // Matrix mapping (final):
     // q12047 â†’ BM1 â†’ B
     // q12053 â†’ BM2 â†’ C
@@ -348,7 +348,7 @@
     // q12055 â†’ BM5 â†’ D
     // -----------------------------
     const ITEMS = [
-      // Matrix reasoning (BM1â€“BM5)
+      // Matrix reasoning (BM1-BM5)
       {
         id: 'BM1',
         kind: 'matrix',
@@ -390,7 +390,7 @@
         correctOptionIndex: 3,
       },
 
-      // Verbal reasoning (BVR1â€“BVR3)
+      // Verbal reasoning (BVR1-BVR3)
       {
         id: 'BVR1',
         kind: 'verbal',
@@ -445,7 +445,7 @@
         correctOptionIndex: 4,
       },
 
-      // Series reasoning (BSR1â€“BSR2)
+      // Series reasoning (BSR1-BSR2)
       {
         id: 'BSR1',
         kind: 'series',
@@ -483,7 +483,7 @@
         correctOptionIndex: 2,
       },
 
-      // 3D rotation (BR1â€“BR2)
+      // 3D rotation (BR1-BR2)
       {
         id: 'BR1',
         kind: 'rotation',
@@ -704,31 +704,29 @@
       return (
         <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
           <div className="tg-card bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
-            <div className="flex items-start gap-3 mb-4">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <span className="tg-panel-icon">
-                  <img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="Trident G" />
-                </span>
-                <div className="flex-1 min-w-0">
-                  <span className="tg-panel-kicker">Mindware Lab - Trident G IQ</span>
-                  <h1 className="text-4xl font-bold text-gray-800 text-center sm:text-left min-w-0">
-              Short g Scale â€“ SgS-12 B
-                  </h1>
-                  <div className="mt-4">
-                    <button
-                      type="button"
-                      onClick={onOpenDetails}
-                      className="px-4 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors whitespace-nowrap"
-                    >
-                      Test Details
-                    </button>
-                  </div>
-                </div>
+            <div className="flex items-start gap-3 mb-3">
+              <span className="tg-panel-icon">
+                <img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="Trident G" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <span className="tg-panel-kicker">Mindware Lab - Trident G IQ</span>
+                <h1 className="text-4xl font-bold text-gray-800 text-center sm:text-left min-w-0">
+                  Short g Scale - SgS-12 B
+                </h1>
               </div>
+            </div>
+            <div className="mb-6">
+              <button
+                type="button"
+                onClick={onOpenDetails}
+                className="px-4 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors whitespace-nowrap"
+              >
+                Test Details
+              </button>
             </div>
             <p className="text-gray-600 text-lg mb-8 text-center sm:text-left leading-relaxed">
               A 12-item validated reasoning snapshot measuring matrices, verbal, series and 3D rotation.
-              There are no time limits, but most people finish in around 5â€“10 minutes.
+              There are no time limits, but most people finish in around 5-10 minutes.
             </p>
             <button
               onClick={onStart}
@@ -882,16 +880,16 @@
                 <h4 className="font-bold text-gray-800 mb-3">Typical score ranges:</h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="text-gray-700">
-                    <span className="font-semibold">0â€“3:</span> RS-IQ &lt; ~85
+                    <span className="font-semibold">0-3:</span> RS-IQ &lt; ~85
                   </div>
                   <div className="text-gray-700">
-                    <span className="font-semibold">4â€“7:</span> ~85â€“115
+                    <span className="font-semibold">4-7:</span> ~85-115
                   </div>
                   <div className="text-gray-700">
-                    <span className="font-semibold">8â€“9:</span> ~115â€“125
+                    <span className="font-semibold">8-9:</span> ~115-125
                   </div>
                   <div className="text-gray-700">
-                    <span className="font-semibold">10â€“12:</span> 125+
+                    <span className="font-semibold">10-12:</span> 125+
                   </div>
                 </div>
               </div>
@@ -997,4 +995,5 @@
   </script>
 </body>
 </html>
+
 
