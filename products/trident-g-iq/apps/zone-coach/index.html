@@ -135,6 +135,12 @@
     .splash-site-link { margin-top:12px; text-align:center; font-size:13px; line-height:1.3; }
     .splash-site-link a { color:#d9ecff; font-weight:700; text-decoration:none; border-bottom:1px solid rgba(110,198,255,.28); padding-bottom:1px; }
     .splash-site-link a:hover { color:#6ec6ff; border-bottom-color:rgba(110,198,255,.5); }
+    .splash-trace { margin-top:12px; padding:12px; }
+    .splash-trace-title { margin:0; font-size:16px; line-height:1.2; font-weight:800; color:var(--zc-blue-soft); }
+    .splash-trace-sub { margin-top:6px; }
+    .splash-trace-meta { margin-top:6px; }
+    .splash-trace-svg { margin-top:10px; }
+    .splash-trace-svg svg { display:block; width:100%; height:260px; }
     .splash-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:12px; }
     .splash-tile { border-radius:12px; border:1px solid rgba(255,255,255,.10); background:linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02)); padding:10px; box-shadow:inset 0 1px 0 rgba(255,255,255,.025); }
     .splash-tile .k { font-size:12px; color:var(--zc-text-label); }
@@ -239,6 +245,14 @@
             <button class="btn" id="resetHistoryBtn">Reset your data history</button>
           </div>
           <div class="small muted" style="margin-top:12px;">Keyboard and touch supported. Do not switch tabs during the run.</div>
+          <div class="splash-trace block" id="startBpsTraceCard">
+            <h3 class="splash-trace-title">CCC Bits / Second Trace (Last 24 Days)</h3>
+            <div class="small muted splash-trace-sub">Local valid recordings from full checks and quick re-checks. Blank days have no recording.</div>
+            <div class="small muted splash-trace-meta" id="startBpsTraceMeta"></div>
+            <div class="small muted splash-trace-meta" id="startBpsTraceSummary"></div>
+            <div class="small muted splash-trace-meta" id="startBpsTraceBand"></div>
+            <div class="splash-trace-svg" id="startBpsTraceSvgWrap"></div>
+          </div>
           <div class="splash-site-link"><a href="https://www.iqmindware.com" target="_blank" rel="noopener noreferrer">IQMindware.com</a></div>
         </div>
       </div>
@@ -374,6 +388,7 @@
       histCount: $('histCount'), histBps: $('histBps'), lastLine: $('lastLine'),
       touchLeftBtn: $('touchLeftBtn'), touchRightBtn: $('touchRightBtn'),
       instructionsBtn: $('instructionsBtn'), learnAboutTestBtn: $('learnAboutTestBtn'), feelStatesBtn: $('feelStatesBtn'),
+      startBpsTraceMeta: $('startBpsTraceMeta'), startBpsTraceSummary: $('startBpsTraceSummary'), startBpsTraceBand: $('startBpsTraceBand'), startBpsTraceSvgWrap: $('startBpsTraceSvgWrap'),
       canvas: $('c')
     };
     const ctx = dom.canvas.getContext('2d', { alpha:false, desynchronized:true }) || dom.canvas.getContext('2d');
@@ -1002,6 +1017,7 @@
       const last = rows[rows.length-1];
       const lastState = normState(last?.router?.state);
       dom.lastLine.textContent = last ? `Last check: ${ROUTER_STATE_UI[lastState]?.label || lastState || '-'} • ${last.router?.confidence || '-'} confidence` : 'Last check: -';
+      renderStartBpsTraceCard(rows);
       return { rows, base: b };
     }
 
@@ -1447,10 +1463,9 @@
       renderRouterResult(summary);
     }
 
-    function openBpsTraceScreen(){
-      const iconUrl = (name) => new URL(`../../../../branding/icons/${name}`, window.location.href).href;
-      const bpsTraceIcon = iconUrl('bits-per-second.svg');
-      const rows = validRows(loadHistory()).slice().sort((a,b) => new Date(a?.sessionId || 0).getTime() - new Date(b?.sessionId || 0).getTime());
+    function buildBpsTraceView(rowsInput){
+      const rowsSource = Array.isArray(rowsInput) ? rowsInput : loadHistory();
+      const rows = validRows(rowsSource).slice().sort((a,b) => new Date(a?.sessionId || 0).getTime() - new Date(b?.sessionId || 0).getTime());
 
       const DAY_MS = 24 * 60 * 60 * 1000;
       const WINDOW_DAYS = 24;
@@ -1550,7 +1565,7 @@
       const xGrid = dayBuckets.map((b, i) => {
         const x = xForIdx(i);
         const labelNow = i === 0 || i === dayBuckets.length - 1 || (i % 4 === 0);
-        return `<g><line x1="${x.toFixed(1)}" y1="${T}" x2="${x.toFixed(1)}" y2="${(H-B)}" stroke="rgba(255,255,255,.05)" stroke-width="1" />${labelNow ? `<text x="${x.toFixed(1)}" y="${(H-10).toFixed(1)}" text-anchor="middle" fill="rgba(183,194,214,.95)" font-size="10">${esc(dayLabel(b.date))}</text>` : ''}</g>`;
+        return `<g><line x1="${x.toFixed(1)}" y1="${T}" x2="${x.toFixed(1)}" y2="${(H-B)}" stroke="rgba(255,255,255,.05)" stroke-width="1" />${labelNow ? `<text x="${x.toFixed(1)}" y="${(H-17).toFixed(1)}" text-anchor="middle" fill="rgba(183,194,214,.95)" font-size="10">${esc(dayLabel(b.date))}</text>` : ''}</g>`;
       }).join('');
 
       const bandShade = inZoneBand
@@ -1599,6 +1614,7 @@
       const svg = `
         <svg viewBox="0 0 ${W} ${H}" width="100%" height="290" role="img" aria-label="Last 24 days CCC bits per second trace">
           <rect x="0.5" y="0.5" width="${W-1}" height="${H-1}" rx="12" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.10)" />
+          <text x="${(L+4).toFixed(1)}" y="${(T+12).toFixed(1)}" fill="rgba(213,220,235,.88)" font-size="11" font-weight="700">CCC bits/second</text>
           ${bandShade}
           ${yGrid}
           ${xGrid}
@@ -1606,6 +1622,7 @@
           ${lineSegments}
           ${dots}
           ${noDataOverlay}
+          <text x="${(L + plotW/2).toFixed(1)}" y="${(H-4).toFixed(1)}" text-anchor="middle" fill="rgba(183,194,214,.95)" font-size="10">Day (last 24 days)</text>
         </svg>`;
 
       const latestLine = latestPt
@@ -1619,15 +1636,42 @@
         ? `<p class="muted">This graph always shows the last 24 days. The first point appears after your first completed valid check (full check or quick re-check).</p>`
         : '';
 
+      return {
+        WINDOW_DAYS,
+        dayBuckets,
+        pts,
+        inZoneBand,
+        svg,
+        latestLine,
+        avgLine,
+        bandLine,
+        noDataNote,
+        windowLabel: `${dayLabel(dayBuckets[0].date)} to ${dayLabel(dayBuckets[dayBuckets.length-1].date)}`
+      };
+    }
+
+    function renderStartBpsTraceCard(rowsInput){
+      if (!dom.startBpsTraceSvgWrap || !dom.startBpsTraceMeta || !dom.startBpsTraceSummary || !dom.startBpsTraceBand) return;
+      const view = buildBpsTraceView(rowsInput);
+      dom.startBpsTraceMeta.innerHTML = `<strong>Window:</strong> ${esc(view.windowLabel)} &nbsp; <strong>Recorded days:</strong> ${view.pts.length} / ${view.WINDOW_DAYS}`;
+      dom.startBpsTraceSummary.innerHTML = `${view.latestLine} &nbsp; ${view.avgLine}`;
+      dom.startBpsTraceBand.innerHTML = view.bandLine;
+      dom.startBpsTraceSvgWrap.innerHTML = view.svg;
+    }
+
+    function openBpsTraceScreen(){
+      const bpsTraceIcon = new URL(`../../../../branding/icons/bits-per-second.svg`, window.location.href).href;
+      const view = buildBpsTraceView();
+
       openInfoScreen('CCC Bits / Second Trace', `
         <div class="kicker">Mindware Lab - Trident G IQ</div>
         <div class="popup-title-row"><img src="${esc(bpsTraceIcon)}" alt="" aria-hidden="true" /><h1>CCC Bits / Second Trace</h1></div>
         <p>Last 24 days of local valid CCC bits/second recordings (full checks and quick re-checks). Days without a recording are left blank.</p>
-        ${noDataNote}
-        <div class="note note-neutral"><strong>Window:</strong> ${esc(dayLabel(dayBuckets[0].date))} to ${esc(dayLabel(dayBuckets[dayBuckets.length-1].date))} &nbsp; <strong>Recorded days:</strong> ${pts.length} / ${WINDOW_DAYS}</div>
-        <div class="note note-neutral">${latestLine} &nbsp; ${avgLine}</div>
-        <div class="note note-important" style="margin-top:10px;">${inZoneBand ? `<strong>In the Zone band:</strong> ${esc(fmt(inZoneBand.lo,2))} to ${esc(fmt(inZoneBand.hi,2))} bps (estimated from ${inZoneBand.n} prior in-zone recordings)` : '<strong>In the Zone band:</strong> Appears after at least 3 valid in-zone recordings.'}</div>
-        <div style="margin-top:12px;">${svg}</div>
+        ${view.noDataNote}
+        <div class="note note-neutral"><strong>Window:</strong> ${esc(view.windowLabel)} &nbsp; <strong>Recorded days:</strong> ${view.pts.length} / ${view.WINDOW_DAYS}</div>
+        <div class="note note-neutral">${view.latestLine} &nbsp; ${view.avgLine}</div>
+        <div class="note note-important" style="margin-top:10px;">${view.inZoneBand ? `<strong>In the Zone band:</strong> ${esc(fmt(view.inZoneBand.lo,2))} to ${esc(fmt(view.inZoneBand.hi,2))} bps (estimated from ${view.inZoneBand.n} prior in-zone recordings)` : '<strong>In the Zone band:</strong> Appears after at least 3 valid in-zone recordings.'}</div>
+        <div style="margin-top:12px;">${view.svg}</div>
         <p class="muted">Shaded pink band = estimated In the Zone CCC range based on your local in-zone history. Points inside the band are likely in-range; points outside are above/below that range.</p>
       `);
     }
@@ -1959,6 +2003,12 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+
 
 
 
