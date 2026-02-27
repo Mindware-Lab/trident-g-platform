@@ -628,7 +628,7 @@
       font-weight: 900;
       font-size: 24px;
       line-height: 1.05;
-      color: var(--brand-text);
+      color: var(--brand-info);
       letter-spacing: -0.02em;
     }
 
@@ -1562,7 +1562,15 @@
         <div className="screen">
           <div className="content">
             <div className="card">
-              <h1 className="h1">Your test battery</h1>
+              <div className="panelAppBrand" style={{ marginBottom: "8px" }}>
+                <div className="panelAppIcon">
+                  <img src={ICON_SRC} alt="Trident icon" onError={(e)=>{ e.target.style.display = "none"; }} />
+                </div>
+                <div>
+                  <p className="panelAppKicker">MINDWARE LAB - TRIDENT G IQ</p>
+                  <h1 className="panelAppTitle">G Tracker Test Battery</h1>
+                </div>
+              </div>
               <p className="p">Track outcomes before and after training, plus repeatable weekly trackers.</p>
               <div className="progressStrip">
                 Outcome tests: {outcomeCompleted}/{OUTCOME_CARD_DEFS.length} complete  -  Trackers: {trackersDue} due
@@ -1619,7 +1627,78 @@
             </div>
 
             <div className="card">
-              <h2 className="sectionHeader">Outcome Tests (Take twice)</h2>
+              <h2 className="sectionHeader">Repeatable Trackers</h2>
+              <p className="sectionSub">Latest score + trend + due status in one place.</p>
+              <div className="grid" style={{ marginTop: "10px" }}>
+                {repeatableCards.map((card) => {
+                  const historyKey = `history_${card.id}`;
+                  const detailsKey = `details_${card.id}`;
+                  const draftKey = `repeat_${card.id}`;
+                  const draft = getDraft(draftKey);
+                  const historyRows = getRepeatableHistory(card.testId, state);
+                  const testDef = TEST_BY_ID[card.testId];
+                  const targetTimepoint = resolveRepeatableTimepoint(card, state);
+
+                  return (
+                    <div className="trackerCard" key={card.id}>
+                      <div className="cardActions">
+                        <StatusPill status={card.status} />
+                        <label className="programToggle" style={{ marginLeft: "auto" }}>
+                          Cadence
+                          <select className="input" style={{ minWidth: "140px" }} value={card.cadenceValue} onChange={(e) => setCadence(card.cadenceKey, e.target.value)}>
+                            {CADENCE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                          </select>
+                        </label>
+                      </div>
+                      <p className="trackerTitle">{card.title}</p>
+                      <p className="trackerPurpose">{card.purpose}</p>
+                      <div className="metricRow">
+                        <div className="latestBox">
+                          <p className="latestLabel">Latest score</p>
+                          <p className="latestValue">{card.latestScore || "-"}</p>
+                          <p className="latestDate">{card.latestDate ? `Last taken ${formatDate(card.latestDate)}` : "No completed entries yet"}</p>
+                        </div>
+                        <div className="sparkBox">
+                          <p className="sparkTitle">Recent trend</p>
+                          <Sparkline values={card.numericValues} />
+                        </div>
+                      </div>
+                      <p className="dueLine">{card.due.text}</p>
+                      <p className="logHint">Log entry for: {TIMEPOINT_LABELS[targetTimepoint] || targetTimepoint}</p>
+                      <div className="twoCol">
+                        <input className="input" placeholder="Score" value={draft.score} onChange={(e) => setDraftField(draftKey, "score", e.target.value)} />
+                        <input className="input" placeholder="Notes (optional)" value={draft.notes} onChange={(e) => setDraftField(draftKey, "notes", e.target.value)} />
+                      </div>
+                      <div className="cardActions">
+                        <button className="btn btnPrimary" onClick={() => openTest(card.testId)}>Log now</button>
+                        <button className="btn btnSecondary" onClick={() => saveRepeatableDraft(card)}>Save</button>
+                        <button className="linkBtn" onClick={() => togglePanel(historyKey)} aria-expanded={Boolean(openPanels[historyKey])}>History</button>
+                        <span className="inlineDivider"> - </span>
+                        <button className="linkBtn" onClick={() => togglePanel(detailsKey)} aria-expanded={Boolean(openPanels[detailsKey])}>Details</button>
+                      </div>
+                      {openPanels[historyKey] && (
+                        <div className="historyBlock">
+                          {historyRows.length === 0 ? <p className="historyLine">No saved entries yet.</p> : historyRows.map((row) => (
+                            <p className="historyLine" key={row.key}><strong>{row.timepoint}:</strong> {row.score}  -  {row.date}{row.notes ? `  -  ${row.notes}` : ""}</p>
+                          ))}
+                        </div>
+                      )}
+                      {openPanels[detailsKey] && (
+                        <div className="historyBlock">
+                          <p className="historyLine"><strong>{testDef.name}</strong> ({testDef.timing})</p>
+                          <p className="historyLine">{testDef.whatText}</p>
+                          <p className="historyLine"><strong>When:</strong> {testDef.whenText}</p>
+                          <p className="historyLine"><strong>Credentials:</strong> {testDef.credentialsText}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="card">
+              <h2 className="sectionHeader">Pre- and Post-Training Only Tests</h2>
               <p className="sectionSub">Each card answers: what is this, where am I, and what do I do next.</p>
               <div className="grid" style={{ marginTop: "10px" }}>
                 {outcomeCards.map((card) => {
@@ -1707,77 +1786,6 @@
               </div>
             </div>
 
-            <div className="card">
-              <h2 className="sectionHeader">Repeatable Trackers</h2>
-              <p className="sectionSub">Latest score + trend + due status in one place.</p>
-              <div className="grid" style={{ marginTop: "10px" }}>
-                {repeatableCards.map((card) => {
-                  const historyKey = `history_${card.id}`;
-                  const detailsKey = `details_${card.id}`;
-                  const draftKey = `repeat_${card.id}`;
-                  const draft = getDraft(draftKey);
-                  const historyRows = getRepeatableHistory(card.testId, state);
-                  const testDef = TEST_BY_ID[card.testId];
-                  const targetTimepoint = resolveRepeatableTimepoint(card, state);
-
-                  return (
-                    <div className="trackerCard" key={card.id}>
-                      <div className="cardActions">
-                        <StatusPill status={card.status} />
-                        <label className="programToggle" style={{ marginLeft: "auto" }}>
-                          Cadence
-                          <select className="input" style={{ minWidth: "140px" }} value={card.cadenceValue} onChange={(e) => setCadence(card.cadenceKey, e.target.value)}>
-                            {CADENCE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                          </select>
-                        </label>
-                      </div>
-                      <p className="trackerTitle">{card.title}</p>
-                      <p className="trackerPurpose">{card.purpose}</p>
-                      <div className="metricRow">
-                        <div className="latestBox">
-                          <p className="latestLabel">Latest score</p>
-                          <p className="latestValue">{card.latestScore || "-"}</p>
-                          <p className="latestDate">{card.latestDate ? `Last taken ${formatDate(card.latestDate)}` : "No completed entries yet"}</p>
-                        </div>
-                        <div className="sparkBox">
-                          <p className="sparkTitle">Recent trend</p>
-                          <Sparkline values={card.numericValues} />
-                        </div>
-                      </div>
-                      <p className="dueLine">{card.due.text}</p>
-                      <p className="logHint">Log entry for: {TIMEPOINT_LABELS[targetTimepoint] || targetTimepoint}</p>
-                      <div className="twoCol">
-                        <input className="input" placeholder="Score" value={draft.score} onChange={(e) => setDraftField(draftKey, "score", e.target.value)} />
-                        <input className="input" placeholder="Notes (optional)" value={draft.notes} onChange={(e) => setDraftField(draftKey, "notes", e.target.value)} />
-                      </div>
-                      <div className="cardActions">
-                        <button className="btn btnPrimary" onClick={() => openTest(card.testId)}>Log now</button>
-                        <button className="btn btnSecondary" onClick={() => saveRepeatableDraft(card)}>Save</button>
-                        <button className="linkBtn" onClick={() => togglePanel(historyKey)} aria-expanded={Boolean(openPanels[historyKey])}>History</button>
-                        <span className="inlineDivider"> - </span>
-                        <button className="linkBtn" onClick={() => togglePanel(detailsKey)} aria-expanded={Boolean(openPanels[detailsKey])}>Details</button>
-                      </div>
-                      {openPanels[historyKey] && (
-                        <div className="historyBlock">
-                          {historyRows.length === 0 ? <p className="historyLine">No saved entries yet.</p> : historyRows.map((row) => (
-                            <p className="historyLine" key={row.key}><strong>{row.timepoint}:</strong> {row.score}  -  {row.date}{row.notes ? `  -  ${row.notes}` : ""}</p>
-                          ))}
-                        </div>
-                      )}
-                      {openPanels[detailsKey] && (
-                        <div className="historyBlock">
-                          <p className="historyLine"><strong>{testDef.name}</strong> ({testDef.timing})</p>
-                          <p className="historyLine">{testDef.whatText}</p>
-                          <p className="historyLine"><strong>When:</strong> {testDef.whenText}</p>
-                          <p className="historyLine"><strong>Credentials:</strong> {testDef.credentialsText}</p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
             <div className="card adminCard">
               <h2 className="sectionHeader">Admin</h2>
               <p className="sectionSub">Export/import/reset controls for this tracker only.</p>
@@ -1802,6 +1810,7 @@
   </script>
 </body>
 </html>
+
 
 
 
