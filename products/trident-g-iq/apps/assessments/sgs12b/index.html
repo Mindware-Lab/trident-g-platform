@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SgS-12 B – Short g Scale</title>
+  <title>SgS-12 B â€“ Short g Scale</title>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -339,22 +339,22 @@
     const { useEffect, useState } = React;
 
     // -----------------------------
-    // Item definitions – SgS-12 B
+    // Item definitions â€“ SgS-12 B
     // Matrix mapping (final):
-    // q12047 → BM1 → B
-    // q12053 → BM2 → C
-    // q12045 → BM3 → E
-    // q12048 → BM4 → D
-    // q12055 → BM5 → D
+    // q12047 â†’ BM1 â†’ B
+    // q12053 â†’ BM2 â†’ C
+    // q12045 â†’ BM3 â†’ E
+    // q12048 â†’ BM4 â†’ D
+    // q12055 â†’ BM5 â†’ D
     // -----------------------------
     const ITEMS = [
-      // Matrix reasoning (BM1–BM5)
+      // Matrix reasoning (BM1â€“BM5)
       {
         id: 'BM1',
         kind: 'matrix',
         stemImageUrl: './images/matrices/BM1.jpg',
         responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
-        // BM1: keyed option 2 (B) → index 1
+        // BM1: keyed option 2 (B) â†’ index 1
         correctOptionIndex: 1,
       },
       {
@@ -362,7 +362,7 @@
         kind: 'matrix',
         stemImageUrl: './images/matrices/BM2.jpg',
         responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
-        // BM2: keyed option 3 (C) → index 2
+        // BM2: keyed option 3 (C) â†’ index 2
         correctOptionIndex: 2,
       },
       {
@@ -370,7 +370,7 @@
         kind: 'matrix',
         stemImageUrl: './images/matrices/BM3.jpg',
         responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
-        // BM3: keyed option 5 (E) → index 4
+        // BM3: keyed option 5 (E) â†’ index 4
         correctOptionIndex: 4,
       },
       {
@@ -378,7 +378,7 @@
         kind: 'matrix',
         stemImageUrl: './images/matrices/BM4.jpg',
         responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
-        // BM4: keyed option 4 (D) → index 3
+        // BM4: keyed option 4 (D) â†’ index 3
         correctOptionIndex: 3,
       },
       {
@@ -386,11 +386,11 @@
         kind: 'matrix',
         stemImageUrl: './images/matrices/BM5.jpg',
         responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
-        // BM5: keyed option 4 (D) → index 3
+        // BM5: keyed option 4 (D) â†’ index 3
         correctOptionIndex: 3,
       },
 
-      // Verbal reasoning (BVR1–BVR3)
+      // Verbal reasoning (BVR1â€“BVR3)
       {
         id: 'BVR1',
         kind: 'verbal',
@@ -405,7 +405,7 @@
           'None of these',
           "I don't know",
         ],
-        // BVR1: keyed option 1 → index 0
+        // BVR1: keyed option 1 â†’ index 0
         correctOptionIndex: 0,
       },
       {
@@ -423,7 +423,7 @@
           'None of these',
           "I don't know",
         ],
-        // BVR2: keyed option 2 → index 1
+        // BVR2: keyed option 2 â†’ index 1
         correctOptionIndex: 1,
       },
       {
@@ -441,11 +441,11 @@
           'None of these',
           "I don't know",
         ],
-        // BVR3: keyed option 5 (Morocco) → index 4
+        // BVR3: keyed option 5 (Morocco) â†’ index 4
         correctOptionIndex: 4,
       },
 
-      // Series reasoning (BSR1–BSR2)
+      // Series reasoning (BSR1â€“BSR2)
       {
         id: 'BSR1',
         kind: 'series',
@@ -461,7 +461,7 @@
           'None of these',
           "I don't know",
         ],
-        // BSR1: logical key is option 4 (X) → index 3
+        // BSR1: logical key is option 4 (X) â†’ index 3
         correctOptionIndex: 3,
       },
       {
@@ -479,17 +479,17 @@
           'None of these',
           "I don't know",
         ],
-        // BSR2: keyed option 3 (G) → index 2
+        // BSR2: keyed option 3 (G) â†’ index 2
         correctOptionIndex: 2,
       },
 
-      // 3D rotation (BR1–BR2)
+      // 3D rotation (BR1â€“BR2)
       {
         id: 'BR1',
         kind: 'rotation',
         stemImageUrl: './images/rotation/BR1.jpg',
         responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
-        // BR1: keyed option 7 (G) → index 6
+        // BR1: keyed option 7 (G) â†’ index 6
         correctOptionIndex: 6,
       },
       {
@@ -497,7 +497,7 @@
         kind: 'rotation',
         stemImageUrl: './images/rotation/BR2.jpg',
         responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
-        // BR2: keyed option 3 (C) → index 2
+        // BR2: keyed option 3 (C) â†’ index 2
         correctOptionIndex: 2,
       },
     ];
@@ -712,7 +712,7 @@
                 <div className="flex-1 min-w-0">
                   <span className="tg-panel-kicker">Mindware Lab - Trident G IQ</span>
                   <h1 className="text-4xl font-bold text-gray-800 text-center sm:text-left min-w-0">
-              Short g Scale – SgS-12 B
+              Short g Scale â€“ SgS-12 B
                   </h1>
                   <div className="mt-4">
                     <button
@@ -727,8 +727,8 @@
               </div>
             </div>
             <p className="text-gray-600 text-lg mb-8 text-center sm:text-left leading-relaxed">
-              A 12-item reasoning snapshot measuring matrices, verbal, series and 3D rotation.
-              There are no time limits, but most people finish in around 5–10 minutes.
+              A 12-item validated reasoning snapshot measuring matrices, verbal, series and 3D rotation.
+              There are no time limits, but most people finish in around 5â€“10 minutes.
             </p>
             <button
               onClick={onStart}
@@ -882,16 +882,16 @@
                 <h4 className="font-bold text-gray-800 mb-3">Typical score ranges:</h4>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="text-gray-700">
-                    <span className="font-semibold">0–3:</span> RS-IQ &lt; ~85
+                    <span className="font-semibold">0â€“3:</span> RS-IQ &lt; ~85
                   </div>
                   <div className="text-gray-700">
-                    <span className="font-semibold">4–7:</span> ~85–115
+                    <span className="font-semibold">4â€“7:</span> ~85â€“115
                   </div>
                   <div className="text-gray-700">
-                    <span className="font-semibold">8–9:</span> ~115–125
+                    <span className="font-semibold">8â€“9:</span> ~115â€“125
                   </div>
                   <div className="text-gray-700">
-                    <span className="font-semibold">10–12:</span> 125+
+                    <span className="font-semibold">10â€“12:</span> 125+
                   </div>
                 </div>
               </div>
@@ -997,3 +997,4 @@
   </script>
 </body>
 </html>
+
