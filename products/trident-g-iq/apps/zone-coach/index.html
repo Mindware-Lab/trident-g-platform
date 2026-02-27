@@ -513,9 +513,9 @@
         : '';
       const goalText = guide.trainingGoal ? (guide.trainingGoal.charAt(0).toUpperCase() + guide.trainingGoal.slice(1)) : '';
       const inZone = normState(state) === 'in_zone';
-      const trainingBtnClass = inZone ? 'btn btn-primary' : 'btn';
-      const workBtnClass = inZone ? 'btn' : 'btn btn-primary';
-      const otherBtnClass = inZone ? 'btn btn-ghost' : 'btn btn-primary';
+      const trainingBtnClass = 'btn btn-primary';
+      const workBtnClass = 'btn btn-primary';
+      const otherBtnClass = 'btn btn-primary';
       return [
         '<div class="result-guide">',
         `<div class="result-guide-card"><h3 class="result-guide-title">Mechanism</h3><p class="result-guide-copy">${esc(guide.mechanism)}</p></div>`,
@@ -1959,5 +1959,6 @@
   </script>
 </body>
 </html>
+
 
 
