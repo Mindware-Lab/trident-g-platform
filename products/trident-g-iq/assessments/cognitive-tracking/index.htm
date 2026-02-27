@@ -869,20 +869,6 @@
       }
     ];
 
-    const BrandTopBar = ({ appName, subtitle, chipText, iconSrc }) => (
-      <div className="topbar">
-        <div className="brandleft">
-          <div className="icon">
-            <img src={iconSrc} alt="Trident icon" onError={(e)=>{ e.target.style.display = "none"; }} />
-          </div>
-          <div>
-            <p className="title">{appName}</p>
-            <p className="subtitle">{subtitle}</p>
-          </div>
-        </div>
-        <div className="chip">{chipText}</div>
-      </div>
-    );
     const StatusPill = ({ status }) => {
       const meta = STATUS_META[status] || STATUS_META.not_started;
       return (
@@ -1574,13 +1560,6 @@
 
       return (
         <div className="screen">
-          <BrandTopBar
-            appName={APP_NAME}
-            subtitle={APP_SUBTITLE}
-            chipText="PER-TEST"
-            iconSrc={ICON_SRC}
-          />
-
           <div className="content">
             <div className="card">
               <h1 className="h1">Your test battery</h1>
