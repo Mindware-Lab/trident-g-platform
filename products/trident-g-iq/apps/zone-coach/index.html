@@ -68,6 +68,17 @@
     canvas { display:block; width:100%; height:min(42vh, 380px); }
     .touch { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
     .touch .btn { min-height:66px; font-size:28px; font-weight:800; }
+    .run-header { display:flex; align-items:center; gap:10px; flex-wrap:nowrap; }
+    .run-desktop-hint {
+      flex:1 1 auto;
+      text-align:center;
+      font-size:12px;
+      line-height:1.1;
+      font-weight:800;
+      color:var(--zc-blue-soft);
+      letter-spacing:.02em;
+      white-space:nowrap;
+    }
     .run-stop-row { display:flex; justify-content:center; margin-top:12px; }
     .run-stop-row .btn { flex:0 0 auto; min-width:160px; }
     .progress { height:10px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.06); border-radius:999px; overflow:hidden; margin:10px 0 12px; }
@@ -172,6 +183,7 @@
       .splash-grid { grid-template-columns:1fr; }
       canvas { height:min(34vh, 260px); }
       .touch .btn { min-height:58px; font-size:24px; }
+      .run-desktop-hint { display:none; }
     }
     @media (max-width: 520px) {
       .top { padding:10px; border-radius:12px; }
@@ -258,8 +270,9 @@
       </div>
 
       <div id="screenRun" class="router-screen">
-        <div class="row">
+        <div class="row run-header">
           <span class="pill" id="runLabelPill">Running probe</span>
+          <span class="run-desktop-hint">ON DESKTOP USE LEFT &amp; RIGHT ARROW KEYS</span>
           <span class="pill user-hidden" id="trialPill">Trials: 0</span>
           <span class="pill user-hidden" id="mixPill">S:0 P:0 C:0</span>
         </div>
@@ -2001,6 +2014,7 @@
   </script>
 </body>
 </html>
+
 
 
 
