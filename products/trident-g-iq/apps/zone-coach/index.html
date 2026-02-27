@@ -533,9 +533,26 @@
         '</div>'
       ].join('');
     }
+    let guideTouchOpenAt = 0;
+    function openStateGuideFromEvent(stateRaw, sectionKey, ev){
+      if (ev) {
+        const isTouchEvent = ev.type === 'touchend' || ev.pointerType === 'touch';
+        if (isTouchEvent) {
+          guideTouchOpenAt = Date.now();
+          if (typeof ev.preventDefault === 'function') ev.preventDefault();
+        } else if (ev.type === 'click' && (Date.now() - guideTouchOpenAt) < 700) {
+          if (typeof ev.preventDefault === 'function') ev.preventDefault();
+          return;
+        }
+      }
+      openStateGuidePopup(stateRaw, sectionKey);
+    }
     function bindUserResultCardActions(stateRaw){
       dom.moduleCard.querySelectorAll('[data-guide-section]').forEach((btn) => {
-        btn.addEventListener('click', () => openStateGuidePopup(stateRaw, btn.dataset.guideSection));
+        const section = btn.dataset.guideSection;
+        if (!section) return;
+        btn.addEventListener('touchend', (ev) => openStateGuideFromEvent(stateRaw, section, ev), { passive: false });
+        btn.addEventListener('click', (ev) => openStateGuideFromEvent(stateRaw, section, ev));
       });
     }
     const EVIDENCE_KEYS = Object.freeze({
