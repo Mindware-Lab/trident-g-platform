@@ -344,6 +344,15 @@
       object-fit: contain;
     }
 
+    .gSplashKicker{
+      margin: 2px 0 8px 0;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #d9ecff;
+      font-weight: 700;
+    }
+
     .gSplashTitle{
       margin: 0;
       font-size: 46px;
@@ -455,7 +464,16 @@
         padding: 20px 16px;
       }
 
-      .gSplashTitle{
+      .gSplashKicker{
+      margin: 2px 0 8px 0;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #d9ecff;
+      font-weight: 700;
+    }
+
+    .gSplashTitle{
         font-size: clamp(34px, 11vw, 42px);
       }
 
@@ -1034,10 +1052,11 @@
                 <div className="gSplashIcon">
                   <img src={ICON_SRC} alt="G Tracker icon" onError={(e)=>{ e.target.style.display = "none"; }} />
                 </div>
+                <p className="gSplashKicker">MINDWARE LAB - TRIDENT G IQ</p>
                 <h1 className="gSplashTitle">{APP_NAME}</h1>
-                <p className="gSplashSub">Track your core cognitive assessments before and after training.</p>
+                <p className="gSplashSub">Track your valued outcomes for intelligence and resilience for proof of training gains.</p>
                 <button className="btn btnPrimary gSplashBtn" onClick={() => setShowSplash(false)}>Continue</button>
-                <p className="gSplashFoot">Mindware Lab - IQ Mindware</p>
+                <p className="gSplashFoot">MINDWARE LAB - TRIDENT G IQ</p>
               </section>
             </div>
           </div>
@@ -1274,4 +1293,5 @@
   </script>
 </body>
 </html>
+
 
