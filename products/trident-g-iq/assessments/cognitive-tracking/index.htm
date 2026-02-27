@@ -47,7 +47,7 @@
     .grid2 { grid-template-columns: 1fr; }
 
     .content{
-      max-width: 940px;
+      max-width: 768px;
       width: 100%;
       margin: 0 auto;
     }
@@ -56,15 +56,18 @@
       margin: 4px 2px 0;
       font-weight: 900;
       font-size: 22px;
-      letter-spacing: 0.2px;
-      color: #111;
+      line-height: 1.15;
+      letter-spacing: -0.2px;
+      color: var(--brand-text);
+      overflow-wrap: anywhere;
     }
 
     .sectionNote{
       margin: 4px 2px 0;
-      font-size: 18px;
-      color: var(--grey-600);
+      font-size: 15px;
+      color: var(--brand-text-muted);
       line-height: 1.45;
+      overflow-wrap: anywhere;
     }
 
     .testRow{
@@ -75,8 +78,9 @@
       gap: 10px;
       padding: 12px;
       border-radius: 14px;
-      background: rgba(224,224,224,0.35);
-      border: 1px solid rgba(0,0,0,0.05);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border: 1px solid var(--brand-border-soft);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
 
     .testMeta{
@@ -88,32 +92,40 @@
 
     .testName{
       font-weight: 900;
-      font-size: 24px;
+      font-size: 22px;
       margin: 0;
+      color: var(--brand-text);
+      overflow-wrap: anywhere;
     }
 
     .testDesc{
       margin: 0;
-      font-size: 18px;
-      color: var(--grey-600);
+      font-size: 15px;
+      color: var(--brand-text-muted);
       line-height: 1.45;
+      overflow-wrap: anywhere;
     }
 
     .tagRow{ display:flex; gap:6px; flex-wrap:wrap; margin-top: 4px; }
     .tag{
-      font-size: 18px;
+      font-size: 12px;
       font-weight: 800;
-      padding: 7px 12px;
+      padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(39,100,183,0.08);
-      border: 1px solid rgba(39,100,183,0.18);
-      color: var(--deep);
-      white-space: nowrap;
+      background: rgba(110,198,255,0.08);
+      border: 1px solid rgba(110,198,255,0.22);
+      color: var(--brand-text);
+      white-space: normal;
+      text-align: center;
+      line-height: 1.2;
+      max-width: 100%;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
     .tagDone{
       background: rgba(204,255,102,0.95);
       border: 1px solid rgba(0,0,0,0.08);
       color:#0B1A0B;
+      box-shadow: 0 0 0 1px rgba(204,255,102,.14), 0 8px 22px rgba(190,239,78,.12);
     }
 
     .rightCol{
@@ -129,21 +141,35 @@
     .btnSmall{
       padding: 10px 12px;
       border-radius: 12px;
-      font-size: 18px;
-      font-weight: 900;
+      font-size: 14px;
+      font-weight: 800;
+      white-space: normal;
+      line-height: 1.15;
+      text-align: center;
     }
 
     .input{
       width: 100%;
       border-radius: 12px;
-      border: 1px solid rgba(0,0,0,0.10);
-      padding: 8px 10px;
-      font-size: 16px;
+      border: 1px solid var(--brand-border);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.018));
+      color: var(--brand-text);
+      padding: 9px 10px;
+      font-size: 14px;
       outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
     .input:focus{
-      border-color: rgba(34,170,255,0.65);
-      box-shadow: 0 0 0 3px rgba(34,170,255,0.12);
+      border-color: rgba(110,198,255,.45);
+      box-shadow: var(--brand-focus-ring);
+    }
+    .input::placeholder{
+      color: var(--brand-text-quiet);
+      opacity: 1;
+    }
+    .input option{
+      background: #121722;
+      color: var(--brand-text);
     }
 
     .twoCol{
@@ -163,9 +189,10 @@
 
     .whenLine{
       margin: 8px 0 0 0;
-      font-size: 16px;
-      color: #111;
+      font-size: 14px;
+      color: var(--brand-text);
       line-height: 1.4;
+      overflow-wrap: anywhere;
     }
 
     .timepointRow{
@@ -182,27 +209,29 @@
 
     .scoreReadout{
       margin-top: 8px;
-      border: 1px solid rgba(0,0,0,0.1);
+      border: 1px solid var(--brand-border-soft);
       border-radius: 12px;
-      background: rgba(255,255,255,0.42);
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.014));
       padding: 8px 10px;
       max-width: 760px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
 
     .scoreReadoutTitle{
       margin: 0;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 900;
-      color: #111;
+      color: var(--brand-text-label);
       text-transform: uppercase;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.5px;
     }
 
     .scoreReadoutLine{
       margin-top: 4px;
-      font-size: 16px;
-      color: var(--grey-600);
+      font-size: 14px;
+      color: var(--brand-text-muted);
       line-height: 1.35;
+      overflow-wrap: anywhere;
     }
 
     .infoGrid{
@@ -214,18 +243,24 @@
     }
 
     .infoBlock{
-      border: 1px solid rgba(0,0,0,0.1);
+      border: 1px solid var(--brand-border-soft);
       border-radius: 12px;
-      background: rgba(255,255,255,0.4);
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.014));
       padding: 8px 10px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
 
     .infoBlock summary{
       cursor: pointer;
       font-weight: 800;
-      font-size: 16px;
-      color: #111;
+      font-size: 14px;
+      color: var(--brand-text);
       user-select: none;
+    }
+    .infoBlock summary:focus-visible{
+      outline: none;
+      box-shadow: var(--brand-focus-ring);
+      border-radius: 8px;
     }
 
     .infoBlock p{
@@ -235,46 +270,242 @@
     .checkList{
       margin: 8px 0 0 18px;
       padding: 0;
-      font-size: 16px;
-      color: var(--grey-600);
+      font-size: 14px;
+      color: var(--brand-text-muted);
       line-height: 1.35;
+    }
+    .checkList li{
+      overflow-wrap: anywhere;
     }
 
     .contextHint{
       margin-top: 8px;
-      font-size: 15px;
-      color: #1E4F8A;
+      font-size: 13px;
+      color: var(--z-blue-200);
       font-weight: 700;
+      overflow-wrap: anywhere;
     }
 
     .historyHint{
       margin-top: 8px;
-      font-size: 15px;
-      color: var(--grey-600);
+      font-size: 13px;
+      color: var(--brand-text-muted);
       line-height: 1.35;
+      overflow-wrap: anywhere;
     }
 
     .muted{
-      font-size: 18px;
-      color: var(--grey-600);
+      font-size: 14px;
+      color: var(--brand-text-muted);
       line-height: 1.45;
       margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .progressStrip{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(110,198,255,0.28);
+      background: rgba(110,198,255,0.08);
+      color: var(--brand-text);
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .programSetup{
+      margin-top: 10px;
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.018));
+      padding: 10px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .programGrid{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(160px, 1fr));
+      gap: 8px;
+    }
+
+    .programField{
+      display: grid;
+      gap: 6px;
+    }
+
+    .programLabel{
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--brand-text-label);
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+
+    .sectionHeader{
+      margin: 4px 0 0 0;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--brand-text);
+    }
+
+    .sectionSub{
+      margin: 4px 0 0 0;
+      font-size: 14px;
+      color: var(--brand-text-muted);
+      line-height: 1.4;
+    }
+
+    .trackerCard{
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border: 1px solid var(--brand-border-soft);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+
+    .trackerTitle{
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+      font-weight: 900;
+      color: var(--brand-text);
+    }
+
+    .trackerPurpose{
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.4;
+      color: var(--brand-text-muted);
+    }
+
+    .statusPill{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid transparent;
+    }
+
+    .statusUp{ background: rgba(204,255,102,.95); color: #0B1A0B; border-color: rgba(0,0,0,.08); }
+    .statusDue{ background: rgba(255,204,102,.18); color: #ffd49c; border-color: rgba(255,174,79,.45); }
+    .statusProgress{ background: rgba(110,198,255,.14); color: #9fd7ff; border-color: rgba(110,198,255,.32); }
+    .statusNeutral{ background: rgba(255,255,255,.04); color: var(--brand-text-muted); border-color: var(--brand-border-soft); }
+
+    .slotGrid{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(200px, 1fr));
+      gap: 8px;
+    }
+
+    .slotCard{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.016));
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .slotLabel{ margin: 0; font-size: 12px; font-weight: 800; color: var(--brand-text-label); text-transform: uppercase; letter-spacing: .03em; }
+    .slotMetric{ margin: 0; font-size: 24px; font-weight: 900; color: var(--brand-text); line-height: 1.1; }
+    .slotDate{ margin: 0; font-size: 12px; color: var(--brand-text-muted); }
+
+    .deltaBox{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.016));
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .deltaLine{ margin: 0; font-size: 13px; color: var(--brand-text); font-weight: 700; }
+
+    .deltaBarRow{
+      display: grid;
+      grid-template-columns: 70px 1fr 56px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .deltaBarLabel{ font-size: 12px; font-weight: 700; color: var(--brand-text-muted); }
+    .deltaBarTrack{ height: 8px; border-radius: 999px; background: rgba(110,198,255,.15); overflow: hidden; }
+    .deltaBarFill{ height: 100%; border-radius: 999px; background: linear-gradient(90deg, #6ec6ff, #4a92ff); }
+    .deltaValue{ font-size: 12px; font-weight: 700; color: var(--brand-text-muted); text-align: right; }
+
+    .cardActions{ display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .linkBtn{ border: none; background: transparent; color: #8bc5ff; font-size: 13px; font-weight: 800; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+    .inlineDivider{ color: var(--brand-text-muted); font-size: 12px; font-weight: 800; }
+    .logHint{ margin: 0; font-size: 13px; color: var(--brand-text-muted); font-weight: 700; }
+
+    .historyBlock{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .historyLine{ margin: 0; font-size: 13px; color: var(--brand-text); line-height: 1.4; }
+
+    .metricRow{
+      display: grid;
+      grid-template-columns: minmax(150px, 1fr) minmax(240px, 2fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .latestBox,
+    .sparkBox{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      padding: 10px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .latestLabel,
+    .sparkTitle{ margin: 0; font-size: 12px; font-weight: 800; color: var(--brand-text-label); letter-spacing: .03em; text-transform: uppercase; }
+    .latestValue{ margin: 0; font-size: 30px; line-height: 1.05; font-weight: 900; color: var(--brand-text); }
+    .latestDate{ margin: 0; font-size: 12px; color: var(--brand-text-muted); line-height: 1.35; }
+    .sparkSvg{ width: 100%; height: 50px; display: block; }
+    .sparkPlaceholder{ margin: 8px 0 0 0; font-size: 12px; color: var(--brand-text-muted); }
+    .dueLine{ margin: 0; font-size: 13px; font-weight: 700; color: var(--brand-text); }
+
+    .adminCard{ opacity: .95; }
+
+    @media (max-width: 900px){
+      .programGrid{ grid-template-columns: 1fr; }
+      .slotGrid{ grid-template-columns: 1fr; }
+      .metricRow{ grid-template-columns: 1fr; }
     }
 
     .danger{
-      background: rgba(0,0,0,0.04);
-      border: 1px dashed rgba(0,0,0,0.15);
+      background: rgba(255,170,190,.10);
+      border: 1px solid rgba(255,120,140,.28);
       padding: 10px 12px;
       border-radius: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
     }
 
     .gSplashCard{
-      max-width: 760px;
+      max-width: 640px;
       margin: 0 auto;
       border-radius: 24px;
       border: 1px solid rgba(110,198,255,.22);
-      background: radial-gradient(1100px 360px at -10% -20%, rgba(110,198,255,.14), transparent 55%), linear-gradient(165deg, rgba(78,160,232,.12), rgba(15,18,26,.96) 55%);
-      color: #FFFFFF;
+      background:
+        radial-gradient(1100px 360px at -10% -20%, rgba(110,198,255,.14), transparent 55%),
+        linear-gradient(165deg, rgba(78,160,232,.12), rgba(15,18,26,.96) 55%);
+      color: var(--brand-text);
       text-align: center;
       padding: 26px 22px;
       box-shadow: 0 14px 34px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04);
@@ -284,7 +515,9 @@
       width: 56px;
       height: 56px;
       border-radius: 14px;
-      background: rgba(255,255,255,0.88);
+      background: #BEEF4E;
+      border: 4px solid rgba(255,255,255,.50);
+      box-shadow: 0 8px 18px rgba(190,239,78,.18);
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -312,14 +545,14 @@
       font-size: 46px;
       line-height: 1;
       font-weight: 900;
-      color: #FFFFFF;
+      color: var(--brand-text);
     }
 
     .gSplashSub{
       margin: 12px 0 0 0;
-      font-size: 24px;
+      font-size: 20px;
       line-height: 1.35;
-      color: rgba(255,255,255,0.96);
+      color: var(--brand-text-muted);
       font-weight: 600;
     }
 
@@ -330,9 +563,85 @@
 
     .gSplashFoot{
       margin: 14px 0 0 0;
-      color: rgba(255,255,255,0.95);
-      font-size: 20px;
+      color: var(--z-blue-200);
+      font-size: 12px;
       font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .panelAppHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--brand-border-soft);
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.012));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+
+    .panelAppBrand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex: 1 1 320px;
+    }
+
+    .panelAppIcon{
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: #BEEF4E;
+      border: 4px solid rgba(255,255,255,.45);
+      box-shadow: 0 8px 18px rgba(190,239,78,.16);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex: 0 0 auto;
+    }
+
+    .panelAppIcon img{
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+      display:block;
+    }
+
+    .panelAppKicker{
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.1;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--z-blue-200);
+    }
+
+    .panelAppTitle{
+      margin: 4px 0 0 0;
+      font-weight: 900;
+      font-size: 24px;
+      line-height: 1.05;
+      color: var(--brand-text);
+      letter-spacing: -0.02em;
+    }
+
+    .panelAppSubtitle{
+      margin: 4px 0 0 0;
+      font-size: 13px;
+      line-height: 1.25;
+      color: var(--brand-text-muted);
+    }
+
+    .panelAppChip{
+      flex: 0 0 auto;
+      align-self: flex-start;
     }
 
     @media (max-width: 600px){
@@ -367,6 +676,23 @@
       .gSplashFoot{
         font-size: 16px;
       }
+
+      .panelAppHead{
+        padding: 10px;
+        border-radius: 12px;
+      }
+
+      .panelAppBrand{
+        flex-basis: 100%;
+      }
+
+      .panelAppChip{
+        align-self: auto;
+      }
+
+      .panelAppTitle{
+        font-size: 20px;
+      }
     }
   </style>
 </head>
@@ -384,11 +710,14 @@
   <script type="text/babel" data-presets="env,react">
     const { useEffect, useMemo, useState } = React;
 
-    const HUB_VERSION = "ct_hub_v2";
-    const STORAGE_KEY = "ctHub_v2_state";
+    const HUB_VERSION = "ct_hub_v3";
+    const STORAGE_KEY = "ctHub_v3_state";
+    const STORAGE_KEY_V2 = "ctHub_v2_state";
+    const STORAGE_KEY_V1 = "ctHub_v1_state";
     const APP_NAME = "G Tracker";
     const APP_SUBTITLE = "Track cognitive change over time (not a diagnosis)";
     const ICON_SRC = "/trident-g-platform/branding/Trident-G-Icon.svg";
+    const DAY_MS = 24 * 60 * 60 * 1000;
 
     const FAIR_RESULTS_CHECKLIST = [
       "Use the same time of day when possible.",
@@ -399,116 +728,145 @@
     ];
 
     const TIMEPOINT_LABELS = {
-      PRE: "PRE",
-      POST: "POST",
-      MIDPOINT: "MIDPOINT",
-      WEEKLY: "WEEKLY",
-      FOLLOW_UP: "FOLLOW-UP"
+      PRE: "Baseline",
+      POST: "Post",
+      MIDPOINT: "Midpoint",
+      WEEKLY: "Weekly",
+      FOLLOW_UP: "Follow-up"
+    };
+    const CADENCE_OPTIONS = [
+      { value: "weekly", label: "Weekly", days: 7 },
+      { value: "fortnightly", label: "Fortnightly", days: 14 },
+      { value: "adhoc", label: "Ad-hoc", days: null }
+    ];
+    const CADENCE_LOOKUP = Object.fromEntries(CADENCE_OPTIONS.map((item) => [item.value, item]));
+    const STATUS_META = {
+      up_to_date: { icon: "OK", label: "Up to date", className: "statusUp" },
+      due_now: { icon: "!", label: "Due now", className: "statusDue" },
+      not_started: { icon: "o", label: "Not started", className: "statusNeutral" },
+      in_progress: { icon: "...", label: "In progress", className: "statusProgress" }
+    };
+    const DEFAULT_PROGRAM = {
+      startDate: "",
+      durationDays: 24,
+      useMilestones: true
+    };
+    const DEFAULT_CADENCE = {
+      psi_cbs: "weekly",
+      crs10: "weekly"
     };
 
     const TESTS = [
       {
         id: "sgs12a",
-        group: "IQ Performance",
-        name: "Short IQ test 1 (before training)",
-        url: "https://mindware-lab.github.io/iq-assessments/sgs12a/",
+        name: "Short g Scale - SgS-12 A",
+        url: "https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/assessments/sgs12a/",
         kind: "internal",
         timing: "10-12 mins",
-        schedule: "fixed",
-        fixedTimepoint: "PRE",
-        scheduleLabel: "PRE only",
         whenText: "Take once before training.",
-        whatText: "Short internal IQ form A used as your pre-training anchor.",
-        credentialsText: "This short form uses psychometric ICAR reasoning items (e.g., matrices, series, verbal and rotation tasks). You can expect some extra variability in scores due to the smaller number of items, but the scoring is based on validated and standardised test items."
+        whatText: "Short internal IQ form A used as your baseline anchor.",
+        credentialsText: "This short form uses psychometric ICAR reasoning items (e.g., matrices, series, verbal and rotation tasks)."
       },
       {
         id: "sgs12b",
-        group: "IQ Performance",
-        name: "Short IQ test 2 (after training)",
-        url: "https://mindware-lab.github.io/iq-assessments/sgs12b/",
+        name: "Short g Scale - SgS-12 B",
+        url: "https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/assessments/sgs12b/",
         kind: "internal",
         timing: "10-12 mins",
-        schedule: "fixed",
-        fixedTimepoint: "POST",
-        scheduleLabel: "POST only",
         whenText: "Take once after training.",
-        whatText: "Short internal IQ form B used at programme end for PRE vs POST comparison.",
-        credentialsText: "This short form uses psychometric ICAR reasoning items (e.g., matrices, series, verbal and rotation tasks). You can expect some extra variability in scores due to the smaller number of items, but the scoring is based on validated and standardised test items."
+        whatText: "Short internal IQ form B used at programme end for baseline vs post comparison.",
+        credentialsText: "This short form uses psychometric ICAR reasoning items (e.g., matrices, series, verbal and rotation tasks)."
       },
       {
         id: "mensa_dk",
-        group: "IQ Performance",
-        name: "Mensa online matrix test (optional baseline)",
+        name: "Mensa Online (Form A)",
         url: "https://mensa.dk/iqtest/",
         kind: "external",
         timing: "25-30 mins",
-        schedule: "fixed",
-        fixedTimepoint: "PRE",
-        scheduleLabel: "Optional baseline",
         whenText: "Optional baseline only.",
         whatText: "Unofficial online practice-style matrix test for a rough baseline indication.",
-        credentialsText: "Mensa online culture fair IQ test intended as a standardised screening/practice-style test. Considered valid and predictive, correlating highly with other cognitive performance tests, but not a professional IQ assessment."
+        credentialsText: "Useful as an optional benchmark, but not a formal professional IQ assessment."
       },
       {
         id: "mensa_no",
-        group: "IQ Performance",
-        name: "Mensa online matrix test (optional delayed re-test)",
+        name: "Mensa Online (Form B)",
         url: "https://test.mensa.no/home/test/en",
         kind: "external",
         timing: "20-25 mins",
-        schedule: "fixed",
-        fixedTimepoint: "FOLLOW_UP",
-        scheduleLabel: "Optional delayed re-test",
         whenText: "Optional long-delayed re-test only (e.g., months later).",
-        whatText: "Unofficial online practice-style matrix re-check for delayed comparison.",
-        credentialsText: "Mensa online culture fair IQ test intended as a standardised screening/practice-style test. Considered valid and predictive, correlating highly with other cognitive performance tests, but not a professional IQ assessment."
+        whatText: "Optional external matrix re-check for delayed comparison.",
+        credentialsText: "Useful as an optional benchmark, but not a formal professional IQ assessment."
       },
       {
         id: "psi_cbs",
-        group: "Bandwidth Tracking",
-        name: "Psi-Band Cognitive Bandwidth Scale (Psi-CBS Core, 8 items)",
-        url: "https://mindware-lab.github.io/iq-assessments/psi-cbs/",
+        name: "Psi-Band Cognitive Bandwidth Scale",
+        url: "https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/assessments/psi-cbs/",
         kind: "internal",
         timing: "2-4 mins",
-        schedule: "repeatable",
-        scheduleLabel: "PRE + weekly + POST + follow-up",
         whenText: "Take at PRE, weekly during training, POST, and optional 4-week follow-up.",
-        whatText: "Self-report of real-world mental bandwidth across work, study, and life.",
-        credentialsText: "Pilot evidence supports the intended structure and internal consistency, but with a small sample. Treat as a practical programme tracker, as further validation studies are conducted."
+        whatText: "Self-report tracker of real-world mental bandwidth across work, study, and life.",
+        credentialsText: "Designed as a practical repeatable tracker of applied cognition in daily settings."
       },
       {
         id: "crs10",
-        group: "Cognitive Resilience",
-        name: "Cognitive resilience scale (CRS-10)",
-        url: "https://mindware-lab.github.io/iq-assessments/crs10/",
+        name: "Cognitive Resilience Scale (CRS-10)",
+        url: "https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/assessments/crs10/",
         kind: "internal",
         timing: "3-6 mins",
-        schedule: "pre_post_optional_checkin",
-        scheduleLabel: "PRE + POST (optional check-ins)",
         whenText: "Take at PRE and POST, with optional midpoint or follow-up checks.",
         whatText: "Tracks how steadily you function under cognitive pressure.",
-        credentialsText: "CRS-10 has published psychometric support in available validation studies (including factor structure and reliability), making it suitable for resilience trend tracking."
+        credentialsText: "Published psychometric support is available in current validation studies."
       },
       {
         id: "edhs",
-        group: "Decision Habits",
-        name: "Everyday decision habits scale (EDHS)",
-        url: "https://mindware-lab.github.io/iq-assessments/edhs/",
+        name: "Everyday Decision Habits Scale (EDHS)",
+        url: "https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/assessments/edhs/",
         kind: "internal",
         timing: "5-10 mins",
-        schedule: "pre_post",
-        scheduleLabel: "PRE + POST only",
         whenText: "Take once before training and once after training.",
         whatText: "Captures higher-level habit shift in everyday decision making across the programme.",
-        credentialsText: "EDHS should be treated as a practical decision-making assessment with items adapted from similar validated scales: useful for self-tracking and feedback, but currently undergoing further validation work."
+        credentialsText: "EDHS is best treated as a practical habit snapshot for self-tracking over time."
       }
     ];
-
-    const GROUP_ORDER = [
-      "Bandwidth Tracking",
-      "IQ Performance",
-      "Cognitive Resilience",
-      "Decision Habits"
+    const TEST_BY_ID = Object.fromEntries(TESTS.map((test) => [test.id, test]));
+    const OUTCOME_CARD_DEFS = [
+      {
+        id: "outcome_sgs",
+        title: "Valid 12-item IQ (SgS)",
+        purpose: "Outcome test (take twice): baseline vs post-training.",
+        baseline: { testId: "sgs12a", timepoint: "PRE", label: "Baseline (Form A)" },
+        post: { testId: "sgs12b", timepoint: "POST", label: "Post (Form B)" }
+      },
+      {
+        id: "outcome_edhs",
+        title: "Everyday Decision Habits (EDHS)",
+        purpose: "Outcome test (take twice): baseline vs post-training.",
+        baseline: { testId: "edhs", timepoint: "PRE", label: "Baseline (Form A)" },
+        post: { testId: "edhs", timepoint: "POST", label: "Post (Form B)" }
+      },
+      {
+        id: "outcome_mensa",
+        title: "Mensa Online (Optional External)",
+        purpose: "Optional before/after benchmark.",
+        baseline: { testId: "mensa_dk", timepoint: "PRE", label: "Baseline (Form A)" },
+        post: { testId: "mensa_no", timepoint: "FOLLOW_UP", label: "Post (Form B)" }
+      }
+    ];
+    const REPEATABLE_CARD_DEFS = [
+      {
+        id: "repeat_psi_cbs",
+        testId: "psi_cbs",
+        title: "Psi-CBS",
+        purpose: "Repeatable tracker for applied general intelligence.",
+        cadenceKey: "psi_cbs"
+      },
+      {
+        id: "repeat_crs10",
+        testId: "crs10",
+        title: "Cognitive Resilience (CRS-10)",
+        purpose: "Repeatable tracker for resilience under pressure.",
+        cadenceKey: "crs10"
+      }
     ];
 
     const BrandTopBar = ({ appName, subtitle, chipText, iconSrc }) => (
@@ -525,11 +883,50 @@
         <div className="chip">{chipText}</div>
       </div>
     );
+    const StatusPill = ({ status }) => {
+      const meta = STATUS_META[status] || STATUS_META.not_started;
+      return (
+        <span className={`statusPill ${meta.className}`} aria-label={meta.label}>
+          <span aria-hidden="true">{meta.icon}</span>
+          <span>{meta.label}</span>
+        </span>
+      );
+    };
+
+    const Sparkline = ({ values }) => {
+      if(values.length === 0){
+        return <p className="sparkPlaceholder">No numeric data yet.</p>;
+      }
+      const width = 220;
+      const height = 50;
+      const pad = 6;
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const range = max - min || 1;
+      const step = values.length > 1 ? (width - pad * 2) / (values.length - 1) : 0;
+      const points = values.map((value, idx) => {
+        const x = pad + idx * step;
+        const y = pad + (height - pad * 2) * (1 - (value - min) / range);
+        return `${x},${y}`;
+      });
+      const area = [`${pad},${height - pad}`, ...points, `${width - pad},${height - pad}`].join(" ");
+      return (
+        <svg className="sparkSvg" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Recent score trend">
+          <polyline points={area} fill="rgba(88,171,255,0.18)" stroke="none" />
+          <polyline points={points.join(" ")} fill="none" stroke="#2f7ed0" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+          {points.map((point, idx) => {
+            const [x, y] = point.split(",").map(Number);
+            return <circle key={idx} cx={x} cy={y} r="2.4" fill="#56b4ff" />;
+          })}
+        </svg>
+      );
+    };
 
     function createDefaultState(){
       return {
         schemaVersion: HUB_VERSION,
-        selectedTimepoints: {},
+        program: { ...DEFAULT_PROGRAM },
+        cadence: { ...DEFAULT_CADENCE },
         tests: {
           // [testId]: { entries: [{measure_id,timepoint,date_ts,score_payload,notes}] }
         }
@@ -537,6 +934,44 @@
     }
 
     const defaultState = createDefaultState();
+
+    function deepClone(value){
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function normaliseDuration(value){
+      const parsed = parseInt(value, 10);
+      if(Number.isNaN(parsed)) return DEFAULT_PROGRAM.durationDays;
+      return Math.min(365, Math.max(7, parsed));
+    }
+
+    function normaliseCadence(value, fallback){
+      if(!value || !CADENCE_LOOKUP[value]) return fallback;
+      return value;
+    }
+
+    function normaliseScore(value){
+      return String(value ?? "").trim();
+    }
+
+    function hasScore(entry){
+      return normaliseScore(entry?.score_payload?.score).length > 0;
+    }
+
+    function hasNote(entry){
+      return String(entry?.notes ?? "").trim().length > 0;
+    }
+
+    function isComplete(entry){
+      return hasScore(entry) || Boolean(entry?.score_payload?.done);
+    }
+
+    function parseNumericScore(value){
+      const clean = normaliseScore(value).replace(/,/g, "");
+      if(!clean) return null;
+      const parsed = Number(clean);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
 
     function createEntry(measureId, timepoint){
       return {
@@ -552,6 +987,30 @@
       return new Date().toISOString();
     }
 
+    function startOfDay(date){
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+
+    function parseDateOnly(dateString){
+      if(!dateString || typeof dateString !== "string") return null;
+      const parsed = new Date(`${dateString}T00:00:00`);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    function formatDate(ts){
+      if(!ts) return "-";
+      const parsed = new Date(ts);
+      if(Number.isNaN(parsed.getTime())) return "-";
+      return parsed.toLocaleDateString();
+    }
+
+    function formatDateTime(ts){
+      if(!ts) return "-";
+      const parsed = new Date(ts);
+      if(Number.isNaN(parsed.getTime())) return "-";
+      return parsed.toLocaleString();
+    }
+
     function ensureTestRecord(state, testId){
       if(!state.tests[testId]){
         state.tests[testId] = { entries: [] };
@@ -559,85 +1018,71 @@
       return state.tests[testId];
     }
 
-    function allowedTimepoints(test){
-      if(test.fixedTimepoint) return [test.fixedTimepoint];
-      if(test.schedule === "pre_post") return ["PRE", "POST"];
-      if(test.schedule === "repeatable") return ["PRE", "WEEKLY", "POST", "FOLLOW_UP"];
-      if(test.schedule === "pre_post_optional_checkin") return ["PRE", "MIDPOINT", "POST", "FOLLOW_UP"];
-      return ["PRE"];
+    function listEntriesFor(state, testId, timepoint){
+      const entries = state?.tests?.[testId]?.entries || [];
+      if(!timepoint) return entries;
+      return entries.filter((entry) => entry.timepoint === timepoint);
     }
 
-    function defaultTimepoint(test){
-      const options = allowedTimepoints(test);
-      return options[0];
+    function getLatest(entries){
+      if(!entries || entries.length === 0) return null;
+      return entries[entries.length - 1];
     }
 
-    function allowsTimepoint(test, timepoint){
-      if(test.fixedTimepoint) return timepoint === test.fixedTimepoint;
-      if(test.schedule === "pre_post") return timepoint === "PRE" || timepoint === "POST";
-      if(test.schedule === "repeatable") return ["PRE", "WEEKLY", "POST", "FOLLOW_UP"].includes(timepoint);
-      if(test.schedule === "pre_post_optional_checkin") return ["PRE", "MIDPOINT", "POST", "FOLLOW_UP"].includes(timepoint);
-      return false;
-    }
-
-    function supportsMultiEntries(test, timepoint){
-      return (
-        timepoint === "WEEKLY" &&
-        test.schedule === "repeatable"
-      );
-    }
-
-    function resolveTimepoint(test, selectedTimepoints){
-      const selected = selectedTimepoints?.[test.id];
-      if(selected && allowsTimepoint(test, selected)) return selected;
-      return defaultTimepoint(test);
-    }
-
-    function listEntries(record, timepoint){
-      if(!record?.entries) return [];
-      return record.entries.filter(entry => entry.timepoint === timepoint);
-    }
-
-    function getDisplayEntry(record, test, timepoint){
-      const matches = listEntries(record, timepoint);
-      if(matches.length === 0) return null;
-      if(supportsMultiEntries(test, timepoint)){
-        for(let i = matches.length - 1; i >= 0; i--){
-          if(!matches[i].score_payload?.done) return matches[i];
-        }
+    function getLatestMatching(entries, predicate){
+      if(!entries || entries.length === 0) return null;
+      for(let i = entries.length - 1; i >= 0; i -= 1){
+        if(predicate(entries[i])) return entries[i];
       }
-      return matches[matches.length - 1];
+      return null;
     }
 
-    function getEditableEntry(record, test, timepoint, createIfMissing){
-      const matches = listEntries(record, timepoint);
-      if(matches.length === 0){
-        if(!createIfMissing) return null;
-        const fresh = createEntry(test.id, timepoint);
-        record.entries.push(fresh);
-        return fresh;
+    function normalizeState(rawState){
+      const base = createDefaultState();
+      if(!rawState || typeof rawState !== "object") return base;
+
+      const merged = {
+        ...base,
+        ...rawState,
+        schemaVersion: HUB_VERSION,
+        program: {
+          ...base.program,
+          ...(rawState.program || {})
+        },
+        cadence: {
+          ...base.cadence,
+          ...(rawState.cadence || {})
+        }
+      };
+
+      merged.program.startDate = typeof merged.program.startDate === "string" ? merged.program.startDate : "";
+      merged.program.durationDays = normaliseDuration(merged.program.durationDays);
+      merged.program.useMilestones = Boolean(merged.program.useMilestones);
+      merged.cadence.psi_cbs = normaliseCadence(merged.cadence.psi_cbs, DEFAULT_CADENCE.psi_cbs);
+      merged.cadence.crs10 = normaliseCadence(merged.cadence.crs10, DEFAULT_CADENCE.crs10);
+
+      if(!merged.tests || typeof merged.tests !== "object"){
+        merged.tests = {};
       }
 
-      if(supportsMultiEntries(test, timepoint)){
-        for(let i = matches.length - 1; i >= 0; i--){
-          if(!matches[i].score_payload?.done) return matches[i];
+      for(const [testId, record] of Object.entries(merged.tests)){
+        if(!record || !Array.isArray(record.entries)){
+          merged.tests[testId] = { entries: [] };
+          continue;
         }
-        if(createIfMissing){
-          const fresh = createEntry(test.id, timepoint);
-          record.entries.push(fresh);
-          return fresh;
-        }
+        record.entries = record.entries.map((entry) => ({
+          measure_id: entry?.measure_id || testId,
+          timepoint: entry?.timepoint || "PRE",
+          date_ts: entry?.date_ts || "",
+          score_payload: {
+            score: String(entry?.score_payload?.score ?? ""),
+            done: Boolean(entry?.score_payload?.done)
+          },
+          notes: String(entry?.notes ?? "")
+        }));
       }
 
-      return matches[matches.length - 1];
-    }
-
-    function completedCount(record, timepoint){
-      return listEntries(record, timepoint).filter(entry => entry.score_payload?.done).length;
-    }
-
-    function timepointLabel(timepoint){
-      return TIMEPOINT_LABELS[timepoint] || timepoint;
+      return merged;
     }
 
     function migrateV1ToV2(v1State){
@@ -672,61 +1117,291 @@
         pushLegacy(oldRecord.pre, "PRE");
         pushLegacy(oldRecord.post, "POST");
         if(oldRecord.one){
-          pushLegacy(oldRecord.one, test.fixedTimepoint || "PRE");
+          pushLegacy(oldRecord.one, "PRE");
         }
       }
 
       return migrated;
     }
 
+    function migrateV2ToV3(v2State){
+      return normalizeState(v2State);
+    }
+
     function loadState(){
       try{
-        const rawV2 = localStorage.getItem(STORAGE_KEY);
-        if(rawV2){
-          const parsed = JSON.parse(rawV2);
+        const rawV3 = localStorage.getItem(STORAGE_KEY);
+        if(rawV3){
+          const parsed = JSON.parse(rawV3);
           if(parsed?.schemaVersion === HUB_VERSION){
-            if(!parsed.selectedTimepoints) parsed.selectedTimepoints = {};
-            return parsed;
+            return normalizeState(parsed);
           }
         }
 
-        const rawV1 = localStorage.getItem("ctHub_v1_state");
+        const rawV2 = localStorage.getItem(STORAGE_KEY_V2);
+        if(rawV2){
+          const parsedV2 = JSON.parse(rawV2);
+          if(parsedV2?.schemaVersion === "ct_hub_v2"){
+            return migrateV2ToV3(parsedV2);
+          }
+        }
+
+        const rawV1 = localStorage.getItem(STORAGE_KEY_V1);
         if(rawV1){
           const parsedV1 = JSON.parse(rawV1);
           if(parsedV1?.schemaVersion === "ct_hub_v1"){
-            return migrateV1ToV2(parsedV1);
+            return migrateV2ToV3(migrateV1ToV2(parsedV1));
           }
         }
-        return null;
       }catch{
-        return null;
+        return createDefaultState();
       }
+      return createDefaultState();
     }
 
     function saveState(state){
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    function sectionCopy(groupName){
-      if(groupName === "IQ Performance"){
-        return "Short IQ forms are PRE and POST only. Mensa links are unofficial online practice-style checks (optional baseline plus optional delayed re-test).";
+    function getDueInfo(cadenceValue, lastCompletedTs){
+      const cadence = CADENCE_LOOKUP[cadenceValue] || CADENCE_LOOKUP.weekly;
+      if(cadence.value === "adhoc"){
+        return { isDue: false, text: "Log when useful" };
       }
-      if(groupName === "Bandwidth Tracking"){
-        return "Psi-CBS is the repeatable tracker: use PRE, weekly during training, POST, and optional follow-up.";
+      if(!lastCompletedTs){
+        return { isDue: true, text: "Due now" };
       }
-      if(groupName === "Cognitive Resilience"){
-        return "CRS-10 is PRE and POST by default, with optional midpoint or follow-up checks.";
+      const last = new Date(lastCompletedTs);
+      if(Number.isNaN(last.getTime())){
+        return { isDue: true, text: "Due now" };
       }
-      if(groupName === "Decision Habits"){
-        return "EDHS is PRE and POST only to track overall habit shift, not week-to-week noise.";
+      const elapsed = Math.max(0, Math.floor((startOfDay(new Date()).getTime() - startOfDay(last).getTime()) / DAY_MS));
+      if(elapsed >= cadence.days){
+        return { isDue: true, text: "Due now" };
       }
-      return "";
+      const remaining = cadence.days - elapsed;
+      return { isDue: false, text: `Due in ${remaining} day${remaining === 1 ? "" : "s"}` };
     }
 
+    function getSlotSnapshot(state, slot){
+      const entries = listEntriesFor(state, slot.testId, slot.timepoint);
+      const latest = getLatest(entries);
+      const latestComplete = getLatestMatching(entries, (entry) => isComplete(entry));
+      const display = latestComplete || latest;
+      let status = "not_started";
+      if(display && !latestComplete){
+        status = "in_progress";
+      }else if(latestComplete){
+        status = "up_to_date";
+      }
+      return {
+        ...slot,
+        entries,
+        latest,
+        latestComplete,
+        score: normaliseScore(display?.score_payload?.score),
+        date: display?.date_ts || "",
+        note: String(display?.notes || ""),
+        hasCompletedScore: Boolean(latestComplete && hasScore(latestComplete)),
+        status
+      };
+    }
+
+    function getOutcomeCardStatus(baseline, post){
+      if(baseline.hasCompletedScore && post.hasCompletedScore) return "up_to_date";
+      if(baseline.hasCompletedScore && !post.hasCompletedScore) return "due_now";
+      if(baseline.status === "in_progress" || post.status === "in_progress") return "in_progress";
+      return "not_started";
+    }
+
+    function getOutcomeComparison(baselineScore, postScore){
+      const baseNum = parseNumericScore(baselineScore);
+      const postNum = parseNumericScore(postScore);
+      if(baseNum === null || postNum === null){
+        if(baselineScore && postScore){
+          return { line: "Both baseline and post entries are saved.", bars: null };
+        }
+        return { line: "Complete baseline and post to compare change.", bars: null };
+      }
+      const delta = Number((postNum - baseNum).toFixed(2));
+      const maxValue = Math.max(baseNum, postNum, 1);
+      return {
+        line: `Delta: ${delta >= 0 ? "+" : ""}${delta} (${baselineScore} -> ${postScore})`,
+        bars: [
+          { label: "Baseline", value: baseNum, width: (baseNum / maxValue) * 100 },
+          { label: "Post", value: postNum, width: (postNum / maxValue) * 100 }
+        ]
+      };
+    }
+
+    function buildOutcomeCardState(def, state){
+      const baseline = getSlotSnapshot(state, def.baseline);
+      const post = getSlotSnapshot(state, def.post);
+      const complete = baseline.hasCompletedScore && post.hasCompletedScore;
+      const status = getOutcomeCardStatus(baseline, post);
+      const comparison = getOutcomeComparison(baseline.score, post.score);
+
+      let ctaLabel = "Start baseline (Form A)";
+      let ctaType = "start";
+      let ctaTestId = baseline.testId;
+      let targetSlot = baseline;
+
+      if(baseline.hasCompletedScore && !post.hasCompletedScore){
+        ctaLabel = "Start post (Form B)";
+        ctaTestId = post.testId;
+        targetSlot = post;
+      }else if(complete){
+        ctaLabel = "View results";
+        ctaType = "view";
+        ctaTestId = null;
+        targetSlot = post;
+      }
+
+      return { ...def, baseline, post, complete, status, comparison, ctaLabel, ctaType, ctaTestId, targetSlot };
+    }
+
+    function buildRepeatableCardState(def, state){
+      const entries = listEntriesFor(state, def.testId);
+      const completed = entries.filter((entry) => isComplete(entry) && hasScore(entry));
+      const latestComplete = getLatest(completed);
+      const latestDraft = getLatestMatching(entries, (entry) => !isComplete(entry) && hasNote(entry));
+      const cadenceValue = normaliseCadence(state?.cadence?.[def.cadenceKey], DEFAULT_CADENCE[def.cadenceKey]);
+      const due = getDueInfo(cadenceValue, latestComplete?.date_ts || "");
+      const numericValues = completed.map((entry) => parseNumericScore(entry?.score_payload?.score)).filter((value) => value !== null).slice(-10);
+
+      let status = "not_started";
+      if(latestDraft){
+        status = "in_progress";
+      }else if(latestComplete){
+        status = due.isDue ? "due_now" : "up_to_date";
+      }
+      return { ...def, entries, completed, latestComplete, latestDraft, latestScore: normaliseScore(latestComplete?.score_payload?.score), latestDate: latestComplete?.date_ts || "", cadenceValue, due, numericValues, status };
+    }
+
+    function getMilestoneProgress(program){
+      const start = parseDateOnly(program.startDate);
+      if(!start){
+        return { hasTimeline: false, halfway: false, ended: false, followup: false };
+      }
+      const duration = normaliseDuration(program.durationDays);
+      const elapsed = Math.max(0, Math.floor((startOfDay(new Date()).getTime() - start.getTime()) / DAY_MS));
+      const halfwayTarget = Math.max(1, Math.floor(duration / 2));
+      return {
+        hasTimeline: true,
+        halfway: elapsed >= halfwayTarget,
+        ended: elapsed >= duration,
+        followup: elapsed >= duration + 28
+      };
+    }
+
+    function hasCompletedTimepoint(state, testId, timepoint){
+      return listEntriesFor(state, testId, timepoint).some((entry) => isComplete(entry) && hasScore(entry));
+    }
+
+    function resolveRepeatableTimepoint(def, state){
+      if(!hasCompletedTimepoint(state, def.testId, "PRE")){
+        return "PRE";
+      }
+      if(!state?.program?.useMilestones){
+        return "WEEKLY";
+      }
+      const milestone = getMilestoneProgress(state.program || DEFAULT_PROGRAM);
+      if(def.testId === "crs10" && milestone.halfway && !hasCompletedTimepoint(state, def.testId, "MIDPOINT")){
+        return "MIDPOINT";
+      }
+      if(milestone.ended && !hasCompletedTimepoint(state, def.testId, "POST")){
+        return "POST";
+      }
+      if(milestone.followup && !hasCompletedTimepoint(state, def.testId, "FOLLOW_UP")){
+        return "FOLLOW_UP";
+      }
+      return "WEEKLY";
+    }
+
+    function saveEntryToState(prevState, { testId, timepoint, score, notes, mode }){
+      const scoreText = normaliseScore(score);
+      const notesText = String(notes || "").trim();
+      if(!scoreText && !notesText){
+        return prevState;
+      }
+      const next = deepClone(prevState);
+      const record = ensureTestRecord(next, testId);
+      const all = record.entries || [];
+      const matches = all.filter((entry) => entry.timepoint === timepoint);
+
+      let target = null;
+      if(mode === "repeatable"){
+        target = getLatestMatching(matches, (entry) => !isComplete(entry));
+        if(!target){
+          target = createEntry(testId, timepoint);
+          all.push(target);
+        }
+      }else{
+        target = getLatestMatching(matches, (entry) => !isComplete(entry)) || getLatest(matches);
+        if(!target){
+          target = createEntry(testId, timepoint);
+          all.push(target);
+        }
+      }
+
+      target.score_payload.score = scoreText;
+      target.notes = String(notes || "");
+      if(scoreText){
+        target.score_payload.done = true;
+        target.date_ts = nowISO();
+      }else{
+        target.score_payload.done = false;
+        target.date_ts = target.date_ts || nowISO();
+      }
+      record.entries = all;
+      return next;
+    }
+
+    function getOutcomeHistory(def, state){
+      const rows = [];
+      for(const slot of [def.baseline, def.post]){
+        const entries = listEntriesFor(state, slot.testId, slot.timepoint);
+        for(const entry of entries){
+          const score = normaliseScore(entry?.score_payload?.score);
+          const notes = String(entry?.notes || "").trim();
+          if(!score && !notes) continue;
+          rows.push({
+            key: `${slot.testId}-${slot.timepoint}-${entry.date_ts}-${score}-${notes}`,
+            label: slot.label,
+            score: score || "-",
+            notes,
+            date: formatDateTime(entry?.date_ts),
+            ts: new Date(entry?.date_ts || 0).getTime() || 0
+          });
+        }
+      }
+      return rows.sort((a, b) => b.ts - a.ts).slice(0, 8);
+    }
+
+    function getRepeatableHistory(testId, state){
+      return listEntriesFor(state, testId)
+        .filter((entry) => {
+          const score = normaliseScore(entry?.score_payload?.score);
+          const notes = String(entry?.notes || "").trim();
+          return Boolean(score || notes);
+        })
+        .map((entry, index) => ({
+          key: `${testId}-${entry.timepoint}-${entry.date_ts}-${index}`,
+          score: normaliseScore(entry?.score_payload?.score) || "-",
+          notes: String(entry?.notes || "").trim(),
+          date: formatDateTime(entry?.date_ts),
+          timepoint: TIMEPOINT_LABELS[entry?.timepoint] || entry?.timepoint || "-",
+          ts: new Date(entry?.date_ts || 0).getTime() || 0
+        }))
+        .sort((a, b) => b.ts - a.ts)
+        .slice(0, 12);
+    }
     function App(){
       const [state, setState] = useState(() => loadState() || defaultState);
       const [toast, setToast] = useState("");
       const [showSplash, setShowSplash] = useState(true);
+      const [draftByKey, setDraftByKey] = useState({});
+      const [openPanels, setOpenPanels] = useState({});
 
       useEffect(() => {
         saveState(state);
@@ -738,75 +1413,99 @@
         return () => clearTimeout(timer);
       }, [toast]);
 
-      const grouped = useMemo(() => {
-        const map = {};
-        for(const groupName of GROUP_ORDER) map[groupName] = [];
-        for(const test of TESTS){
-          if(!map[test.group]) map[test.group] = [];
-          map[test.group].push(test);
-        }
-        return map;
-      }, []);
+      const outcomeCards = useMemo(() => OUTCOME_CARD_DEFS.map((def) => buildOutcomeCardState(def, state)), [state]);
+      const repeatableCards = useMemo(() => REPEATABLE_CARD_DEFS.map((def) => buildRepeatableCardState(def, state)), [state]);
+      const outcomeCompleted = outcomeCards.filter((card) => card.complete).length;
+      const trackersDue = repeatableCards.filter((card) => card.due.isDue).length;
 
-      const setSelectedTimepoint = (testId, timepoint) => {
-        setState(prev => ({
+      const getDraft = (key) => draftByKey[key] || { score: "", notes: "" };
+      const setDraftField = (key, field, value) => {
+        setDraftByKey((prev) => ({
           ...prev,
-          selectedTimepoints: {
-            ...(prev.selectedTimepoints || {}),
-            [testId]: timepoint
+          [key]: {
+            score: prev[key]?.score || "",
+            notes: prev[key]?.notes || "",
+            [field]: value
+          }
+        }));
+      };
+      const clearDraft = (key) => {
+        setDraftByKey((prev) => {
+          const next = { ...prev };
+          delete next[key];
+          return next;
+        });
+      };
+
+      const togglePanel = (panelKey) => {
+        setOpenPanels((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
+      };
+
+      const openTest = (testId) => {
+        const test = TEST_BY_ID[testId];
+        if(!test) return;
+        window.open(test.url, "_blank", "noopener,noreferrer");
+      };
+
+      const saveOutcomeDraft = (card) => {
+        const key = `outcome_${card.id}`;
+        const draft = getDraft(key);
+        const score = normaliseScore(draft.score);
+        const notes = String(draft.notes || "").trim();
+        if(!score && !notes){
+          setToast("Enter a score or note first");
+          return;
+        }
+        setState((prev) => saveEntryToState(prev, {
+          testId: card.targetSlot.testId,
+          timepoint: card.targetSlot.timepoint,
+          score: draft.score,
+          notes: draft.notes,
+          mode: "single"
+        }));
+        clearDraft(key);
+        setToast(score ? "Saved and marked complete" : "Draft saved");
+      };
+
+      const saveRepeatableDraft = (card) => {
+        const key = `repeat_${card.id}`;
+        const draft = getDraft(key);
+        const score = normaliseScore(draft.score);
+        const notes = String(draft.notes || "").trim();
+        if(!score && !notes){
+          setToast("Enter a score or note first");
+          return;
+        }
+        const timepoint = resolveRepeatableTimepoint(card, state);
+        setState((prev) => saveEntryToState(prev, {
+          testId: card.testId,
+          timepoint,
+          score: draft.score,
+          notes: draft.notes,
+          mode: "repeatable"
+        }));
+        clearDraft(key);
+        setToast(score ? "Saved and marked complete" : "Draft saved");
+      };
+
+      const setCadence = (cadenceKey, value) => {
+        setState((prev) => ({
+          ...prev,
+          cadence: {
+            ...prev.cadence,
+            [cadenceKey]: normaliseCadence(value, DEFAULT_CADENCE[cadenceKey])
           }
         }));
       };
 
-      const updateEntry = (test, timepoint, updater) => {
-        setState(prev => {
-          if(!allowsTimepoint(test, timepoint)) return prev;
-          const next = JSON.parse(JSON.stringify(prev));
-          const record = ensureTestRecord(next, test.id);
-          const entry = getEditableEntry(record, test, timepoint, true);
-          updater(entry, record);
-          return next;
-        });
-      };
-
-      const setScore = (test, timepoint, value) => {
-        updateEntry(test, timepoint, entry => {
-          entry.score_payload.score = value;
-        });
-      };
-
-      const setNotes = (test, timepoint, value) => {
-        updateEntry(test, timepoint, entry => {
-          entry.notes = value;
-        });
-      };
-
-      const markDone = (test, timepoint) => {
-        updateEntry(test, timepoint, entry => {
-          entry.score_payload.done = true;
-          entry.date_ts = nowISO();
-        });
-        setToast("Saved");
-      };
-
-      const startNewCheckIn = (test, timepoint) => {
-        if(!supportsMultiEntries(test, timepoint)) return;
-        setState(prev => {
-          const next = JSON.parse(JSON.stringify(prev));
-          const record = ensureTestRecord(next, test.id);
-          const matches = listEntries(record, timepoint);
-          const latest = matches[matches.length - 1];
-          if(latest && !latest.score_payload?.done){
-            return prev;
+      const setProgramField = (field, value) => {
+        setState((prev) => {
+          const nextProgram = { ...prev.program, [field]: value };
+          if(field === "durationDays"){
+            nextProgram.durationDays = normaliseDuration(value);
           }
-          record.entries.push(createEntry(test.id, timepoint));
-          return next;
+          return { ...prev, program: nextProgram };
         });
-        setToast("New check-in");
-      };
-
-      const openTest = (test) => {
-        window.open(test.url, "_blank", "noopener,noreferrer");
       };
 
       const exportJSON = () => {
@@ -825,12 +1524,17 @@
         try{
           const parsed = JSON.parse(raw);
           if(parsed?.schemaVersion === HUB_VERSION){
-            setState(parsed);
+            setState(normalizeState(parsed));
             setToast("Imported");
             return;
           }
+          if(parsed?.schemaVersion === "ct_hub_v2"){
+            setState(migrateV2ToV3(parsed));
+            setToast("Imported (migrated)");
+            return;
+          }
           if(parsed?.schemaVersion === "ct_hub_v1"){
-            setState(migrateV1ToV2(parsed));
+            setState(migrateV2ToV3(migrateV1ToV2(parsed)));
             setToast("Imported (migrated)");
             return;
           }
@@ -843,67 +1547,11 @@
       const resetAll = () => {
         if(!confirm("Reset all locally saved hub data?")) return;
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_KEY_V2);
+        localStorage.removeItem(STORAGE_KEY_V1);
         setState(createDefaultState());
         setToast("Reset");
       };
-
-      const getRec = (test, timepoint) => {
-        const record = state.tests?.[test.id];
-        if(!record) return null;
-        return getDisplayEntry(record, test, timepoint);
-      };
-
-      const getDoneCount = (test, timepoint) => {
-        const record = state.tests?.[test.id];
-        if(!record) return 0;
-        return completedCount(record, timepoint);
-      };
-
-      const normalizeScore = (value) => String(value ?? "").trim();
-
-      const getLatestScore = (test, timepoint) => {
-        const record = state.tests?.[test.id];
-        if(!record) return "";
-        const entries = listEntries(record, timepoint);
-        for(let i = entries.length - 1; i >= 0; i--){
-          const score = normalizeScore(entries[i]?.score_payload?.score);
-          if(score) return score;
-        }
-        return "";
-      };
-
-      const getScoreCount = (test, timepoint) => {
-        const record = state.tests?.[test.id];
-        if(!record) return 0;
-        return listEntries(record, timepoint)
-          .filter(entry => normalizeScore(entry?.score_payload?.score).length > 0)
-          .length;
-      };
-
-      const getScoreSummaryLine = (test) => {
-        const parts = allowedTimepoints(test).map(tp => {
-          const latest = getLatestScore(test, tp);
-          const count = getScoreCount(test, tp);
-          if(tp === "WEEKLY" && count > 0){
-            return `${timepointLabel(tp)} latest ${latest || "-"} (${count} entries)`;
-          }
-          return `${timepointLabel(tp)} ${latest || "-"}`;
-        });
-        return parts.join(" | ");
-      };
-
-      const statusTag = (entry) => {
-        if(!entry) return <span className="tag">Not started</span>;
-        if(entry.score_payload?.done) return <span className="tag tagDone">Completed</span>;
-        if((entry.score_payload?.score || "").trim() || (entry.notes || "").trim()){
-          return <span className="tag">In progress</span>;
-        }
-        return <span className="tag">Not started</span>;
-      };
-
-      const getLockMessage = (test, timepoint) => (
-        allowsTimepoint(test, timepoint) ? "" : `This measure does not use ${timepointLabel(timepoint)} logging.`
-      );
 
       if(showSplash){
         return (
@@ -924,45 +1572,57 @@
         );
       }
 
-      const chipText = "PER-TEST";
-
       return (
         <div className="screen">
           <BrandTopBar
             appName={APP_NAME}
             subtitle={APP_SUBTITLE}
-            chipText={chipText}
+            chipText="PER-TEST"
             iconSrc={ICON_SRC}
           />
 
           <div className="content">
             <div className="card">
               <h1 className="h1">Your test battery</h1>
-              <p className="p">
-                Use this tracker to monitor change over time. It is not a diagnosis or medical tool.
-              </p>
-
-              <div className="btnRow">
-                <button className="btn btnPrimary" onClick={exportJSON}>Export JSON</button>
-                <button className="btn btnSecondary" onClick={importJSON}>Import JSON</button>
+              <p className="p">Track outcomes before and after training, plus repeatable weekly trackers.</p>
+              <div className="progressStrip">
+                Outcome tests: {outcomeCompleted}/{OUTCOME_CARD_DEFS.length} complete  -  Trackers: {trackersDue} due
               </div>
 
-              <div className="danger" style={{ marginTop: "10px" }}>
-                <p className="muted">
-                  Tip: if you switch devices or clear browser data, local results can be lost. Export JSON for backup.
-                </p>
-              </div>
-
-              <div className="danger" style={{ marginTop: "10px" }}>
-                <p className="muted">
-                  Pick the timepoint on each test card before entering score/notes. Fixed tests lock to one timepoint automatically.
-                </p>
-              </div>
-
-              <div className="danger" style={{ marginTop: "10px" }}>
-                <p className="muted">
-                  Suggested cadence: Week 0 PRE -> Psi-CBS, CRS-10, EDHS, Short IQ PRE (+ optional Mensa baseline). Weekly during training -> Psi-CBS. Optional midpoint -> CRS-10. End POST -> Psi-CBS, CRS-10, EDHS, Short IQ POST. Optional 4-week follow-up -> Psi-CBS (+ CRS-10).
-                </p>
+              <div className="programSetup">
+                <div className="programGrid">
+                  <label className="programField">
+                    <span className="programLabel">Programme start date (optional)</span>
+                    <input
+                      className="input"
+                      type="date"
+                      value={state.program.startDate || ""}
+                      onChange={(e) => setProgramField("startDate", e.target.value)}
+                    />
+                  </label>
+                  <label className="programField">
+                    <span className="programLabel">Duration (days)</span>
+                    <input
+                      className="input"
+                      type="number"
+                      min={7}
+                      max={365}
+                      value={state.program.durationDays}
+                      onChange={(e) => setProgramField("durationDays", e.target.value)}
+                    />
+                  </label>
+                  <label className="programField">
+                    <span className="programLabel">Milestone mode</span>
+                    <span className="programToggle">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(state.program.useMilestones)}
+                        onChange={(e) => setProgramField("useMilestones", e.target.checked)}
+                      />
+                      Use milestones (Baseline/Midpoint/Post)
+                    </span>
+                  </label>
+                </div>
               </div>
 
               {toast && (
@@ -979,170 +1639,182 @@
               )}
             </div>
 
-            <div className="grid grid2">
-              {GROUP_ORDER.map(groupName => (
-                <div className="card" key={groupName}>
-                  <div className="sectionTitle">{groupName}</div>
-                  <div className="sectionNote">{sectionCopy(groupName)}</div>
+            <div className="card">
+              <h2 className="sectionHeader">Outcome Tests (Take twice)</h2>
+              <p className="sectionSub">Each card answers: what is this, where am I, and what do I do next.</p>
+              <div className="grid" style={{ marginTop: "10px" }}>
+                {outcomeCards.map((card) => {
+                  const historyKey = `history_${card.id}`;
+                  const detailsKey = `details_${card.id}`;
+                  const draftKey = `outcome_${card.id}`;
+                  const draft = getDraft(draftKey);
+                  const historyRows = getOutcomeHistory(card, state);
+                  const detailTestIds = Array.from(new Set([card.baseline.testId, card.post.testId]));
+                  const detailTests = detailTestIds.map((id) => TEST_BY_ID[id]).filter(Boolean);
 
-                  <div style={{ marginTop: "10px" }} className="grid">
-                    {grouped[groupName].map(test => {
-                      const activeTimepoint = resolveTimepoint(test, state.selectedTimepoints);
-                      const availableTimepoints = allowedTimepoints(test);
-                      const rec = getRec(test, activeTimepoint);
-                      const lockMessage = getLockMessage(test, activeTimepoint);
-                      const canHaveMultiple = supportsMultiEntries(test, activeTimepoint);
-                      const doneLocked = Boolean(rec?.score_payload?.done) && !canHaveMultiple;
-                      const disabled = Boolean(lockMessage) || doneLocked;
-
-                      return (
-                        <div className="testRow" key={test.id}>
-                          <div className="testMeta">
-                            <p className="testName">{test.name}</p>
-                            <p className="testDesc">
-                              {test.kind === "external" ? "External test" : "Internal test"} - {test.timing}
-                            </p>
-
-                            {availableTimepoints.length > 1 && (
-                              <div className="timepointRow">
-                                <span className="muted">Log this entry as:</span>
-                                <select
-                                  className="input timepointSelect"
-                                  value={activeTimepoint}
-                                  onChange={(e) => setSelectedTimepoint(test.id, e.target.value)}
-                                >
-                                  {availableTimepoints.map(tp => (
-                                    <option key={tp} value={tp}>{timepointLabel(tp)}</option>
-                                  ))}
-                                </select>
-                              </div>
-                            )}
-
-                            <div className="tagRow">
-                              {statusTag(rec)}
-                              <span className="tag">{test.scheduleLabel}</span>
-                              <span className="tag">{test.kind === "external" ? "Manual score" : "Auto page"}</span>
-                              <span className="tag">Logging: {timepointLabel(activeTimepoint)}</span>
-                            </div>
-
-                            <div className="scoreReadout">
-                              <p className="scoreReadoutTitle">Saved scores</p>
-                              <p className="scoreReadoutLine">{getScoreSummaryLine(test)}</p>
-                            </div>
-
-                            <p className="whenLine">
-                              <strong>When should I take this?</strong> {test.whenText}
-                            </p>
-
-                            <div className="infoGrid">
-                              <details className="infoBlock">
-                                <summary>What is this?</summary>
-                                <p className="muted">{test.whatText}</p>
-                              </details>
-
-                              <details className="infoBlock">
-                                <summary>How to take it (for fair results)</summary>
-                                <ul className="checkList">
-                                  {FAIR_RESULTS_CHECKLIST.map(item => <li key={item}>{item}</li>)}
-                                </ul>
-                              </details>
-
-                              <details className="infoBlock">
-                                <summary>Credentials (quick view)</summary>
-                                <p className="muted">{test.credentialsText}</p>
-                              </details>
-                            </div>
-
-                            {lockMessage && (
-                              <div className="contextHint">{lockMessage}</div>
-                            )}
-
-                            <div className="twoCol" style={{ marginTop: "10px" }}>
-                              <input
-                                className="input"
-                                placeholder="Score (optional)"
-                                value={rec?.score_payload?.score || ""}
-                                onChange={(e)=>setScore(test, activeTimepoint, e.target.value)}
-                                disabled={Boolean(lockMessage)}
-                              />
-                              <input
-                                className="input"
-                                placeholder='Notes (optional: "Sleep 5h, lots of interruptions, high stress day" or "Quiet morning, normal caffeine")'
-                                value={rec?.notes || ""}
-                                onChange={(e)=>setNotes(test, activeTimepoint, e.target.value)}
-                                disabled={Boolean(lockMessage)}
-                              />
-                            </div>
-
-                            {rec?.date_ts && (
-                              <p className="muted" style={{ marginTop: "8px" }}>
-                                Last marked complete: {new Date(rec.date_ts).toLocaleString()}
-                              </p>
-                            )}
-
-                            {canHaveMultiple && (
-                              <p className="historyHint">
-                                Completed weekly check-ins: {getDoneCount(test, "WEEKLY")}
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="rightCol">
-                            <div className="miniRow">
-                              <button className="btn btnPrimary btnSmall" onClick={()=>openTest(test)}>
-                                Open
-                              </button>
-                              <button
-                                className="btn btnSecondary btnSmall"
-                                onClick={()=>markDone(test, activeTimepoint)}
-                                disabled={disabled}
-                                style={{
-                                  opacity: disabled ? 0.6 : 1,
-                                  cursor: disabled ? "not-allowed" : "pointer"
-                                }}
-                              >
-                                {doneLocked ? "Locked" : "Mark complete"}
-                              </button>
-                              {canHaveMultiple && !lockMessage && (
-                                <button
-                                  className="btn btnSecondary btnSmall"
-                                  onClick={() => startNewCheckIn(test, activeTimepoint)}
-                                >
-                                  New check-in
-                                </button>
-                              )}
-                            </div>
-
-                            <div className="muted" style={{ textAlign: "right", maxWidth: "250px" }}>
-                              {test.kind === "external"
-                                ? "Complete externally, then record your result manually here."
-                                : "Open the test in a new tab, then return here to log it."
-                              }
-                            </div>
-                          </div>
+                  return (
+                    <div className="trackerCard" key={card.id}>
+                      <div className="cardActions">
+                        <StatusPill status={card.status} />
+                      </div>
+                      <p className="trackerTitle">{card.title}</p>
+                      <p className="trackerPurpose">{card.purpose}</p>
+                      <div className="slotGrid">
+                        <div className="slotCard">
+                          <p className="slotLabel">{card.baseline.label}</p>
+                          <StatusPill status={card.baseline.status} />
+                          <p className="slotMetric">{card.baseline.score || "-"}</p>
+                          <p className="slotDate">{card.baseline.date ? formatDate(card.baseline.date) : "No entry yet"}</p>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                        <div className="slotCard">
+                          <p className="slotLabel">{card.post.label}</p>
+                          <StatusPill status={card.post.status} />
+                          <p className="slotMetric">{card.post.score || "-"}</p>
+                          <p className="slotDate">{card.post.date ? formatDate(card.post.date) : "No entry yet"}</p>
+                        </div>
+                      </div>
+                      <div className="deltaBox">
+                        <p className="deltaLine">{card.comparison.line}</p>
+                        {card.comparison.bars && card.comparison.bars.map((bar) => (
+                          <div className="deltaBarRow" key={`${card.id}-${bar.label}`}>
+                            <span className="deltaBarLabel">{bar.label}</span>
+                            <span className="deltaBarTrack">
+                              <span className="deltaBarFill" style={{ width: `${Math.max(4, bar.width)}%` }} />
+                            </span>
+                            <span className="deltaValue">{bar.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="logHint">Log entry for: {card.targetSlot.label}</p>
+                      <div className="twoCol">
+                        <input className="input" placeholder="Score" value={draft.score} onChange={(e) => setDraftField(draftKey, "score", e.target.value)} />
+                        <input className="input" placeholder="Notes (optional)" value={draft.notes} onChange={(e) => setDraftField(draftKey, "notes", e.target.value)} />
+                      </div>
+                      <div className="cardActions">
+                        <button className="btn btnPrimary" onClick={() => {
+                          if(card.ctaType === "view"){
+                            togglePanel(historyKey);
+                            return;
+                          }
+                          openTest(card.ctaTestId);
+                        }}>{card.ctaLabel}</button>
+                        <button className="btn btnSecondary" onClick={() => saveOutcomeDraft(card)}>Save</button>
+                        <button className="linkBtn" onClick={() => togglePanel(historyKey)} aria-expanded={Boolean(openPanels[historyKey])}>History</button>
+                        <span className="inlineDivider"> - </span>
+                        <button className="linkBtn" onClick={() => togglePanel(detailsKey)} aria-expanded={Boolean(openPanels[detailsKey])}>Details</button>
+                      </div>
+                      {openPanels[historyKey] && (
+                        <div className="historyBlock">
+                          {historyRows.length === 0 ? <p className="historyLine">No saved entries yet.</p> : historyRows.map((row) => (
+                            <p className="historyLine" key={row.key}><strong>{row.label}:</strong> {row.score}  -  {row.date}{row.notes ? `  -  ${row.notes}` : ""}</p>
+                          ))}
+                        </div>
+                      )}
+                      {openPanels[detailsKey] && (
+                        <div className="historyBlock">
+                          {detailTests.map((test) => (
+                            <div key={`${card.id}-${test.id}`}>
+                              <p className="historyLine"><strong>{test.name}</strong> ({test.timing})</p>
+                              <p className="historyLine">{test.whatText}</p>
+                              <p className="historyLine"><strong>When:</strong> {test.whenText}</p>
+                              <p className="historyLine"><strong>Credentials:</strong> {test.credentialsText}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="card">
-              <div className="sectionTitle">Admin</div>
-              <p className="sectionNote">
-                This only resets the hub's local tracking data, not the individual test apps' local storage.
-              </p>
+              <h2 className="sectionHeader">Repeatable Trackers</h2>
+              <p className="sectionSub">Latest score + trend + due status in one place.</p>
+              <div className="grid" style={{ marginTop: "10px" }}>
+                {repeatableCards.map((card) => {
+                  const historyKey = `history_${card.id}`;
+                  const detailsKey = `details_${card.id}`;
+                  const draftKey = `repeat_${card.id}`;
+                  const draft = getDraft(draftKey);
+                  const historyRows = getRepeatableHistory(card.testId, state);
+                  const testDef = TEST_BY_ID[card.testId];
+                  const targetTimepoint = resolveRepeatableTimepoint(card, state);
+
+                  return (
+                    <div className="trackerCard" key={card.id}>
+                      <div className="cardActions">
+                        <StatusPill status={card.status} />
+                        <label className="programToggle" style={{ marginLeft: "auto" }}>
+                          Cadence
+                          <select className="input" style={{ minWidth: "140px" }} value={card.cadenceValue} onChange={(e) => setCadence(card.cadenceKey, e.target.value)}>
+                            {CADENCE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                          </select>
+                        </label>
+                      </div>
+                      <p className="trackerTitle">{card.title}</p>
+                      <p className="trackerPurpose">{card.purpose}</p>
+                      <div className="metricRow">
+                        <div className="latestBox">
+                          <p className="latestLabel">Latest score</p>
+                          <p className="latestValue">{card.latestScore || "-"}</p>
+                          <p className="latestDate">{card.latestDate ? `Last taken ${formatDate(card.latestDate)}` : "No completed entries yet"}</p>
+                        </div>
+                        <div className="sparkBox">
+                          <p className="sparkTitle">Recent trend</p>
+                          <Sparkline values={card.numericValues} />
+                        </div>
+                      </div>
+                      <p className="dueLine">{card.due.text}</p>
+                      <p className="logHint">Log entry for: {TIMEPOINT_LABELS[targetTimepoint] || targetTimepoint}</p>
+                      <div className="twoCol">
+                        <input className="input" placeholder="Score" value={draft.score} onChange={(e) => setDraftField(draftKey, "score", e.target.value)} />
+                        <input className="input" placeholder="Notes (optional)" value={draft.notes} onChange={(e) => setDraftField(draftKey, "notes", e.target.value)} />
+                      </div>
+                      <div className="cardActions">
+                        <button className="btn btnPrimary" onClick={() => openTest(card.testId)}>Log now</button>
+                        <button className="btn btnSecondary" onClick={() => saveRepeatableDraft(card)}>Save</button>
+                        <button className="linkBtn" onClick={() => togglePanel(historyKey)} aria-expanded={Boolean(openPanels[historyKey])}>History</button>
+                        <span className="inlineDivider"> - </span>
+                        <button className="linkBtn" onClick={() => togglePanel(detailsKey)} aria-expanded={Boolean(openPanels[detailsKey])}>Details</button>
+                      </div>
+                      {openPanels[historyKey] && (
+                        <div className="historyBlock">
+                          {historyRows.length === 0 ? <p className="historyLine">No saved entries yet.</p> : historyRows.map((row) => (
+                            <p className="historyLine" key={row.key}><strong>{row.timepoint}:</strong> {row.score}  -  {row.date}{row.notes ? `  -  ${row.notes}` : ""}</p>
+                          ))}
+                        </div>
+                      )}
+                      {openPanels[detailsKey] && (
+                        <div className="historyBlock">
+                          <p className="historyLine"><strong>{testDef.name}</strong> ({testDef.timing})</p>
+                          <p className="historyLine">{testDef.whatText}</p>
+                          <p className="historyLine"><strong>When:</strong> {testDef.whenText}</p>
+                          <p className="historyLine"><strong>Credentials:</strong> {testDef.credentialsText}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="card adminCard">
+              <h2 className="sectionHeader">Admin</h2>
+              <p className="sectionSub">Export/import/reset controls for this tracker only.</p>
               <div className="btnRow">
+                <button className="btn btnSecondary" onClick={exportJSON}>Export JSON</button>
+                <button className="btn btnSecondary" onClick={importJSON}>Import JSON</button>
                 <button className="btn btnSecondary" onClick={resetAll}>Reset hub data</button>
+              </div>
+              <div className="danger" style={{ marginTop: "10px" }}>
+                <p className="muted">
+                  Tip: local tracker data is device/browser specific. Export JSON if you plan to switch device or clear browser storage.
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="footer">
-            <span>Local-first - Schema: {HUB_VERSION}</span>
-            <a className="link" href="https://mindware-lab.github.io/iq-assessments/" target="_self">Home</a>
-          </div>
         </div>
       );
     }
@@ -1151,5 +1823,10 @@
   </script>
 </body>
 </html>
+
+
+
+
+
 
 
