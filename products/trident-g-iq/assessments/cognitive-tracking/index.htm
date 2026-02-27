@@ -164,6 +164,10 @@
       border-color: rgba(110,198,255,.45);
       box-shadow: var(--brand-focus-ring);
     }
+    .inputScoreReady{
+      border-color: rgba(110,198,255,.48);
+      box-shadow: var(--brand-focus-ring);
+    }
     .input::placeholder{
       color: var(--brand-text-quiet);
       opacity: 1;
@@ -444,7 +448,7 @@
     .cardActions{ display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .linkBtn{ border: none; background: transparent; color: #8bc5ff; font-size: 13px; font-weight: 800; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
     .inlineDivider{ color: var(--brand-text-muted); font-size: 12px; font-weight: 800; }
-    .logHint{ margin: 0; font-size: 13px; color: var(--brand-text-muted); font-weight: 700; }
+    .logHint{ margin: 0; font-size: 14px; color: var(--brand-text); font-weight: 900; }
 
     .historyBlock{
       border: 1px solid var(--brand-border-soft);
@@ -1295,7 +1299,7 @@
         if(baselineScore && postScore){
           return { line: "Both baseline and post entries are saved.", bars: null };
         }
-        return { line: "Complete baseline and post to compare change.", bars: null };
+        return { line: "", bars: null };
       }
       const delta = Number((postNum - baseNum).toFixed(2));
       const maxValue = Math.max(baseNum, postNum, 1);
@@ -1764,7 +1768,7 @@
                       <p className="dueLine">{card.due.text}</p>
                       <p className="logHint">Log entry for: {TIMEPOINT_LABELS[targetTimepoint] || targetTimepoint}</p>
                       <div className="twoCol">
-                        <input className="input" placeholder="Score" value={draft.score} onChange={(e) => setDraftField(draftKey, "score", e.target.value)} />
+                        <input className="input inputScoreReady" placeholder="Score" value={draft.score} onChange={(e) => setDraftField(draftKey, "score", e.target.value)} />
                         <input className="input" placeholder="Notes (optional)" value={draft.notes} onChange={(e) => setDraftField(draftKey, "notes", e.target.value)} />
                       </div>
                       <div className="cardActions">
@@ -1830,7 +1834,7 @@
                         </div>
                       </div>
                       <div className="deltaBox">
-                        <p className="deltaLine">{card.comparison.line}</p>
+                        {card.comparison.line && <p className="deltaLine">{card.comparison.line}</p>}
                         {card.comparison.bars && card.comparison.bars.map((bar) => (
                           <div className="deltaBarRow" key={`${card.id}-${bar.label}`}>
                             <span className="deltaBarLabel">{bar.label}</span>
@@ -1843,7 +1847,7 @@
                       </div>
                       <p className="logHint">Log entry for: {card.targetSlot.label}</p>
                       <div className="twoCol">
-                        <input className="input" placeholder="Score" value={draft.score} onChange={(e) => setDraftField(draftKey, "score", e.target.value)} />
+                        <input className="input inputScoreReady" placeholder="Score" value={draft.score} onChange={(e) => setDraftField(draftKey, "score", e.target.value)} />
                         <input className="input" placeholder="Notes (optional)" value={draft.notes} onChange={(e) => setDraftField(draftKey, "notes", e.target.value)} />
                       </div>
                       <div className="cardActions">
