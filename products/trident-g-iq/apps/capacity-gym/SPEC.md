@@ -442,39 +442,125 @@ All relational games:
 * surface varies without changing canonical key
 * each block ends with a 2-item timed quiz
 
-### 9.1 Transitive (order) n-back
+## 9.1 Transitive (order + equality-bridge) n-back
 
-Stimulus selection per session:
+**Purpose:** Train relational order tracking with a minimal equality component that forces model-based integration (not just arrow chaining), while keeping inference paths unambiguous and “exact-2” in the quiz.
 
-* pick 5 letters from safe pool:
+### Stimulus selection per session
 
-  * `["A","B","C","D","E","F","H","J","K","M","N","P","R","T","V","W","X","Y","Z"]`
-* choose 4 chain letters L0..L3 + 1 distractor letter D
+Pick **5 letters** from the safe pool:
 
-Core premises (exactly 3):
+`["A","B","C","D","E","F","H","J","K","M","N","P","R","T","V","W","X","Y","Z"]`
 
-* `L0 > L1`
-* `L1 > L2`
-* `L2 > L3`
+Assign:
 
-Canonical token:
+* **4 chain letters**: `L0, L1, L2, L3`
+* **1 distractor letter**: `D` (must not be any of `L0..L3`)
 
-* always store as `ORD:hi>lo` (directional)
-  Surface render:
-* show either `hi > lo` or `lo < hi` (flip)
+### Block structure (core premises; exactly 3)
 
-No equality `=` in MVP.
+Each block defines a small premise set of **exactly 3** canonical relations, using an **equality bridge in the middle**:
 
-Allowed token pool:
+1. `L0 > L1`
+2. `L1 = L2`
+3. `L2 > L3`
 
-* core premises plus distractor relations that do NOT create alternative paths among chain letters.
+This is the only allowed “core” structure in MVP for Transitive v2.
 
-Quiz (2 items, exact-2):
-Prompt: “Can you infer X > Y in exactly 2 steps (via one intermediate)?”
-Truth:
+**Rationale:** The equality bridge creates a non-strict step that must be integrated correctly (e.g., `L0 > L1` plus `L1 = L2` ⇒ `L0 > L2`), which discourages a purely “propositional” shortcut strategy.
 
-* exact-2: `L0 > L2`, `L1 > L3`
-* hard tier (labelled exact-3, optional later): `L0 > L3`
+### Canonical tokens
+
+Store relations as canonical keys that are independent of surface rendering:
+
+**Strict order (directional):**
+
+* Canonical key: `ORD:hi>lo`
+* Example: `ORD:L0>L1`
+
+**Equality (undirected):**
+
+* Canonical key: `EQ:a=b`
+* Canonicalise equality by sorting the pair so:
+
+  * `EQ:L1=L2` is identical to `EQ:L2=L1`
+
+**Important:** Matching is always based on canonical key equality at `i − N`.
+
+### Surface render rules (meaning-preserving only)
+
+Each time a token is displayed, choose a surface variant that preserves its meaning:
+
+**For `ORD:hi>lo`**
+
+* render either: `hi > lo` **or** `lo < hi` (direction flip)
+
+**For `EQ:a=b`**
+
+* render either: `a = b` **or** `b = a` (order flip)
+
+No other operators (≤, ≥, ≠) in MVP.
+
+### Allowed token pool (trials)
+
+The trial token pool for a block consists of:
+
+* the **3 core premise tokens** above, plus
+* a limited set of **distractor relations involving `D`** that **do not create alternative 2-step paths among chain letters**.
+
+**Hard constraint (no alternate paths):** distractors must not introduce an additional 2-step inference between any of:
+
+* `(L0, L2)` or `(L1, L3)` (the “exact-2” quiz targets), or
+* any adjacent pair already defined by the core premises.
+
+**Safe distractor patterns (examples)**
+Choose 0–3 distractors per block from patterns that touch `D` but avoid bridging chain nodes:
+
+* `ORD:D > L1` or `ORD:L1 > D`
+* `ORD:D > L2` or `ORD:L2 > D`
+* `EQ:D = L0` or `EQ:D = L3` (use sparingly; avoid `EQ:D = L1` or `EQ:D = L2` because it can create extra bridge effects)
+
+**Do not include** distractors that connect two chain letters directly (e.g., `L0 > L2`, `L1 = L3`) or that create an alternate equality bridge that would duplicate or shortcut the intended exact-2 chain.
+
+### Trials per block
+
+Trials per block: `T = 20 + N` where `N ∈ [1..3]` for relational modes.
+
+Match scheduling: ~30% of eligible indices `[N..T−1]` using the shared scheduler.
+
+Non-match generation must ensure:
+
+* `canonKey[i] !== canonKey[i − N]`
+
+### Quiz (2 items, exact-2 integration)
+
+Each block ends with **exactly 2 timed TRUE/FALSE quiz items** (Stage-4 global quiz timeout).
+
+Quiz items are **structure queries** over the block’s premise set, not derived from which trials happened to be n-back matches.
+
+**Prompt format:**
+Example: “From the block premises, is **X > Y** true?”
+
+**Truth targets (exact-2 only; via one intermediate)**
+Use the two exact-2 consequences of the equality-bridge structure:
+
+1. `L0 > L2`
+   Derived from: `L0 > L1` and `L1 = L2`
+
+2. `L1 > L3`
+   Derived from: `L1 = L2` and `L2 > L3`
+
+**Foils (false; must not be directly present as a premise)**
+When you need a false item (optional), use near-miss foils such as:
+
+* direction reversal: `L2 > L0`, `L3 > L1`
+* wrong endpoint: `L0 > L3` (labelled “exact-3” if introduced later)
+
+**Hard tier (optional later)**
+
+* `L0 > L3` can be introduced later as a labelled **exact-3** query, but should not be part of MVP scoring unless you explicitly add it.
+
+---
 
 ### 9.2 Graph (directed edge) n-back
 
