@@ -104,6 +104,72 @@ function buildTokenIndexStream(totalTrials, n, matchFlags, poolSize, rng) {
   return tokenIndices;
 }
 
+function isSurfaceDiversityMode(wrapper) {
+  return wrapper === "transitive" || wrapper === "propositional";
+}
+
+function getDisplayText(display) {
+  if (!display || typeof display !== "object") {
+    return "";
+  }
+  return typeof display.text === "string" ? display.text.trim() : "";
+}
+
+function makeRenderRng(blockSeed, trialIndex, canonKey, variantIndex = 0) {
+  return createSeededRng(hash32(`${blockSeed}:${trialIndex}:${canonKey}:variant:${variantIndex}`));
+}
+
+function renderTrialDisplay({
+  modeDef,
+  token,
+  trialIndex,
+  blockIndex,
+  sessionContext,
+  blockVisualState,
+  blockSeed,
+  variantIndex = 0
+}) {
+  return modeDef.renderToken({
+    token,
+    trialIndex,
+    blockIndex,
+    sessionContext,
+    blockVisualState,
+    rng: makeRenderRng(blockSeed, trialIndex, token.canonKey, variantIndex)
+  });
+}
+
+function violatesSurfaceUniqueness({
+  trialIndex,
+  n,
+  trials,
+  candidateTrial
+}) {
+  const candidateText = getDisplayText(candidateTrial.display);
+  if (!candidateText) {
+    return false;
+  }
+
+  if (trialIndex > 0) {
+    const previousText = getDisplayText(trials[trialIndex - 1].display);
+    if (previousText && previousText === candidateText) {
+      return true;
+    }
+  }
+
+  if (trialIndex >= n) {
+    const nBackTrial = trials[trialIndex - n];
+    if (nBackTrial && candidateTrial.canonKey === nBackTrial.canonKey) {
+      const nBackText = getDisplayText(nBackTrial.display);
+      if (nBackText && nBackText === candidateText) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 export function createRelationalBlockPlan({
   wrapper,
   blockIndex,
@@ -164,23 +230,51 @@ export function createRelationalBlockTrials({
     rng
   );
 
-  const trials = tokenIndices.map((tokenIndex, trialIndex) => {
+  const trials = [];
+  for (let trialIndex = 0; trialIndex < tokenIndices.length; trialIndex += 1) {
+    const tokenIndex = tokenIndices[trialIndex];
     const token = tokenPool[tokenIndex];
-    const renderRng = createSeededRng(hash32(`${blockSeed}:${trialIndex}:${token.canonKey}`));
-    return {
+    const trial = {
       trialIndex,
       canonKey: token.canonKey,
       token,
-      display: modeDef.renderToken({
+      display: renderTrialDisplay({
+        modeDef,
         token,
         trialIndex,
         blockIndex,
         sessionContext,
         blockVisualState,
-        rng: renderRng
+        blockSeed,
+        variantIndex: 0
       })
     };
-  });
+
+    if (!isSurfaceDiversityMode(modeDef.wrapper)) {
+      trials.push(trial);
+      continue;
+    }
+
+    // Keep canonical stream fixed; only vary rendered surface to avoid identical repeats.
+    const MAX_VARIANT_ATTEMPTS = 12;
+    for (let variantIndex = 1; variantIndex <= MAX_VARIANT_ATTEMPTS; variantIndex += 1) {
+      if (!violatesSurfaceUniqueness({ trialIndex, n, trials, candidateTrial: trial })) {
+        break;
+      }
+      trial.display = renderTrialDisplay({
+        modeDef,
+        token,
+        trialIndex,
+        blockIndex,
+        sessionContext,
+        blockVisualState,
+        blockSeed,
+        variantIndex
+      });
+    }
+
+    trials.push(trial);
+  }
 
   const quizRng = createSeededRng(hash32(`quiz:${blockSeed}`));
   const rawQuizItems = modeDef.buildQuizItems({
