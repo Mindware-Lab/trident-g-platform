@@ -435,18 +435,44 @@ At block start show cue (LOCATION / COLOUR / SYMBOL) for ~1200ms.
 
 ## 9) Relational Game Specs (N_MAX = 3)
 
-All relational games:
+### 9.0 Shared rules for all relational games
 
-* N ∈ {1,2,3}
-* tokens are relations with **canonical meaning**
-* surface varies without changing canonical key
-* each block ends with a 2-item timed quiz
+**N range:** `N ∈ {1, 2, 3}`
+
+**Deep map policy (updated):**
+
+* Each *session* samples a **deep relational map** once at session start (using a session seed).
+* The deep map is **stable across all 10 blocks** in that session.
+* Blocks may vary **surface form** only (and Graph may permute node *positions* per block), but canonical meaning must not change.
+* Deep maps change **session-to-session** (new seed → new map).
+
+**Canonical tokens:**
+
+* Each trial shows a single relational token with a **canonical key** (`canonKey`).
+* Matching is by canonical key equality at `i − N`.
+
+**Surface variation:**
+
+* Rendering may vary (symbolic vs verbal, direction-preserving flips, layout permutations) without changing canonical key.
+
+**Block quiz:**
+
+* Every block ends with **exactly 2 timed TRUE/FALSE** quiz items.
+* Quiz items probe the **deep map**, not the trial match events.
+* Across a 10-block session (20 quiz items), aim for **approximately half true and half false** using a simple per-item balancing rule.
+
+**Suggested balancing rule (deterministic and simple):**
+
+* For each of the two quiz “slots” (Item A and Item B), keep a running count of `trueShown` vs `falseShown` across blocks.
+* Choose the next item’s truth label to keep counts close (or alternate by block parity).
+
+---
 
 ## 9.1 Transitive (order + equality-bridge) n-back
 
-**Purpose:** Train relational order tracking with a minimal equality component that forces model-based integration (not just arrow chaining), while keeping inference paths unambiguous and “exact-2” in the quiz.
+**Purpose:** Train order reasoning with a minimal equality component that forces model-based integration (not just arrow chaining), while keeping inference paths unambiguous and “exact-2” in the quiz.
 
-### Stimulus selection per session
+### Stimulus selection per session (deep map; fixed within session)
 
 Pick **5 letters** from the safe pool:
 
@@ -454,261 +480,269 @@ Pick **5 letters** from the safe pool:
 
 Assign:
 
-* **4 chain letters**: `L0, L1, L2, L3`
-* **1 distractor letter**: `D` (must not be any of `L0..L3`)
+* 4 chain letters: `L0, L1, L2, L3`
+* 1 distractor letter: `D` (must not be any of `L0..L3`)
 
-### Block structure (core premises; exactly 3)
+### Deep map (core premises; exactly 3; fixed within session)
 
-Each block defines a small premise set of **exactly 3** canonical relations, using an **equality bridge in the middle**:
+Define the session’s core premises as exactly:
 
 1. `L0 > L1`
 2. `L1 = L2`
 3. `L2 > L3`
 
-This is the only allowed “core” structure in MVP for Transitive v2.
+This is the only allowed core structure in MVP for Transitive v2.
 
-**Rationale:** The equality bridge creates a non-strict step that must be integrated correctly (e.g., `L0 > L1` plus `L1 = L2` ⇒ `L0 > L2`), which discourages a purely “propositional” shortcut strategy.
+**Rationale:** The equality bridge creates a non-strict step that must be integrated correctly (e.g., `L0 > L1` plus `L1 = L2` ⇒ `L0 > L2`), discouraging superficial shortcut strategies.
 
 ### Canonical tokens
 
-Store relations as canonical keys that are independent of surface rendering:
+Strict order (directional):
 
-**Strict order (directional):**
+* Canonical key: `ORD:hi>lo` (e.g., `ORD:L0>L1`)
 
-* Canonical key: `ORD:hi>lo`
-* Example: `ORD:L0>L1`
-
-**Equality (undirected):**
+Equality (undirected):
 
 * Canonical key: `EQ:a=b`
-* Canonicalise equality by sorting the pair so:
+* Canonicalise equality by sorting the pair so `EQ:L1=L2 == EQ:L2=L1`
 
-  * `EQ:L1=L2` is identical to `EQ:L2=L1`
-
-**Important:** Matching is always based on canonical key equality at `i − N`.
+Matching is always based on canonical key equality at `i − N`.
 
 ### Surface render rules (meaning-preserving only)
 
-Each time a token is displayed, choose a surface variant that preserves its meaning:
+For `ORD:hi>lo` render either:
 
-**For `ORD:hi>lo`**
+* `hi > lo` **or** `lo < hi`
 
-* render either: `hi > lo` **or** `lo < hi` (direction flip)
+For `EQ:a=b` render either:
 
-**For `EQ:a=b`**
-
-* render either: `a = b` **or** `b = a` (order flip)
+* `a = b` **or** `b = a`
 
 No other operators (≤, ≥, ≠) in MVP.
 
-### Allowed token pool (trials)
+### Token pool per block (surface-only variation; deep map unchanged)
 
-The trial token pool for a block consists of:
+Across the whole session, the **core premise tokens** remain the same (3 tokens above).
 
-* the **3 core premise tokens** above, plus
-* a limited set of **distractor relations involving `D`** that **do not create alternative 2-step paths among chain letters**.
+Per block you may add **0–3 distractor tokens** involving `D`, sampled fresh each block, subject to constraints below.
 
-**Hard constraint (no alternate paths):** distractors must not introduce an additional 2-step inference between any of:
+**Hard constraint (no alternate paths):**
+Distractors must not introduce an additional 2-step inference between:
 
 * `(L0, L2)` or `(L1, L3)` (the “exact-2” quiz targets), or
 * any adjacent pair already defined by the core premises.
 
 **Safe distractor patterns (examples)**
-Choose 0–3 distractors per block from patterns that touch `D` but avoid bridging chain nodes:
 
 * `ORD:D > L1` or `ORD:L1 > D`
 * `ORD:D > L2` or `ORD:L2 > D`
-* `EQ:D = L0` or `EQ:D = L3` (use sparingly; avoid `EQ:D = L1` or `EQ:D = L2` because it can create extra bridge effects)
+* `EQ:D = L0` or `EQ:D = L3` (use sparingly; avoid `EQ:D = L1` or `EQ:D = L2`)
 
-**Do not include** distractors that connect two chain letters directly (e.g., `L0 > L2`, `L1 = L3`) or that create an alternate equality bridge that would duplicate or shortcut the intended exact-2 chain.
+**Do not include** distractors that connect two chain letters directly (e.g., `L0 > L2`, `L1 = L3`) or that create an alternate equality bridge that duplicates/short-circuits the intended exact-2 chain.
 
 ### Trials per block
 
-Trials per block: `T = 20 + N` where `N ∈ [1..3]` for relational modes.
+Trials per block: `T = 20 + N`, with `N ∈ [1..3]`.
 
-Match scheduling: ~30% of eligible indices `[N..T−1]` using the shared scheduler.
+Match scheduling: ~30% of eligible indices `[N..T−1]`.
 
 Non-match generation must ensure:
 
 * `canonKey[i] !== canonKey[i − N]`
 
-### Quiz (2 items, exact-2 integration)
+### Quiz (2 items per block; exact-2 integration; probes same deep map)
 
-Each block ends with **exactly 2 timed TRUE/FALSE quiz items** (Stage-4 global quiz timeout).
+Each block ends with 2 timed TRUE/FALSE items.
 
-Quiz items are **structure queries** over the block’s premise set, not derived from which trials happened to be n-back matches.
+**Probe slots (fixed targets; truth label may vary):**
 
-**Prompt format:**
-Example: “From the block premises, is **X > Y** true?”
+* **Quiz A** targets the relation between `L0` and `L2`
+* **Quiz B** targets the relation between `L1` and `L3`
 
-**Truth targets (exact-2 only; via one intermediate)**
-Use the two exact-2 consequences of the equality-bridge structure:
+For each slot, choose either:
 
-1. `L0 > L2`
-   Derived from: `L0 > L1` and `L1 = L2`
+* **True prompt:** the valid exact-2 conclusion
 
-2. `L1 > L3`
-   Derived from: `L1 = L2` and `L2 > L3`
+  * `L0 > L2` (from `L0 > L1` and `L1 = L2`)
+  * `L1 > L3` (from `L1 = L2` and `L2 > L3`)
+* **False foil:** a near-miss that is not entailed
 
-**Foils (false; must not be directly present as a premise)**
-When you need a false item (optional), use near-miss foils such as:
+  * direction reversal: `L2 > L0`, `L3 > L1`
+  * (optional later) labelled hard: `L0 > L3` (exact-3), not part of MVP scoring unless explicitly enabled
 
-* direction reversal: `L2 > L0`, `L3 > L1`
-* wrong endpoint: `L0 > L3` (labelled “exact-3” if introduced later)
-
-**Hard tier (optional later)**
-
-* `L0 > L3` can be introduced later as a labelled **exact-3** query, but should not be part of MVP scoring unless you explicitly add it.
+**Session-level balance:** Across 10 blocks, aim ~5 true + ~5 false for each probe slot (so ~10 true, ~10 false overall).
 
 ---
 
-### 9.2 Graph (directed edge) n-back
+## 9.2 Graph (directed edge) n-back
 
-Nodes: 4 colours (R,G,B,Y), identity by colour only. Layout may rotate/permutate visually.
+**Nodes:** 4 colours `{R, G, B, Y}`, identity by colour only.
 
-Core edges (exactly 3, directed only):
+### Deep map (core edges; exactly 3; fixed within session)
+
+Define the session’s directed edges as exactly:
 
 * `R → G`
 * `G → B`
 * `B → Y`
 
-Canonical token key:
+Canonical token keys:
 
-* `EDGE:R->G` etc.
+* `EDGE:R->G`, `EDGE:G->B`, `EDGE:B->Y`
 
-Token pool:
+**Token pool:** only these 3 canonical edges (avoid accidental extra paths).
 
-* only these 3 edges (avoid accidental paths)
+### Surface variation (block-level layout only; deep map unchanged)
 
-Quiz (2 items, exact-2):
+Layout may rotate/permutate **per block** (static within a block). This permutes *positions only*, never canonical IDs.
+
+Each trial shows:
+
+* the 4 nodes in their current block positions
+* **one arrow** representing the current edge token
+* a caption derived from canonical identity (e.g., `Edge: R → G` or surface flip `G ← R`)
+
+Scoring always uses the canonical `EDGE:*` key, never layout positions.
+
+### Trials per block
+
+Trials per block: `T = 20 + N`, with `N ∈ [1..3]`.
+
+Match scheduling: ~30% of eligible indices `[N..T−1]`.
+
+### Quiz (2 items per block; exact-2 map queries; probes same deep map)
+
 Prompt: “Is there a path from X to Y in exactly 2 steps?”
-Truth:
 
-* exact-2: `R→B`, `G→Y`
-* hard tier (labelled exact-3, optional): `R→Y`
+Use two probe slots (fixed targets; truth label may vary):
+
+* **Quiz A:** `R → B` (exact-2 true)
+* **Quiz B:** `G → Y` (exact-2 true)
+
+False foils (examples):
+
+* direction reversal: `B → R`, `Y → G`
+* wrong endpoints: `R → Y` (label as exact-3 hard tier; optional later)
+
+**Session-level balance:** As above, aim ~10 true and ~10 false across the 20 items.
 
 ---
 
 ## 9.3 Propositional inference-rule n-back (MP / MT / DS)
 
-**Purpose:** Train propositional “rule following” and premise integration using three intuitive inference patterns, with surface variation (symbolic vs verbal) but canonical, stable scoring.
+**Purpose:** Train intuitive rule-following and premise integration using Modus Ponens, Modus Tollens, and Disjunctive Syllogism, with symbolic/verbal surface variation but canonical scoring.
 
 ### Symbols
 
 Fixed symbols in MVP: `{P, Q, R, S}`.
 
-Within each **block**, use two disjoint variable pairs to avoid cross-entanglement:
+### Session-level deep map (fixed within session; updated)
 
-* Pair A uses `{P, Q}`
-* Pair B uses `{R, S}`
+At session start, define two independent inference instances:
+
+* **Instance A** uses `{P, Q}`
+* **Instance B** uses `{R, S}`
+
+For each instance, sample **one rule type** at session start (stable across all blocks):
+
+* Modus Ponens (MP)
+* Modus Tollens (MT)
+* Disjunctive Syllogism (DS)
+
+This yields a session-deep-map premise bank of exactly **4 premises** (2 per instance), fixed across all 10 blocks.
 
 ### Response model (Stage 4 go/no-go)
 
-Trials are **MATCH-only**:
+MATCH-only:
 
-* Press **Space** for MATCH only.
-* No response on non-match = **correct rejection (CR)**.
-* No response on match = **miss** and counts as **lapse** (match omission).
+* press Space for MATCH only
+* no response on non-match = CR
+* no response on match = miss + lapse (match omission)
 
-### Canonical premise tokens (trial items)
+### Canonical premise tokens
 
-Trials present **single statements** drawn from a block’s premise bank (see below). Each statement has a canonical token key:
+Trial items are single premises drawn from the session’s 4-premise bank.
 
-* Atomic: `ATOM:P` (and similarly Q, R, S)
-* Negation: `NOT:P`
-* Implication: `IMP:P->Q`
-* Disjunction (commutative canonicalisation): `OR:P|Q`
-  Canonicalise by sorting the pair, so `OR:P|Q` == `OR:Q|P`.
+Canonical token keys:
 
-**Important:** Matching is always by canonical key at `i − N`, never by surface wording.
+* Atomic: `ATOM:X`
+* Negation: `NOT:X`
+* Implication: `IMP:X->Y`
+* Disjunction: `OR:X|Y` (commutative canonicalisation by sorting pair, so `OR:P|Q == OR:Q|P`)
+
+Matching uses canonical key equality at `i − N`.
 
 ### Surface variants (symbolic vs verbal)
 
-Each time a premise token is shown, render it in one of two surface families:
+Symbolic: `P`, `¬P`, `P → Q`, `P ∨ Q` (or `Q ∨ P` as a surface flip)
+Verbal: “P is true”, “P is not true”, “If P then Q”, “Either P or Q”
 
-**Symbolic**
-
-* `P`
-* `¬P`
-* `P → Q`
-* `P ∨ Q` (or optionally `Q ∨ P` as a surface flip)
-
-**Verbal**
-
-* `P is true`
-* `P is not true`
-* `If P then Q`
-* `Either P or Q`
-
-Surface choice is random per presentation, but must remain **meaning-preserving**.
-
-### Block structure: “premise bank” + trials
-
-Each block defines a small **premise bank** containing **exactly 4 premises**: two independent inference instances (A and B), each instance contributing **two premises**.
-
-At block start (cue), show the premise bank (4 items). During trials, present one premise per trial, sampled from this bank with surface variation.
-
-### Inference instances (what can appear in a block)
-
-For each pair (A: P/Q, B: R/S), sample one rule type from:
-
-1. **Modus Ponens (MP)**
-   Premises: `ATOM:P` and `IMP:P->Q`
-   Conclusion: `ATOM:Q`
-
-2. **Modus Tollens (MT)**
-   Premises: `NOT:Q` and `IMP:P->Q`
-   Conclusion: `NOT:P`
-
-3. **Disjunctive Syllogism (DS)**
-   Premises: `OR:P|Q` and `NOT:P`
-   Conclusion: `ATOM:Q`
-   (Optionally allow the symmetric DS variant: `OR:P|Q` and `NOT:Q` ⟹ `ATOM:P`.)
-
-So a block always contains **two** instances (one for P/Q and one for R/S), giving 4 premises total.
+Surface is random per presentation but meaning-preserving.
 
 ### Token pool (trials)
 
-Token pool for the block is **only** the block’s premise bank (4 canonical tokens).
+Token pool is **only the session premise bank** (4 canonical tokens).
+Trials per block: `T = 20 + N`, `N ∈ [1..3]`.
+Match scheduling: ~30% of eligible indices `[N..T−1]`.
 
-Trials per block: `T = 20 + N` with `N ∈ [1..3]`.
+### Quiz (2 items per block; exact-2 premise integration; probes same deep map)
 
-Match scheduling: ~30% of eligible indices `[N..T−1]` (as per shared Stage-4 scheduler).
+Each block ends with 2 timed TRUE/FALSE prompts like:
 
-### Quiz (2 items, exact-2 premise integration)
+* “From the session premises, **Q is true**.”
 
-Each block ends with **exactly 2 timed TRUE/FALSE questions** (6–8s each; MVP uses the global Stage-4 quiz timeout).
+Probe slots (fixed by instance; truth label may vary):
 
-Quiz items are **map queries** over the block’s premise bank and must require combining **two premises** (the exact-2 pattern). They are **not** derived from which trials happened to be n-back matches.
+* **Quiz A** targets the conclusion of Instance A.
+* **Quiz B** targets the conclusion of Instance B.
 
-**Quiz item format (TRUE/FALSE buttons):**
-Example prompt: “From the block premises, **Q is true**.”
+True conclusions by rule:
 
-**Quiz construction rule:**
+* MP (`P`, `P→Q`) ⇒ `Q`
+* MT (`¬Q`, `P→Q`) ⇒ `¬P` (MT is a rule pattern, not a general rewrite permission)
+* DS (`P∨Q`, `¬P`) ⇒ `Q` (optionally symmetric DS later)
 
-* Quiz item #1 targets the conclusion of instance A (P/Q).
-* Quiz item #2 targets the conclusion of instance B (R/S).
+False foils (must not be verbatim premises; near-miss examples):
 
-For each item, choose whether the displayed statement is:
+* MP: `¬Q` or `¬P`
+* MT: `P` or `Q`
+* DS: `¬Q` or `P`
 
-* **True:** the valid conclusion for that instance (MP→Q, MT→¬P, DS→Q), **or**
-* **False foil:** a near-miss statement that is *not* entailed by the instance.
-
-Recommended default: 1 true + 1 false per block (random order), but allow either to be true/false independently if you prefer.
-
-**Foil rules (must not be directly present as a premise):**
-
-* For MP (premises `P` and `P→Q`): use foils like `¬Q` or `¬P`.
-* For MT (premises `¬Q` and `P→Q`): use foils like `Q` or `P`.
-* For DS (premises `P∨Q` and `¬P`): use foils like `¬Q` or `P`.
-
-**Do not** ask about a statement that appears verbatim in the premise bank (avoid trivially true items).
+**Session-level balance:** aim ~10 true and ~10 false across the 20 items.
 
 ### Notes / exclusions (MVP)
 
-* No contrapositive equivalence as a “free rewrite”. MT is included as a **rule pattern**, not as permission to rewrite `P→Q` into `¬Q→¬P`.
+* No contrapositive equivalence as a “free rewrite”. MT is included as a rule pattern only.
 * No nested negations, no biconditionals, no conjunctions.
-* Keep the block premise bank small and stable to maintain intuitiveness.
+
+### Implementation note 
+
+To support **stable deep map within a session** (SR-style map formation) while still selecting for invariance under surface changes, implement relational modes using **three layers**:
+
+1. **Session context (deep map; fixed for all 10 blocks)**
+   Create once at session start from a session seed and reuse it for every block in the session.
+
+* Put *all deep structure* here (chain letters and core premises for Transitive, core edges for Graph, MP/MT/DS instance selection + 4-premise bank for Propositional).
+* Recommended: `sessionContext = mode.buildSessionContext(sessionSeed)`
+* Persist enough metadata to replay deterministically (e.g., chosen letters, selected rule types, and the session premise bank).
+
+2. **Block visual state (surface-only; may vary per block, static within block)**
+   Used only for meaning-preserving presentation changes.
+
+* Example: Graph node position permutation/rotation per block.
+* Recommended:
+
+  * `blockSeed = hash32(sessionSeed + ":" + wrapper + ":block:" + blockIndex)`
+  * `blockVisualState = mode.buildBlockVisualState?.(sessionContext, blockSeed)`
+* Do **not** alter canonical identities in `blockVisualState`, only positions/layout/render parameters.
+
+3. **Block quiz probes (structure queries; vary per block, same deep map)**
+   Generate **2 TRUE/FALSE** items per block that probe the *same* deep map from different angles.
+
+* Recommended: `quizItems = mode.buildQuizItems(sessionContext, blockIndex, rng)`
+* Use a simple truth-balance rule so the **20 items** over a 10-block session are approximately **50% true / 50% false** (e.g., alternate by block parity or maintain running true/false counts per probe slot).
+
+**Do not** regenerate the deep map per block. The only per-block changes should be surface render choices, optional distractor sampling (where allowed), and quiz probe/foil selection.
 
 ---
 
