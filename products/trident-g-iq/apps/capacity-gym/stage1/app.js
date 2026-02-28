@@ -33,7 +33,7 @@ import {
   summarizeRelationalBlock
 } from "./games/relational.js";
 import { hash32 } from "./lib/rng.js";
-import { coachUpdateAfterBlock } from "./lib/coach.js";
+import { coachUpdateAfterBlock, relationalCoachUpdateAfterBlock } from "./lib/coach.js";
 import { transitiveMode } from "./games/transitive.js";
 import { graphMode } from "./games/graph.js";
 import { propositionalMode } from "./games/propositional.js";
@@ -197,6 +197,16 @@ function normalizeCoachFlags(flags) {
     pulseType: flags.pulseType ?? null,
     swapSegment: flags.swapSegment ?? null,
     wasSwapProbe: Boolean(flags.wasSwapProbe)
+  };
+}
+
+function normalizeRelationalCoachFlags(flags) {
+  const safeFlags = flags && typeof flags === "object" ? flags : {};
+  return {
+    coachState: safeFlags.coachState ?? null,
+    pulseType: null,
+    swapSegment: null,
+    wasSwapProbe: false
   };
 }
 
@@ -603,8 +613,12 @@ function renderPlayRelational(state) {
   const trialNumber = block ? block.trialIndex + 1 : 0;
   const trialCount = block ? block.trials.length : 0;
   const responseCaptured = block ? block.responseCaptured : false;
+  const coachNotice = relSession.coachNotice && relSession.phase === "block-result"
+    ? `<div class="status coach">${escapeHtml(relSession.coachNotice)}</div>`
+    : "";
+  const coachState = block?.plan?.flags?.coachState;
   const runtimeInfo = block
-    ? `SOA: ${block.soaMs}ms | Mode: ${relSession.wrapper.toUpperCase()}`
+    ? `SOA: ${block.soaMs}ms | Mode: ${relSession.wrapper.toUpperCase()}${coachState ? ` | Coach: ${coachState}` : ""}`
     : "";
   const premiseBankMarkup = block && Array.isArray(block.blockMeta?.premiseBankLines) && block.blockMeta.premiseBankLines.length
     ? `
@@ -672,6 +686,7 @@ function renderPlayRelational(state) {
       <p>Mode: <strong>${escapeHtml(relSession.wrapper)}</strong></p>
       <p>Block: <strong>${relSession.blockCursor + (relSession.phase === "block-result" ? 0 : 1)}</strong> / ${REL_TOTAL_BLOCKS}</p>
       <p>Current N: <strong>${relSession.currentN}</strong> (bounds 1..${REL_N_MAX})</p>
+      ${coachNotice}
       ${phasePanel}
       ${renderFlash()}
     </section>
@@ -1124,6 +1139,22 @@ function startRelationalSession(mode) {
     currentN: 1,
     blocksPlanned: [],
     blocks: [],
+    completedBlocks: [],
+    coachContext: {
+      pendingStabilise: false,
+      consolidateNextSession: false
+    },
+    pendingPlanPatch: {
+      speed: "slow",
+      interference: "low",
+      flags: {
+        coachState: null,
+        pulseType: null,
+        swapSegment: null,
+        wasSwapProbe: false
+      }
+    },
+    coachNotice: "",
     currentBlock: null,
     lastBlockSummary: null,
     sessionSummary: null
@@ -1141,12 +1172,26 @@ function beginRelationalBlock() {
   }
 
   const blockIndex = relSession.blockCursor + 1;
+  const pendingPatch = relSession.pendingPlanPatch && typeof relSession.pendingPlanPatch === "object"
+    ? relSession.pendingPlanPatch
+    : {};
+  const nextN = Number.isFinite(pendingPatch.n)
+    ? Math.max(1, Math.min(REL_N_MAX, Math.round(pendingPatch.n)))
+    : relSession.currentN;
+  const speed = pendingPatch.speed
+    ? normalizeHubSpeed(pendingPatch.speed)
+    : "slow";
+  const interference = pendingPatch.interference
+    ? normalizeHubInterference(pendingPatch.interference)
+    : "low";
+  const flags = normalizeRelationalCoachFlags(pendingPatch.flags);
   const plan = createRelationalBlockPlan({
     wrapper: relSession.wrapper,
     blockIndex,
-    n: relSession.currentN,
-    speed: "slow",
-    interference: "low"
+    n: nextN,
+    speed,
+    interference,
+    flags
   });
   const blockBuild = createRelationalBlockTrials({
     modeDef: relSession.modeDef,
@@ -1159,6 +1204,16 @@ function beginRelationalBlock() {
     seed: Date.now() + blockIndex
   });
 
+  relSession.pendingPlanPatch = {
+    speed: "slow",
+    interference: "low",
+    flags: {
+      coachState: null,
+      pulseType: null,
+      swapSegment: null,
+      wasSwapProbe: false
+    }
+  };
   relSession.blocksPlanned.push(plan);
   relSession.currentBlock = {
     plan,
@@ -1403,6 +1458,11 @@ function finishRelationalBlock() {
     ...blockSummary.blockResult,
     outcomeBand: blockSummary.outcomeBand
   };
+  relSession.completedBlocks.push({
+    plan: block.plan,
+    result: blockSummary.blockResult,
+    outcomeBand: blockSummary.outcomeBand
+  });
   relSession.currentN = blockSummary.nEnd;
   relSession.blockCursor += 1;
   relSession.currentBlock = null;
@@ -1410,6 +1470,41 @@ function finishRelationalBlock() {
   if (relSession.blockCursor >= REL_TOTAL_BLOCKS) {
     completeRelationalSession();
     return;
+  }
+
+  const coachDecision = relationalCoachUpdateAfterBlock(relSession.lastBlockSummary, {
+    completedBlocks: relSession.completedBlocks,
+    coachContext: relSession.coachContext
+  });
+  if (coachDecision && typeof coachDecision === "object") {
+    relSession.pendingPlanPatch = coachDecision.patch && typeof coachDecision.patch === "object"
+      ? coachDecision.patch
+      : {
+        speed: "slow",
+        interference: "low",
+        flags: {
+          coachState: null,
+          pulseType: null,
+          swapSegment: null,
+          wasSwapProbe: false
+        }
+      };
+    relSession.coachContext = coachDecision.coachContext && typeof coachDecision.coachContext === "object"
+      ? coachDecision.coachContext
+      : relSession.coachContext;
+    relSession.coachNotice = typeof coachDecision.notice === "string" ? coachDecision.notice : "";
+  } else {
+    relSession.pendingPlanPatch = {
+      speed: "slow",
+      interference: "low",
+      flags: {
+        coachState: null,
+        pulseType: null,
+        swapSegment: null,
+        wasSwapProbe: false
+      }
+    };
+    relSession.coachNotice = "";
   }
 
   relSession.phase = "block-result";

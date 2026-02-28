@@ -67,6 +67,18 @@ function withFlags(patch, flags) {
   };
 }
 
+function withRelationalFlags(patch, coachState = null) {
+  return {
+    ...patch,
+    flags: {
+      coachState,
+      pulseType: null,
+      swapSegment: null,
+      wasSwapProbe: false
+    }
+  };
+}
+
 export function coachPlanSession() {
   return Array.from({ length: 10 }, (_, index) => (
     withFlags({
@@ -232,6 +244,62 @@ export function coachUpdateAfterBlock(lastBlockResult, partialSession = {}) {
     patch: withFlags({}, {
       coachState: "STABILISE"
     }),
+    coachContext: nextContext,
+    notice: ""
+  };
+}
+
+export function relationalCoachUpdateAfterBlock(lastBlockResult, partialSession = {}) {
+  const coachContext = partialSession.coachContext && typeof partialSession.coachContext === "object"
+    ? partialSession.coachContext
+    : {};
+  const nextContext = {
+    pendingStabilise: Boolean(coachContext.pendingStabilise),
+    consolidateNextSession: Boolean(coachContext.consolidateNextSession)
+  };
+  const outcomeBand = lastBlockResult?.outcomeBand || "HOLD";
+  const nEnd = Number.isFinite(lastBlockResult?.nEnd) ? lastBlockResult.nEnd : 1;
+  const nStart = Number.isFinite(lastBlockResult?.nStart) ? lastBlockResult.nStart : nEnd;
+  const messy = isMessy(lastBlockResult);
+  const spike = outcomeBand === "UP" && nEnd > nStart;
+
+  if (messy) {
+    nextContext.pendingStabilise = true;
+    return {
+      patch: withRelationalFlags({
+        n: Math.max(1, nEnd - 1),
+        speed: "slow",
+        interference: "low"
+      }, "RECOVER"),
+      coachContext: nextContext,
+      notice: "Messy block detected. Recovery block scheduled."
+    };
+  }
+
+  if (nextContext.pendingStabilise) {
+    nextContext.pendingStabilise = false;
+    return {
+      patch: withRelationalFlags({
+        n: Math.max(1, nEnd),
+        speed: "slow",
+        interference: "low"
+      }, "STABILISE"),
+      coachContext: nextContext,
+      notice: "Recovery cleared. Running one stabilise block."
+    };
+  }
+
+  if (spike) {
+    nextContext.consolidateNextSession = true;
+    return {
+      patch: withRelationalFlags({}, "CONSOLIDATE"),
+      coachContext: nextContext,
+      notice: "Performance spike detected. Consolidate state flagged."
+    };
+  }
+
+  return {
+    patch: withRelationalFlags({}, null),
     coachContext: nextContext,
     notice: ""
   };

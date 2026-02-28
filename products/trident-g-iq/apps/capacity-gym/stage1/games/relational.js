@@ -78,6 +78,16 @@ function pickNonMatchIndex(previousIndex, poolSize, rng) {
   return candidate;
 }
 
+function normalizeRelationalFlags(flags) {
+  const safeFlags = flags && typeof flags === "object" ? flags : {};
+  return {
+    coachState: safeFlags.coachState ?? null,
+    pulseType: null,
+    swapSegment: null,
+    wasSwapProbe: false
+  };
+}
+
 function buildTokenIndexStream(totalTrials, n, matchFlags, poolSize, rng) {
   const tokenIndices = Array.from({ length: totalTrials }, () => 0);
   for (let i = 0; i < totalTrials; i += 1) {
@@ -99,14 +109,16 @@ export function createRelationalBlockPlan({
   blockIndex,
   n,
   speed = "slow",
-  interference = "low"
+  interference = "low",
+  flags
 }) {
   return {
     blockIndex,
     wrapper,
     n,
     speed,
-    interference
+    interference,
+    flags: normalizeRelationalFlags(flags)
   };
 }
 
