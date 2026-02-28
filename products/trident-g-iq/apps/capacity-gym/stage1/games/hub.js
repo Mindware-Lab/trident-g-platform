@@ -359,14 +359,18 @@ export function summarizeHubBlock({
   const rtStats = computeRtStats(rtValues);
   const errorBursts = countErrorBursts(errorFlags, 8, 3);
 
-  let nEnd = plan.n;
   let outcomeBand = "HOLD";
   if (accuracy >= 0.9) {
-    nEnd = Math.min(plan.n + 1, nMax);
-    outcomeBand = nEnd > plan.n ? "UP" : "HOLD";
+    outcomeBand = "UP";
   } else if (accuracy < 0.75) {
+    outcomeBand = "DOWN";
+  }
+
+  let nEnd = plan.n;
+  if (outcomeBand === "UP") {
+    nEnd = Math.min(plan.n + 1, nMax);
+  } else if (outcomeBand === "DOWN") {
     nEnd = Math.max(plan.n - 1, 1);
-    outcomeBand = nEnd < plan.n ? "DOWN" : "HOLD";
   }
 
   return {

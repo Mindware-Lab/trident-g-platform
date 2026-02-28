@@ -20,30 +20,69 @@ import {
   modalityLabel,
   summarizeHubBlock
 } from "./games/hub.js";
+import {
+  REL_BASE_TRIALS,
+  REL_CUE_MS,
+  REL_N_MAX,
+  REL_QUIZ_TIMEOUT_MS,
+  REL_TOTAL_BLOCKS,
+  createRelationalBlockPlan,
+  createRelationalBlockTrials,
+  createRelationalSessionSummary,
+  isRelationalMatchAtIndex,
+  summarizeRelationalBlock
+} from "./games/relational.js";
 import { hash32 } from "./lib/rng.js";
 import { coachUpdateAfterBlock } from "./lib/coach.js";
-import { createFakeTransitiveSession } from "./games/transitive.js";
-import { createFakeGraphSession } from "./games/graph.js";
-import { createFakePropositionalSession } from "./games/propositional.js";
+import { transitiveMode } from "./games/transitive.js";
+import { graphMode } from "./games/graph.js";
+import { propositionalMode } from "./games/propositional.js";
 
 const ROUTES = new Set(["home", "play-hub", "play-relational", "history", "settings"]);
 const DEFAULT_ROUTE = "home";
 const appRoot = document.querySelector("#app");
-const initialSettings = loadGymState().settings;
+const initialState = loadGymState();
+const initialSettings = initialState.settings;
 
 const hubPreferences = {
   wrapper: initialSettings.lastWrapper === "hub_noncat" ? "hub_noncat" : "hub_cat",
   speed: initialSettings.lastSpeed === "fast" ? "fast" : "slow",
   interference: initialSettings.lastInterference === "high" ? "high" : "low"
 };
+const FIRST_RUN_BASELINE_BLOCK = {
+  wrapper: "hub_cat",
+  n: 1,
+  speed: "slow",
+  interference: "low"
+};
+
+if (isFirstHubRun(initialState)) {
+  hubPreferences.wrapper = FIRST_RUN_BASELINE_BLOCK.wrapper;
+  hubPreferences.speed = FIRST_RUN_BASELINE_BLOCK.speed;
+  hubPreferences.interference = FIRST_RUN_BASELINE_BLOCK.interference;
+}
 
 let flash = "";
 let flashKind = "success";
 let hubSession = null;
+let relSession = null;
+const REL_MODE_MAP = {
+  transitive: transitiveMode,
+  graph: graphMode,
+  propositional: propositionalMode
+};
 const hubTimers = {
   cue: null,
   display: null,
   trial: null
+};
+const relTimers = {
+  cue: null,
+  display: null,
+  trial: null,
+  quizTimeout: null,
+  quizTick: null,
+  quizAdvance: null
 };
 
 function ensureRoute() {
@@ -93,6 +132,33 @@ function clearHubTimers() {
   hubTimers.trial = null;
 }
 
+function clearRelTimers() {
+  if (relTimers.cue) {
+    clearTimeout(relTimers.cue);
+  }
+  if (relTimers.display) {
+    clearTimeout(relTimers.display);
+  }
+  if (relTimers.trial) {
+    clearTimeout(relTimers.trial);
+  }
+  if (relTimers.quizTimeout) {
+    clearTimeout(relTimers.quizTimeout);
+  }
+  if (relTimers.quizTick) {
+    clearInterval(relTimers.quizTick);
+  }
+  if (relTimers.quizAdvance) {
+    clearTimeout(relTimers.quizAdvance);
+  }
+  relTimers.cue = null;
+  relTimers.display = null;
+  relTimers.trial = null;
+  relTimers.quizTimeout = null;
+  relTimers.quizTick = null;
+  relTimers.quizAdvance = null;
+}
+
 function setFlash(message, kind = "success") {
   flash = message;
   flashKind = kind;
@@ -132,6 +198,15 @@ function normalizeCoachFlags(flags) {
     swapSegment: flags.swapSegment ?? null,
     wasSwapProbe: Boolean(flags.wasSwapProbe)
   };
+}
+
+function isFirstHubRun(state) {
+  const safeState = state && typeof state === "object" ? state : loadGymState();
+  const hasHubHistory = Array.isArray(safeState.history)
+    ? safeState.history.some((entry) => entry && entry.wrapperFamily === "hub")
+    : false;
+  const hasRunHubBefore = Boolean(safeState.settings?.hasRunHubBefore);
+  return !hasHubHistory || !hasRunHubBefore;
 }
 
 function resolveNextBlockPreview(session) {
@@ -175,7 +250,13 @@ function renderHome(state) {
   `;
 }
 
-function renderHubConfigControls({ showWrapperSelect = true, wrapperLocked = false, dialsLocked = false } = {}) {
+function renderHubConfigControls({
+  showWrapperSelect = true,
+  wrapperLocked = false,
+  dialsLocked = false,
+  speedValue = hubPreferences.speed,
+  interferenceValue = hubPreferences.interference
+} = {}) {
   const wrapperLock = wrapperLocked ? "disabled" : "";
   const dialLock = dialsLocked ? "disabled" : "";
   const wrapperControl = showWrapperSelect
@@ -201,15 +282,15 @@ function renderHubConfigControls({ showWrapperSelect = true, wrapperLocked = fal
       <label class="hub-config-item">
         Speed
         <select id="hub-speed-select" ${dialLock}>
-          <option value="slow" ${hubPreferences.speed === "slow" ? "selected" : ""}>Slow (3000ms SOA)</option>
-          <option value="fast" ${hubPreferences.speed === "fast" ? "selected" : ""}>Fast (1400ms SOA)</option>
+          <option value="slow" ${speedValue === "slow" ? "selected" : ""}>Slow (3000ms SOA)</option>
+          <option value="fast" ${speedValue === "fast" ? "selected" : ""}>Fast (1400ms SOA)</option>
         </select>
       </label>
       <label class="hub-config-item">
         Interference
         <select id="hub-interference-select" ${dialLock}>
-          <option value="low" ${hubPreferences.interference === "low" ? "selected" : ""}>Low</option>
-          <option value="high" ${hubPreferences.interference === "high" ? "selected" : ""}>High</option>
+          <option value="low" ${interferenceValue === "low" ? "selected" : ""}>Low</option>
+          <option value="high" ${interferenceValue === "high" ? "selected" : ""}>High</option>
         </select>
       </label>
     </div>
@@ -217,7 +298,7 @@ function renderHubConfigControls({ showWrapperSelect = true, wrapperLocked = fal
   `;
 }
 
-function renderHubStimulus(trial, visible, targetLabel, renderMapping, wrapper) {
+function renderHubStimulus(trial, visible, targetLabel, renderMapping, wrapper, runtimeInfo = "") {
   const points = Array.isArray(renderMapping?.markerPositions) ? renderMapping.markerPositions : [];
   const markerDots = points.map((point) => (
     `<span class="hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`
@@ -240,6 +321,7 @@ function renderHubStimulus(trial, visible, targetLabel, renderMapping, wrapper) 
   return `
     <div class="hub-stimulus">
       <p class="hub-target">Target: <strong>${escapeHtml(targetLabel)}</strong> | Wrapper: <strong>${escapeHtml(wrapper)}</strong></p>
+      ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
       <div class="hub-arena">
         <div class="hub-ring"></div>
         ${markerDots}
@@ -262,6 +344,82 @@ function renderBlockSummary(block) {
       <p>Accuracy: ${(block.accuracy * 100).toFixed(1)}% | Mean RT: ${block.meanRtMs ?? "n/a"} ms | RT SD: ${block.rtSdMs ?? "n/a"} ms</p>
       <p>Lure trials: ${block.lureTrials ?? 0} | FA on lures: ${block.faOnLures ?? 0}</p>
       <p>Error bursts: ${block.errorBursts} | Lapses (Hub match omissions): ${block.lapseCount}</p>
+    </div>
+  `;
+}
+
+function renderRelationalStimulus(trial, visible, runtimeInfo = "") {
+  if (!trial) {
+    return `
+      <div class="rel-stimulus">
+        ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
+        <p class="hint">Get ready. Trials start after cue.</p>
+      </div>
+    `;
+  }
+
+  const display = trial.display || {};
+  const textVisible = Boolean(visible);
+
+  if (display.type === "graph") {
+    const nodes = Array.isArray(display.nodes) ? display.nodes : [];
+    const nodeMarkup = nodes.map((node) => (
+      `<span class="rel-graph-node ${textVisible ? "" : "hidden"}" style="left:${node.xPct}%;top:${node.yPct}%;background:${node.colorHex};"></span>`
+    )).join("");
+    const arrow = display.arrow;
+    const arrowMarkup = textVisible && arrow
+      ? `
+        <svg class="rel-graph-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <marker id="rel-arrow-head" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <polygon points="0,0 6,3 0,6" fill="#1f2937"></polygon>
+            </marker>
+          </defs>
+          <line x1="${arrow.x1}" y1="${arrow.y1}" x2="${arrow.x2}" y2="${arrow.y2}" marker-end="url(#rel-arrow-head)"></line>
+        </svg>
+      `
+      : "";
+    const caption = textVisible
+      ? (display.caption || "")
+      : "Stimulus cleared. Response window remains open until trial end.";
+    return `
+      <div class="rel-stimulus">
+        ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
+        <div class="rel-graph-arena">
+          <div class="hub-ring"></div>
+          ${nodeMarkup}
+          ${arrowMarkup}
+        </div>
+        <p class="rel-caption">${escapeHtml(caption)}</p>
+      </div>
+    `;
+  }
+
+  const tokenText = textVisible ? escapeHtml(display.text || "") : "";
+  const tokenClass = textVisible ? "rel-token" : "rel-token hidden";
+  const caption = textVisible
+    ? (display.caption || "")
+    : "Stimulus cleared. Response window remains open until trial end.";
+  return `
+    <div class="rel-stimulus">
+      ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
+      <div class="${tokenClass}">${tokenText}</div>
+      <p class="rel-caption">${escapeHtml(caption)}</p>
+    </div>
+  `;
+}
+
+function renderRelationalBlockSummary(block) {
+  if (!block) {
+    return "";
+  }
+  return `
+    <div class="hub-summary">
+      <p><strong>Block ${block.blockIndex} Result</strong> (${block.outcomeBand})</p>
+      <p>N: ${block.nStart} -> ${block.nEnd} | Trials: ${block.trials}</p>
+      <p>Hits: ${block.hits} | Misses: ${block.misses} | FA: ${block.falseAlarms} | CR: ${block.correctRejections}</p>
+      <p>Accuracy: ${(block.accuracy * 100).toFixed(1)}% | Mean RT: ${block.meanRtMs ?? "n/a"} ms | RT SD: ${block.rtSdMs ?? "n/a"} ms</p>
+      <p>Quiz: ${block.quizCorrect ?? 0}/${block.quizTotal ?? 2} | Error bursts: ${block.errorBursts}</p>
     </div>
   `;
 }
@@ -323,13 +481,26 @@ function renderPlayHub() {
   const coachNotice = hubSession.coachNotice
     ? `<div class="status coach">${escapeHtml(hubSession.coachNotice)}</div>`
     : "";
+  const baselineNotice = hubSession.introNotice && hubSession.blockCursor === 0
+    ? `<div class="status coach">${escapeHtml(hubSession.introNotice)}</div>`
+    : "";
+  const pendingPatch = hubSession.pendingPlanPatch && typeof hubSession.pendingPlanPatch === "object"
+    ? hubSession.pendingPlanPatch
+    : {};
+  const hasCoachDialOverride = Boolean(pendingPatch.speed || pendingPatch.interference);
+  const coachOverrideNote = hubSession.phase === "block-result" && hasCoachDialOverride
+    ? `<p class="hint">Coach override active for next block (${escapeHtml(preview.coachState || "STABILISE")}). Your settings will apply after this coach block.</p>`
+    : "";
+  const runtimeInfo = block
+    ? `SOA: ${block.soaMs}ms | Interference: ${block.plan.interference} | Coach: ${block.plan.flags?.coachState || "STABILISE"}`
+    : "";
 
   let phasePanel = "";
   if (hubSession.phase === "cue") {
     phasePanel = `
       <div class="hub-phase cue">
         <p class="hub-phase-title">Cue</p>
-        ${renderHubStimulus(null, false, targetLabel, block?.renderMapping, block?.plan?.wrapper || hubPreferences.wrapper)}
+        ${renderHubStimulus(null, false, targetLabel, block?.renderMapping, block?.plan?.wrapper || hubPreferences.wrapper, runtimeInfo)}
         <p class="hint">Cue duration: ${HUB_CUE_MS} ms</p>
       </div>
     `;
@@ -338,7 +509,7 @@ function renderPlayHub() {
       <div class="hub-phase trial">
         <p class="hub-phase-title">Trial ${trialNumber} / ${trialCount}</p>
         <p>Respond MATCH when the target modality matches ${block.plan.n}-back.</p>
-        ${renderHubStimulus(trial, block.stimulusVisible, targetLabel, block.renderMapping, block.plan.wrapper)}
+        ${renderHubStimulus(trial, block.stimulusVisible, targetLabel, block.renderMapping, block.plan.wrapper, runtimeInfo)}
         <div class="row">
           <button class="btn primary" data-action="hub-match" ${responseCaptured ? "disabled" : ""}>MATCH (Space)</button>
         </div>
@@ -359,12 +530,20 @@ function renderPlayHub() {
   return `
     <section class="card">
       <h2>Play Hub</h2>
-      ${renderHubConfigControls({ showWrapperSelect: false, wrapperLocked: true, dialsLocked: blockActive })}
+      ${renderHubConfigControls({
+        showWrapperSelect: false,
+        wrapperLocked: true,
+        dialsLocked: blockActive,
+        speedValue: blockActive && block ? block.plan.speed : hubPreferences.speed,
+        interferenceValue: blockActive && block ? block.plan.interference : hubPreferences.interference
+      })}
       <p>Block: <strong>${hubSession.blockCursor + (hubSession.phase === "block-result" ? 0 : 1)}</strong> / ${HUB_TOTAL_BLOCKS}</p>
       <p>Current N: <strong>${hubSession.currentN}</strong> (bounds 1..${HUB_N_MAX})</p>
       <p>Active wrapper: <strong>${currentWrapper}</strong></p>
       <p>Current block settings: <strong>${currentSpeed}</strong> speed, <strong>${currentInterference}</strong> interference.</p>
+      ${baselineNotice}
       ${hubSession.phase === "block-result" ? `<p>Next block settings: <strong>${preview.wrapper}</strong> wrapper, <strong>${preview.speed}</strong> speed, <strong>${preview.interference}</strong> interference${preview.coachState ? ` | Coach: <strong>${preview.coachState}</strong>` : ""}.</p>` : ""}
+      ${coachOverrideNote}
       ${hubSession.phase === "block-result" ? coachNotice : ""}
       ${phasePanel}
       ${renderFlash()}
@@ -374,16 +553,126 @@ function renderPlayHub() {
 
 function renderPlayRelational(state) {
   const relationalUnlocked = state.unlocks.transitive || state.unlocks.graph || state.unlocks.propositional;
+  const running = Boolean(relSession && relSession.status === "running");
+  const completed = Boolean(relSession && relSession.status === "completed");
+  const modeButtons = `
+    <div class="row">
+      <button class="btn primary" data-action="start-relational-session" data-mode="transitive">Start Transitive</button>
+      <button class="btn primary" data-action="start-relational-session" data-mode="graph">Start Graph</button>
+      <button class="btn primary" data-action="start-relational-session" data-mode="propositional">Start Propositional</button>
+    </div>
+  `;
+
+  if (!running && !completed) {
+    return `
+      <section class="card">
+        <h2>Play Relational</h2>
+        <p class="hint">Stage 4 foundation: full 10-block relational runtime with canonical scoring and timed quizzes.</p>
+        <p>Unlock status: <strong>${relationalUnlocked ? "Unlocked (at least one mode)" : "Locked by default in Stage 1 state"}</strong></p>
+        ${modeButtons}
+        <p class="hint">Response model: press MATCH (Space) only on match trials. Each block ends with 2 timed TRUE/FALSE quiz items.</p>
+        ${renderFlash()}
+      </section>
+    `;
+  }
+
+  if (completed) {
+    const summary = relSession.sessionSummary;
+    const finalBlock = relSession.lastBlockSummary;
+    const quizCorrect = summary.blocks.reduce((sum, block) => sum + Number(block.quizCorrect || 0), 0);
+    const quizTotal = REL_TOTAL_BLOCKS * 2;
+    return `
+      <section class="card">
+        <h2>Play Relational</h2>
+        <div class="status success">Session complete and saved.</div>
+        <p>Mode: <strong>${escapeHtml(summary.blocksPlanned?.[0]?.wrapper || "unknown")}</strong></p>
+        <p>Session ID: <code>${escapeHtml(summary.id)}</code></p>
+        <p>Blocks saved: <strong>${summary.blocks.length}</strong> / ${REL_TOTAL_BLOCKS}</p>
+        <p>Quiz total: <strong>${quizCorrect}/${quizTotal}</strong></p>
+        <p>Session start: ${new Date(summary.tsStart).toLocaleString()}</p>
+        <p>Session end: ${new Date(summary.tsEnd).toLocaleString()}</p>
+        ${renderRelationalBlockSummary(finalBlock)}
+        ${modeButtons}
+        ${renderFlash()}
+      </section>
+    `;
+  }
+
+  const block = relSession.currentBlock;
+  const trial = block && block.trialIndex >= 0 ? block.trials[block.trialIndex] : null;
+  const trialNumber = block ? block.trialIndex + 1 : 0;
+  const trialCount = block ? block.trials.length : 0;
+  const responseCaptured = block ? block.responseCaptured : false;
+  const runtimeInfo = block
+    ? `SOA: ${block.soaMs}ms | Mode: ${relSession.wrapper.toUpperCase()}`
+    : "";
+  const premiseBankMarkup = block && Array.isArray(block.blockMeta?.premiseBankLines) && block.blockMeta.premiseBankLines.length
+    ? `
+      <div class="premise-bank">
+        <p class="hint">Premise bank (${block.blockMeta.premiseBankLines.length}):</p>
+        <ul class="premise-bank-list">
+          ${block.blockMeta.premiseBankLines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}
+        </ul>
+      </div>
+    `
+    : "";
+
+  let phasePanel = "";
+  if (relSession.phase === "cue") {
+    phasePanel = `
+      <div class="hub-phase cue">
+        <p class="hub-phase-title">Cue</p>
+        <p class="hint">Mode: <strong>${escapeHtml(relSession.wrapper)}</strong> | Current N: <strong>${relSession.currentN}</strong></p>
+        ${premiseBankMarkup}
+        ${renderRelationalStimulus(null, false, runtimeInfo)}
+        <p class="hint">Cue duration: ${REL_CUE_MS} ms</p>
+      </div>
+    `;
+  } else if (relSession.phase === "trial") {
+    phasePanel = `
+      <div class="hub-phase trial">
+        <p class="hub-phase-title">Trial ${trialNumber} / ${trialCount}</p>
+        <p>Press MATCH when the current token matches ${block.plan.n}-back.</p>
+        ${renderRelationalStimulus(trial, block.stimulusVisible, runtimeInfo)}
+        <div class="row">
+          <button class="btn primary" data-action="rel-match" ${responseCaptured ? "disabled" : ""}>MATCH (Space)</button>
+        </div>
+        <p class="hint">${responseCaptured ? `Response recorded at ${block.responseRtMs} ms.` : "No response recorded yet."}</p>
+      </div>
+    `;
+  } else if (relSession.phase === "quiz") {
+    const quizItem = block.quizItems[block.quizIndex];
+    const secsLeft = Math.max(0, Math.ceil((block.quizTimeLeftMs || 0) / 1000));
+    const quizLocked = Boolean(block.quizAnswerCommitted);
+    phasePanel = `
+      <div class="hub-phase quiz">
+        <p class="hub-phase-title">Quiz ${block.quizIndex + 1} / 2</p>
+        <p class="rel-quiz-prompt">${escapeHtml(quizItem.prompt)}</p>
+        <p class="hint">Time left: <strong>${secsLeft}s</strong> (timeout = incorrect)</p>
+        <div class="row">
+          <button class="btn" data-action="rel-quiz-answer" data-answer="true" ${quizLocked ? "disabled" : ""}>TRUE</button>
+          <button class="btn" data-action="rel-quiz-answer" data-answer="false" ${quizLocked ? "disabled" : ""}>FALSE</button>
+        </div>
+      </div>
+    `;
+  } else {
+    phasePanel = `
+      <div class="hub-phase result">
+        ${renderRelationalBlockSummary(relSession.lastBlockSummary)}
+        <div class="row">
+          <button class="btn primary" data-action="rel-next-block">Start Next Block</button>
+        </div>
+      </div>
+    `;
+  }
+
   return `
     <section class="card">
       <h2>Play Relational</h2>
-      <p class="hint">Select a relational mode stub. Each button writes one fake session.</p>
-      <p>Unlock status: <strong>${relationalUnlocked ? "Unlocked (at least one mode)" : "Locked by default in Stage 1 state"}</strong></p>
-      <div class="row">
-        <button class="btn" data-action="fake-relational" data-mode="transitive">Fake Transitive</button>
-        <button class="btn" data-action="fake-relational" data-mode="graph">Fake Graph</button>
-        <button class="btn" data-action="fake-relational" data-mode="propositional">Fake Propositional</button>
-      </div>
+      <p>Mode: <strong>${escapeHtml(relSession.wrapper)}</strong></p>
+      <p>Block: <strong>${relSession.blockCursor + (relSession.phase === "block-result" ? 0 : 1)}</strong> / ${REL_TOTAL_BLOCKS}</p>
+      <p>Current N: <strong>${relSession.currentN}</strong> (bounds 1..${REL_N_MAX})</p>
+      ${phasePanel}
       ${renderFlash()}
     </section>
   `;
@@ -394,12 +683,24 @@ function renderHistory(history) {
     const started = new Date(session.tsStart).toLocaleString();
     const ended = new Date(session.tsEnd).toLocaleString();
     const blockCount = Array.isArray(session.blocks) ? session.blocks.length : 0;
+    const mode = Array.isArray(session.blocksPlanned) && session.blocksPlanned.length
+      ? session.blocksPlanned[0].wrapper
+      : "";
+    const quizCorrectTotal = Array.isArray(session.blocks)
+      ? session.blocks.reduce((sum, block) => sum + Number(block.quizCorrect || 0), 0)
+      : 0;
+    const quizLine = session.wrapperFamily === "relational"
+      ? `<p>Quiz: ${quizCorrectTotal}/${REL_TOTAL_BLOCKS * 2}</p>`
+      : "";
+    const modeLine = mode ? `<p>Mode: ${escapeHtml(mode)}</p>` : "";
     return `
       <li class="history-item">
         <p><strong>${escapeHtml(session.id)}</strong></p>
         <p>Family: ${escapeHtml(session.wrapperFamily || "unknown")}</p>
+        ${modeLine}
         <p>Date: ${escapeHtml(session.dateLocal || "")}</p>
         <p>Blocks: ${blockCount}</p>
+        ${quizLine}
         <p>Start: ${escapeHtml(started)}</p>
         <p>End: ${escapeHtml(ended)}</p>
       </li>
@@ -436,14 +737,16 @@ function renderSettings(state) {
   `;
 }
 
-function dropRunningHubIfLeaving(route) {
-  if (route === "play-hub") {
-    return;
-  }
-  if (hubSession && hubSession.status === "running") {
+function dropRunningSessionsIfLeaving(route) {
+  if (route !== "play-hub" && hubSession && hubSession.status === "running") {
     clearHubTimers();
     hubSession = null;
     setFlash("Hub session stopped because you left Play Hub before completion.", "warn");
+  }
+  if (route !== "play-relational" && relSession && relSession.status === "running") {
+    clearRelTimers();
+    relSession = null;
+    setFlash("Relational session stopped because you left Play Relational before completion.", "warn");
   }
 }
 
@@ -453,7 +756,7 @@ function render() {
     return;
   }
 
-  dropRunningHubIfLeaving(route);
+  dropRunningSessionsIfLeaving(route);
   const state = loadGymState();
   setActiveNav(route);
 
@@ -479,9 +782,15 @@ function render() {
 function startHubSession() {
   clearHubTimers();
   clearFlash();
+  const state = loadGymState();
+  const firstHubRun = isFirstHubRun(state);
   const tsStart = Date.now();
   const selectedWrapper = normalizeHubWrapper(hubPreferences.wrapper);
   const sessionSeed = hash32(String(tsStart));
+  const initialWrapper = firstHubRun ? FIRST_RUN_BASELINE_BLOCK.wrapper : selectedWrapper;
+  const initialN = firstHubRun ? FIRST_RUN_BASELINE_BLOCK.n : 1;
+  const initialSpeed = firstHubRun ? FIRST_RUN_BASELINE_BLOCK.speed : undefined;
+  const initialInterference = firstHubRun ? FIRST_RUN_BASELINE_BLOCK.interference : undefined;
 
   hubSession = {
     status: "running",
@@ -498,7 +807,10 @@ function startHubSession() {
       pendingSwapReturnWrapper: null
     },
     pendingPlanPatch: {
-      wrapper: selectedWrapper,
+      wrapper: initialWrapper,
+      ...(initialN ? { n: initialN } : {}),
+      ...(initialSpeed ? { speed: initialSpeed } : {}),
+      ...(initialInterference ? { interference: initialInterference } : {}),
       flags: {
         coachState: "STABILISE",
         pulseType: null,
@@ -506,6 +818,7 @@ function startHubSession() {
         wasSwapProbe: false
       }
     },
+    introNotice: firstHubRun ? "Starting with a gentle baseline block." : "",
     coachNotice: "",
     currentBlock: null,
     lastBlockSummary: null,
@@ -513,7 +826,7 @@ function startHubSession() {
   };
 
   updateSettings({
-    lastWrapper: selectedWrapper,
+    lastWrapper: initialWrapper,
     lastSpeed: hubPreferences.speed,
     lastInterference: hubPreferences.interference
   });
@@ -576,6 +889,12 @@ function beginHubBlock() {
     mappingSeed: plan.mappingSeed,
     baseTrials: HUB_BASE_TRIALS,
     seed: Date.now() + blockIndex
+  });
+  console.log("[BLOCK START]", {
+    blockIndex,
+    planSpeed: plan.speed,
+    planInterference: plan.interference,
+    effectiveSoaMs: blockBuild.soaMs
   });
 
   hubSession.pendingPlanPatch = {};
@@ -772,6 +1091,7 @@ function completeHubSession() {
     blocks: hubSession.blocks
   });
   appendSessionSummary(summary);
+  updateSettings({ hasRunHubBefore: true });
 
   hubSession.status = "completed";
   hubSession.phase = "session-done";
@@ -780,14 +1100,343 @@ function completeHubSession() {
   render();
 }
 
-function addFakeSessionFromMode(mode) {
-  if (mode === "transitive") {
-    return createFakeTransitiveSession();
+function startRelationalSession(mode) {
+  const modeDef = REL_MODE_MAP[mode];
+  if (!modeDef) {
+    setFlash("Unknown relational mode.", "warn");
+    render();
+    return;
   }
-  if (mode === "graph") {
-    return createFakeGraphSession();
+
+  clearRelTimers();
+  clearFlash();
+  const tsStart = Date.now();
+  const sessionSeed = hash32(`${tsStart}:${mode}`);
+  relSession = {
+    status: "running",
+    phase: "cue",
+    wrapper: mode,
+    modeDef,
+    sessionContext: modeDef.buildSessionContext(sessionSeed),
+    tsStart,
+    sessionSeed,
+    blockCursor: 0,
+    currentN: 1,
+    blocksPlanned: [],
+    blocks: [],
+    currentBlock: null,
+    lastBlockSummary: null,
+    sessionSummary: null
+  };
+  beginRelationalBlock();
+}
+
+function beginRelationalBlock() {
+  if (!relSession || relSession.status !== "running") {
+    return;
   }
-  return createFakePropositionalSession();
+  if (relSession.blockCursor >= REL_TOTAL_BLOCKS) {
+    completeRelationalSession();
+    return;
+  }
+
+  const blockIndex = relSession.blockCursor + 1;
+  const plan = createRelationalBlockPlan({
+    wrapper: relSession.wrapper,
+    blockIndex,
+    n: relSession.currentN,
+    speed: "slow",
+    interference: "low"
+  });
+  const blockBuild = createRelationalBlockTrials({
+    modeDef: relSession.modeDef,
+    sessionContext: relSession.sessionContext,
+    sessionSeed: relSession.sessionSeed,
+    blockIndex,
+    n: plan.n,
+    speed: plan.speed,
+    baseTrials: REL_BASE_TRIALS,
+    seed: Date.now() + blockIndex
+  });
+
+  relSession.blocksPlanned.push(plan);
+  relSession.currentBlock = {
+    plan,
+    trials: blockBuild.trials,
+    quizItems: blockBuild.quizItems,
+    soaMs: blockBuild.soaMs,
+    displayMs: blockBuild.displayMs,
+    blockVisualState: blockBuild.blockVisualState,
+    blockSeed: blockBuild.blockSeed,
+    blockMeta: blockBuild.blockMeta,
+    trialIndex: -1,
+    stimulusVisible: false,
+    responseCaptured: false,
+    responseRtMs: null,
+    trialStartedAtMs: 0,
+    trialOutcomes: [],
+    quizIndex: -1,
+    quizOutcomes: [],
+    quizItemStartedAtMs: 0,
+    quizTimeLeftMs: REL_QUIZ_TIMEOUT_MS,
+    quizAnswerCommitted: false
+  };
+  relSession.phase = "cue";
+
+  render();
+  clearRelTimers();
+  relTimers.cue = setTimeout(() => {
+    startRelationalTrial(0);
+  }, REL_CUE_MS);
+}
+
+function startRelationalTrial(trialIndex) {
+  if (!relSession || relSession.status !== "running" || !relSession.currentBlock) {
+    return;
+  }
+  const block = relSession.currentBlock;
+  block.trialIndex = trialIndex;
+  block.stimulusVisible = true;
+  block.responseCaptured = false;
+  block.responseRtMs = null;
+  block.trialStartedAtMs = performance.now();
+  relSession.phase = "trial";
+
+  render();
+  if (relTimers.display) {
+    clearTimeout(relTimers.display);
+  }
+  if (relTimers.trial) {
+    clearTimeout(relTimers.trial);
+  }
+
+  relTimers.display = setTimeout(() => {
+    if (!relSession || relSession.status !== "running" || relSession.phase !== "trial") {
+      return;
+    }
+    const current = relSession.currentBlock;
+    if (!current || current.trialIndex !== trialIndex) {
+      return;
+    }
+    current.stimulusVisible = false;
+    render();
+  }, block.displayMs);
+
+  relTimers.trial = setTimeout(() => {
+    finishRelationalTrial();
+  }, block.soaMs);
+}
+
+function captureRelationalMatch() {
+  if (!relSession || relSession.status !== "running" || relSession.phase !== "trial" || !relSession.currentBlock) {
+    return false;
+  }
+  const block = relSession.currentBlock;
+  if (block.responseCaptured) {
+    return false;
+  }
+  block.responseCaptured = true;
+  block.responseRtMs = Math.max(0, Math.round(performance.now() - block.trialStartedAtMs));
+  render();
+  return true;
+}
+
+function finishRelationalTrial() {
+  if (!relSession || relSession.status !== "running" || !relSession.currentBlock) {
+    return;
+  }
+  const block = relSession.currentBlock;
+  const trial = block.trials[block.trialIndex];
+  const isMatch = isRelationalMatchAtIndex(block.trials, block.trialIndex, block.plan.n);
+  const responded = block.responseCaptured;
+
+  let classification = "correct_rejection";
+  let isError = false;
+  if (responded && isMatch) {
+    classification = "hit";
+  } else if (responded && !isMatch) {
+    classification = "false_alarm";
+    isError = true;
+  } else if (!responded && isMatch) {
+    classification = "miss";
+    isError = true;
+  }
+
+  block.trialOutcomes.push({
+    trialIndex: block.trialIndex,
+    canonKey: trial.canonKey,
+    isMatch,
+    responded,
+    rtMs: responded ? block.responseRtMs : null,
+    isError,
+    isLapse: !responded && isMatch,
+    classification
+  });
+
+  if (relTimers.display) {
+    clearTimeout(relTimers.display);
+    relTimers.display = null;
+  }
+  if (relTimers.trial) {
+    clearTimeout(relTimers.trial);
+    relTimers.trial = null;
+  }
+
+  const nextTrialIndex = block.trialIndex + 1;
+  if (nextTrialIndex < block.trials.length) {
+    startRelationalTrial(nextTrialIndex);
+    return;
+  }
+  startRelationalQuizItem(0);
+}
+
+function startRelationalQuizItem(quizIndex) {
+  if (!relSession || relSession.status !== "running" || !relSession.currentBlock) {
+    return;
+  }
+  const block = relSession.currentBlock;
+  if (quizIndex >= block.quizItems.length) {
+    finishRelationalBlock();
+    return;
+  }
+
+  block.quizIndex = quizIndex;
+  block.quizItemStartedAtMs = performance.now();
+  block.quizTimeLeftMs = REL_QUIZ_TIMEOUT_MS;
+  block.quizAnswerCommitted = false;
+  relSession.phase = "quiz";
+
+  if (relTimers.quizTimeout) {
+    clearTimeout(relTimers.quizTimeout);
+  }
+  if (relTimers.quizTick) {
+    clearInterval(relTimers.quizTick);
+  }
+  if (relTimers.quizAdvance) {
+    clearTimeout(relTimers.quizAdvance);
+    relTimers.quizAdvance = null;
+  }
+
+  relTimers.quizTimeout = setTimeout(() => {
+    submitRelationalQuizAnswer(null);
+  }, REL_QUIZ_TIMEOUT_MS);
+  relTimers.quizTick = setInterval(() => {
+    if (!relSession || relSession.status !== "running" || relSession.phase !== "quiz" || !relSession.currentBlock) {
+      return;
+    }
+    const current = relSession.currentBlock;
+    if (current.quizIndex !== quizIndex) {
+      return;
+    }
+    const elapsed = performance.now() - current.quizItemStartedAtMs;
+    current.quizTimeLeftMs = Math.max(0, REL_QUIZ_TIMEOUT_MS - Math.round(elapsed));
+    render();
+  }, 200);
+
+  render();
+}
+
+function submitRelationalQuizAnswer(userAnswer) {
+  if (!relSession || relSession.status !== "running" || relSession.phase !== "quiz" || !relSession.currentBlock) {
+    return;
+  }
+  const block = relSession.currentBlock;
+  if (block.quizAnswerCommitted) {
+    return;
+  }
+  block.quizAnswerCommitted = true;
+  if (block.quizIndex < 0 || block.quizIndex >= block.quizItems.length) {
+    return;
+  }
+  const quizItem = block.quizItems[block.quizIndex];
+  if (!quizItem) {
+    return;
+  }
+  const nextQuizIndex = block.quizIndex + 1;
+  const responseTime = performance.now();
+  const rtMs = userAnswer === null
+    ? null
+    : Math.max(0, Math.round(responseTime - block.quizItemStartedAtMs));
+  const isCorrect = userAnswer !== null && userAnswer === quizItem.answerTrue;
+
+  block.quizOutcomes.push({
+    prompt: quizItem.prompt,
+    answerTrue: quizItem.answerTrue,
+    userAnswer,
+    isCorrect,
+    rtMs
+  });
+
+  if (relTimers.quizTimeout) {
+    clearTimeout(relTimers.quizTimeout);
+    relTimers.quizTimeout = null;
+  }
+  if (relTimers.quizTick) {
+    clearInterval(relTimers.quizTick);
+    relTimers.quizTick = null;
+  }
+  if (relTimers.quizAdvance) {
+    clearTimeout(relTimers.quizAdvance);
+  }
+  relTimers.quizAdvance = setTimeout(() => {
+    startRelationalQuizItem(nextQuizIndex);
+  }, 80);
+
+  render();
+}
+
+function finishRelationalBlock() {
+  if (!relSession || relSession.status !== "running" || !relSession.currentBlock) {
+    return;
+  }
+  const block = relSession.currentBlock;
+  const blockSummary = summarizeRelationalBlock({
+    plan: block.plan,
+    trials: block.trials,
+    trialOutcomes: block.trialOutcomes,
+    quizOutcomes: block.quizOutcomes,
+    nMax: REL_N_MAX
+  });
+
+  relSession.blocks.push(blockSummary.blockResult);
+  relSession.lastBlockSummary = {
+    ...blockSummary.blockResult,
+    outcomeBand: blockSummary.outcomeBand
+  };
+  relSession.currentN = blockSummary.nEnd;
+  relSession.blockCursor += 1;
+  relSession.currentBlock = null;
+
+  if (relSession.blockCursor >= REL_TOTAL_BLOCKS) {
+    completeRelationalSession();
+    return;
+  }
+
+  relSession.phase = "block-result";
+  render();
+}
+
+function completeRelationalSession() {
+  if (!relSession || relSession.status !== "running") {
+    return;
+  }
+  clearRelTimers();
+
+  const tsEnd = Date.now();
+  const summary = createRelationalSessionSummary({
+    wrapper: relSession.wrapper,
+    tsStart: relSession.tsStart,
+    tsEnd,
+    blocksPlanned: relSession.blocksPlanned,
+    blocks: relSession.blocks
+  });
+  appendSessionSummary(summary);
+
+  relSession.status = "completed";
+  relSession.phase = "session-done";
+  relSession.sessionSummary = summary;
+  setFlash("Relational session complete and saved to History.", "success");
+  render();
 }
 
 document.addEventListener("click", (event) => {
@@ -808,8 +1457,19 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (action === "start-relational-session") {
+    const mode = target.getAttribute("data-mode") || "transitive";
+    startRelationalSession(mode);
+    return;
+  }
+
   if (action === "hub-match") {
     captureHubResponse();
+    return;
+  }
+
+  if (action === "rel-match") {
+    captureRelationalMatch();
     return;
   }
 
@@ -818,15 +1478,24 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  clearFlash();
-
-  if (action === "fake-relational") {
-    const mode = target.getAttribute("data-mode") || "transitive";
-    appendSessionSummary(addFakeSessionFromMode(mode));
-    setFlash(`Fake ${mode} session saved to localStorage.`, "success");
-    render();
+  if (action === "rel-next-block") {
+    beginRelationalBlock();
     return;
   }
+
+  if (action === "rel-quiz-answer") {
+    const answer = target.getAttribute("data-answer");
+    if (answer === "true") {
+      submitRelationalQuizAnswer(true);
+      return;
+    }
+    if (answer === "false") {
+      submitRelationalQuizAnswer(false);
+      return;
+    }
+  }
+
+  clearFlash();
 
   if (action === "export-json") {
     const payload = exportGymStateJson();
@@ -852,7 +1521,20 @@ document.addEventListener("click", (event) => {
       render();
       return;
     }
+    clearHubTimers();
+    hubSession = null;
+    clearRelTimers();
+    relSession = null;
     resetGymState();
+    hubPreferences.wrapper = FIRST_RUN_BASELINE_BLOCK.wrapper;
+    hubPreferences.speed = FIRST_RUN_BASELINE_BLOCK.speed;
+    hubPreferences.interference = FIRST_RUN_BASELINE_BLOCK.interference;
+    updateSettings({
+      lastWrapper: hubPreferences.wrapper,
+      lastSpeed: hubPreferences.speed,
+      lastInterference: hubPreferences.interference,
+      hasRunHubBefore: false
+    });
     setFlash("Local data reset complete.", "success");
     render();
   }
@@ -898,7 +1580,7 @@ document.addEventListener("keydown", (event) => {
   if (event.code !== "Space") {
     return;
   }
-  const handled = captureHubResponse();
+  const handled = captureHubResponse() || captureRelationalMatch();
   if (handled) {
     event.preventDefault();
   }

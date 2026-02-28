@@ -229,6 +229,12 @@ select {
   font-weight: 700;
 }
 
+.hub-runtime {
+  margin: 0 0 8px 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .hub-arena {
   width: min(300px, 72vw);
   aspect-ratio: 1 / 1;
@@ -284,6 +290,90 @@ select {
 .hub-stimulus-meta {
   margin: 10px 0 0 0;
   font-size: 0.95rem;
+}
+
+.rel-stimulus {
+  margin-top: 10px;
+}
+
+.rel-token {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f8fbff;
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  padding: 10px 14px;
+  transition: opacity 180ms ease;
+}
+
+.rel-token.hidden {
+  opacity: 0.15;
+}
+
+.rel-caption {
+  margin: 8px 0 0 0;
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.premise-bank {
+  margin: 8px 0 10px 0;
+}
+
+.premise-bank-list {
+  margin: 6px 0 0 18px;
+  padding: 0;
+}
+
+.premise-bank-list li {
+  margin: 2px 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+.rel-quiz-prompt {
+  margin: 8px 0 0 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.rel-graph-arena {
+  width: min(320px, 78vw);
+  aspect-ratio: 1 / 1;
+  position: relative;
+  margin: 8px auto 0 auto;
+}
+
+.rel-graph-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.rel-graph-svg line {
+  stroke: #1f2937;
+  stroke-width: 1.8;
+}
+
+.rel-graph-node {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 2px #ffffff, 0 3px 6px rgba(15, 23, 42, 0.2);
+  transition: opacity 140ms ease;
+}
+
+.rel-graph-node.hidden {
+  opacity: 0;
+  box-shadow: none;
 }
 
 @media (max-width: 860px) {

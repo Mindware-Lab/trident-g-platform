@@ -8,7 +8,8 @@ function makeDefaultState() {
       lastWrapper: null,
       lastSpeed: null,
       lastInterference: null,
-      soundOn: true
+      soundOn: true,
+      hasRunHubBefore: false
     },
     history: [],
     bankUnits: 0,

@@ -1,4 +1,16 @@
 function isMessy(blockResult) {
+  const wrapper = String(blockResult?.wrapper || "");
+  const isHub = wrapper === "hub_cat" || wrapper === "hub_noncat";
+  const noInputs = (blockResult?.hits ?? 0) + (blockResult?.falseAlarms ?? 0) === 0;
+
+  if (isHub) {
+    return Boolean(
+      noInputs
+        || (blockResult?.errorBursts ?? 0) >= 2
+        || (blockResult?.accuracy ?? 0) < 0.7
+    );
+  }
+
   return Boolean(
     (blockResult?.lapseCount ?? 0) > 0
       || (blockResult?.errorBursts ?? 0) >= 2

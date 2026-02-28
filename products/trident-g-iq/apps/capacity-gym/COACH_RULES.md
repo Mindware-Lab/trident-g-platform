@@ -11,6 +11,7 @@ It is intended to stay consistent with the Capacity Gym **SPEC** while supportin
 - **One dial at a time:** the Coach should normally change **one** of: `n`, `speed`, `interference`, or `wrapper`.
 - **Recovery override:** when the session becomes **messy** (out-of-band proxy), the Coach may apply a multi-dial recovery block (see Rule 1).
 - **`lapseCount` definition:** treat a lapse as **no valid response by SOA end** (timeout).
+- **Go/no-go operationalisation:** in Hub and Stage 4 relational runtimes, count lapse on **response-required** timeout (match omission) so non-match correct rejections are not treated as lapses.
 - **Wrapper lock must not exist:** the runtime must allow **block-level wrapper changes** so swap probes (A→B→A) are possible.
 
 ---
