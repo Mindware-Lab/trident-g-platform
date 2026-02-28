@@ -87,6 +87,7 @@ function createInstance(ruleType, left, right) {
   if (ruleType === "MT") {
     return {
       ruleType,
+      // MT is encoded as an explicit rule template, not an implication rewrite permission.
       premises: [makeNot(right), makeImp(left, right)],
       conclusion: makeNot(left),
       foils: [makeAtom(right), makeAtom(left)]
@@ -113,6 +114,11 @@ function createBlockSpec(sessionContext, blockIndex) {
     const temp = premiseBank[i];
     premiseBank[i] = premiseBank[j];
     premiseBank[j] = temp;
+  }
+
+  const uniquePremiseKeys = new Set(premiseBank.map((token) => token.canonKey));
+  if (premiseBank.length !== 4 || uniquePremiseKeys.size !== 4) {
+    throw new Error("Propositional block premise bank must contain exactly 4 unique premises.");
   }
 
   return {

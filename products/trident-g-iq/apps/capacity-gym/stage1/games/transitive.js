@@ -13,16 +13,92 @@ function sampleDistinct(list, count, rng) {
   return selected;
 }
 
+function sortPair(left, right) {
+  return left < right ? [left, right] : [right, left];
+}
+
 function makeOrdToken(hi, lo) {
   return {
-    canonKey: `ORD:${hi}>${lo}`,
+    kind: "ORD",
     hi,
-    lo
+    lo,
+    canonKey: `ORD:${hi}>${lo}`
   };
 }
 
-function makePrompt(hi, lo) {
-  return `Is ${hi} > ${lo} in exactly 2 steps?`;
+function makeEqToken(left, right) {
+  const [a, b] = sortPair(left, right);
+  return {
+    kind: "EQ",
+    a,
+    b,
+    canonKey: `EQ:${a}=${b}`
+  };
+}
+
+function formatTokenSymbolic(token) {
+  if (token.kind === "ORD") {
+    return `${token.hi} > ${token.lo}`;
+  }
+  return `${token.a} = ${token.b}`;
+}
+
+function formatTokenSurface(token, rng) {
+  if (token.kind === "ORD") {
+    return rng() < 0.5
+      ? `${token.hi} > ${token.lo}`
+      : `${token.lo} < ${token.hi}`;
+  }
+  return rng() < 0.5
+    ? `${token.a} = ${token.b}`
+    : `${token.b} = ${token.a}`;
+}
+
+function createBlockSpec(sessionContext, blockIndex) {
+  const rng = createSeededRng(hash32(`transitive_v2:${sessionContext.sessionSeed}:block:${blockIndex}`));
+  const [l0, l1, l2, l3] = sessionContext.chain;
+  const d = sessionContext.distractor;
+
+  const corePremises = [
+    makeOrdToken(l0, l1),
+    makeEqToken(l1, l2),
+    makeOrdToken(l2, l3)
+  ];
+
+  // Keep distractors intentionally sparse (0..1) to guarantee no alternate exact-2 chain paths.
+  const distractorCandidates = [
+    makeOrdToken(d, l1),
+    makeOrdToken(l1, d),
+    makeOrdToken(d, l2),
+    makeOrdToken(l2, d),
+    makeEqToken(d, l0),
+    makeEqToken(d, l3)
+  ];
+  const distractors = [];
+  if (rng() < 0.5) {
+    const pick = distractorCandidates[randomInt(rng, 0, distractorCandidates.length - 1)];
+    distractors.push(pick);
+  }
+
+  return {
+    blockIndex,
+    letters: { l0, l1, l2, l3, d },
+    corePremises,
+    distractors,
+    tokenPool: corePremises.concat(distractors)
+  };
+}
+
+function getBlockSpec(sessionContext, blockIndex) {
+  const safeIndex = Number.isFinite(blockIndex) ? Math.max(1, Math.floor(blockIndex)) : 1;
+  if (!sessionContext.blockSpecs[safeIndex]) {
+    sessionContext.blockSpecs[safeIndex] = createBlockSpec(sessionContext, safeIndex);
+  }
+  return sessionContext.blockSpecs[safeIndex];
+}
+
+function makeQuizPrompt(hi, lo) {
+  return `From the block premises, is ${hi} > ${lo} true?`;
 }
 
 export const transitiveMode = {
@@ -32,58 +108,54 @@ export const transitiveMode = {
     const picks = sampleDistinct(SAFE_LETTERS, 5, rng);
     return {
       chain: picks.slice(0, 4),
-      distractor: picks[4]
+      distractor: picks[4],
+      sessionSeed,
+      blockSpecs: {}
     };
   },
-  buildTokenPool(sessionContext) {
-    const [l0, l1, l2, l3] = sessionContext.chain;
-    const d = sessionContext.distractor;
-    return [
-      makeOrdToken(l0, l1),
-      makeOrdToken(l1, l2),
-      makeOrdToken(l2, l3),
-      // Distractors involve D only and cannot introduce alternative chain-to-chain paths.
-      makeOrdToken(d, l0),
-      makeOrdToken(d, l3)
-    ];
+  buildTokenPool(sessionContext, context = {}) {
+    const blockIndex = context.blockIndex || 1;
+    const spec = getBlockSpec(sessionContext, blockIndex);
+    return {
+      tokens: spec.tokenPool.map((token) => ({ ...token })),
+      meta: {
+        premiseBankLines: spec.corePremises.map((token) => formatTokenSymbolic(token))
+      }
+    };
   },
   renderToken({ token, rng }) {
-    const flip = rng() < 0.5;
-    const text = flip
-      ? `${token.hi} > ${token.lo}`
-      : `${token.lo} < ${token.hi}`;
     return {
       type: "text",
-      text,
+      text: formatTokenSurface(token, rng),
       caption: `Token: ${token.canonKey}`
     };
   },
-  buildQuizItems({ sessionContext, rng }) {
-    const [l0, l1, l2, l3] = sessionContext.chain;
-    const truths = [
-      { hi: l0, lo: l2 },
-      { hi: l1, lo: l3 }
-    ];
-    const falseCandidates = [
-      { hi: l0, lo: l3 }, // exact-3, not exact-2
-      { hi: l2, lo: l0 },
-      // D > L1 is exact-2 true via D > L0 > L1, so use D > L2 (exact-3) as false.
-      { hi: sessionContext.distractor, lo: l2 }
-    ];
+  buildQuizItems({ sessionContext, blockIndex, rng }) {
+    const spec = getBlockSpec(sessionContext, blockIndex);
+    const { l0, l1, l2, l3 } = spec.letters;
 
-    const trueItem = truths[randomInt(rng, 0, truths.length - 1)];
-    const falseItem = falseCandidates[randomInt(rng, 0, falseCandidates.length - 1)];
-    const items = [
+    const pairItems = [
       {
-        prompt: makePrompt(trueItem.hi, trueItem.lo),
-        answerTrue: true
+        trueToken: makeOrdToken(l0, l2),
+        falseToken: makeOrdToken(l2, l0)
       },
       {
-        prompt: makePrompt(falseItem.hi, falseItem.lo),
-        answerTrue: false
+        trueToken: makeOrdToken(l1, l3),
+        falseToken: makeOrdToken(l3, l1)
       }
     ];
+
+    const falseIndex = randomInt(rng, 0, pairItems.length - 1);
+    const items = pairItems.map((entry, index) => {
+      const isTrue = index !== falseIndex;
+      const token = isTrue ? entry.trueToken : entry.falseToken;
+      return {
+        prompt: makeQuizPrompt(token.hi, token.lo),
+        answerTrue: isTrue
+      };
+    });
 
     return rng() < 0.5 ? items : items.reverse();
   }
 };
+
