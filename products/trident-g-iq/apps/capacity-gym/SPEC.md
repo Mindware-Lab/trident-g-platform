@@ -140,6 +140,7 @@ type BlockPlan = {
     pulseType?: "speed"|"interference"|null;
     swapSegment?: "A"|"B"|null;
     coachState?: "RECOVER"|"STABILISE"|"TUNE"|"SPIKE_TUNE"|"CONSOLIDATE";
+    wasSwapProbe?: boolean;
   };
 };
 
@@ -168,6 +169,12 @@ type BlockResult = {
   // lure diagnostics (hub strongly recommended)
   faOnLures?: number;
   lureTrials?: number;
+
+  // optional coach mirrors (authoritative source is BlockPlan.flags)
+  coachState?: "RECOVER"|"STABILISE"|"TUNE"|"SPIKE_TUNE"|"CONSOLIDATE";
+  pulseType?: "speed"|"interference"|null;
+  swapSegment?: "A"|"B"|null;
+  wasSwapProbe?: boolean;
 
   // relational quiz
   quizCorrect?: number;      // 0..2
@@ -263,7 +270,7 @@ Before a session starts:
 * `coachPlanSession(gymState) -> BlockPlan[10]`
   The session plan is a 10-block schedule (wrapper, N, speed, interference, targetModality if hub).
 
-### 6.2 Coach may adjust only the *next* block (optional)
+### 6.2 Coach may adjust only the *next* block
 
 After each block:
 
@@ -273,7 +280,8 @@ After each block:
 * may change **at most one dial**:
 
   * N OR speed OR interference OR wrapper (never multiple)
-* if things go “messy”, coach can force a recovery block
+* if things go messy, coach can force a recovery block (multi-dial override allowed)
+* runtime must allow block-level wrapper changes (no session-level wrapper lock)
 
 ### 6.3 Coach states (labels; MVP logic can be minimal)
 
@@ -289,20 +297,36 @@ Plateau trigger (simple MVP):
 
 * last **3 blocks** were HOLD (no UP) and none were DOWN, at the same wrapper/speed/interference
 
-When plateau triggers:
+When plateau triggers, schedule exactly one perturbation for the next block in this order:
 
-* schedule a one-dial pulse next (interference pulse first), OR a wrapper swap probe if already pulsed recently.
+1. interference pulse (if currently low and not pulsed recently)
+2. else speed pulse (if currently slow and not pulsed recently)
+3. else wrapper swap probe (A->B segment), keeping other dials fixed
 
-### 6.5 Breakthrough (“spike”) detection (minimal)
+### 6.5 Pulse / swap evaluation (minimal)
+
+After a pulse block:
+
+* if stable, promote that dial as baseline or run one confirmation pulse
+* if DOWN but not messy, run 1-2 STABILISE blocks and retry later
+* if messy, route to RECOVER
+
+After a wrapper swap probe:
+
+* if stable, return B->A next block (or keep B intentionally)
+* if DOWN but not messy, return to A and STABILISE for 1-2 blocks
+* if messy, route to RECOVER
+
+### 6.6 Breakthrough (spike) detection (minimal)
 
 A spike event occurs if:
 
-* the block outcome is UP (accuracy ≥ 0.90) and N increases (obvious), OR
-* user marks “click” and adds a note
+* the block outcome is UP (accuracy >= 0.90) and N increases, OR
+* user marks click and adds a note
 
 After spike:
 
-* next 1–3 sessions: CONSOLIDATE (no swaps; no pulses; moderate difficulty)
+* next 1-3 sessions: CONSOLIDATE (no swaps; no pulses; moderate difficulty)
 
 ---
 

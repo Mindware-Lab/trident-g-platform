@@ -21,6 +21,7 @@ import {
   summarizeHubBlock
 } from "./games/hub.js";
 import { hash32 } from "./lib/rng.js";
+import { coachUpdateAfterBlock } from "./lib/coach.js";
 import { createFakeTransitiveSession } from "./games/transitive.js";
 import { createFakeGraphSession } from "./games/graph.js";
 import { createFakePropositionalSession } from "./games/propositional.js";
@@ -102,6 +103,59 @@ function clearFlash() {
   flashKind = "success";
 }
 
+function normalizeHubWrapper(value) {
+  return value === "hub_noncat" ? "hub_noncat" : "hub_cat";
+}
+
+function normalizeHubSpeed(value) {
+  return value === "fast" ? "fast" : "slow";
+}
+
+function normalizeHubInterference(value) {
+  return value === "high" ? "high" : "low";
+}
+
+function normalizeHubTargetModality(value, blockIndex) {
+  if (HUB_TARGET_MODALITIES.includes(value)) {
+    return value;
+  }
+  return HUB_TARGET_MODALITIES[(blockIndex - 1) % HUB_TARGET_MODALITIES.length];
+}
+
+function normalizeCoachFlags(flags) {
+  if (!flags || typeof flags !== "object") {
+    return undefined;
+  }
+  return {
+    coachState: flags.coachState,
+    pulseType: flags.pulseType ?? null,
+    swapSegment: flags.swapSegment ?? null,
+    wasSwapProbe: Boolean(flags.wasSwapProbe)
+  };
+}
+
+function resolveNextBlockPreview(session) {
+  if (!session || session.status !== "running") {
+    return {
+      wrapper: normalizeHubWrapper(hubPreferences.wrapper),
+      speed: normalizeHubSpeed(hubPreferences.speed),
+      interference: normalizeHubInterference(hubPreferences.interference),
+      coachState: null
+    };
+  }
+
+  const patch = session.pendingPlanPatch && typeof session.pendingPlanPatch === "object"
+    ? session.pendingPlanPatch
+    : {};
+  const lastWrapper = session.lastBlockSummary?.wrapper || normalizeHubWrapper(hubPreferences.wrapper);
+  return {
+    wrapper: patch.wrapper ? normalizeHubWrapper(patch.wrapper) : lastWrapper,
+    speed: patch.speed ? normalizeHubSpeed(patch.speed) : normalizeHubSpeed(hubPreferences.speed),
+    interference: patch.interference ? normalizeHubInterference(patch.interference) : normalizeHubInterference(hubPreferences.interference),
+    coachState: patch.flags?.coachState || null
+  };
+}
+
 function renderHome(state) {
   return `
     <section class="card">
@@ -121,11 +175,11 @@ function renderHome(state) {
   `;
 }
 
-function renderHubConfigControls({ wrapperLocked = false, dialsLocked = false } = {}) {
+function renderHubConfigControls({ showWrapperSelect = true, wrapperLocked = false, dialsLocked = false } = {}) {
   const wrapperLock = wrapperLocked ? "disabled" : "";
   const dialLock = dialsLocked ? "disabled" : "";
-  return `
-    <div class="row hub-config-row">
+  const wrapperControl = showWrapperSelect
+    ? `
       <label class="hub-config-item">
         Wrapper
         <select id="hub-wrapper-select" ${wrapperLock}>
@@ -134,6 +188,16 @@ function renderHubConfigControls({ wrapperLocked = false, dialsLocked = false } 
           )).join("")}
         </select>
       </label>
+    `
+    : `
+      <div class="hub-config-item hub-config-readonly">
+        <span>Wrapper</span>
+        <strong>Coach-controlled during session</strong>
+      </div>
+    `;
+  return `
+    <div class="row hub-config-row">
+      ${wrapperControl}
       <label class="hub-config-item">
         Speed
         <select id="hub-speed-select" ${dialLock}>
@@ -197,7 +261,7 @@ function renderBlockSummary(block) {
       <p>Hits: ${block.hits} | Misses: ${block.misses} | FA: ${block.falseAlarms} | CR: ${block.correctRejections}</p>
       <p>Accuracy: ${(block.accuracy * 100).toFixed(1)}% | Mean RT: ${block.meanRtMs ?? "n/a"} ms | RT SD: ${block.rtSdMs ?? "n/a"} ms</p>
       <p>Lure trials: ${block.lureTrials ?? 0} | FA on lures: ${block.faOnLures ?? 0}</p>
-      <p>Error bursts: ${block.errorBursts}</p>
+      <p>Error bursts: ${block.errorBursts} | Lapses (Hub match omissions): ${block.lapseCount}</p>
     </div>
   `;
 }
@@ -206,15 +270,16 @@ function renderPlayHub() {
   const running = Boolean(hubSession && hubSession.status === "running");
   const completed = Boolean(hubSession && hubSession.status === "completed");
   const blockActive = Boolean(hubSession && hubSession.status === "running" && (hubSession.phase === "cue" || hubSession.phase === "trial"));
+  const requestedWrapper = normalizeHubWrapper(hubPreferences.wrapper);
 
   if (!running && !completed) {
     return `
       <section class="card">
         <h2>Play Hub</h2>
         <p class="hint">Stage 3: choose hub_cat or hub_noncat with cue, timed trials, lure-based interference, and deterministic block mappings.</p>
-        ${renderHubConfigControls({ wrapperLocked: false, dialsLocked: false })}
+        ${renderHubConfigControls({ showWrapperSelect: true, wrapperLocked: false, dialsLocked: false })}
         <div class="row">
-          <button class="btn primary" data-action="start-hub-session">Start hub_cat Session</button>
+          <button class="btn primary" data-action="start-hub-session">Start ${requestedWrapper} Session</button>
         </div>
         <p class="hint">Session shape: 10 blocks, each block trials = ${HUB_BASE_TRIALS} + N.</p>
         ${renderFlash()}
@@ -228,7 +293,7 @@ function renderPlayHub() {
     return `
       <section class="card">
         <h2>Play Hub</h2>
-        ${renderHubConfigControls({ wrapperLocked: false, dialsLocked: false })}
+        ${renderHubConfigControls({ showWrapperSelect: true, wrapperLocked: false, dialsLocked: false })}
         <div class="status success">Session complete and saved.</div>
         <p>Session ID: <code>${escapeHtml(summary.id)}</code></p>
         <p>Blocks saved: <strong>${summary.blocks.length}</strong> / ${HUB_TOTAL_BLOCKS}</p>
@@ -236,7 +301,7 @@ function renderPlayHub() {
         <p>Session end: ${new Date(summary.tsEnd).toLocaleString()}</p>
         ${renderBlockSummary(finalBlock)}
         <div class="row">
-          <button class="btn primary" data-action="start-hub-session">Start New hub_cat Session</button>
+          <button class="btn primary" data-action="start-hub-session">Start New ${requestedWrapper} Session</button>
         </div>
         ${renderFlash()}
       </section>
@@ -249,9 +314,15 @@ function renderPlayHub() {
   const trialCount = block ? block.trials.length : 0;
   const responseCaptured = block ? block.responseCaptured : false;
   const targetLabel = block ? modalityLabel(block.plan.targetModality) : "";
-  const currentWrapper = block ? block.plan.wrapper : (hubSession.selectedWrapper || hubPreferences.wrapper);
+  const preview = resolveNextBlockPreview(hubSession);
+  const currentWrapper = block
+    ? block.plan.wrapper
+    : (hubSession.lastBlockSummary?.wrapper || preview.wrapper);
   const currentSpeed = block ? block.plan.speed : (hubSession.lastBlockSummary ? hubSession.lastBlockSummary.speed : "n/a");
   const currentInterference = block ? block.plan.interference : (hubSession.lastBlockSummary ? hubSession.lastBlockSummary.interference : "n/a");
+  const coachNotice = hubSession.coachNotice
+    ? `<div class="status coach">${escapeHtml(hubSession.coachNotice)}</div>`
+    : "";
 
   let phasePanel = "";
   if (hubSession.phase === "cue") {
@@ -288,12 +359,13 @@ function renderPlayHub() {
   return `
     <section class="card">
       <h2>Play Hub</h2>
-      ${renderHubConfigControls({ wrapperLocked: true, dialsLocked: blockActive })}
+      ${renderHubConfigControls({ showWrapperSelect: false, wrapperLocked: true, dialsLocked: blockActive })}
       <p>Block: <strong>${hubSession.blockCursor + (hubSession.phase === "block-result" ? 0 : 1)}</strong> / ${HUB_TOTAL_BLOCKS}</p>
       <p>Current N: <strong>${hubSession.currentN}</strong> (bounds 1..${HUB_N_MAX})</p>
       <p>Active wrapper: <strong>${currentWrapper}</strong></p>
       <p>Current block settings: <strong>${currentSpeed}</strong> speed, <strong>${currentInterference}</strong> interference.</p>
-      ${hubSession.phase === "block-result" ? `<p>Next block settings: <strong>${hubPreferences.speed}</strong> speed, <strong>${hubPreferences.interference}</strong> interference.</p>` : ""}
+      ${hubSession.phase === "block-result" ? `<p>Next block settings: <strong>${preview.wrapper}</strong> wrapper, <strong>${preview.speed}</strong> speed, <strong>${preview.interference}</strong> interference${preview.coachState ? ` | Coach: <strong>${preview.coachState}</strong>` : ""}.</p>` : ""}
+      ${hubSession.phase === "block-result" ? coachNotice : ""}
       ${phasePanel}
       ${renderFlash()}
     </section>
@@ -408,19 +480,33 @@ function startHubSession() {
   clearHubTimers();
   clearFlash();
   const tsStart = Date.now();
-  const selectedWrapper = hubPreferences.wrapper === "hub_noncat" ? "hub_noncat" : "hub_cat";
-  const sessionSeed = hash32(`${tsStart}:${selectedWrapper}`);
+  const selectedWrapper = normalizeHubWrapper(hubPreferences.wrapper);
+  const sessionSeed = hash32(String(tsStart));
 
   hubSession = {
     status: "running",
     phase: "cue",
     tsStart,
     sessionSeed,
-    selectedWrapper,
     blockCursor: 0,
     currentN: 1,
     blocksPlanned: [],
     blocks: [],
+    completedBlocks: [],
+    coachContext: {
+      pendingStabilise: false,
+      pendingSwapReturnWrapper: null
+    },
+    pendingPlanPatch: {
+      wrapper: selectedWrapper,
+      flags: {
+        coachState: "STABILISE",
+        pulseType: null,
+        swapSegment: null,
+        wasSwapProbe: false
+      }
+    },
+    coachNotice: "",
     currentBlock: null,
     lastBlockSummary: null,
     sessionSummary: null
@@ -445,19 +531,41 @@ function beginHubBlock() {
   }
 
   const blockIndex = hubSession.blockCursor + 1;
-  const wrapper = hubSession.selectedWrapper || "hub_cat";
-  const targetModality = HUB_TARGET_MODALITIES[(blockIndex - 1) % HUB_TARGET_MODALITIES.length];
+  const blockIndexZero = hubSession.blockCursor;
+  const lastPlan = hubSession.blocksPlanned.length
+    ? hubSession.blocksPlanned[hubSession.blocksPlanned.length - 1]
+    : null;
+  const pendingPatch = hubSession.pendingPlanPatch && typeof hubSession.pendingPlanPatch === "object"
+    ? hubSession.pendingPlanPatch
+    : {};
+
+  const wrapper = pendingPatch.wrapper
+    ? normalizeHubWrapper(pendingPatch.wrapper)
+    : normalizeHubWrapper(lastPlan?.wrapper || hubPreferences.wrapper);
+  const targetModality = normalizeHubTargetModality(pendingPatch.targetModality, blockIndex);
   const mappingSeed = wrapper === "hub_noncat"
-    ? hash32(`${hubSession.sessionSeed}:${blockIndex}`)
+    ? hash32(`${hubSession.sessionSeed}:hub_noncat:v1:${blockIndexZero}`)
     : undefined;
+  const nextN = Number.isFinite(pendingPatch.n)
+    ? Math.max(1, Math.min(HUB_N_MAX, Math.round(pendingPatch.n)))
+    : hubSession.currentN;
+  const speed = pendingPatch.speed
+    ? normalizeHubSpeed(pendingPatch.speed)
+    : normalizeHubSpeed(hubPreferences.speed);
+  const interference = pendingPatch.interference
+    ? normalizeHubInterference(pendingPatch.interference)
+    : normalizeHubInterference(hubPreferences.interference);
+  const flags = normalizeCoachFlags(pendingPatch.flags);
+
   const plan = createHubBlockPlan({
     wrapper,
     blockIndex,
-    n: hubSession.currentN,
-    speed: hubPreferences.speed,
-    interference: hubPreferences.interference,
+    n: nextN,
+    speed,
+    interference,
     targetModality,
-    mappingSeed
+    mappingSeed,
+    flags
   });
   const blockBuild = createHubBlockTrials({
     wrapper: plan.wrapper,
@@ -470,6 +578,7 @@ function beginHubBlock() {
     seed: Date.now() + blockIndex
   });
 
+  hubSession.pendingPlanPatch = {};
   hubSession.blocksPlanned.push(plan);
   hubSession.currentBlock = {
     plan,
@@ -614,6 +723,11 @@ function finishHubBlock() {
     ...blockSummary.blockResult,
     outcomeBand: blockSummary.outcomeBand
   };
+  hubSession.completedBlocks.push({
+    plan: block.plan,
+    result: blockSummary.blockResult,
+    outcomeBand: blockSummary.outcomeBand
+  });
   hubSession.currentN = blockSummary.nEnd;
   hubSession.blockCursor += 1;
   hubSession.currentBlock = null;
@@ -621,6 +735,23 @@ function finishHubBlock() {
   if (hubSession.blockCursor >= HUB_TOTAL_BLOCKS) {
     completeHubSession();
     return;
+  }
+
+  const coachDecision = coachUpdateAfterBlock(hubSession.lastBlockSummary, {
+    completedBlocks: hubSession.completedBlocks,
+    coachContext: hubSession.coachContext
+  });
+  if (coachDecision && typeof coachDecision === "object") {
+    hubSession.pendingPlanPatch = coachDecision.patch && typeof coachDecision.patch === "object"
+      ? coachDecision.patch
+      : {};
+    hubSession.coachContext = coachDecision.coachContext && typeof coachDecision.coachContext === "object"
+      ? coachDecision.coachContext
+      : hubSession.coachContext;
+    hubSession.coachNotice = typeof coachDecision.notice === "string" ? coachDecision.notice : "";
+  } else {
+    hubSession.pendingPlanPatch = {};
+    hubSession.coachNotice = "";
   }
 
   hubSession.phase = "block-result";

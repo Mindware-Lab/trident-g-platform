@@ -179,7 +179,8 @@ export function createHubBlockPlan({
   speed,
   interference = "low",
   targetModality,
-  mappingSeed
+  mappingSeed,
+  flags
 }) {
   const resolvedWrapper = wrapper === "hub_noncat" ? "hub_noncat" : "hub_cat";
   const plan = {
@@ -193,6 +194,14 @@ export function createHubBlockPlan({
   if (resolvedWrapper === "hub_noncat") {
     const resolvedSeed = Number.isFinite(mappingSeed) ? (mappingSeed >>> 0) : hash32(`noncat:${blockIndex}:${n}`);
     plan.mappingSeed = resolvedSeed;
+  }
+  if (flags && typeof flags === "object") {
+    plan.flags = {
+      coachState: flags.coachState,
+      pulseType: flags.pulseType ?? null,
+      swapSegment: flags.swapSegment ?? null,
+      wasSwapProbe: Boolean(flags.wasSwapProbe)
+    };
   }
   return plan;
 }
@@ -323,7 +332,8 @@ export function summarizeHubBlock({
       correctRejections += 1;
     }
 
-    // Lapse is intentionally match-timeout only (non-match timeout is CR, not lapse).
+    // Hub-specific go/no-go operationalisation: lapse means response-required timeout.
+    // Relational modes should treat any SOA timeout as a lapse.
     if (outcome.isLapse) {
       lapseCount += 1;
     }
