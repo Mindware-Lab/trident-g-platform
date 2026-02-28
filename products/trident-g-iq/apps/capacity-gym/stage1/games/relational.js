@@ -128,9 +128,7 @@ export function createRelationalBlockTrials({
     rng
   });
   const totalTrials = schedule.totalTrials;
-  const blockSeed = modeDef.wrapper === "graph"
-    ? hash32(`${sessionSeed}:graph:${blockIndex}`)
-    : hash32(`${sessionSeed}:${modeDef.wrapper}:${blockIndex}`);
+  const blockSeed = hash32(`${sessionSeed}:${modeDef.wrapper}:block:${blockIndex}`);
   const tokenPoolResult = modeDef.buildTokenPool(sessionContext, { blockIndex, blockSeed });
   const tokenPool = Array.isArray(tokenPoolResult)
     ? tokenPoolResult

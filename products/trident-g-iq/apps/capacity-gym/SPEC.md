@@ -443,7 +443,7 @@ At block start show cue (LOCATION / COLOUR / SYMBOL) for ~1200ms.
 
 * Each *session* samples a **deep relational map** once at session start (using a session seed).
 * The deep map is **stable across all 10 blocks** in that session.
-* Blocks may vary **surface form** only (and Graph may permute node *positions* per block), but canonical meaning must not change.
+* Blocks may vary **surface form** only (and Graph may permute node *positions* per trial), but canonical meaning must not change.
 * Deep maps change **session-to-session** (new seed → new map).
 
 **Canonical tokens:**
@@ -592,13 +592,13 @@ Canonical token keys:
 
 **Token pool:** only these 3 canonical edges (avoid accidental extra paths).
 
-### Surface variation (block-level layout only; deep map unchanged)
+### Surface variation (trial-level layout allowed; deep map unchanged)
 
-Layout may rotate/permutate **per block** (static within a block). This permutes *positions only*, never canonical IDs.
+Layout may rotate/permutate **per trial** (deterministically). This permutes *positions only*, never canonical IDs.
 
 Each trial shows:
 
-* the 4 nodes in their current block positions
+* the 4 nodes in their current trial positions
 * **one arrow** representing the current edge token
 * a caption derived from canonical identity (e.g., `Edge: R → G` or surface flip `G ← R`)
 
@@ -726,14 +726,15 @@ To support **stable deep map within a session** (SR-style map formation) while s
 * Recommended: `sessionContext = mode.buildSessionContext(sessionSeed)`
 * Persist enough metadata to replay deterministically (e.g., chosen letters, selected rule types, and the session premise bank).
 
-2. **Block visual state (surface-only; may vary per block, static within block)**
+2. **Visual state (surface-only; may vary per block or per trial)**
    Used only for meaning-preserving presentation changes.
 
-* Example: Graph node position permutation/rotation per block.
+* Example: Graph node position permutation/rotation per trial.
 * Recommended:
 
   * `blockSeed = hash32(sessionSeed + ":" + wrapper + ":block:" + blockIndex)`
   * `blockVisualState = mode.buildBlockVisualState?.(sessionContext, blockSeed)`
+  * For trial-level Graph layout: derive `trialSeed = hash32(blockSeed + ":trial:" + trialIndex)` inside render logic.
 * Do **not** alter canonical identities in `blockVisualState`, only positions/layout/render parameters.
 
 3. **Block quiz probes (structure queries; vary per block, same deep map)**
@@ -742,7 +743,7 @@ To support **stable deep map within a session** (SR-style map formation) while s
 * Recommended: `quizItems = mode.buildQuizItems(sessionContext, blockIndex, rng)`
 * Use a simple truth-balance rule so the **20 items** over a 10-block session are approximately **50% true / 50% false** (e.g., alternate by block parity or maintain running true/false counts per probe slot).
 
-**Do not** regenerate the deep map per block. The only per-block changes should be surface render choices, optional distractor sampling (where allowed), and quiz probe/foil selection.
+**Do not** regenerate the deep map per block. The only per-block/per-trial changes should be surface render choices, optional distractor sampling (where allowed), and quiz probe/foil selection.
 
 ---
 

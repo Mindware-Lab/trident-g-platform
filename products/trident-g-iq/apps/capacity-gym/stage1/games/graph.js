@@ -44,6 +44,11 @@ function promptForPath(from, to) {
   return `Is there a path from ${from} to ${to} in exactly 2 steps?`;
 }
 
+function slotTruth(blockIndex, slotIndex) {
+  const oddBlock = (Math.max(1, blockIndex) % 2) === 1;
+  return slotIndex === 0 ? oddBlock : !oddBlock;
+}
+
 export const graphMode = {
   wrapper: "graph",
   buildSessionContext() {
@@ -59,23 +64,20 @@ export const graphMode = {
     ];
   },
   buildBlockVisualState(_sessionContext, blockSeed) {
-    const rng = createSeededRng(blockSeed);
     return {
-      blockSeed,
-      baseRotationDeg: rng() * 360
+      blockSeed
     };
   },
   renderToken({ token, trialIndex, blockVisualState, rng }) {
     const trialSeed = hash32(`${blockVisualState.blockSeed}:trial:${trialIndex}`);
     const trialRng = createSeededRng(trialSeed);
-    const rotationDeg = (blockVisualState.baseRotationDeg + (trialRng() * 360)) % 360;
+    const rotationDeg = trialRng() * 360;
     const slots = buildArenaSlots(rotationDeg, 42);
     const shuffledIds = shuffle(NODE_IDS, trialRng);
     const mapping = {};
     for (let i = 0; i < shuffledIds.length; i += 1) {
       mapping[shuffledIds[i]] = i;
     }
-
     const fromPos = slots[mapping[token.from]];
     const toPos = slots[mapping[token.to]];
     const nodes = NODE_IDS.map((nodeId) => {
@@ -103,31 +105,20 @@ export const graphMode = {
       caption
     };
   },
-  buildQuizItems({ rng }) {
-    const truths = [
-      { from: "R", to: "B" },
-      { from: "G", to: "Y" }
-    ];
-    const falseCandidates = [
-      { from: "R", to: "Y" }, // exact-3, not exact-2
-      { from: "Y", to: "R" },
-      { from: "B", to: "R" }
-    ];
+  buildQuizItems({ blockIndex }) {
+    const slotATrue = slotTruth(blockIndex, 0);
+    const slotBTrue = slotTruth(blockIndex, 1);
 
-    const trueItem = truths[randomInt(rng, 0, truths.length - 1)];
-    const falseItem = falseCandidates[randomInt(rng, 0, falseCandidates.length - 1)];
-    const items = [
+    return [
       {
-        prompt: promptForPath(trueItem.from, trueItem.to),
-        answerTrue: true
+        prompt: promptForPath(slotATrue ? "R" : "B", slotATrue ? "B" : "R"),
+        answerTrue: slotATrue
       },
       {
-        prompt: promptForPath(falseItem.from, falseItem.to),
-        answerTrue: false
+        prompt: promptForPath(slotBTrue ? "G" : "Y", slotBTrue ? "Y" : "G"),
+        answerTrue: slotBTrue
       }
     ];
-
-    return rng() < 0.5 ? items : items.reverse();
   }
 };
 

@@ -13,7 +13,7 @@ It is intended to stay consistent with the Capacity Gym **SPEC** while supportin
 - **`lapseCount` definition:** treat a lapse as **no valid response by SOA end** (timeout).
 - **Go/no-go operationalisation:** in Hub and Stage 4 relational runtimes, count lapse on **response-required** timeout (match omission) so non-match correct rejections are not treated as lapses.
 - **Wrapper lock must not exist:** the runtime must allow **block-level wrapper changes** so swap probes (A→B→A) are possible.
-
+- **Relational deep-map policy:** within a relational session, deep structure is fixed; only surface changes are allowed (Graph node positions may permute **per trial** while canonical identities remain unchanged).
 ---
 
 ## Coach decision rules (implementable, SPEC-consistent)
@@ -199,3 +199,5 @@ Recommended additive fields (optional but helpful for debugging and history dril
 
 
  
+
+

@@ -6,6 +6,11 @@ function sortPair(left, right) {
   return left < right ? [left, right] : [right, left];
 }
 
+function slotTruth(blockIndex, slotIndex) {
+  const oddBlock = (Math.max(1, blockIndex) % 2) === 1;
+  return slotIndex === 0 ? oddBlock : !oddBlock;
+}
+
 function makeAtom(symbol) {
   return {
     kind: "ATOM",
@@ -86,11 +91,11 @@ function createInstance(ruleType, left, right) {
   }
   if (ruleType === "MT") {
     return {
+      // MT is encoded as a rule template, not as a rewrite permission.
       ruleType,
-      // MT is encoded as an explicit rule template, not an implication rewrite permission.
       premises: [makeNot(right), makeImp(left, right)],
       conclusion: makeNot(left),
-      foils: [makeAtom(right), makeAtom(left)]
+      foils: [makeAtom(left), makeAtom(right)]
     };
   }
   return {
@@ -101,49 +106,12 @@ function createInstance(ruleType, left, right) {
   };
 }
 
-function createBlockSpec(sessionContext, blockIndex) {
-  const rng = createSeededRng(hash32(`prop:${sessionContext.sessionSeed}:block:${blockIndex}`));
-  const ruleA = RULE_TYPES[randomInt(rng, 0, RULE_TYPES.length - 1)];
-  const ruleB = RULE_TYPES[randomInt(rng, 0, RULE_TYPES.length - 1)];
-  const instanceA = createInstance(ruleA, "P", "Q");
-  const instanceB = createInstance(ruleB, "R", "S");
-  const premiseBank = instanceA.premises.concat(instanceB.premises);
-
-  for (let i = premiseBank.length - 1; i > 0; i -= 1) {
-    const j = randomInt(rng, 0, i);
-    const temp = premiseBank[i];
-    premiseBank[i] = premiseBank[j];
-    premiseBank[j] = temp;
-  }
-
-  const uniquePremiseKeys = new Set(premiseBank.map((token) => token.canonKey));
-  if (premiseBank.length !== 4 || uniquePremiseKeys.size !== 4) {
-    throw new Error("Propositional block premise bank must contain exactly 4 unique premises.");
-  }
-
-  return {
-    blockIndex,
-    instanceA,
-    instanceB,
-    premiseBank
-  };
-}
-
-function getBlockSpec(sessionContext, blockIndex) {
-  const safeIndex = Number.isFinite(blockIndex) ? Math.max(1, Math.floor(blockIndex)) : 1;
-  if (!sessionContext.blockSpecs[safeIndex]) {
-    sessionContext.blockSpecs[safeIndex] = createBlockSpec(sessionContext, safeIndex);
-  }
-  return sessionContext.blockSpecs[safeIndex];
-}
-
 function selectFoil(instance, premiseKeySet, rng) {
   const validFoils = instance.foils.filter((token) => !premiseKeySet.has(token.canonKey));
   if (validFoils.length) {
     return validFoils[randomInt(rng, 0, validFoils.length - 1)];
   }
 
-  // Defensive fallback if all default foils were present in premises.
   const conclusion = instance.conclusion;
   if (conclusion.kind === "ATOM") {
     return makeNot(conclusion.symbol);
@@ -162,7 +130,7 @@ function buildQuizItem(instance, truthValue, premiseKeySet, rng) {
     ? instance.conclusion
     : selectFoil(instance, premiseKeySet, rng);
   return {
-    prompt: `From the block premises, ${formatQuizStatement(statementToken)}.`,
+    prompt: `From the session premises, ${formatQuizStatement(statementToken)}.`,
     answerTrue: truthValue
   };
 }
@@ -170,20 +138,31 @@ function buildQuizItem(instance, truthValue, premiseKeySet, rng) {
 export const propositionalMode = {
   wrapper: "propositional",
   buildSessionContext(sessionSeed) {
+    const rng = createSeededRng(hash32(`propositional:${sessionSeed}`));
+    const ruleA = RULE_TYPES[randomInt(rng, 0, RULE_TYPES.length - 1)];
+    const ruleB = RULE_TYPES[randomInt(rng, 0, RULE_TYPES.length - 1)];
+    const instanceA = createInstance(ruleA, "P", "Q");
+    const instanceB = createInstance(ruleB, "R", "S");
+    const premiseBank = instanceA.premises.concat(instanceB.premises);
+    const uniquePremises = new Set(premiseBank.map((token) => token.canonKey));
+    if (premiseBank.length !== 4 || uniquePremises.size !== 4) {
+      throw new Error("Propositional session premise bank must contain exactly 4 unique premises.");
+    }
+
     return {
       symbols: ["P", "Q", "R", "S"],
-      sessionSeed,
-      blockSpecs: {}
+      instanceA,
+      instanceB,
+      premiseBank,
+      premiseKeySet: uniquePremises
     };
   },
-  buildTokenPool(sessionContext, context = {}) {
-    const blockIndex = context.blockIndex || 1;
-    const spec = getBlockSpec(sessionContext, blockIndex);
+  buildTokenPool(sessionContext) {
     return {
-      tokens: spec.premiseBank.map((token) => ({ ...token })),
+      tokens: sessionContext.premiseBank.map((token) => ({ ...token })),
       meta: {
-        premiseBankLines: spec.premiseBank.map((token) => formatTokenSurface(token, "symbolic")),
-        premiseRules: [spec.instanceA.ruleType, spec.instanceB.ruleType]
+        premiseBankLines: sessionContext.premiseBank.map((token) => formatTokenSurface(token, "symbolic")),
+        premiseRules: [sessionContext.instanceA.ruleType, sessionContext.instanceB.ruleType]
       }
     };
   },
@@ -196,13 +175,11 @@ export const propositionalMode = {
     };
   },
   buildQuizItems({ sessionContext, blockIndex, rng }) {
-    const spec = getBlockSpec(sessionContext, blockIndex);
-    const premiseKeySet = new Set(spec.premiseBank.map((premise) => premise.canonKey));
-    const itemAIsTrue = rng() < 0.5;
-    const items = [
-      buildQuizItem(spec.instanceA, itemAIsTrue, premiseKeySet, rng),
-      buildQuizItem(spec.instanceB, !itemAIsTrue, premiseKeySet, rng)
+    const slotATrue = slotTruth(blockIndex, 0);
+    const slotBTrue = slotTruth(blockIndex, 1);
+    return [
+      buildQuizItem(sessionContext.instanceA, slotATrue, sessionContext.premiseKeySet, rng),
+      buildQuizItem(sessionContext.instanceB, slotBTrue, sessionContext.premiseKeySet, rng)
     ];
-    return rng() < 0.5 ? items : items.reverse();
   }
 };

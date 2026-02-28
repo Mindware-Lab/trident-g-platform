@@ -101,6 +101,11 @@ function makeQuizPrompt(hi, lo) {
   return `From the block premises, is ${hi} > ${lo} true?`;
 }
 
+function slotTruth(blockIndex, slotIndex) {
+  const oddBlock = (Math.max(1, blockIndex) % 2) === 1;
+  return slotIndex === 0 ? oddBlock : !oddBlock;
+}
+
 export const transitiveMode = {
   wrapper: "transitive",
   buildSessionContext(sessionSeed) {
@@ -134,28 +139,21 @@ export const transitiveMode = {
     const spec = getBlockSpec(sessionContext, blockIndex);
     const { l0, l1, l2, l3 } = spec.letters;
 
-    const pairItems = [
+    const slotATrue = slotTruth(blockIndex, 0);
+    const slotBTrue = slotTruth(blockIndex, 1);
+    const tokenA = slotATrue ? makeOrdToken(l0, l2) : makeOrdToken(l2, l0);
+    const tokenB = slotBTrue ? makeOrdToken(l1, l3) : makeOrdToken(l3, l1);
+
+    return [
       {
-        trueToken: makeOrdToken(l0, l2),
-        falseToken: makeOrdToken(l2, l0)
+        prompt: makeQuizPrompt(tokenA.hi, tokenA.lo),
+        answerTrue: slotATrue
       },
       {
-        trueToken: makeOrdToken(l1, l3),
-        falseToken: makeOrdToken(l3, l1)
+        prompt: makeQuizPrompt(tokenB.hi, tokenB.lo),
+        answerTrue: slotBTrue
       }
     ];
-
-    const falseIndex = randomInt(rng, 0, pairItems.length - 1);
-    const items = pairItems.map((entry, index) => {
-      const isTrue = index !== falseIndex;
-      const token = isTrue ? entry.trueToken : entry.falseToken;
-      return {
-        prompt: makeQuizPrompt(token.hi, token.lo),
-        answerTrue: isTrue
-      };
-    });
-
-    return rng() < 0.5 ? items : items.reverse();
   }
 };
 
