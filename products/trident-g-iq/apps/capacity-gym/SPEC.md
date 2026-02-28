@@ -501,38 +501,128 @@ Truth:
 * exact-2: `R→B`, `G→Y`
 * hard tier (labelled exact-3, optional): `R→Y`
 
-### 9.3 Propositional implication n-back
+---
 
-Symbols: fixed `{P,Q,R,S}` in MVP.
+## 9.3 Propositional inference-rule n-back (MP / MT / DS)
 
-Core rules (exactly 3):
+**Purpose:** Train propositional “rule following” and premise integration using three intuitive inference patterns, with surface variation (symbolic vs verbal) but canonical, stable scoring.
 
+### Symbols
+
+Fixed symbols in MVP: `{P, Q, R, S}`.
+
+Within each **block**, use two disjoint variable pairs to avoid cross-entanglement:
+
+* Pair A uses `{P, Q}`
+* Pair B uses `{R, S}`
+
+### Response model (Stage 4 go/no-go)
+
+Trials are **MATCH-only**:
+
+* Press **Space** for MATCH only.
+* No response on non-match = **correct rejection (CR)**.
+* No response on match = **miss** and counts as **lapse** (match omission).
+
+### Canonical premise tokens (trial items)
+
+Trials present **single statements** drawn from a block’s premise bank (see below). Each statement has a canonical token key:
+
+* Atomic: `ATOM:P` (and similarly Q, R, S)
+* Negation: `NOT:P`
+* Implication: `IMP:P->Q`
+* Disjunction (commutative canonicalisation): `OR:P|Q`
+  Canonicalise by sorting the pair, so `OR:P|Q` == `OR:Q|P`.
+
+**Important:** Matching is always by canonical key at `i − N`, never by surface wording.
+
+### Surface variants (symbolic vs verbal)
+
+Each time a premise token is shown, render it in one of two surface families:
+
+**Symbolic**
+
+* `P`
+* `¬P`
 * `P → Q`
-* `Q → R`
-* `R → S`
+* `P ∨ Q` (or optionally `Q ∨ P` as a surface flip)
 
-Canonical token:
+**Verbal**
 
-* `IMP:P->Q` etc. (no negation in MVP)
+* `P is true`
+* `P is not true`
+* `If P then Q`
+* `Either P or Q`
 
-Surface variants (direction-preserving only):
+Surface choice is random per presentation, but must remain **meaning-preserving**.
 
-* “If P then Q”
-* “Q if P”
-* “P only if Q”
+### Block structure: “premise bank” + trials
 
-Do NOT include contrapositive equivalence in MVP.
+Each block defines a small **premise bank** containing **exactly 4 premises**: two independent inference instances (A and B), each instance contributing **two premises**.
 
-Token pool:
+At block start (cue), show the premise bank (4 items). During trials, present one premise per trial, sampled from this bank with surface variation.
 
-* only the 3 core implications
+### Inference instances (what can appear in a block)
 
-Quiz (2 items, exact-2):
-Prompt: “Can you infer X → Y in exactly 2 steps?”
-Truth:
+For each pair (A: P/Q, B: R/S), sample one rule type from:
 
-* exact-2: `P→R`, `Q→S`
-* hard tier (labelled exact-3, optional): `P→S`
+1. **Modus Ponens (MP)**
+   Premises: `ATOM:P` and `IMP:P->Q`
+   Conclusion: `ATOM:Q`
+
+2. **Modus Tollens (MT)**
+   Premises: `NOT:Q` and `IMP:P->Q`
+   Conclusion: `NOT:P`
+
+3. **Disjunctive Syllogism (DS)**
+   Premises: `OR:P|Q` and `NOT:P`
+   Conclusion: `ATOM:Q`
+   (Optionally allow the symmetric DS variant: `OR:P|Q` and `NOT:Q` ⟹ `ATOM:P`.)
+
+So a block always contains **two** instances (one for P/Q and one for R/S), giving 4 premises total.
+
+### Token pool (trials)
+
+Token pool for the block is **only** the block’s premise bank (4 canonical tokens).
+
+Trials per block: `T = 20 + N` with `N ∈ [1..3]`.
+
+Match scheduling: ~30% of eligible indices `[N..T−1]` (as per shared Stage-4 scheduler).
+
+### Quiz (2 items, exact-2 premise integration)
+
+Each block ends with **exactly 2 timed TRUE/FALSE questions** (6–8s each; MVP uses the global Stage-4 quiz timeout).
+
+Quiz items are **map queries** over the block’s premise bank and must require combining **two premises** (the exact-2 pattern). They are **not** derived from which trials happened to be n-back matches.
+
+**Quiz item format (TRUE/FALSE buttons):**
+Example prompt: “From the block premises, **Q is true**.”
+
+**Quiz construction rule:**
+
+* Quiz item #1 targets the conclusion of instance A (P/Q).
+* Quiz item #2 targets the conclusion of instance B (R/S).
+
+For each item, choose whether the displayed statement is:
+
+* **True:** the valid conclusion for that instance (MP→Q, MT→¬P, DS→Q), **or**
+* **False foil:** a near-miss statement that is *not* entailed by the instance.
+
+Recommended default: 1 true + 1 false per block (random order), but allow either to be true/false independently if you prefer.
+
+**Foil rules (must not be directly present as a premise):**
+
+* For MP (premises `P` and `P→Q`): use foils like `¬Q` or `¬P`.
+* For MT (premises `¬Q` and `P→Q`): use foils like `Q` or `P`.
+* For DS (premises `P∨Q` and `¬P`): use foils like `¬Q` or `P`.
+
+**Do not** ask about a statement that appears verbatim in the premise bank (avoid trivially true items).
+
+### Notes / exclusions (MVP)
+
+* No contrapositive equivalence as a “free rewrite”. MT is included as a **rule pattern**, not as permission to rewrite `P→Q` into `¬Q→¬P`.
+* No nested negations, no biconditionals, no conjunctions.
+* Keep the block premise bank small and stable to maintain intuitiveness.
 
 ---
 
