@@ -7,6 +7,7 @@ const NODE_COLORS = {
   B: "#2563eb",
   Y: "#f59e0b"
 };
+const NODE_RADIUS_PCT = 9;
 
 function shuffle(values, rng) {
   const list = values.slice();
@@ -30,6 +31,29 @@ function buildArenaSlots(rotationDeg, radiusPct = 42) {
     });
   }
   return slots;
+}
+
+function projectArrowToNodeEdges(fromPos, toPos, nodeRadiusPct = NODE_RADIUS_PCT) {
+  const dx = toPos.xPct - fromPos.xPct;
+  const dy = toPos.yPct - fromPos.yPct;
+  const dist = Math.hypot(dx, dy);
+  if (dist <= 0.0001) {
+    return {
+      x1: fromPos.xPct,
+      y1: fromPos.yPct,
+      x2: toPos.xPct,
+      y2: toPos.yPct
+    };
+  }
+
+  const ux = dx / dist;
+  const uy = dy / dist;
+  return {
+    x1: fromPos.xPct + (ux * nodeRadiusPct),
+    y1: fromPos.yPct + (uy * nodeRadiusPct),
+    x2: toPos.xPct - (ux * nodeRadiusPct),
+    y2: toPos.yPct - (uy * nodeRadiusPct)
+  };
 }
 
 function makeEdgeToken(from, to) {
@@ -92,16 +116,12 @@ export const graphMode = {
     const caption = rng() < 0.5
       ? `Edge: ${token.from} -> ${token.to}`
       : `Edge: ${token.to} <- ${token.from}`;
+    const arrow = projectArrowToNodeEdges(fromPos, toPos);
 
     return {
       type: "graph",
       nodes,
-      arrow: {
-        x1: fromPos.xPct,
-        y1: fromPos.yPct,
-        x2: toPos.xPct,
-        y2: toPos.yPct
-      },
+      arrow,
       caption
     };
   },

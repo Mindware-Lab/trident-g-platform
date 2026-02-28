@@ -316,7 +316,7 @@ function renderHubStimulus(trial, visible, targetLabel, renderMapping, wrapper, 
 
   const point = trial && points[trial.locIdx] ? points[trial.locIdx] : { xPct: 50, yPct: 50 };
   const tokenVisible = Boolean(trial && visible);
-  const textColor = trial && trial.display.colourHex.toLowerCase() === "#ffffff" ? "#111111" : "#ffffff";
+  const textColor = trial && trial.display.colourHex.toLowerCase() === "#ffffff" ? "#102033" : "#ffffff";
   const tokenClass = tokenVisible ? "hub-token" : "hub-token hidden";
   const tokenBg = tokenVisible && trial ? trial.display.colourHex : "transparent";
   const tokenText = tokenVisible && trial ? escapeHtml(trial.display.symbolLabel) : "";
@@ -359,17 +359,11 @@ function renderBlockSummary(block) {
 }
 
 function renderRelationalStimulus(trial, visible, runtimeInfo = "") {
-  if (!trial) {
-    return `
-      <div class="rel-stimulus">
-        ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
-        <p class="hint">Get ready. Trials start after cue.</p>
-      </div>
-    `;
-  }
-
-  const display = trial.display || {};
-  const textVisible = Boolean(visible);
+  const display = trial?.display || {};
+  const textVisible = Boolean(trial && visible);
+  const cueOrBlankCaption = trial
+    ? "Stimulus cleared. Response window remains open until trial end."
+    : "Get ready. Trials start after cue.";
 
   if (display.type === "graph") {
     const nodes = Array.isArray(display.nodes) ? display.nodes : [];
@@ -382,7 +376,7 @@ function renderRelationalStimulus(trial, visible, runtimeInfo = "") {
         <svg class="rel-graph-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>
             <marker id="rel-arrow-head" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <polygon points="0,0 6,3 0,6" fill="#1f2937"></polygon>
+              <polygon points="0,0 6,3 0,6" fill="#4b5f78"></polygon>
             </marker>
           </defs>
           <line x1="${arrow.x1}" y1="${arrow.y1}" x2="${arrow.x2}" y2="${arrow.y2}" marker-end="url(#rel-arrow-head)"></line>
@@ -391,11 +385,11 @@ function renderRelationalStimulus(trial, visible, runtimeInfo = "") {
       : "";
     const caption = textVisible
       ? (display.caption || "")
-      : "Stimulus cleared. Response window remains open until trial end.";
+      : cueOrBlankCaption;
     return `
       <div class="rel-stimulus">
         ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
-        <div class="rel-graph-arena">
+        <div class="hub-arena">
           <div class="hub-ring"></div>
           ${nodeMarkup}
           ${arrowMarkup}
@@ -406,14 +400,17 @@ function renderRelationalStimulus(trial, visible, runtimeInfo = "") {
   }
 
   const tokenText = textVisible ? escapeHtml(display.text || "") : "";
-  const tokenClass = textVisible ? "rel-token" : "rel-token hidden";
+  const tokenClass = textVisible ? "rel-center-token" : "rel-center-token hidden";
   const caption = textVisible
     ? (display.caption || "")
-    : "Stimulus cleared. Response window remains open until trial end.";
+    : cueOrBlankCaption;
   return `
     <div class="rel-stimulus">
       ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
-      <div class="${tokenClass}">${tokenText}</div>
+      <div class="hub-arena">
+        <div class="hub-ring"></div>
+        <div class="${tokenClass}">${tokenText}</div>
+      </div>
       <p class="rel-caption">${escapeHtml(caption)}</p>
     </div>
   `;
