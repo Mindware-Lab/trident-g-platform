@@ -554,6 +554,4 @@ When moving to Vite/Vercel + Supabase:
 
 ---
 
-End of SPEC.md
 
-```
