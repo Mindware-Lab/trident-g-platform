@@ -454,6 +454,11 @@ At block start show cue (LOCATION / COLOUR / SYMBOL) for ~1200ms.
 **Surface variation:**
 
 * Rendering may vary (symbolic vs verbal, direction-preserving flips, layout permutations) without changing canonical key.
+* For `transitive` and `propositional`, avoid adjacent identical rendered stimuli:
+  * if trial `i` and `i-1` would render the same visible expression/text, rerender trial `i` with an alternate valid surface when available.
+* For `transitive` and `propositional`, n-back matches should use alternate surface representation when available:
+  * if `canonKey[i] == canonKey[i-N]`, prefer a different rendered form at `i` than at `i-N` (for example `A > B` vs `B < A`, or symbolic vs verbal).
+* These are presentation-layer constraints only. Canonical stream generation, match scheduling, and scoring remain unchanged.
 
 **Block quiz:**
 
@@ -519,6 +524,9 @@ For `EQ:a=b` render either:
 * `a = b` **or** `b = a`
 
 No other operators (≤, ≥, ≠) in MVP.
+
+**Presentation diversity rule (required):**
+Within a block, do not show identical adjacent surface strings for Transitive when an alternate valid render exists. On n-back match trials, prefer the opposite valid surface form relative to the matching earlier trial.
 
 ### Token pool per block (surface-only variation; deep map unchanged)
 
@@ -679,6 +687,9 @@ Verbal: “P is true”, “P is not true”, “If P then Q”, “Either P or 
 
 Surface is random per presentation but meaning-preserving.
 
+**Presentation diversity rule (required):**
+Within a block, do not show identical adjacent surface strings for Propositional when an alternate valid render exists. On n-back match trials, prefer a different valid surface form from the matching earlier trial.
+
 ### Token pool (trials)
 
 Token pool is **only the session premise bank** (4 canonical tokens).
@@ -767,6 +778,8 @@ To support **stable deep map within a session** (SR-style map formation) while s
 
 * Each mode runs 10 blocks/session; N stays within [1..3]
 * Canonical scoring works (surface flips do not affect matching)
+* In Transitive and Propositional, adjacent trials are not rendered with identical surface text when alternates exist
+* In Transitive and Propositional, n-back canonical matches are rendered with alternate surface forms when available
 * Quiz appears after each block; 2 items; timed
 * N adapts by 90/75 rule (within [1..3])
 
