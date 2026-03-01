@@ -20,6 +20,15 @@ A **coach** schedules blocks and sessions (Spike-Tune style: one dial at a time 
 
 A lightweight **gamification overlay** improves motivation: banked units + daily 3-step mission + visible “coach notices”.
 
+### 0.1 MVP design-contract cross-reference
+For implementation sequencing, anti-drift rules, and phase exit criteria, use:
+- `GAME_DESIGN_CONTRACT.md`
+
+Precedence remains:
+1. `SPEC.md` (product contract and mechanics)
+2. `COACH_RULES.md` and `RELATIONAL_COACH_RULES.md` (coach behavior contracts)
+3. `GAME_DESIGN_CONTRACT.md` (MVP implementation and acceptance sequencing)
+
 ---
 
 ## 1) Non-negotiables (constants and boundary conditions)
