@@ -221,6 +221,10 @@ type GymState = {
     lastSpeed?: SpeedId;
     lastInterference?: InterferenceId;
     soundOn?: boolean;
+    hasRunHubBefore?: boolean;
+    streakCurrent?: number;
+    streakBest?: number;
+    lastMissionCompletedDate?: string | null; // YYYY-MM-DD
   };
   history: SessionSummary[];             // rolling window, e.g. last 200 sessions
 
@@ -233,12 +237,25 @@ type GymState = {
     propositional: boolean;
   };
   missionsByDate: Record<string, {
-    steps: string[];                     // e.g. ["reset","control","reason"]
-    completedSteps: number;              // 0..3
+    steps: string[];                     // Tier 0: ["control"], Tier 1: ["reset","control","reason"]
+    completedSteps: number;              // bounded by steps.length
     rewardClaimed: boolean;
+    // additive MVP fields
+    tier?: "tier0" | "tier1";
+    completedStepIds?: string[];
+    hasSessionStarted?: boolean;
   }>;
 };
 ```
+
+### 4.4 Progression invariants (MVP)
+1. Relational unlock source of truth is derived from history:
+   - `relationalUnlocked = catQualified && noncatQualified`
+2. Synced flags must match derived unlock:
+   - `unlocks.transitive === unlocks.graph === unlocks.propositional === relationalUnlocked`
+3. Mission reward is once/day:
+   - if `rewardClaimed` is true for date key, no additional +3 for that date.
+4. `completedSteps` is bounded and consistent with completed mission IDs.
 
 ---
 
@@ -265,7 +282,8 @@ type GymState = {
 
 ### 5.3 Lapses
 
-* MVP: lapse = timeout (no response by SOA end) on any trial
+* Go/no-go runtimes (Hub + Stage 4 relational): lapse = response-required timeout
+  (match omission; no response on non-match remains correct rejection)
 * Store `lapseCount` per block
 
 ---
@@ -347,19 +365,28 @@ Award units based ONLY on block outcome bands:
 
 * If block outcome is **UP** → +2 units
 * If **HOLD** → +1 unit
-* If **DOWN** → +0 units (or +1 if you prefer softer feel; decide once)
+* If **DOWN** → +0 units
 
 No other metrics (FA/bursts/quiz) gate rewards in MVP.
 
-### 7.2 Daily 3-step mission
+### 7.2 Daily mission tiers
 
-Each local day (`YYYY-MM-DD`) generate:
+Each local day (`YYYY-MM-DD`) mission shape is:
 
-* `steps = ["reset","control","reason"]` (or variants)
-  Completion:
-* completing the planned session increments steps
-  Reward:
-* +3 units when mission completed (once per day)
+* **Tier 0** (before relational unlock): `["control"]`
+* **Tier 1** (after relational unlock): `["reset","control","reason"]`
+
+Step completion:
+* `reset`: first trial starts today
+* `control`: complete one Hub session today
+* `reason`: complete one Relational session today (Tier 1 only)
+
+Mid-day unlock policy:
+* if relational unlock happens before any session starts today, Tier 1 may apply today
+* otherwise keep today's mission shape unchanged; Tier 1 starts tomorrow
+
+Reward:
+* +3 units when mission completes (once per day)
 
 ### 7.3 Unlocks
 
@@ -376,6 +403,10 @@ Unlock when player achieves “stable performance at N ≥ 3” in hub, defined 
 
   * Final `NEnd ≥ 3`, AND
   * At least **3 blocks** at `N ≥ 3` had outcomes HOLD or UP (not DOWN)
+
+Wrapper-swap-safe qualification rule:
+* baseline wrapper for a session is `blocksPlanned[0].wrapper`
+* qualification counts only baseline-wrapper blocks in that session
 
 This uses only the 90/75 banding plus N ≥ 3.
 
@@ -796,8 +827,14 @@ To support **stable deep map within a session** (SR-style map formation) while s
 
 * Coach generates a 10-block plan and shows it (or “coach recommended”)
 * Bank units increase as blocks complete (UP/HOLD/DOWN only)
-* Daily mission is generated and can be completed once/day
+* Daily mission tier and shape follow policy:
+  * Tier 0 control-only before relational unlock
+  * Tier 1 reset/control/reason after unlock (mid-day policy applied)
+* Mission reward is +3 once/day only
+* Streak uses calendar day diff with one-day grace
 * Relational games unlock when unlock rule is met (N ≥ 3 stability in both hub wrappers)
+* Unlock booleans remain synced to derived history result
+* Coach notices reflect routed action states; override alternative obeys last-2 pulse/swap validity constraints
 
 ---
 
