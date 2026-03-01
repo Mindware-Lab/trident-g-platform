@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <text x="5" y="21" font-size="12" font-weight="700" fill="#ccff66" font-family="monospace">P</text>
+  <text x="22" y="21" font-size="12" font-weight="700" fill="#ccff66" font-family="monospace">Q</text>
+  <path d="M14 17l6-2-6-2" fill="none" stroke="#6ec6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="22" cy="15" r="1.5" fill="#6ec6ff"/>
+</svg>
