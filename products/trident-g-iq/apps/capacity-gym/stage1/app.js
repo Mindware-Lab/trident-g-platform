@@ -1214,12 +1214,6 @@ function renderHubStimulus(trial, visible, targetLabel, renderMapping, wrapper, 
   const tokenText = tokenVisible && trial ? escapeHtml(trial.display.symbolLabel) : "";
   const stimulus = `<div class="${tokenClass}" style="left:${point.xPct}%;top:${point.yPct}%;background:${tokenBg};color:${textColor};">${tokenText}</div>`;
 
-  const meta = trial
-    ? visible
-      ? "Respond MATCH only if this target stream repeats at N-back."
-      : "Hold attention. Response window is still open."
-    : "Get ready.";
-
   return `
     <div class="hub-stimulus">
       <p class="hub-target">Target: <strong>${escapeHtml(targetLabel)}</strong> | Wrapper: <strong>${escapeHtml(wrapperDisplayName(wrapper))}</strong></p>
@@ -1229,7 +1223,6 @@ function renderHubStimulus(trial, visible, targetLabel, renderMapping, wrapper, 
         ${markerDots}
         ${stimulus}
       </div>
-      <p class="hub-stimulus-meta">${meta}</p>
     </div>
   `;
 }
@@ -1274,9 +1267,6 @@ function renderBlockSummary(block) {
 function renderRelationalStimulus(trial, visible, runtimeInfo = "") {
   const display = trial?.display || {};
   const textVisible = Boolean(trial && visible);
-  const cueOrBlankCaption = trial
-    ? "Hold attention. Response window is still open."
-    : "Get ready.";
 
   if (display.type === "graph") {
     const nodes = Array.isArray(display.nodes) ? display.nodes : [];
@@ -1307,16 +1297,12 @@ function renderRelationalStimulus(trial, visible, runtimeInfo = "") {
           ${nodeMarkup}
           ${arrowMarkup}
         </div>
-        <p class="rel-caption">${escapeHtml(caption)}</p>
       </div>
     `;
   }
 
   const tokenText = textVisible ? escapeHtml(display.text || "") : "";
   const tokenClass = textVisible ? "rel-center-token" : "rel-center-token hidden";
-  const caption = textVisible
-    ? (display.caption || "")
-    : cueOrBlankCaption;
   return `
     <div class="rel-stimulus">
       ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
@@ -1324,7 +1310,6 @@ function renderRelationalStimulus(trial, visible, runtimeInfo = "") {
         <div class="hub-ring"></div>
         <div class="${tokenClass}">${tokenText}</div>
       </div>
-      <p class="rel-caption">${escapeHtml(caption)}</p>
     </div>
   `;
 }
