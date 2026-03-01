@@ -1,5 +1,28 @@
 :root {
   color-scheme: dark;
+  --brand-bg-page: #0b1118;
+  --brand-surface-card: rgba(15, 18, 26, 0.92);
+  --brand-surface-elevated: #1d2230;
+  --brand-border: rgba(255, 255, 255, 0.1);
+  --brand-border-crisp: rgba(255, 255, 255, 0.16);
+  --brand-text: #edf0f7;
+  --brand-text-muted: #d5dceb;
+  --brand-text-on-bright: #0b0b0d;
+  --brand-info: #6ec6ff;
+  --brand-info-soft: rgba(110, 198, 255, 0.1);
+  --brand-primary: #ccff66;
+  --brand-primary-soft: rgba(204, 255, 102, 0.12);
+  --shadow: 0 10px 24px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  --shadow-info: 0 0 0 1px rgba(110, 198, 255, 0.18), 0 8px 22px rgba(78, 160, 232, 0.16);
+  --shadow-primary: 0 0 0 1px rgba(204, 255, 102, 0.14), 0 8px 22px rgba(190, 239, 78, 0.14);
+  --radius-sm: 12px;
+  --radius-xl: 20px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --type-title-lg: 900 clamp(22px, 3vw, 30px) / 1.08 var(--font);
+  --type-body: 400 15px / 1.45 var(--font);
+  --type-body-strong: 700 15px / 1.4 var(--font);
+  --type-label: 700 12px / 1.2 var(--font);
+  --type-button: 700 15px / 1.1 var(--font);
 }
 
 * {
@@ -81,7 +104,8 @@ body {
   width: 16px;
   height: 16px;
   object-fit: contain;
-  opacity: 0.9;
+  opacity: 0.95;
+  filter: brightness(0) invert(1);
 }
 
 .main {
