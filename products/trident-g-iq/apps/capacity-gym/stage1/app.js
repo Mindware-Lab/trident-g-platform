@@ -38,6 +38,9 @@ import { coachUpdateAfterBlock, relationalCoachUpdateAfterBlock } from "./lib/co
 import { transitiveMode } from "./games/transitive.js";
 import { graphMode } from "./games/graph.js";
 import { propositionalMode } from "./games/propositional.js";
+import { resolvePrimaryScreen } from "./ui/screen-coordinator.js";
+import { renderPrimaryScreen } from "./ui/screens.js";
+import { buildShellViewModel } from "./ui/view-models.js";
 
 const ROUTES = new Set(["home", "play-hub", "play-relational", "history", "settings"]);
 const DEFAULT_ROUTE = "home";
@@ -796,14 +799,14 @@ function renderAccuracyBars(blocks) {
   `;
 }
 
-function updateShellHeaderStats(state) {
+function updateShellHeaderStats(shellVm) {
   const streakEl = document.querySelector("#shell-streak");
   const bankEl = document.querySelector("#shell-bank");
   if (streakEl) {
-    streakEl.textContent = String(Number(state?.settings?.streakCurrent || 0));
+    streakEl.textContent = String(Number(shellVm?.streakCurrent || 0));
   }
   if (bankEl) {
-    bankEl.textContent = String(Number(state?.bankUnits || 0));
+    bankEl.textContent = String(Number(shellVm?.bankUnits || 0));
   }
 }
 
@@ -1824,20 +1827,16 @@ function render() {
 
   dropRunningSessionsIfLeaving(route);
   const state = loadStateWithSyncedUnlocks();
-  updateShellHeaderStats(state);
+  updateShellHeaderStats(buildShellViewModel(state));
   setActiveNav(route);
-  let pageHtml = "";
-  if (route === "home") {
-    pageHtml = renderHome(state);
-  } else if (route === "play-hub") {
-    pageHtml = renderPlayHub();
-  } else if (route === "play-relational") {
-    pageHtml = renderPlayRelational(state);
-  } else if (route === "history") {
-    pageHtml = renderHistory(getSessionHistory());
-  } else {
-    pageHtml = renderSettings(state);
-  }
+  const primaryScreen = resolvePrimaryScreen({ route, hubSession, relSession, uiState });
+  const pageHtml = renderPrimaryScreen(primaryScreen, {
+    home: () => renderHome(state),
+    hub: () => renderPlayHub(),
+    relational: () => renderPlayRelational(state),
+    history: () => renderHistory(getSessionHistory()),
+    settings: () => renderSettings(state)
+  });
   const overlayHtml = renderActiveOverlay(state);
   appRoot.innerHTML = `${pageHtml}${overlayHtml}`;
 }

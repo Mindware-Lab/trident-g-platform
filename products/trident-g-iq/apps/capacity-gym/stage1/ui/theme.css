@@ -1,0 +1,13 @@
+/* Commit 1 scaffold: dedicated UI theme layer for game-style screen rewrite.
+   Commit 2/3 will migrate core styles from stage1/styles.css into this file. */
+
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ui-chip-label {
+  opacity: 0.9;
+}
+
