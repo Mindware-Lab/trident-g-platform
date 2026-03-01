@@ -4,20 +4,30 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Capacity Gym Stage 1</title>
+  <link rel="stylesheet" href="../brandingUI/Trident-G-brand.css">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <div class="shell">
+  <div class="appTopBand appTopBandChrome">
+    <div class="appTopBand__inner">
+      <div class="appTopBand__icon">
+        <img src="../brandingUI/Trident-G-Icon.svg" alt="Trident G">
+      </div>
+      <span class="appTopBand__pill">Capacity Gym</span>
+    </div>
+  </div>
+
+  <div class="shell appShell appShellTopband">
     <header class="topbar">
       <h1>Capacity Gym</h1>
-      <p>Stage 1 static scaffold</p>
+      <p>Train cognitive control in 10-minute sessions.</p>
     </header>
     <nav class="nav" aria-label="Primary">
-      <a href="#/home" data-route="home">Home/Today</a>
-      <a href="#/play-hub" data-route="play-hub">Play Hub</a>
-      <a href="#/play-relational" data-route="play-relational">Play Relational</a>
-      <a href="#/history" data-route="history">History</a>
-      <a href="#/settings" data-route="settings">Settings</a>
+      <a href="#/home" data-route="home"><img class="nav-icon" src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true"><span>Home/Today</span></a>
+      <a href="#/play-hub" data-route="play-hub"><img class="nav-icon" src="../brandingUI/icons/tab-bar/play-hub.svg" alt="" aria-hidden="true"><span>Play Hub</span></a>
+      <a href="#/play-relational" data-route="play-relational"><img class="nav-icon" src="../brandingUI/icons/tab-bar/play-relational.svg" alt="" aria-hidden="true"><span>Play Relational</span></a>
+      <a href="#/history" data-route="history"><img class="nav-icon" src="../brandingUI/icons/tab-bar/history.svg" alt="" aria-hidden="true"><span>History</span></a>
+      <a href="#/settings" data-route="settings"><img class="nav-icon" src="../brandingUI/icons/tab-bar/settings.svg" alt="" aria-hidden="true"><span>Settings</span></a>
     </nav>
     <main id="app" class="main" aria-live="polite"></main>
   </div>

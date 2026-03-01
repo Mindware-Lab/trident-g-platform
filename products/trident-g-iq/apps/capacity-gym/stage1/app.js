@@ -88,6 +88,31 @@ const relTimers = {
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MISSION_TIER0_STEPS = ["control"];
 const MISSION_TIER1_STEPS = ["reset", "control", "reason"];
+const SPLASH_DURATION_MS = 1500;
+const COACH_NOTICE_COPY = Object.freeze({
+  RECOVER: "Recovery block scheduled",
+  STABILISE: "Stabilise block scheduled",
+  TUNE: "Targeted challenge pulse scheduled",
+  SPIKE_TUNE: "Probe wrapper block scheduled",
+  CONSOLIDATE: "Consolidation block scheduled"
+});
+const COACH_BRIEFING_COPY = Object.freeze({
+  RECOVER: "Next: Recovery block",
+  STABILISE: "Next: Stabilise block",
+  TUNE: "Next: Targeted challenge pulse",
+  SPIKE_TUNE: "Next: Probe wrapper block",
+  CONSOLIDATE: "Next: Consolidation block"
+});
+const uiTimers = {
+  splash: null
+};
+const uiState = {
+  showSplash: true,
+  splashDismissed: false,
+  activeOverlay: "none",
+  overlayCanTapDismiss: false,
+  pendingUnlockCelebration: false
+};
 
 function pad2(value) {
   return String(value).padStart(2, "0");
@@ -498,23 +523,92 @@ function hasRecentSwapProbe(completedBlocks, lookback = 2) {
   return recent.some((entry) => Boolean(entry?.plan?.flags?.wasSwapProbe));
 }
 
-function makeCoachNarrative(coachState, fallbackMessage = "") {
-  if (coachState === "RECOVER") {
-    return "Recovery block scheduled.";
-  }
-  if (coachState === "STABILISE") {
-    return "Stabilise block scheduled.";
-  }
-  if (coachState === "TUNE") {
-    return "Targeted challenge pulse scheduled.";
-  }
-  if (coachState === "SPIKE_TUNE") {
-    return "Probe wrapper block scheduled.";
-  }
-  if (coachState === "CONSOLIDATE") {
-    return "Consolidation block scheduled.";
+function getCoachNoticeCopy(coachState, fallbackMessage = "") {
+  if (coachState && COACH_NOTICE_COPY[coachState]) {
+    return COACH_NOTICE_COPY[coachState];
   }
   return fallbackMessage || "";
+}
+
+function getCoachBriefingPreviewCopy(coachState) {
+  if (coachState && COACH_BRIEFING_COPY[coachState]) {
+    return COACH_BRIEFING_COPY[coachState];
+  }
+  return "";
+}
+
+function makeCoachNarrative(coachState, fallbackMessage = "") {
+  return getCoachNoticeCopy(coachState, fallbackMessage);
+}
+
+function ensureSplashTimer() {
+  if (!uiState.showSplash) {
+    if (uiTimers.splash) {
+      clearTimeout(uiTimers.splash);
+      uiTimers.splash = null;
+    }
+    return;
+  }
+  if (uiTimers.splash) {
+    return;
+  }
+  uiTimers.splash = setTimeout(() => {
+    uiTimers.splash = null;
+    dismissSplashOverlay();
+  }, SPLASH_DURATION_MS);
+}
+
+function dismissSplashOverlay() {
+  if (!uiState.showSplash) {
+    return;
+  }
+  uiState.showSplash = false;
+  uiState.splashDismissed = true;
+  if (uiTimers.splash) {
+    clearTimeout(uiTimers.splash);
+    uiTimers.splash = null;
+  }
+  render();
+}
+
+function showBriefingOverlay(canTapDismiss) {
+  uiState.activeOverlay = "briefing";
+  uiState.overlayCanTapDismiss = Boolean(canTapDismiss);
+}
+
+function closeBriefingOverlay() {
+  if (uiState.activeOverlay !== "briefing") {
+    return;
+  }
+  uiState.activeOverlay = "none";
+  uiState.overlayCanTapDismiss = false;
+}
+
+function queueUnlockCelebration() {
+  uiState.pendingUnlockCelebration = true;
+}
+
+function showUnlockCelebrationIfPending(state) {
+  if (!uiState.pendingUnlockCelebration || uiState.showSplash) {
+    return;
+  }
+  if (uiState.activeOverlay !== "none" && uiState.activeOverlay !== "unlock-celebration") {
+    return;
+  }
+  const unlockProgress = deriveRelationalUnlockProgress(state?.history || []);
+  if (!unlockProgress.relationalUnlocked) {
+    uiState.pendingUnlockCelebration = false;
+    return;
+  }
+  uiState.pendingUnlockCelebration = false;
+  uiState.activeOverlay = "unlock-celebration";
+}
+
+function dismissUnlockCelebration() {
+  uiState.pendingUnlockCelebration = false;
+  if (uiState.activeOverlay === "unlock-celebration") {
+    uiState.activeOverlay = "none";
+  }
 }
 
 function resolveHubAlternativePatch(session, pendingPatch) {
@@ -746,6 +840,26 @@ function resolveNextBlockPreview(session) {
   };
 }
 
+function renderRelationalProgressCard(unlockProgress) {
+  const catDone = Boolean(unlockProgress?.catQualified);
+  const noncatDone = Boolean(unlockProgress?.noncatQualified);
+  const nextNeed = !catDone
+    ? "Need: 1 hub_cat session at N>=3 with 3 stable blocks."
+    : (!noncatDone ? "Need: 1 hub_noncat session at N>=3 with 3 stable blocks." : "Both wrappers are qualified.");
+  return `
+    <div class="rel-progress-card">
+      <p><strong>Relational Progress</strong></p>
+      <p>${catDone ? "[x]" : "[ ]"} hub_cat - ${catDone ? "qualified" : "in progress"}</p>
+      <p>${noncatDone ? "[x]" : "[ ]"} hub_noncat - ${noncatDone ? "qualified" : "in progress"}</p>
+      <p>${escapeHtml(nextNeed)}</p>
+      <details class="rel-progress-help">
+        <summary>[?] What counts as stable?</summary>
+        <p>Stable = 3 blocks at N>=3 with accuracy >=75%.</p>
+      </details>
+    </div>
+  `;
+}
+
 function renderHome(state) {
   const unlockProgress = deriveRelationalUnlockProgress(state.history);
   const todayKey = toDateKeyLocal();
@@ -769,6 +883,7 @@ function renderHome(state) {
       <p>Streak: <strong>${streakCurrent}</strong> (best ${streakBest})</p>
       <p>Relational unlocks: <strong>${unlockProgress.relationalUnlocked ? "Available" : "Locked"}</strong></p>
       <p class="hint">Unlock checklist: hub_cat ${unlockProgress.catQualified ? "qualified" : "pending"}, hub_noncat ${unlockProgress.noncatQualified ? "qualified" : "pending"}.</p>
+      ${renderRelationalProgressCard(unlockProgress)}
     </section>
   `;
 }
@@ -1073,12 +1188,20 @@ function renderPlayHub() {
     `
     : "";
   const coachAction = makeCoachNarrative(preview.coachState, "");
+  const coachBriefingPreview = getCoachBriefingPreviewCopy(preview.coachState);
   const runtimeInfo = block
     ? `SOA: ${block.soaMs}ms | Interference: ${block.plan.interference} | Coach: ${block.plan.flags?.coachState || "STABILISE"}`
     : "";
 
   let phasePanel = "";
-  if (hubSession.phase === "cue") {
+  if (hubSession.phase === "briefing") {
+    phasePanel = `
+      <div class="hub-phase cue">
+        <p class="hub-phase-title">Briefing</p>
+        <p class="hint">Review the block briefing overlay, then start the block.</p>
+      </div>
+    `;
+  } else if (hubSession.phase === "cue") {
     phasePanel = `
       <div class="hub-phase cue">
         <p class="hub-phase-title">Cue</p>
@@ -1093,7 +1216,7 @@ function renderPlayHub() {
         <p>Respond MATCH when the target modality matches ${block.plan.n}-back.</p>
         ${renderHubStimulus(trial, block.stimulusVisible, targetLabel, block.renderMapping, block.plan.wrapper, runtimeInfo)}
         <div class="row">
-          <button class="btn primary" data-action="hub-match" ${responseCaptured ? "disabled" : ""}>MATCH (Space)</button>
+          <button class="btn primary match-btn" data-action="hub-match" ${responseCaptured ? "disabled" : ""}>MATCH (Space)</button>
         </div>
         <p class="hint">${responseCaptured ? `Response recorded at ${block.responseRtMs} ms.` : "No response recorded yet."}</p>
       </div>
@@ -1127,6 +1250,7 @@ function renderPlayHub() {
       <p>Current block settings: <strong>${currentSpeed}</strong> speed, <strong>${currentInterference}</strong> interference.</p>
       ${baselineNotice}
       ${hubSession.phase === "block-result" ? `<p>Next block settings: <strong>${preview.wrapper}</strong> wrapper, <strong>${preview.speed}</strong> speed, <strong>${preview.interference}</strong> interference${preview.coachState ? ` | Coach: <strong>${preview.coachState}</strong>` : ""}.</p>` : ""}
+      ${hubSession.phase === "block-result" && coachBriefingPreview ? `<p class="hint">${escapeHtml(coachBriefingPreview)}</p>` : ""}
       ${coachOverrideNote}
       ${hubSession.phase === "block-result" ? coachNotice : ""}
       ${phasePanel}
@@ -1205,6 +1329,8 @@ function renderPlayRelational(state) {
     ? `<div class="status coach">${escapeHtml(relSession.coachNotice)}</div>`
     : "";
   const coachState = block?.plan?.flags?.coachState;
+  const pendingRelCoachState = relSession?.pendingPlanPatch?.flags?.coachState || null;
+  const relCoachBriefingPreview = getCoachBriefingPreviewCopy(pendingRelCoachState);
   const runtimeInfo = block
     ? `SOA: ${block.soaMs}ms | Mode: ${relSession.wrapper.toUpperCase()}${coachState ? ` | Coach: ${coachState}` : ""}`
     : "";
@@ -1220,7 +1346,14 @@ function renderPlayRelational(state) {
     : "";
 
   let phasePanel = "";
-  if (relSession.phase === "cue") {
+  if (relSession.phase === "briefing") {
+    phasePanel = `
+      <div class="hub-phase cue">
+        <p class="hub-phase-title">Briefing</p>
+        <p class="hint">Review the block briefing overlay, then start the block.</p>
+      </div>
+    `;
+  } else if (relSession.phase === "cue") {
     phasePanel = `
       <div class="hub-phase cue">
         <p class="hub-phase-title">Cue</p>
@@ -1237,7 +1370,7 @@ function renderPlayRelational(state) {
         <p>Press MATCH when the current token matches ${block.plan.n}-back.</p>
         ${renderRelationalStimulus(trial, block.stimulusVisible, runtimeInfo)}
         <div class="row">
-          <button class="btn primary" data-action="rel-match" ${responseCaptured ? "disabled" : ""}>MATCH (Space)</button>
+          <button class="btn primary match-btn" data-action="rel-match" ${responseCaptured ? "disabled" : ""}>MATCH (Space)</button>
         </div>
         <p class="hint">${responseCaptured ? `Response recorded at ${block.responseRtMs} ms.` : "No response recorded yet."}</p>
       </div>
@@ -1252,8 +1385,8 @@ function renderPlayRelational(state) {
         <p class="rel-quiz-prompt">${escapeHtml(quizItem.prompt)}</p>
         <p class="hint">Time left: <strong>${secsLeft}s</strong> (timeout = incorrect)</p>
         <div class="row">
-          <button class="btn" data-action="rel-quiz-answer" data-answer="true" ${quizLocked ? "disabled" : ""}>TRUE</button>
-          <button class="btn" data-action="rel-quiz-answer" data-answer="false" ${quizLocked ? "disabled" : ""}>FALSE</button>
+          <button class="btn quiz-btn" data-action="rel-quiz-answer" data-answer="true" ${quizLocked ? "disabled" : ""}>TRUE</button>
+          <button class="btn quiz-btn" data-action="rel-quiz-answer" data-answer="false" ${quizLocked ? "disabled" : ""}>FALSE</button>
         </div>
       </div>
     `;
@@ -1275,6 +1408,7 @@ function renderPlayRelational(state) {
       <p>Block: <strong>${relSession.blockCursor + (relSession.phase === "block-result" ? 0 : 1)}</strong> / ${REL_TOTAL_BLOCKS}</p>
       <p>Current N: <strong>${relSession.currentN}</strong> (bounds 1..${REL_N_MAX})</p>
       ${coachNotice}
+      ${relSession.phase === "block-result" && relCoachBriefingPreview ? `<p class="hint">${escapeHtml(relCoachBriefingPreview)}</p>` : ""}
       ${phasePanel}
       ${renderFlash()}
     </section>
@@ -1340,15 +1474,124 @@ function renderSettings(state) {
   `;
 }
 
+function renderSplashOverlay() {
+  return `
+    <div class="app-overlay">
+      <div class="overlay-backdrop" data-action="splash-dismiss"></div>
+      <div class="overlay-card splash-overlay" data-action="splash-dismiss">
+        <img class="splash-logo" src="../brandingUI/Trident-G-Icon.svg" alt="Trident G">
+        <h2>Capacity Gym</h2>
+        <p>Train cognitive control. 10 minutes a day.</p>
+        <p class="hint">Tap, click, or press Space / Enter / Escape to continue.</p>
+      </div>
+    </div>
+  `;
+}
+
+function renderHubBriefingOverlay() {
+  if (!hubSession || hubSession.status !== "running" || hubSession.phase !== "briefing" || !hubSession.currentBlock) {
+    return "";
+  }
+  const block = hubSession.currentBlock;
+  const coachPreview = getCoachBriefingPreviewCopy(block.plan?.flags?.coachState);
+  const canTapDismiss = uiState.overlayCanTapDismiss;
+  return `
+    <div class="app-overlay ${canTapDismiss ? "backdrop-dismissable" : ""}">
+      <div class="overlay-backdrop" ${canTapDismiss ? 'data-action="briefing-dismiss"' : ""}></div>
+      <div class="overlay-card">
+        <h3>Block ${block.plan.blockIndex} of ${HUB_TOTAL_BLOCKS}</h3>
+        <p>Target: <strong>${escapeHtml(modalityLabel(block.plan.targetModality))}</strong></p>
+        <p>N-Back: <strong>${block.plan.n}</strong></p>
+        <p>Speed: <strong>${block.plan.speed}</strong> | Interference: <strong>${block.plan.interference}</strong></p>
+        ${coachPreview ? `<p class="hint">${escapeHtml(coachPreview)}</p>` : ""}
+        <div class="overlay-actions">
+          <button class="btn primary" data-action="hub-start-block">Start Block</button>
+        </div>
+        ${canTapDismiss ? '<p class="hint">Tip: tap outside to start quickly.</p>' : '<p class="hint">Block 1 includes a full start confirmation.</p>'}
+      </div>
+    </div>
+  `;
+}
+
+function renderRelationalBriefingOverlay() {
+  if (!relSession || relSession.status !== "running" || relSession.phase !== "briefing" || !relSession.currentBlock) {
+    return "";
+  }
+  const block = relSession.currentBlock;
+  const coachPreview = getCoachBriefingPreviewCopy(block.plan?.flags?.coachState);
+  const canTapDismiss = uiState.overlayCanTapDismiss;
+  return `
+    <div class="app-overlay ${canTapDismiss ? "backdrop-dismissable" : ""}">
+      <div class="overlay-backdrop" ${canTapDismiss ? 'data-action="briefing-dismiss"' : ""}></div>
+      <div class="overlay-card">
+        <h3>Block ${block.plan.blockIndex} of ${REL_TOTAL_BLOCKS}</h3>
+        <p>Mode: <strong>${escapeHtml(relSession.wrapper)}</strong></p>
+        <p>N-Back: <strong>${block.plan.n}</strong></p>
+        <p>Speed: <strong>${block.plan.speed}</strong> | Interference: <strong>${block.plan.interference}</strong></p>
+        <p class="hint">Press MATCH only when current token matches ${block.plan.n}-back.</p>
+        ${coachPreview ? `<p class="hint">${escapeHtml(coachPreview)}</p>` : ""}
+        <div class="overlay-actions">
+          <button class="btn primary" data-action="rel-start-block">Start Block</button>
+        </div>
+        ${canTapDismiss ? '<p class="hint">Tip: tap outside to start quickly.</p>' : '<p class="hint">Block 1 includes a full start confirmation.</p>'}
+      </div>
+    </div>
+  `;
+}
+
+function renderUnlockCelebrationOverlay() {
+  return `
+    <div class="app-overlay">
+      <div class="overlay-backdrop" data-action="unlock-close"></div>
+      <div class="overlay-card">
+        <h3>Relational Modes Unlocked</h3>
+        <p>You have qualified both Hub wrappers. Relational training is now available.</p>
+        <div class="unlock-icons">
+          <span class="unlock-icon"><img src="../brandingUI/icons/game/transitive-order.svg" alt="Transitive"></span>
+          <span class="unlock-icon"><img src="../brandingUI/icons/game/graph-directed.svg" alt="Graph"></span>
+          <span class="unlock-icon"><img src="../brandingUI/icons/game/propositional.svg" alt="Propositional"></span>
+        </div>
+        <div class="overlay-actions">
+          <button class="btn primary" data-action="unlock-go-relational">Go to Relational</button>
+          <button class="btn" data-action="unlock-close">Return Home</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderActiveOverlay(state) {
+  ensureSplashTimer();
+  if (uiState.showSplash) {
+    return renderSplashOverlay();
+  }
+  if (uiState.activeOverlay === "briefing") {
+    if (hubSession && hubSession.status === "running" && hubSession.phase === "briefing") {
+      return renderHubBriefingOverlay();
+    }
+    if (relSession && relSession.status === "running" && relSession.phase === "briefing") {
+      return renderRelationalBriefingOverlay();
+    }
+    closeBriefingOverlay();
+  }
+  showUnlockCelebrationIfPending(state);
+  if (uiState.activeOverlay === "unlock-celebration") {
+    return renderUnlockCelebrationOverlay();
+  }
+  return "";
+}
+
 function dropRunningSessionsIfLeaving(route) {
   if (route !== "play-hub" && hubSession && hubSession.status === "running") {
     clearHubTimers();
     hubSession = null;
+    closeBriefingOverlay();
     setFlash("Hub session stopped because you left Play Hub before completion.", "warn");
   }
   if (route !== "play-relational" && relSession && relSession.status === "running") {
     clearRelTimers();
     relSession = null;
+    closeBriefingOverlay();
     setFlash("Relational session stopped because you left Play Relational before completion.", "warn");
   }
 }
@@ -1362,29 +1605,27 @@ function render() {
   dropRunningSessionsIfLeaving(route);
   const state = loadStateWithSyncedUnlocks();
   setActiveNav(route);
-
+  let pageHtml = "";
   if (route === "home") {
-    appRoot.innerHTML = renderHome(state);
-    return;
+    pageHtml = renderHome(state);
+  } else if (route === "play-hub") {
+    pageHtml = renderPlayHub();
+  } else if (route === "play-relational") {
+    pageHtml = renderPlayRelational(state);
+  } else if (route === "history") {
+    pageHtml = renderHistory(getSessionHistory());
+  } else {
+    pageHtml = renderSettings(state);
   }
-  if (route === "play-hub") {
-    appRoot.innerHTML = renderPlayHub();
-    return;
-  }
-  if (route === "play-relational") {
-    appRoot.innerHTML = renderPlayRelational(state);
-    return;
-  }
-  if (route === "history") {
-    appRoot.innerHTML = renderHistory(getSessionHistory());
-    return;
-  }
-  appRoot.innerHTML = renderSettings(state);
+  const overlayHtml = renderActiveOverlay(state);
+  appRoot.innerHTML = `${pageHtml}${overlayHtml}`;
 }
 
 function startHubSession() {
   clearHubTimers();
   clearFlash();
+  dismissUnlockCelebration();
+  closeBriefingOverlay();
   const state = loadGymState();
   const firstHubRun = isFirstHubRun(state);
   const tsStart = Date.now();
@@ -1397,7 +1638,7 @@ function startHubSession() {
 
   hubSession = {
     status: "running",
-    phase: "cue",
+    phase: "briefing",
     tsStart,
     sessionSeed,
     blockCursor: 0,
@@ -1531,8 +1772,21 @@ function beginHubBlock() {
     trialStartedAtMs: 0,
     trialOutcomes: []
   };
-  hubSession.phase = "cue";
+  clearHubTimers();
+  hubSession.phase = "briefing";
+  showBriefingOverlay(blockIndex > 1);
+  render();
+}
 
+function startHubCue() {
+  if (!hubSession || hubSession.status !== "running" || !hubSession.currentBlock) {
+    return;
+  }
+  if (hubSession.phase !== "briefing") {
+    return;
+  }
+  closeBriefingOverlay();
+  hubSession.phase = "cue";
   render();
   clearHubTimers();
   hubTimers.cue = setTimeout(() => {
@@ -1707,6 +1961,8 @@ function completeHubSession() {
   }
   clearHubTimers();
 
+  const stateBefore = loadGymState();
+  const wasLocked = !deriveRelationalUnlockProgress(stateBefore.history).relationalUnlocked;
   const tsEnd = Date.now();
   const summary = createHubSessionSummary({
     tsStart: hubSession.tsStart,
@@ -1716,6 +1972,11 @@ function completeHubSession() {
   });
   appendSessionSummary(summary);
   const progressDelta = applySessionProgressAndSave(summary, "hub");
+  const stateAfter = loadStateWithSyncedUnlocks();
+  const nowUnlocked = deriveRelationalUnlockProgress(stateAfter.history).relationalUnlocked;
+  if (wasLocked && nowUnlocked) {
+    queueUnlockCelebration();
+  }
   updateSettings({ hasRunHubBefore: true });
 
   hubSession.status = "completed";
@@ -1744,11 +2005,13 @@ function startRelationalSession(mode) {
 
   clearRelTimers();
   clearFlash();
+  dismissUnlockCelebration();
+  closeBriefingOverlay();
   const tsStart = Date.now();
   const sessionSeed = hash32(`${tsStart}:${mode}`);
   relSession = {
     status: "running",
-    phase: "cue",
+    phase: "briefing",
     wrapper: mode,
     modeDef,
     sessionContext: modeDef.buildSessionContext(sessionSeed),
@@ -1857,8 +2120,21 @@ function beginRelationalBlock() {
     quizTimeLeftMs: REL_QUIZ_TIMEOUT_MS,
     quizAnswerCommitted: false
   };
-  relSession.phase = "cue";
+  clearRelTimers();
+  relSession.phase = "briefing";
+  showBriefingOverlay(blockIndex > 1);
+  render();
+}
 
+function startRelationalCue() {
+  if (!relSession || relSession.status !== "running" || !relSession.currentBlock) {
+    return;
+  }
+  if (relSession.phase !== "briefing") {
+    return;
+  }
+  closeBriefingOverlay();
+  relSession.phase = "cue";
   render();
   clearRelTimers();
   relTimers.cue = setTimeout(() => {
@@ -2143,6 +2419,8 @@ function completeRelationalSession() {
   }
   clearRelTimers();
 
+  const stateBefore = loadGymState();
+  const wasLocked = !deriveRelationalUnlockProgress(stateBefore.history).relationalUnlocked;
   const tsEnd = Date.now();
   const summary = createRelationalSessionSummary({
     wrapper: relSession.wrapper,
@@ -2153,6 +2431,11 @@ function completeRelationalSession() {
   });
   appendSessionSummary(summary);
   const progressDelta = applySessionProgressAndSave(summary, "relational");
+  const stateAfter = loadStateWithSyncedUnlocks();
+  const nowUnlocked = deriveRelationalUnlockProgress(stateAfter.history).relationalUnlocked;
+  if (wasLocked && nowUnlocked) {
+    queueUnlockCelebration();
+  }
 
   relSession.status = "completed";
   relSession.phase = "session-done";
@@ -2169,6 +2452,54 @@ document.addEventListener("click", (event) => {
   }
 
   const action = target.getAttribute("data-action");
+
+  if (action === "splash-dismiss") {
+    dismissSplashOverlay();
+    return;
+  }
+
+  if (uiState.showSplash) {
+    return;
+  }
+
+  if (action === "hub-start-block") {
+    startHubCue();
+    return;
+  }
+
+  if (action === "rel-start-block") {
+    startRelationalCue();
+    return;
+  }
+
+  if (action === "briefing-dismiss") {
+    if (!uiState.overlayCanTapDismiss) {
+      return;
+    }
+    if (hubSession && hubSession.status === "running" && hubSession.phase === "briefing") {
+      startHubCue();
+      return;
+    }
+    if (relSession && relSession.status === "running" && relSession.phase === "briefing") {
+      startRelationalCue();
+      return;
+    }
+    return;
+  }
+
+  if (action === "unlock-go-relational") {
+    dismissUnlockCelebration();
+    window.location.hash = "/play-relational";
+    render();
+    return;
+  }
+
+  if (action === "unlock-close") {
+    dismissUnlockCelebration();
+    window.location.hash = "/home";
+    render();
+    return;
+  }
 
   if (action === "go-play-hub") {
     window.location.hash = "/play-hub";
@@ -2294,6 +2625,8 @@ document.addEventListener("click", (event) => {
     hubSession = null;
     clearRelTimers();
     relSession = null;
+    closeBriefingOverlay();
+    dismissUnlockCelebration();
     resetGymState();
     hubPreferences.wrapper = FIRST_RUN_BASELINE_BLOCK.wrapper;
     hubPreferences.speed = FIRST_RUN_BASELINE_BLOCK.speed;
@@ -2346,6 +2679,26 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if (uiState.showSplash) {
+    if (event.code === "Space" || event.code === "Enter" || event.code === "Escape") {
+      event.preventDefault();
+      dismissSplashOverlay();
+    }
+    return;
+  }
+
+  if (uiState.activeOverlay === "briefing" && (event.code === "Space" || event.code === "Enter")) {
+    event.preventDefault();
+    if (hubSession && hubSession.status === "running" && hubSession.phase === "briefing") {
+      startHubCue();
+      return;
+    }
+    if (relSession && relSession.status === "running" && relSession.phase === "briefing") {
+      startRelationalCue();
+      return;
+    }
+  }
+
   if (event.code !== "Space") {
     return;
   }
