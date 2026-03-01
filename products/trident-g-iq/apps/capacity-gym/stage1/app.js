@@ -1112,7 +1112,7 @@ function renderRelationalProgressCard(unlockProgress) {
         </span>
         <span class="rel-progress-pill ${noncatDone ? "done" : ""}">
           <img class="rel-progress-icon" src="../brandingUI/icons/status/${noncatDone ? "unlock.svg" : "lock.svg"}" alt="" aria-hidden="true">
-          Hub (non-cat)
+          Hub (non-categorical)
         </span>
       </div>
       <p class="hint">${catDone && noncatDone ? "Relational modes are now available." : "Qualify in both Hub modes to unlock Relational."}</p>
@@ -1215,7 +1215,7 @@ function renderHome(state) {
             </button>
             <button class="mode-tile mode-action" data-action="go-play-hub" data-wrapper="hub_noncat">
               <img src="../brandingUI/icons/game/symbol.svg" alt="" aria-hidden="true">
-              <strong>Hub (non-cat)</strong>
+              <strong>Hub (non-categorical)</strong>
               <span>Available</span>
             </button>
           </div>
@@ -1260,7 +1260,7 @@ function renderRelationalUnlockChecklist(unlockProgress) {
     <div class="unlock-checklist">
       <p><strong>Relational Unlock Checklist</strong></p>
       <p>${unlockProgress.catQualified ? "[x]" : "[ ]"} hub_cat qualification ${unlockProgress.catQualified ? "complete" : "pending"}</p>
-      <p>${unlockProgress.noncatQualified ? "[x]" : "[ ]"} hub_noncat qualification ${unlockProgress.noncatQualified ? "complete" : "pending"}</p>
+      <p>${unlockProgress.noncatQualified ? "[x]" : "[ ]"} Hub non-categorical qualification ${unlockProgress.noncatQualified ? "complete" : "pending"}</p>
     </div>
   `;
 }
@@ -1291,7 +1291,7 @@ function renderHubConfigControls({
         Game
         <select id="hub-wrapper-select" ${wrapperLock}>
           ${HUB_WRAPPERS.map((wrapperId) => (
-            `<option value="${wrapperId}" ${hubPreferences.wrapper === wrapperId ? "selected" : ""}>${wrapperId === "hub_noncat" ? "Hub (non-cat)" : "Hub (category)"}</option>`
+            `<option value="${wrapperId}" ${hubPreferences.wrapper === wrapperId ? "selected" : ""}>${wrapperId === "hub_noncat" ? "Hub (non-categorical)" : "Hub (category)"}</option>`
           )).join("")}
         </select>
       </label>
@@ -2511,7 +2511,7 @@ function startRelationalSession(mode) {
   const state = loadStateWithSyncedUnlocks();
   const unlockProgress = deriveRelationalUnlockProgress(state.history);
   if (!unlockProgress.relationalUnlocked) {
-    setFlash("Relational modes are locked. Complete qualifying Hub category and Hub non-cat games first.", "warn");
+    setFlash("Relational modes are locked. Complete qualifying Hub category and Hub non-categorical games first.", "warn");
     render();
     return;
   }
