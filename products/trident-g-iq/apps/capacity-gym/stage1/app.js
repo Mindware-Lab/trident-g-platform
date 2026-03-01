@@ -716,6 +716,25 @@ function wrapperDisplayName(wrapper) {
   return wrapper || "Unknown";
 }
 
+function wrapperIconPath(wrapper) {
+  if (wrapper === "hub_cat") {
+    return "../brandingUI/icons/game/location-spatial.svg";
+  }
+  if (wrapper === "hub_noncat") {
+    return "../brandingUI/icons/game/symbol.svg";
+  }
+  if (wrapper === "transitive") {
+    return "../brandingUI/icons/game/transitive-order.svg";
+  }
+  if (wrapper === "graph") {
+    return "../brandingUI/icons/game/graph-directed.svg";
+  }
+  if (wrapper === "propositional") {
+    return "../brandingUI/icons/game/propositional.svg";
+  }
+  return "../brandingUI/icons/tab-bar/history.svg";
+}
+
 function getDayGreeting() {
   const hour = new Date().getHours();
   if (hour < 12) {
@@ -963,8 +982,14 @@ function renderRelationalProgressCard(unlockProgress) {
     <div class="rel-progress-card">
       <p class="kicker">Relational Unlock</p>
       <div class="rel-progress-line">
-        <span class="rel-progress-pill ${catDone ? "done" : ""}">${catDone ? "&#10003;" : "&#9675;"} Hub (cat)</span>
-        <span class="rel-progress-pill ${noncatDone ? "done" : ""}">${noncatDone ? "&#10003;" : "&#9675;"} Hub (non-cat)</span>
+        <span class="rel-progress-pill ${catDone ? "done" : ""}">
+          <img class="rel-progress-icon" src="../brandingUI/icons/status/${catDone ? "unlock.svg" : "lock.svg"}" alt="" aria-hidden="true">
+          Hub (cat)
+        </span>
+        <span class="rel-progress-pill ${noncatDone ? "done" : ""}">
+          <img class="rel-progress-icon" src="../brandingUI/icons/status/${noncatDone ? "unlock.svg" : "lock.svg"}" alt="" aria-hidden="true">
+          Hub (non-cat)
+        </span>
       </div>
       <p class="hint">${catDone && noncatDone ? "Relational modes are now available." : "Qualify in both Hub modes to unlock Relational."}</p>
       <details class="rel-progress-help">
@@ -1007,7 +1032,17 @@ function renderHome(state) {
     const label = stepId === "reset"
       ? "Start any session"
       : (stepId === "control" ? "Complete a Hub session" : "Complete a Relational session");
-    return `<div class="mission-step"><span class="mission-dot ${done ? "done" : ""}"></span><span>${label}</span></div>`;
+    return `
+      <div class="mission-step">
+        <img
+          class="mission-step-icon ${done ? "done" : ""}"
+          src="../brandingUI/icons/${done ? "gamification/mission-complete.svg" : "status/lock.svg"}"
+          alt=""
+          aria-hidden="true"
+        >
+        <span>${label}</span>
+      </div>
+    `;
   }).join("");
   const relModeLocked = !unlockProgress.relationalUnlocked;
   const relLockText = relModeLocked ? "Locked" : "Available";
@@ -1039,7 +1074,10 @@ function renderHome(state) {
         <p class="hint">${mission.rewardClaimed ? "Mission reward claimed for today." : "Complete mission to earn +3 bank units."}</p>
       </div>
       <div class="row home-primary-row">
-        <button class="btn primary home-primary-btn" data-action="go-play-hub">Start Recommended Session</button>
+        <button class="btn primary home-primary-btn" data-action="go-play-hub">
+          <img class="btn-inline-icon btn-inline-icon-lg" src="../brandingUI/icons/tab-bar/play-hub.svg" alt="" aria-hidden="true">
+          Start Recommended Session
+        </button>
       </div>
       <p class="hint home-cta-hint">~10 min | Hub (category) | Level ${Math.max(1, Math.min(HUB_N_MAX, Number(state.settings?.lastRecommendedLevel || 2)))} recommended</p>
       <div class="mode-panel">
@@ -1085,8 +1123,8 @@ function renderHome(state) {
         <p><strong>Bank:</strong> ${state.bankUnits}</p>
       </div>
       <div class="row home-footer-actions">
-        <button class="btn" data-action="go-history">Progress</button>
-        <button class="btn" data-action="go-settings">Settings</button>
+        <button class="btn" data-action="go-history"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/history.svg" alt="" aria-hidden="true">Progress</button>
+        <button class="btn" data-action="go-settings"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/settings.svg" alt="" aria-hidden="true">Settings</button>
       </div>
       ${renderFlash()}
       ${renderBottomTab("home")}
@@ -1356,7 +1394,7 @@ function renderPlayHub() {
           </div>
         </div>
         <div class="row home-footer-actions">
-          <button class="btn" data-action="go-home">Return Home</button>
+          <button class="btn" data-action="go-home"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">Return Home</button>
         </div>
         ${renderFlash()}
         ${renderBottomTab("hub")}
@@ -1406,10 +1444,10 @@ function renderPlayHub() {
         ${progressionSummary}
         ${allCleanNote}
         <div class="row home-primary-row">
-          <button class="btn primary home-primary-btn" data-action="start-hub-session">Play Again</button>
+          <button class="btn primary home-primary-btn" data-action="start-hub-session"><img class="btn-inline-icon btn-inline-icon-lg" src="../brandingUI/icons/tab-bar/play-hub.svg" alt="" aria-hidden="true">Play Again</button>
         </div>
         <div class="row home-footer-actions">
-          <button class="btn" data-action="go-home">Return Home</button>
+          <button class="btn" data-action="go-home"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">Return Home</button>
         </div>
         ${renderFlash()}
         ${renderBottomTab("relational")}
@@ -1562,7 +1600,7 @@ function renderPlayRelational(state) {
         ${renderRelationalProgressCard(unlockProgress)}
         <p class="hint">${lockText}</p>
         <div class="row home-footer-actions">
-          <button class="btn" data-action="go-home">Return Home</button>
+          <button class="btn" data-action="go-home"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">Return Home</button>
         </div>
         ${renderFlash()}
       </section>
@@ -1613,10 +1651,10 @@ function renderPlayRelational(state) {
         ${progressionSummary}
         ${allCleanNote}
         <div class="row home-primary-row">
-          <button class="btn primary home-primary-btn" data-action="start-relational-session" data-mode="transitive">Play Again</button>
+          <button class="btn primary home-primary-btn" data-action="start-relational-session" data-mode="transitive"><img class="btn-inline-icon btn-inline-icon-lg" src="../brandingUI/icons/tab-bar/play-relational.svg" alt="" aria-hidden="true">Play Again</button>
         </div>
         <div class="row home-footer-actions">
-          <button class="btn" data-action="go-home">Return Home</button>
+          <button class="btn" data-action="go-home"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">Return Home</button>
         </div>
         ${renderFlash()}
       </section>
@@ -1746,9 +1784,13 @@ function renderHistory(history) {
       ? `<p>Quiz: ${quizCorrectTotal}/${REL_TOTAL_BLOCKS * 2}</p>`
       : "";
     const modeText = mode ? wrapperDisplayName(mode) : "";
+    const modeIcon = wrapperIconPath(mode || session.wrapperFamily);
     return `
       <li class="history-item">
-        <p><strong>${escapeHtml(wrapperDisplayName(mode || session.wrapperFamily || "session"))}</strong></p>
+        <p class="history-item-title">
+          <img class="history-item-icon" src="${modeIcon}" alt="" aria-hidden="true">
+          <strong>${escapeHtml(wrapperDisplayName(mode || session.wrapperFamily || "session"))}</strong>
+        </p>
         <p>Date: ${escapeHtml(session.dateLocal || "")} | Blocks: ${blockCount}</p>
         <div class="history-mini-grid">
           <span>Peak ${stats.peakN}</span>

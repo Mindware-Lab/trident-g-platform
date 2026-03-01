@@ -146,13 +146,14 @@ body {
 
 .game-topbar-stats img,
 .bank-pill img {
-  width: 14px;
-  height: 14px;
+  width: 20px;
+  height: 20px;
+  filter: brightness(1.18) saturate(1.2) drop-shadow(0 0 5px rgba(122, 187, 240, 0.35));
 }
 
 .topbar-icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
   border: 1px solid var(--brand-border);
   background: rgba(255, 255, 255, 0.04);
@@ -164,8 +165,9 @@ body {
 }
 
 .topbar-icon-btn img {
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
+  filter: brightness(1.22) saturate(1.22);
 }
 
 .bank-pill {
@@ -211,20 +213,22 @@ body {
   display: grid;
   justify-items: center;
   gap: 4px;
-  padding: 5px 2px;
+  min-height: 60px;
+  padding: 6px 2px;
   border-radius: 10px;
   font: inherit;
   cursor: pointer;
 }
 
 .bottom-tab-btn img {
-  width: 16px;
-  height: 16px;
-  opacity: 0.84;
+  width: 24px;
+  height: 24px;
+  opacity: 0.92;
+  filter: brightness(1.18) saturate(1.18);
 }
 
 .bottom-tab-btn span {
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 700;
   line-height: 1;
 }
@@ -237,6 +241,7 @@ body {
 
 .bottom-tab-btn.active img {
   opacity: 1;
+  filter: brightness(1.35) saturate(1.35) drop-shadow(0 0 5px rgba(110, 198, 255, 0.42));
 }
 
 .home-primary-btn {
@@ -273,6 +278,9 @@ body {
 }
 
 .rel-progress-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   border-radius: 999px;
   padding: 6px 10px;
   border: 1px solid rgba(110, 198, 255, 0.35);
@@ -280,6 +288,12 @@ body {
   background: rgba(110, 198, 255, 0.08);
   font-size: 0.82rem;
   font-weight: 760;
+}
+
+.rel-progress-icon {
+  width: 18px;
+  height: 18px;
+  filter: brightness(1.22) saturate(1.22);
 }
 
 .rel-progress-pill.done {
@@ -496,6 +510,18 @@ body {
   background: var(--brand-primary);
 }
 
+.mission-step-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  opacity: 0.88;
+  filter: brightness(1.18) saturate(1.2);
+}
+
+.mission-step-icon.done {
+  opacity: 1;
+}
+
 .snapshot-list p {
   margin: 6px 0;
 }
@@ -527,16 +553,17 @@ body {
 .mode-tile {
   border: 1px solid var(--brand-border);
   border-radius: var(--radius-sm);
-  padding: 11px 9px;
-  min-height: 92px;
+  padding: 13px 10px;
+  min-height: 118px;
   background: linear-gradient(180deg, rgba(20, 33, 52, 0.7), rgba(10, 19, 33, 0.82));
   text-align: center;
 }
 
 .mode-tile img {
-  width: 18px;
-  height: 18px;
-  margin-bottom: 5px;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 8px;
+  filter: brightness(1.2) saturate(1.22) drop-shadow(0 0 6px rgba(115, 190, 249, 0.34));
 }
 
 .mode-tile strong {
@@ -552,6 +579,10 @@ body {
 
 .mode-tile.locked {
   opacity: 0.5;
+}
+
+.mode-tile.locked img {
+  filter: brightness(0.82) saturate(0.9);
 }
 
 .hub-config-row {
@@ -602,10 +633,18 @@ input:disabled {
 }
 
 .btn-inline-icon {
-  width: 15px;
-  height: 15px;
+  width: 18px;
+  height: 18px;
   margin-right: 6px;
   vertical-align: -2px;
+  filter: brightness(1.18) saturate(1.2);
+}
+
+.btn-inline-icon-lg {
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  vertical-align: -4px;
 }
 
 .btn:hover:not(:disabled) {
@@ -724,6 +763,21 @@ input:disabled {
 
 .history-item + .history-item {
   margin-top: 8px;
+}
+
+.history-item-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+}
+
+.history-item-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  opacity: 0.95;
+  filter: brightness(1.2) saturate(1.2);
 }
 
 .toggle {
@@ -1296,10 +1350,11 @@ input:disabled {
 }
 
 .unlock-badge {
-  width: 46px;
-  height: 46px;
+  width: 56px;
+  height: 56px;
   display: block;
   margin: 0 auto 10px auto;
+  filter: brightness(1.26) saturate(1.24) drop-shadow(0 0 12px rgba(122, 186, 247, 0.35));
 }
 
 .unlock-icons-large {
@@ -1319,8 +1374,9 @@ input:disabled {
 }
 
 .unlock-icon img {
-  width: 24px;
-  height: 24px;
+  width: 34px;
+  height: 34px;
+  filter: brightness(1.24) saturate(1.25);
 }
 
 @media (max-width: 900px) {
