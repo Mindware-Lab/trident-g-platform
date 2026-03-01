@@ -10,31 +10,16 @@
 </head>
 <body>
   <div class="shell app-shell">
-    <header class="app-header">
-      <div class="app-brand">
-        <img class="app-brand-icon" src="../brandingUI/Trident-G-Icon.svg" alt="Trident G">
-        <div>
-          <h1>Capacity Gym</h1>
-          <p>Train cognitive control in short daily sessions.</p>
-        </div>
-      </div>
-      <div class="app-header-stats" aria-label="Progress snapshot">
-        <div class="stat-chip">
-          <img src="../brandingUI/icons/gamification/streak-flame.svg" alt="" aria-hidden="true">
-          <span>Streak <strong id="shell-streak">0</strong></span>
-        </div>
-        <div class="stat-chip stat-chip-units">
-          <img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true">
-          <span>Bank <strong id="shell-bank">0</strong></span>
-        </div>
-      </div>
+    <header class="app-header hidden-header">
+      <strong id="shell-streak">0</strong>
+      <strong id="shell-bank">0</strong>
     </header>
-    <nav class="nav" aria-label="Primary">
-      <a href="#/home" data-route="home"><img class="nav-icon" src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true"><span>Today</span></a>
-      <a href="#/play-hub" data-route="play-hub"><img class="nav-icon" src="../brandingUI/icons/tab-bar/play-hub.svg" alt="" aria-hidden="true"><span>Hub</span></a>
-      <a href="#/play-relational" data-route="play-relational"><img class="nav-icon" src="../brandingUI/icons/tab-bar/play-relational.svg" alt="" aria-hidden="true"><span>Relational</span></a>
-      <a href="#/history" data-route="history"><img class="nav-icon" src="../brandingUI/icons/tab-bar/history.svg" alt="" aria-hidden="true"><span>Progress</span></a>
-      <a href="#/settings" data-route="settings"><img class="nav-icon" src="../brandingUI/icons/tab-bar/settings.svg" alt="" aria-hidden="true"><span>Settings</span></a>
+    <nav class="nav hidden-nav" aria-label="Primary">
+      <a href="#/home" data-route="home"><span>Today</span></a>
+      <a href="#/play-hub" data-route="play-hub"><span>Hub</span></a>
+      <a href="#/play-relational" data-route="play-relational"><span>Relational</span></a>
+      <a href="#/history" data-route="history"><span>Progress</span></a>
+      <a href="#/settings" data-route="settings"><span>Settings</span></a>
     </nav>
     <main id="app" class="main" aria-live="polite"></main>
   </div>

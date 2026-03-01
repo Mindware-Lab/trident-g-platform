@@ -959,20 +959,39 @@ function resolveNextBlockPreview(session) {
 function renderRelationalProgressCard(unlockProgress) {
   const catDone = Boolean(unlockProgress?.catQualified);
   const noncatDone = Boolean(unlockProgress?.noncatQualified);
-  const nextNeed = !catDone
-    ? "Need: 1 hub_cat session at N>=3 with 3 stable blocks."
-    : (!noncatDone ? "Need: 1 hub_noncat session at N>=3 with 3 stable blocks." : "Both wrappers are qualified.");
   return `
     <div class="rel-progress-card">
-      <p><strong>Relational Progress</strong></p>
-      <p>${catDone ? "[x]" : "[ ]"} hub_cat - ${catDone ? "qualified" : "in progress"}</p>
-      <p>${noncatDone ? "[x]" : "[ ]"} hub_noncat - ${noncatDone ? "qualified" : "in progress"}</p>
-      <p>${escapeHtml(nextNeed)}</p>
+      <p class="kicker">Relational Unlock</p>
+      <div class="rel-progress-line">
+        <span class="rel-progress-pill ${catDone ? "done" : ""}">${catDone ? "&#10003;" : "&#9675;"} Hub (cat)</span>
+        <span class="rel-progress-pill ${noncatDone ? "done" : ""}">${noncatDone ? "&#10003;" : "&#9675;"} Hub (non-cat)</span>
+      </div>
+      <p class="hint">${catDone && noncatDone ? "Relational modes are now available." : "Qualify in both Hub modes to unlock Relational."}</p>
       <details class="rel-progress-help">
         <summary>[?] What counts as stable?</summary>
-        <p>Stable = 3 blocks at N>=3 with accuracy >=75%.</p>
+        <p>Stable = 3 blocks at N >= 3 with accuracy >= 75% in the same wrapper baseline.</p>
       </details>
     </div>
+  `;
+}
+
+function renderBottomTab(activeTab) {
+  const items = [
+    { id: "home", label: "Home", icon: "home.svg", action: "go-home" },
+    { id: "hub", label: "Hub", icon: "play-hub.svg", action: "go-play-hub" },
+    { id: "relational", label: "Relational", icon: "play-relational.svg", action: "go-play-relational" },
+    { id: "history", label: "Progress", icon: "history.svg", action: "go-history" },
+    { id: "settings", label: "Settings", icon: "settings.svg", action: "go-settings" }
+  ];
+  return `
+    <nav class="bottom-tab-nav" aria-label="Primary">
+      ${items.map((item) => `
+        <button class="bottom-tab-btn ${activeTab === item.id ? "active" : ""}" data-action="${item.action}" aria-label="${escapeHtml(item.label)}">
+          <img src="../brandingUI/icons/tab-bar/${item.icon}" alt="" aria-hidden="true">
+          <span>${escapeHtml(item.label)}</span>
+        </button>
+      `).join("")}
+    </nav>
   `;
 }
 
@@ -983,82 +1002,97 @@ function renderHome(state) {
   const streakCurrent = Number(state.settings?.streakCurrent || 0);
   const streakBest = Number(state.settings?.streakBest || 0);
   const greeting = getDayGreeting();
-  const tierLabel = mission.tier === "tier1" ? "Tier 1: Reset - Control - Reason" : "Tier 0: Control";
   const missionSteps = mission.steps.map((stepId, idx) => {
     const done = idx < mission.completedSteps;
     const label = stepId === "reset"
       ? "Start any session"
-      : (stepId === "control" ? "Complete one Hub session" : "Complete one Relational session");
+      : (stepId === "control" ? "Complete a Hub session" : "Complete a Relational session");
     return `<div class="mission-step"><span class="mission-dot ${done ? "done" : ""}"></span><span>${label}</span></div>`;
   }).join("");
   const relModeLocked = !unlockProgress.relationalUnlocked;
   const relLockText = relModeLocked ? "Locked" : "Available";
+  const subtitle = mission.tier === "tier1"
+    ? "Tier 1 - Reset - Control - Reason"
+    : "Complete a Hub session today";
   return `
-    <section class="card">
+    <section class="card has-bottom-tab game-screen">
+      <div class="game-topbar">
+        <div class="game-topbar-brand">
+          <button class="topbar-icon-btn" data-action="go-home" aria-label="Home">
+            <img src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">
+          </button>
+          <strong>Capacity</strong>
+        </div>
+        <div class="game-topbar-stats">
+          <span><img src="../brandingUI/icons/gamification/streak-flame.svg" alt="" aria-hidden="true"> ${streakCurrent}</span>
+          <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${state.bankUnits}</span>
+        </div>
+      </div>
       <h2>${greeting}</h2>
-      <p class="hint">${mission.tier === "tier1" ? "Tier 1 - Reset - Control - Reason" : "Complete a Hub session today."}</p>
-      <div class="hero-grid">
-        <div class="mission-card">
-          <p class="kicker">Daily Mission</p>
-          <p><strong>${tierLabel}</strong> <span class="pill-soft">+3 bonus</span></p>
-          ${missionSteps}
-          <p class="hint">${mission.rewardClaimed ? "Mission reward claimed for today." : "Complete mission to earn +3 bank units."}</p>
+      <p class="hint">${subtitle}</p>
+      <div class="mission-card">
+        <div class="mission-header-row">
+          <p class="kicker">Daily Mission ${mission.tier === "tier1" ? "- Tier 1" : ""}</p>
+          <span class="pill-soft">+3 bonus</span>
         </div>
-        <div class="snapshot-card snapshot-list">
-          <p><strong>Sessions:</strong> ${state.history.length}</p>
-          <p><strong>Bank:</strong> ${state.bankUnits}</p>
-          <p><strong>Streak:</strong> ${streakCurrent} (best ${streakBest})</p>
-          <p><strong>Relational:</strong> ${unlockProgress.relationalUnlocked ? "Unlocked" : "Locked"}</p>
-        </div>
+        ${missionSteps}
+        <p class="hint">${mission.rewardClaimed ? "Mission reward claimed for today." : "Complete mission to earn +3 bank units."}</p>
       </div>
-      <div class="row">
-        <button class="btn primary" data-action="go-play-hub">Start Recommended Session</button>
+      <div class="row home-primary-row">
+        <button class="btn primary home-primary-btn" data-action="go-play-hub">Start Recommended Session</button>
       </div>
-      <p class="hint home-cta-hint">~10 min | Hub (category) | Level 2 recommended</p>
+      <p class="hint home-cta-hint">~10 min | Hub (category) | Level ${Math.max(1, Math.min(HUB_N_MAX, Number(state.settings?.lastRecommendedLevel || 2)))} recommended</p>
       <div class="mode-panel">
         <p class="kicker">Choose a Mode</p>
         <div class="mode-group">
-          <p class="hint">Hub</p>
           <div class="mode-grid mode-grid-hub">
-            <div class="mode-tile">
+            <button class="mode-tile mode-action" data-action="go-play-hub">
               <img src="../brandingUI/icons/game/location-spatial.svg" alt="" aria-hidden="true">
-              <strong>Hub Cat</strong>
+              <strong>Hub (category)</strong>
               <span>Available</span>
-            </div>
-            <div class="mode-tile">
+            </button>
+            <button class="mode-tile mode-action" data-action="go-play-hub">
               <img src="../brandingUI/icons/game/symbol.svg" alt="" aria-hidden="true">
-              <strong>Hub Noncat</strong>
+              <strong>Hub (non-cat)</strong>
               <span>Available</span>
-            </div>
+            </button>
           </div>
         </div>
         <div class="mode-group">
-          <p class="hint">Relational</p>
           <div class="mode-grid mode-grid-rel">
-            <div class="mode-tile ${relModeLocked ? "locked" : ""}">
+            <button class="mode-tile mode-action ${relModeLocked ? "locked" : ""}" data-action="go-play-relational" ${relModeLocked ? "disabled" : ""}>
               <img src="../brandingUI/icons/game/transitive-order.svg" alt="" aria-hidden="true">
               <strong>Transitive</strong>
               <span>${relLockText}</span>
-            </div>
-            <div class="mode-tile ${relModeLocked ? "locked" : ""}">
+            </button>
+            <button class="mode-tile mode-action ${relModeLocked ? "locked" : ""}" data-action="go-play-relational" ${relModeLocked ? "disabled" : ""}>
               <img src="../brandingUI/icons/game/graph-directed.svg" alt="" aria-hidden="true">
               <strong>Graph</strong>
               <span>${relLockText}</span>
-            </div>
-            <div class="mode-tile ${relModeLocked ? "locked" : ""}">
+            </button>
+            <button class="mode-tile mode-action ${relModeLocked ? "locked" : ""}" data-action="go-play-relational" ${relModeLocked ? "disabled" : ""}>
               <img src="../brandingUI/icons/game/propositional.svg" alt="" aria-hidden="true">
               <strong>Propositional</strong>
               <span>${relLockText}</span>
-            </div>
+            </button>
           </div>
         </div>
       </div>
       ${renderRelationalProgressCard(unlockProgress)}
+      <div class="snapshot-card snapshot-list">
+        <p><strong>Sessions:</strong> ${state.history.length}</p>
+        <p><strong>Streak:</strong> ${streakCurrent} (best ${streakBest})</p>
+        <p><strong>Bank:</strong> ${state.bankUnits}</p>
+      </div>
+      <div class="row home-footer-actions">
+        <button class="btn" data-action="go-history">Progress</button>
+        <button class="btn" data-action="go-settings">Settings</button>
+      </div>
       ${renderFlash()}
+      ${renderBottomTab("home")}
     </section>
   `;
 }
-
 function renderRelationalUnlockChecklist(unlockProgress) {
   return `
     <div class="unlock-checklist">
@@ -1297,34 +1331,54 @@ function renderRelationalBlockSummary(block) {
 function renderPlayHub() {
   const running = Boolean(hubSession && hubSession.status === "running");
   const completed = Boolean(hubSession && hubSession.status === "completed");
-  const blockActive = Boolean(hubSession && hubSession.status === "running" && (hubSession.phase === "cue" || hubSession.phase === "trial"));
   const requestedWrapper = normalizeHubWrapper(hubPreferences.wrapper);
 
   if (!running && !completed) {
     return `
-      <section class="card">
-        <h2>Hub Training</h2>
-        <p class="hint">Choose wrapper, speed, and interference before starting.</p>
-        ${renderHubConfigControls({ showWrapperSelect: true, wrapperLocked: false, dialsLocked: false })}
-        <div class="row">
-          <button class="btn primary" data-action="start-hub-session">Start ${wrapperDisplayName(requestedWrapper)} Session</button>
+      <section class="card game-screen has-bottom-tab">
+        <div class="game-topbar">
+          <div class="game-topbar-brand">
+            <button class="topbar-icon-btn" data-action="go-home" aria-label="Home">
+              <img src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">
+            </button>
+            <strong>Hub</strong>
+          </div>
+          <div class="game-topbar-stats">
+            <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${loadGymState().bankUnits || 0}</span>
+          </div>
         </div>
-        <p class="hint">Session shape: 10 blocks. Trial count scales with your level.</p>
+        <h2>Hub Session</h2>
+        <p class="hint">Choose your setup, then start a 10-block session.</p>
+        <div class="stage-panel">
+          ${renderHubConfigControls({ showWrapperSelect: true, wrapperLocked: false, dialsLocked: false })}
+          <div class="row home-primary-row">
+            <button class="btn primary home-primary-btn" data-action="start-hub-session">Start ${wrapperDisplayName(requestedWrapper)} Session</button>
+          </div>
+        </div>
+        <div class="row home-footer-actions">
+          <button class="btn" data-action="go-home">Return Home</button>
+        </div>
         ${renderFlash()}
+        ${renderBottomTab("hub")}
       </section>
     `;
   }
 
   if (completed) {
     const summary = hubSession.sessionSummary;
-    const finalBlock = hubSession.lastBlockSummary;
     const progressDelta = hubSession.progressDelta || null;
+    const visualStats = computeSessionVisualStats(summary);
+    const accuracyChart = renderAccuracyBars(summary.blocks);
     const progressionSummary = progressDelta
       ? `
-        <div class="status success">
-          <p>Session units: <strong>+${progressDelta.sessionUnitsEarned}</strong></p>
+        <div class="result-earned-row session-earned-box">
+          <span>Session earned</span>
+          <strong>+${progressDelta.sessionUnitsEarned + progressDelta.missionBonusEarned} units</strong>
+        </div>
+        <div class="session-bank-lines">
+          <p>Session earned: <strong>+${progressDelta.sessionUnitsEarned}</strong></p>
           <p>Mission bonus: <strong>+${progressDelta.missionBonusEarned}</strong></p>
-          <p>Bank total: <strong>${progressDelta.bankTotal}</strong></p>
+          <p>Total bank: <strong>${progressDelta.bankTotal}</strong></p>
           <p>Streak: <strong>${progressDelta.streakCurrent}</strong> (best ${progressDelta.streakBest})</p>
         </div>
       `
@@ -1332,28 +1386,33 @@ function renderPlayHub() {
     const allCleanNote = progressDelta?.allBlocksClean
       ? `<p class="prestige-note">All Blocks Clean (prestige)</p>`
       : "";
-    const visualStats = computeSessionVisualStats(summary);
-    const accuracyChart = renderAccuracyBars(summary.blocks);
+
     return `
-      <section class="card">
-        <h2>Session Complete</h2>
-        <p class="hint">${wrapperDisplayName(summary.blocksPlanned?.[0]?.wrapper)} | 10 blocks</p>
-        ${renderHubConfigControls({ showWrapperSelect: true, wrapperLocked: false, dialsLocked: false })}
-        <div class="status success">Session complete and saved.</div>
-        ${progressionSummary}
-        ${allCleanNote}
+      <section class="card game-screen has-bottom-tab">
+        <div class="game-topbar">
+          <div class="game-topbar-brand"><strong>Session Complete</strong></div>
+          <div class="game-topbar-stats">
+            <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${progressDelta?.bankTotal || loadGymState().bankUnits || 0}</span>
+          </div>
+        </div>
+        <h2>${wrapperDisplayName(summary.blocksPlanned?.[0]?.wrapper || "hub_cat")}</h2>
+        <p class="hint">10 blocks completed</p>
         <div class="session-stats-grid">
           <div class="session-stat"><span>Peak Level</span><strong>${visualStats.peakN}</strong></div>
           <div class="session-stat"><span>Final Level</span><strong>${visualStats.finalN}</strong></div>
           <div class="session-stat"><span>Stability</span><strong>${visualStats.holdUpCount}/${visualStats.totalBlocks}</strong></div>
         </div>
         ${accuracyChart}
-        ${renderBlockSummary(finalBlock)}
-        <div class="row">
-          <button class="btn" data-action="go-home">Done</button>
-          <button class="btn primary" data-action="start-hub-session">Start New Session</button>
+        ${progressionSummary}
+        ${allCleanNote}
+        <div class="row home-primary-row">
+          <button class="btn primary home-primary-btn" data-action="start-hub-session">Play Again</button>
+        </div>
+        <div class="row home-footer-actions">
+          <button class="btn" data-action="go-home">Return Home</button>
         </div>
         ${renderFlash()}
+        ${renderBottomTab("relational")}
       </section>
     `;
   }
@@ -1370,12 +1429,6 @@ function renderPlayHub() {
     : (hubSession.lastBlockSummary?.wrapper || preview.wrapper);
   const currentSpeed = block ? block.plan.speed : (hubSession.lastBlockSummary ? hubSession.lastBlockSummary.speed : "n/a");
   const currentInterference = block ? block.plan.interference : (hubSession.lastBlockSummary ? hubSession.lastBlockSummary.interference : "n/a");
-  const coachNotice = hubSession.coachNotice
-    ? `<div class="status coach">${escapeHtml(hubSession.coachNotice)}</div>`
-    : "";
-  const baselineNotice = hubSession.introNotice && hubSession.blockCursor === 0
-    ? `<div class="status coach">${escapeHtml(hubSession.introNotice)}</div>`
-    : "";
   const pendingPatch = hubSession.pendingPlanPatch && typeof hubSession.pendingPlanPatch === "object"
     ? hubSession.pendingPlanPatch
     : {};
@@ -1388,105 +1441,129 @@ function renderPlayHub() {
   const alternativePatch = overrideEligible ? resolveHubAlternativePatch(hubSession, pendingPatch) : null;
   const overrideControls = overrideEligible
     ? `
-      <div class="row">
-        <button class="btn" data-action="hub-accept-coach">Accept Coach</button>
-        <button class="btn" data-action="hub-try-alternative" ${alternativePatch ? "" : "disabled"}>Try Alternative</button>
+      <div class="coach-choice-box">
+        <p class="kicker">Coach Suggests</p>
+        <p>${escapeHtml(hubSession.coachNotice || "Targeted challenge route for next block")}</p>
+        <div class="row">
+          <button class="btn" data-action="hub-accept-coach">Accept Coach</button>
+          <button class="btn" data-action="hub-try-alternative" ${alternativePatch ? "" : "disabled"}>Try Alternative</button>
+        </div>
+        ${alternativePatch ? "" : `<p class="hint">Coach recommendation is optimal right now.</p>`}
       </div>
-      ${alternativePatch ? "" : `<p class="hint">Coach recommendation is optimal right now.</p>`}
     `
     : "";
-  const coachAction = makeCoachNarrative(preview.coachState, "");
-  const coachBriefingPreview = getCoachBriefingPreviewCopy(preview.coachState);
+
+  const trialProgressPct = trialCount > 0 ? Math.max(0, Math.min(100, Math.round((trialNumber / trialCount) * 100))) : 0;
   const runtimeInfo = block
-    ? `Block ${block.plan.blockIndex}/${HUB_TOTAL_BLOCKS} | Coach: ${block.plan.flags?.coachState || "STABILISE"}`
+    ? `SOA: ${block.soaMs}ms | Interference: ${block.plan.interference} | Coach: ${block.plan.flags?.coachState || "STABILISE"}`
     : "";
 
   let phasePanel = "";
   if (hubSession.phase === "briefing") {
     phasePanel = `
-      <div class="hub-phase cue">
-        <p class="hub-phase-title">Briefing</p>
-        <p class="hint">Review the block briefing, then start when ready.</p>
+      <div class="stage-panel">
+        <p class="kicker">Block ${hubSession.blockCursor + 1} of ${HUB_TOTAL_BLOCKS}</p>
+        <h3>Ready?</h3>
+        <p class="hint">Check the block briefing and press Start Block.</p>
       </div>
     `;
   } else if (hubSession.phase === "cue") {
     phasePanel = `
-      <div class="hub-phase cue">
-        <p class="hub-phase-title">Focus Cue</p>
-        ${renderHubStimulus(null, false, targetLabel, block?.renderMapping, block?.plan?.wrapper || hubPreferences.wrapper, runtimeInfo)}
-        <p class="hint">Prepare your attention target.</p>
+      <div class="stage-panel trial-stage">
+        <p class="kicker">Target</p>
+        <div class="cue-target-card">${escapeHtml(targetLabel)}</div>
+        <p class="hint">Starting now...</p>
       </div>
     `;
   } else if (hubSession.phase === "trial") {
     phasePanel = `
-      <div class="hub-phase trial">
-        <p class="hub-phase-title">Trial ${trialNumber} / ${trialCount}</p>
-        <p>Press MATCH when the target stream repeats ${block.plan.n}-back.</p>
+      <div class="stage-panel trial-stage">
+        <div class="trial-progress-track"><span style="width:${trialProgressPct}%;"></span></div>
+        <p class="hint">Trial ${trialNumber}/${trialCount}</p>
         ${renderHubStimulus(trial, block.stimulusVisible, targetLabel, block.renderMapping, block.plan.wrapper, runtimeInfo)}
-        <div class="row">
-          <button class="btn primary match-btn" data-action="hub-match" ${responseCaptured ? "disabled" : ""}>MATCH (Space)</button>
-        </div>
-        <p class="hint">${responseCaptured ? "Response recorded for this trial." : "Waiting for response."}</p>
+        <p class="coach-inline">${escapeHtml(makeCoachNarrative(block?.plan?.flags?.coachState, "Stabilise block"))}</p>
+        <button class="btn primary match-btn game-match-btn" data-action="hub-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
       </div>
     `;
   } else {
+    const coachBriefingPreview = getCoachBriefingPreviewCopy(preview.coachState);
     phasePanel = `
-      <div class="hub-phase result">
+      <div class="stage-panel result-stage">
         ${renderBlockSummary(hubSession.lastBlockSummary)}
-        ${coachAction ? `<p class="hint">Coach action: ${escapeHtml(coachAction)}</p>` : ""}
+        ${coachBriefingPreview ? `<p class="hint">${escapeHtml(coachBriefingPreview)}</p>` : ""}
+        ${coachOverrideNote}
         ${overrideControls}
-        <div class="row">
-          <button class="btn primary" data-action="hub-next-block">Start Next Block</button>
-        </div>
+        <button class="btn primary home-primary-btn" data-action="hub-next-block">Next Block</button>
       </div>
     `;
   }
 
   return `
-    <section class="card">
-      <h2>Hub Training</h2>
-      ${renderHubConfigControls({
-        showWrapperSelect: false,
-        wrapperLocked: true,
-        dialsLocked: blockActive,
-        speedValue: blockActive && block ? block.plan.speed : hubPreferences.speed,
-        interferenceValue: blockActive && block ? block.plan.interference : hubPreferences.interference
-      })}
-      <div class="running-status-row">
-        <span class="running-pill">Block ${hubSession.blockCursor + (hubSession.phase === "block-result" ? 0 : 1)} / ${HUB_TOTAL_BLOCKS}</span>
-        <span class="running-pill">N ${hubSession.currentN}</span>
-        <span class="running-pill">${wrapperDisplayName(currentWrapper)}</span>
+    <section class="card game-screen has-bottom-tab">
+      <div class="game-topbar">
+        <div class="game-topbar-brand">
+          <span>Block ${hubSession.blockCursor + (hubSession.phase === "block-result" ? 0 : 1)}/${HUB_TOTAL_BLOCKS}</span>
+          <span>Level ${hubSession.currentN}</span>
+        </div>
+        <div class="game-topbar-stats">
+          <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${loadGymState().bankUnits || 0}</span>
+        </div>
       </div>
-      <p>Current settings: <strong>${currentSpeed}</strong> speed, <strong>${currentInterference}</strong> interference.</p>
-      ${baselineNotice}
-      ${hubSession.phase === "block-result" ? `<p>Next block: <strong>${wrapperDisplayName(preview.wrapper)}</strong>, <strong>${preview.speed}</strong> speed, <strong>${preview.interference}</strong> interference${preview.coachState ? ` | Coach: <strong>${preview.coachState}</strong>` : ""}.</p>` : ""}
-      ${hubSession.phase === "block-result" && coachBriefingPreview ? `<p class="hint">${escapeHtml(coachBriefingPreview)}</p>` : ""}
-      ${coachOverrideNote}
-      ${hubSession.phase === "block-result" ? coachNotice : ""}
+      <p class="hint run-context-line">${wrapperDisplayName(currentWrapper)} | ${currentSpeed} speed | ${currentInterference} interference</p>
       ${phasePanel}
       ${renderFlash()}
     </section>
   `;
 }
-
 function renderPlayRelational(state) {
   const unlockProgress = deriveRelationalUnlockProgress(state.history);
   const relationalUnlocked = unlockProgress.relationalUnlocked;
   const running = Boolean(relSession && relSession.status === "running");
   const completed = Boolean(relSession && relSession.status === "completed");
-  const modeButtons = renderRelationalModeButtons(!relationalUnlocked);
-  const unlockChecklist = renderRelationalUnlockChecklist(unlockProgress);
 
   if (!running && !completed) {
+    const lockText = relationalUnlocked
+      ? "Relational modes are available."
+      : "Complete both Hub wrappers to unlock Relational.";
     return `
-      <section class="card">
-        <h2>Relational Training</h2>
-        <p class="hint">Train transitive, graph, and propositional reasoning with the same MATCH rhythm.</p>
-        <p>Unlock status: <strong>${relationalUnlocked ? "Unlocked" : "Locked"}</strong></p>
-        ${unlockChecklist}
-        ${modeButtons}
-        ${!relationalUnlocked ? `<p class="hint">Relational modes unlock after qualifying hub_cat and hub_noncat sessions.</p>` : ""}
-        <p class="hint">Play model: MATCH-only responses during trials, then 2 timed quiz prompts per block.</p>
+      <section class="card game-screen">
+        <div class="game-topbar">
+          <div class="game-topbar-brand">
+            <button class="topbar-icon-btn" data-action="go-home" aria-label="Home">
+              <img src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">
+            </button>
+            <strong>Relational</strong>
+          </div>
+          <div class="game-topbar-stats">
+            <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${state.bankUnits}</span>
+          </div>
+        </div>
+        <h2>Choose Relational Mode</h2>
+        <p class="hint">MATCH rhythm plus 2 timed quiz prompts each block.</p>
+        <div class="mode-panel">
+          <div class="mode-grid mode-grid-rel">
+            <button class="mode-tile mode-action" data-action="start-relational-session" data-mode="transitive" ${relationalUnlocked ? "" : "disabled"}>
+              <img src="../brandingUI/icons/game/transitive-order.svg" alt="" aria-hidden="true">
+              <strong>Transitive</strong>
+              <span>${relationalUnlocked ? "Available" : "Locked"}</span>
+            </button>
+            <button class="mode-tile mode-action" data-action="start-relational-session" data-mode="graph" ${relationalUnlocked ? "" : "disabled"}>
+              <img src="../brandingUI/icons/game/graph-directed.svg" alt="" aria-hidden="true">
+              <strong>Graph</strong>
+              <span>${relationalUnlocked ? "Available" : "Locked"}</span>
+            </button>
+            <button class="mode-tile mode-action" data-action="start-relational-session" data-mode="propositional" ${relationalUnlocked ? "" : "disabled"}>
+              <img src="../brandingUI/icons/game/propositional.svg" alt="" aria-hidden="true">
+              <strong>Propositional</strong>
+              <span>${relationalUnlocked ? "Available" : "Locked"}</span>
+            </button>
+          </div>
+        </div>
+        ${renderRelationalProgressCard(unlockProgress)}
+        <p class="hint">${lockText}</p>
+        <div class="row home-footer-actions">
+          <button class="btn" data-action="go-home">Return Home</button>
+        </div>
         ${renderFlash()}
       </section>
     `;
@@ -1494,16 +1571,21 @@ function renderPlayRelational(state) {
 
   if (completed) {
     const summary = relSession.sessionSummary;
-    const finalBlock = relSession.lastBlockSummary;
     const quizCorrect = summary.blocks.reduce((sum, block) => sum + Number(block.quizCorrect || 0), 0);
     const quizTotal = REL_TOTAL_BLOCKS * 2;
     const progressDelta = relSession.progressDelta || null;
+    const visualStats = computeSessionVisualStats(summary);
+    const accuracyChart = renderAccuracyBars(summary.blocks);
     const progressionSummary = progressDelta
       ? `
-        <div class="status success">
-          <p>Session units: <strong>+${progressDelta.sessionUnitsEarned}</strong></p>
+        <div class="result-earned-row session-earned-box">
+          <span>Session earned</span>
+          <strong>+${progressDelta.sessionUnitsEarned + progressDelta.missionBonusEarned} units</strong>
+        </div>
+        <div class="session-bank-lines">
+          <p>Session earned: <strong>+${progressDelta.sessionUnitsEarned}</strong></p>
           <p>Mission bonus: <strong>+${progressDelta.missionBonusEarned}</strong></p>
-          <p>Bank total: <strong>${progressDelta.bankTotal}</strong></p>
+          <p>Total bank: <strong>${progressDelta.bankTotal}</strong></p>
           <p>Streak: <strong>${progressDelta.streakCurrent}</strong> (best ${progressDelta.streakBest})</p>
         </div>
       `
@@ -1511,28 +1593,30 @@ function renderPlayRelational(state) {
     const allCleanNote = progressDelta?.allBlocksClean
       ? `<p class="prestige-note">All Blocks Clean (prestige)</p>`
       : "";
-    const visualStats = computeSessionVisualStats(summary);
-    const accuracyChart = renderAccuracyBars(summary.blocks);
+
     return `
-      <section class="card">
-        <h2>Session Complete</h2>
-        <p class="hint">${escapeHtml(wrapperDisplayName(summary.blocksPlanned?.[0]?.wrapper || "unknown"))} | 10 blocks</p>
-        <div class="status success">Session complete and saved.</div>
-        ${progressionSummary}
-        ${allCleanNote}
+      <section class="card game-screen">
+        <div class="game-topbar">
+          <div class="game-topbar-brand"><strong>Session Complete</strong></div>
+          <div class="game-topbar-stats">
+            <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${progressDelta?.bankTotal || state.bankUnits}</span>
+          </div>
+        </div>
+        <h2>${wrapperDisplayName(summary.blocksPlanned?.[0]?.wrapper || "transitive")}</h2>
+        <p class="hint">Quiz total ${quizCorrect}/${quizTotal}</p>
         <div class="session-stats-grid">
           <div class="session-stat"><span>Peak Level</span><strong>${visualStats.peakN}</strong></div>
           <div class="session-stat"><span>Final Level</span><strong>${visualStats.finalN}</strong></div>
           <div class="session-stat"><span>Stability</span><strong>${visualStats.holdUpCount}/${visualStats.totalBlocks}</strong></div>
         </div>
-        <p>Quiz total: <strong>${quizCorrect}/${quizTotal}</strong></p>
         ${accuracyChart}
-        ${renderRelationalBlockSummary(finalBlock)}
-        <div class="row">
-          <button class="btn" data-action="go-home">Done</button>
-          <button class="btn primary" data-action="start-relational-session" data-mode="transitive"><img class="btn-inline-icon" src="../brandingUI/icons/game/transitive-order.svg" alt="" aria-hidden="true">Start Transitive</button>
-          <button class="btn primary" data-action="start-relational-session" data-mode="graph"><img class="btn-inline-icon" src="../brandingUI/icons/game/graph-directed.svg" alt="" aria-hidden="true">Start Graph</button>
-          <button class="btn primary" data-action="start-relational-session" data-mode="propositional"><img class="btn-inline-icon" src="../brandingUI/icons/game/propositional.svg" alt="" aria-hidden="true">Start Propositional</button>
+        ${progressionSummary}
+        ${allCleanNote}
+        <div class="row home-primary-row">
+          <button class="btn primary home-primary-btn" data-action="start-relational-session" data-mode="transitive">Play Again</button>
+        </div>
+        <div class="row home-footer-actions">
+          <button class="btn" data-action="go-home">Return Home</button>
         </div>
         ${renderFlash()}
       </section>
@@ -1544,99 +1628,110 @@ function renderPlayRelational(state) {
   const trialNumber = block ? block.trialIndex + 1 : 0;
   const trialCount = block ? block.trials.length : 0;
   const responseCaptured = block ? block.responseCaptured : false;
-  const coachNotice = relSession.coachNotice && relSession.phase === "block-result"
-    ? `<div class="status coach">${escapeHtml(relSession.coachNotice)}</div>`
-    : "";
-  const coachState = block?.plan?.flags?.coachState;
-  const pendingRelCoachState = relSession?.pendingPlanPatch?.flags?.coachState || null;
-  const relCoachBriefingPreview = getCoachBriefingPreviewCopy(pendingRelCoachState);
+  const trialProgressPct = trialCount > 0 ? Math.max(0, Math.min(100, Math.round((trialNumber / trialCount) * 100))) : 0;
   const runtimeInfo = block
-    ? `Block ${block.plan.blockIndex}/${REL_TOTAL_BLOCKS} | ${wrapperDisplayName(relSession.wrapper)}${coachState ? ` | Coach: ${coachState}` : ""}`
-    : "";
-  const premiseBankMarkup = block && Array.isArray(block.blockMeta?.premiseBankLines) && block.blockMeta.premiseBankLines.length
-    ? `
-      <div class="premise-bank">
-        <p class="hint">Premise bank (${block.blockMeta.premiseBankLines.length}):</p>
-        <ul class="premise-bank-list">
-          ${block.blockMeta.premiseBankLines.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}
-        </ul>
-      </div>
-    `
+    ? `SOA: ${block.soaMs}ms | Coach: ${block.plan.flags?.coachState || "STABILISE"}`
     : "";
 
   let phasePanel = "";
   if (relSession.phase === "briefing") {
     phasePanel = `
-      <div class="hub-phase cue">
-        <p class="hub-phase-title">Briefing</p>
-        <p class="hint">Review the block briefing, then start when ready.</p>
+      <div class="stage-panel">
+        <p class="kicker">Block ${relSession.blockCursor + 1} of ${REL_TOTAL_BLOCKS}</p>
+        <h3>Ready?</h3>
+        <p class="hint">Read the briefing and press Start Block.</p>
       </div>
     `;
   } else if (relSession.phase === "cue") {
     phasePanel = `
-      <div class="hub-phase cue">
-        <p class="hub-phase-title">Focus Cue</p>
-        <p class="hint">Mode: <strong>${escapeHtml(wrapperDisplayName(relSession.wrapper))}</strong> | Current N: <strong>${relSession.currentN}</strong></p>
-        ${premiseBankMarkup}
-        ${renderRelationalStimulus(null, false, runtimeInfo)}
-        <p class="hint">Prepare for the next trial sequence.</p>
+      <div class="stage-panel trial-stage">
+        <p class="kicker">Target</p>
+        <div class="cue-target-card">${escapeHtml(relSession.wrapper.toUpperCase())}</div>
+        <p class="hint">Starting now...</p>
       </div>
     `;
   } else if (relSession.phase === "trial") {
     phasePanel = `
-      <div class="hub-phase trial">
-        <p class="hub-phase-title">Trial ${trialNumber} / ${trialCount}</p>
-        <p>Press MATCH when the current token matches ${block.plan.n}-back.</p>
+      <div class="stage-panel trial-stage">
+        <div class="trial-progress-track"><span style="width:${trialProgressPct}%;"></span></div>
+        <p class="hint">Trial ${trialNumber}/${trialCount}</p>
         ${renderRelationalStimulus(trial, block.stimulusVisible, runtimeInfo)}
-        <div class="row">
-          <button class="btn primary match-btn" data-action="rel-match" ${responseCaptured ? "disabled" : ""}>MATCH (Space)</button>
-        </div>
-        <p class="hint">${responseCaptured ? "Response recorded for this trial." : "Waiting for response."}</p>
+        <button class="btn primary match-btn game-match-btn" data-action="rel-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
       </div>
     `;
   } else if (relSession.phase === "quiz") {
     const quizItem = block.quizItems[block.quizIndex];
     const secsLeft = Math.max(0, Math.ceil((block.quizTimeLeftMs || 0) / 1000));
     const quizLocked = Boolean(block.quizAnswerCommitted);
+    const timePct = Math.max(0, Math.min(100, Math.round(((block.quizTimeLeftMs || 0) / REL_QUIZ_TIMEOUT_MS) * 100)));
     phasePanel = `
-      <div class="hub-phase quiz">
-        <p class="hub-phase-title">Quiz ${block.quizIndex + 1} / 2</p>
-        <p class="rel-quiz-prompt">${escapeHtml(quizItem.prompt)}</p>
-        <p class="hint">Time left: <strong>${secsLeft}s</strong> (timeout = incorrect)</p>
-        <div class="row">
-          <button class="btn quiz-btn" data-action="rel-quiz-answer" data-answer="true" ${quizLocked ? "disabled" : ""}>TRUE</button>
-          <button class="btn quiz-btn" data-action="rel-quiz-answer" data-answer="false" ${quizLocked ? "disabled" : ""}>FALSE</button>
+      <div class="stage-panel quiz-stage">
+        <div class="quiz-head-row">
+          <span>Question ${block.quizIndex + 1} of 2</span>
+          <span class="quiz-chip">Quiz</span>
+        </div>
+        <div class="quiz-card">
+          <p class="kicker">Is this true?</p>
+          <p class="rel-quiz-prompt">${escapeHtml(quizItem.prompt)}</p>
+        </div>
+        <div class="row quiz-action-row">
+          <button class="btn quiz-btn" data-action="rel-quiz-answer" data-answer="true" ${quizLocked ? "disabled" : ""}>True</button>
+          <button class="btn quiz-btn" data-action="rel-quiz-answer" data-answer="false" ${quizLocked ? "disabled" : ""}>False</button>
+        </div>
+        <div class="quiz-timer-row">
+          <div class="trial-progress-track"><span style="width:${timePct}%;"></span></div>
+          <p class="hint">${secsLeft}s remaining</p>
         </div>
       </div>
     `;
   } else {
+    const coachBriefingPreview = getCoachBriefingPreviewCopy(relSession?.pendingPlanPatch?.flags?.coachState || null);
     phasePanel = `
-      <div class="hub-phase result">
+      <div class="stage-panel result-stage">
         ${renderRelationalBlockSummary(relSession.lastBlockSummary)}
-        <div class="row">
-          <button class="btn primary" data-action="rel-next-block">Start Next Block</button>
-        </div>
+        ${coachBriefingPreview ? `<p class="hint">${escapeHtml(coachBriefingPreview)}</p>` : ""}
+        <button class="btn primary home-primary-btn" data-action="rel-next-block">Next Block</button>
       </div>
     `;
   }
 
   return `
-    <section class="card">
-      <h2>Relational Training</h2>
-      <div class="running-status-row">
-        <span class="running-pill">Block ${relSession.blockCursor + (relSession.phase === "block-result" ? 0 : 1)} / ${REL_TOTAL_BLOCKS}</span>
-        <span class="running-pill">N ${relSession.currentN}</span>
-        <span class="running-pill">${escapeHtml(wrapperDisplayName(relSession.wrapper))}</span>
+    <section class="card game-screen">
+      <div class="game-topbar">
+        <div class="game-topbar-brand">
+          <span>Block ${relSession.blockCursor + (relSession.phase === "block-result" ? 0 : 1)}/${REL_TOTAL_BLOCKS}</span>
+          <span>Level ${relSession.currentN}</span>
+        </div>
+        <div class="game-topbar-stats">
+          <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${state.bankUnits}</span>
+        </div>
       </div>
-      ${coachNotice}
-      ${relSession.phase === "block-result" && relCoachBriefingPreview ? `<p class="hint">${escapeHtml(relCoachBriefingPreview)}</p>` : ""}
+      <p class="hint run-context-line">${wrapperDisplayName(relSession.wrapper)} | max level ${REL_N_MAX}</p>
       ${phasePanel}
       ${renderFlash()}
     </section>
   `;
 }
-
 function renderHistory(history) {
+  const recent = history.slice(0, 5);
+  const peakSeries = recent.map((session) => computeSessionVisualStats(session).peakN);
+  const accSeries = recent.map((session) => {
+    const blocks = Array.isArray(session.blocks) ? session.blocks : [];
+    if (!blocks.length) {
+      return 0;
+    }
+    const mean = blocks.reduce((sum, block) => sum + Number(block?.accuracy || 0), 0) / blocks.length;
+    return Math.round(mean * 100);
+  });
+  const maxPeak = peakSeries.length ? Math.max(...peakSeries, 1) : 1;
+  const peakPoints = peakSeries.length
+    ? peakSeries.map((value, idx) => `${(idx / Math.max(peakSeries.length - 1, 1)) * 100},${100 - ((value / maxPeak) * 100)}`).join(" ")
+    : "";
+  const maxAcc = 100;
+  const accPoints = accSeries.length
+    ? accSeries.map((value, idx) => `${(idx / Math.max(accSeries.length - 1, 1)) * 100},${100 - ((value / maxAcc) * 100)}`).join(" ")
+    : "";
+
   const items = history.map((session) => {
     const blockCount = Array.isArray(session.blocks) ? session.blocks.length : 0;
     const mode = Array.isArray(session.blocksPlanned) && session.blocksPlanned.length
@@ -1667,31 +1762,55 @@ function renderHistory(history) {
   }).join("");
 
   return `
-    <section class="card">
-      <h2>Progress History</h2>
-      <p class="hint">Your completed sessions are saved locally on this device.</p>
+    <section class="card game-screen">
+      <div class="game-topbar">
+        <div class="game-topbar-brand">
+          <button class="topbar-icon-btn" data-action="go-home" aria-label="Home">
+            <img src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">
+          </button>
+          <strong>Progress</strong>
+        </div>
+      </div>
+      <p class="hint">Your training history</p>
+      <div class="session-chart-card">
+        <p class="kicker">Peak level trend</p>
+        ${peakSeries.length ? `<svg class="trend-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${peakPoints}"></polyline></svg>` : "<p class='hint'>No data yet.</p>"}
+      </div>
+      <div class="session-chart-card">
+        <p class="kicker">Session accuracy trend</p>
+        ${accSeries.length ? `<svg class="trend-svg trend-svg-green" viewBox="0 0 100 100" preserveAspectRatio="none"><polyline points="${accPoints}"></polyline></svg>` : "<p class='hint'>No data yet.</p>"}
+      </div>
       ${renderFlash()}
       ${history.length ? `<ul class="history-list">${items}</ul>` : "<p>No sessions yet.</p>"}
+      ${renderBottomTab("history")}
     </section>
   `;
 }
 
 function renderSettings(state) {
   return `
-    <section class="card">
-      <h2>Settings</h2>
+    <section class="card game-screen has-bottom-tab">
+      <div class="game-topbar">
+        <div class="game-topbar-brand">
+          <button class="topbar-icon-btn" data-action="go-home" aria-label="Home">
+            <img src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">
+          </button>
+          <strong>Settings</strong>
+        </div>
+      </div>
       <div class="label-row">
         <label>
           <input class="toggle" id="sound-toggle" type="checkbox" ${state.settings.soundOn ? "checked" : ""}>
           Sound enabled
         </label>
       </div>
-      <div class="row">
+      <div class="row home-footer-actions">
         <button class="btn" data-action="export-json">Export JSON</button>
         <button class="btn danger" data-action="reset-data">Reset Local Data</button>
       </div>
       <p class="hint">Export gives you a full backup of local training data.</p>
       ${renderFlash()}
+      ${renderBottomTab("settings")}
     </section>
   `;
 }
@@ -1720,15 +1839,21 @@ function renderHubBriefingOverlay() {
   return `
     <div class="app-overlay ${canTapDismiss ? "backdrop-dismissable" : ""}">
       <div class="overlay-backdrop" ${canTapDismiss ? 'data-action="briefing-dismiss"' : ""}></div>
-      <div class="overlay-card">
-        <h3>Block ${block.plan.blockIndex} of ${HUB_TOTAL_BLOCKS}</h3>
-        <p>Target: <strong>${escapeHtml(modalityLabel(block.plan.targetModality))}</strong></p>
-        <p>N-Back: <strong>${block.plan.n}</strong></p>
-        <p>Pace: <strong>${block.plan.speed}</strong> | Interference: <strong>${block.plan.interference}</strong></p>
-        <p class="hint">Press MATCH only when the target repeats at N-back.</p>
+      <div class="overlay-card briefing-sheet">
+        <div class="briefing-meta-row">
+          <p><strong>Block ${block.plan.blockIndex} of ${HUB_TOTAL_BLOCKS}</strong></p>
+          <p>T = ${block.trials.length} trials</p>
+        </div>
+        <h3>Remember ${escapeHtml(modalityLabel(block.plan.targetModality).toLowerCase())}</h3>
+        <p>Press MATCH when the target repeats at ${block.plan.n}-back.</p>
+        <div class="briefing-chip-row">
+          <span class="briefing-chip"><small>Level</small><strong>${block.plan.n}</strong></span>
+          <span class="briefing-chip"><small>Speed</small><strong>${escapeHtml(block.plan.speed)}</strong></span>
+          <span class="briefing-chip"><small>Type</small><strong>${escapeHtml(wrapperDisplayName(block.plan.wrapper))}</strong></span>
+        </div>
         ${coachPreview ? `<p class="hint">${escapeHtml(coachPreview)}</p>` : ""}
         <div class="overlay-actions">
-          <button class="btn primary" data-action="hub-start-block">Start Block</button>
+          <button class="btn primary home-primary-btn" data-action="hub-start-block">Start Block</button>
         </div>
         ${canTapDismiss ? '<p class="hint">Tip: tap outside to start quickly.</p>' : '<p class="hint">Block 1 includes a full start confirmation.</p>'}
       </div>
@@ -1746,15 +1871,21 @@ function renderRelationalBriefingOverlay() {
   return `
     <div class="app-overlay ${canTapDismiss ? "backdrop-dismissable" : ""}">
       <div class="overlay-backdrop" ${canTapDismiss ? 'data-action="briefing-dismiss"' : ""}></div>
-      <div class="overlay-card">
-        <h3>Block ${block.plan.blockIndex} of ${REL_TOTAL_BLOCKS}</h3>
-        <p>Mode: <strong>${escapeHtml(wrapperDisplayName(relSession.wrapper))}</strong></p>
-        <p>N-Back: <strong>${block.plan.n}</strong></p>
-        <p>Pace: <strong>${block.plan.speed}</strong> | Interference: <strong>${block.plan.interference}</strong></p>
-        <p class="hint">Press MATCH only when current token matches ${block.plan.n}-back.</p>
+      <div class="overlay-card briefing-sheet">
+        <div class="briefing-meta-row">
+          <p><strong>Block ${block.plan.blockIndex} of ${REL_TOTAL_BLOCKS}</strong></p>
+          <p>T = ${block.trials.length} trials</p>
+        </div>
+        <h3>${escapeHtml(wrapperDisplayName(relSession.wrapper))}</h3>
+        <p>Press MATCH when the current token matches ${block.plan.n}-back.</p>
+        <div class="briefing-chip-row">
+          <span class="briefing-chip"><small>Level</small><strong>${block.plan.n}</strong></span>
+          <span class="briefing-chip"><small>Speed</small><strong>${escapeHtml(block.plan.speed)}</strong></span>
+          <span class="briefing-chip"><small>Interf</small><strong>${escapeHtml(block.plan.interference)}</strong></span>
+        </div>
         ${coachPreview ? `<p class="hint">${escapeHtml(coachPreview)}</p>` : ""}
         <div class="overlay-actions">
-          <button class="btn primary" data-action="rel-start-block">Start Block</button>
+          <button class="btn primary home-primary-btn" data-action="rel-start-block">Start Block</button>
         </div>
         ${canTapDismiss ? '<p class="hint">Tip: tap outside to start quickly.</p>' : '<p class="hint">Block 1 includes a full start confirmation.</p>'}
       </div>
@@ -1766,16 +1897,17 @@ function renderUnlockCelebrationOverlay() {
   return `
     <div class="app-overlay">
       <div class="overlay-backdrop" data-action="unlock-close"></div>
-      <div class="overlay-card">
-        <h3>Relational Modes Unlocked</h3>
-        <p>You qualified in both Hub wrappers. Relational modes are now available.</p>
-        <div class="unlock-icons">
+      <div class="overlay-card unlock-sheet">
+        <img class="unlock-badge" src="../brandingUI/icons/status/unlock.svg" alt="Unlocked">
+        <h3>New Modes Unlocked</h3>
+        <p>You qualified in both Hub modes. Relational training is now available.</p>
+        <div class="unlock-icons unlock-icons-large">
           <span class="unlock-icon"><img src="../brandingUI/icons/game/transitive-order.svg" alt="Transitive"></span>
           <span class="unlock-icon"><img src="../brandingUI/icons/game/graph-directed.svg" alt="Graph"></span>
           <span class="unlock-icon"><img src="../brandingUI/icons/game/propositional.svg" alt="Propositional"></span>
         </div>
         <div class="overlay-actions">
-          <button class="btn primary" data-action="unlock-go-relational">Go to Relational</button>
+          <button class="btn primary home-primary-btn" data-action="unlock-go-relational">Try Relational Mode</button>
           <button class="btn" data-action="unlock-close">Return Home</button>
         </div>
       </div>
@@ -2726,8 +2858,23 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (action === "go-play-relational") {
+    window.location.hash = "/play-relational";
+    return;
+  }
+
   if (action === "go-home") {
     window.location.hash = "/home";
+    return;
+  }
+
+  if (action === "go-history") {
+    window.location.hash = "/history";
+    return;
+  }
+
+  if (action === "go-settings") {
+    window.location.hash = "/settings";
     return;
   }
 
@@ -2935,3 +3082,6 @@ document.addEventListener("keydown", (event) => {
 
 window.addEventListener("hashchange", render);
 render();
+
+
+
