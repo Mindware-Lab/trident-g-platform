@@ -96,14 +96,14 @@ const COACH_NOTICE_COPY = Object.freeze({
   RECOVER: "Recovery block scheduled",
   STABILISE: "Stabilise block scheduled",
   TUNE: "Targeted challenge pulse scheduled",
-  SPIKE_TUNE: "Probe wrapper block scheduled",
+  SPIKE_TUNE: "Probe game block scheduled",
   CONSOLIDATE: "Consolidation block scheduled"
 });
 const COACH_BRIEFING_COPY = Object.freeze({
   RECOVER: "Next: Recovery block",
   STABILISE: "Next: Stabilise block",
   TUNE: "Next: Targeted challenge pulse",
-  SPIKE_TUNE: "Next: Probe wrapper block",
+  SPIKE_TUNE: "Next: Probe game block",
   CONSOLIDATE: "Next: Consolidation block"
 });
 const uiTimers = {
@@ -735,6 +735,49 @@ function wrapperIconPath(wrapper) {
   return "../brandingUI/icons/tab-bar/history.svg";
 }
 
+function targetModalityIconPath(targetLabel) {
+  const text = String(targetLabel || "").toLowerCase();
+  if (text.includes("location")) {
+    return "../brandingUI/icons/game/location-spatial.svg";
+  }
+  if (text.includes("symbol")) {
+    return "../brandingUI/icons/game/symbol.svg";
+  }
+  return "";
+}
+
+function coachStateDisplayLabel(coachState) {
+  if (coachState === "RECOVER") {
+    return "RECOVERY";
+  }
+  if (coachState === "STABILISE") {
+    return "STABILISE";
+  }
+  if (coachState === "TUNE") {
+    return "CHALLENGE";
+  }
+  if (coachState === "SPIKE_TUNE") {
+    return "PROBE";
+  }
+  if (coachState === "CONSOLIDATE") {
+    return "CONSOLIDATE";
+  }
+  return "STABILISE";
+}
+
+function coachStateIconPath(coachState) {
+  if (coachState === "RECOVER" || coachState === "STABILISE") {
+    return "../brandingUI/icons/status/recovery-stabilize.svg";
+  }
+  if (coachState === "TUNE" || coachState === "SPIKE_TUNE") {
+    return "../brandingUI/icons/status/spike-breakthrough.svg";
+  }
+  if (coachState === "CONSOLIDATE") {
+    return "../brandingUI/icons/status/clean-control.svg";
+  }
+  return "../brandingUI/icons/status/recovery-stabilize.svg";
+}
+
 function getDayGreeting() {
   const hour = new Date().getHours();
   if (hour < 12) {
@@ -994,7 +1037,7 @@ function renderRelationalProgressCard(unlockProgress) {
       <p class="hint">${catDone && noncatDone ? "Relational modes are now available." : "Qualify in both Hub modes to unlock Relational."}</p>
       <details class="rel-progress-help">
         <summary>[?] What counts as stable?</summary>
-        <p>Stable = 3 blocks at N >= 3 with accuracy >= 75% in the same wrapper baseline.</p>
+        <p>Stable = 3 blocks at N >= 3 with accuracy >= 75% in the same game baseline.</p>
       </details>
     </div>
   `;
@@ -1164,17 +1207,17 @@ function renderHubConfigControls({
   const wrapperControl = showWrapperSelect
     ? `
       <label class="hub-config-item">
-        Wrapper
+        Game
         <select id="hub-wrapper-select" ${wrapperLock}>
           ${HUB_WRAPPERS.map((wrapperId) => (
-            `<option value="${wrapperId}" ${hubPreferences.wrapper === wrapperId ? "selected" : ""}>${wrapperId === "hub_noncat" ? "hub_noncat (non-categorical)" : "hub_cat (categorical)"}</option>`
+            `<option value="${wrapperId}" ${hubPreferences.wrapper === wrapperId ? "selected" : ""}>${wrapperId === "hub_noncat" ? "Hub (non-cat)" : "Hub (category)"}</option>`
           )).join("")}
         </select>
       </label>
     `
     : `
       <div class="hub-config-item hub-config-readonly">
-        <span>Wrapper</span>
+        <span>Game</span>
         <strong>Coach-controlled during session</strong>
       </div>
     `;
@@ -1213,10 +1256,14 @@ function renderHubStimulus(trial, visible, targetLabel, renderMapping, wrapper, 
   const tokenBg = tokenVisible && trial ? trial.display.colourHex : "transparent";
   const tokenText = tokenVisible && trial ? escapeHtml(trial.display.symbolLabel) : "";
   const stimulus = `<div class="${tokenClass}" style="left:${point.xPct}%;top:${point.yPct}%;background:${tokenBg};color:${textColor};">${tokenText}</div>`;
+  const targetIconPath = targetModalityIconPath(targetLabel);
+  const targetIcon = targetIconPath
+    ? `<img class="target-mode-icon" src="${targetIconPath}" alt="" aria-hidden="true">`
+    : '<span class="target-mode-dot" aria-hidden="true"></span>';
 
   return `
     <div class="hub-stimulus">
-      <p class="hub-target">Target: <strong>${escapeHtml(targetLabel)}</strong> | Wrapper: <strong>${escapeHtml(wrapperDisplayName(wrapper))}</strong></p>
+      <p class="hub-target">Target: ${targetIcon}<strong>${escapeHtml(targetLabel)}</strong> | Game: <strong>${escapeHtml(wrapperDisplayName(wrapper))}</strong></p>
       ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
       <div class="hub-arena">
         <div class="hub-ring"></div>
@@ -1231,9 +1278,7 @@ function renderBlockSummary(block) {
   if (!block) {
     return "";
   }
-  const cleanBlock = isCleanBlock(block);
   const outcomeBand = deriveOutcomeBandFromAccuracy(block.accuracy);
-  const coachNarrative = makeCoachNarrative(block?.flags?.coachState, "");
   const accuracyPercent = Number(block.accuracy || 0) * 100;
   const blockUnits = outcomeBand === "UP" ? 2 : (outcomeBand === "HOLD" ? 1 : 0);
   return `
@@ -1244,7 +1289,6 @@ function renderBlockSummary(block) {
         <div class="result-hero-side">
           <p class="result-outcome result-outcome-${outcomeBand.toLowerCase()}">${outcomeBand}</p>
           <p>N level: <strong>${block.nStart} -> ${block.nEnd}</strong></p>
-          <p>Average response: <strong>${block.meanRtMs ?? "n/a"} ms</strong></p>
         </div>
       </div>
       <div class="result-metric-grid">
@@ -1257,9 +1301,6 @@ function renderBlockSummary(block) {
         <span>Block earned</span>
         <strong>+${blockUnits} units</strong>
       </div>
-      <p class="hint">Next block targets: >=75% for HOLD, >=90% to advance N.</p>
-      ${cleanBlock ? `<p class="status clean">Clean control block.</p>` : ""}
-      ${coachNarrative ? `<p class="hint">Coach action: ${escapeHtml(coachNarrative)}</p>` : ""}
     </div>
   `;
 }
@@ -1455,10 +1496,6 @@ function renderPlayHub() {
   const pendingPatch = hubSession.pendingPlanPatch && typeof hubSession.pendingPlanPatch === "object"
     ? hubSession.pendingPlanPatch
     : {};
-  const hasCoachDialOverride = Boolean(pendingPatch.speed || pendingPatch.interference);
-  const coachOverrideNote = hubSession.phase === "block-result" && hasCoachDialOverride
-    ? `<p class="hint">Coach override active for next block (${escapeHtml(preview.coachState || "STABILISE")}). Your settings will apply after this coach block.</p>`
-    : "";
   const overrideEligible = hubSession.phase === "block-result"
     && (preview.coachState === "TUNE" || preview.coachState === "SPIKE_TUNE");
   const alternativePatch = overrideEligible ? resolveHubAlternativePatch(hubSession, pendingPatch) : null;
@@ -1509,12 +1546,16 @@ function renderPlayHub() {
       </div>
     `;
   } else {
-    const coachBriefingPreview = getCoachBriefingPreviewCopy(preview.coachState);
+    const coachState = preview.coachState || "STABILISE";
+    const coachLabel = coachStateDisplayLabel(coachState);
+    const coachIcon = coachStateIconPath(coachState);
     phasePanel = `
       <div class="stage-panel result-stage">
         ${renderBlockSummary(hubSession.lastBlockSummary)}
-        ${coachBriefingPreview ? `<p class="hint">${escapeHtml(coachBriefingPreview)}</p>` : ""}
-        ${coachOverrideNote}
+        <div class="coach-next-block">
+          <p class="coach-next-title">Coach-led next block: ${escapeHtml(coachLabel)}</p>
+          <img class="coach-next-icon" src="${coachIcon}" alt="" aria-hidden="true">
+        </div>
         ${overrideControls}
         <button class="btn primary home-primary-btn" data-action="hub-next-block">Next Block</button>
       </div>
@@ -1547,7 +1588,7 @@ function renderPlayRelational(state) {
   if (!running && !completed) {
     const lockText = relationalUnlocked
       ? "Relational modes are available."
-      : "Complete both Hub wrappers to unlock Relational.";
+      : "Complete both Hub games to unlock Relational.";
     return `
       <section class="card game-screen">
         <div class="game-topbar">
@@ -1876,7 +1917,7 @@ function renderHubBriefingOverlay() {
         <div class="briefing-chip-row">
           <span class="briefing-chip"><small>Level</small><strong>${block.plan.n}</strong></span>
           <span class="briefing-chip"><small>Speed</small><strong>${escapeHtml(block.plan.speed)}</strong></span>
-          <span class="briefing-chip"><small>Type</small><strong>${escapeHtml(wrapperDisplayName(block.plan.wrapper))}</strong></span>
+          <span class="briefing-chip"><small>Game</small><strong>${escapeHtml(wrapperDisplayName(block.plan.wrapper))}</strong></span>
         </div>
         ${coachPreview ? `<p class="hint">${escapeHtml(coachPreview)}</p>` : ""}
         <div class="overlay-actions">
@@ -1927,7 +1968,7 @@ function renderUnlockCelebrationOverlay() {
       <div class="overlay-card unlock-sheet">
         <img class="unlock-badge" src="../brandingUI/icons/status/unlock.svg" alt="Unlocked">
         <h3>New Modes Unlocked</h3>
-        <p>You qualified in both Hub modes. Relational training is now available.</p>
+        <p>You qualified in both Hub games. Relational training is now available.</p>
         <div class="unlock-icons unlock-icons-large">
           <span class="unlock-icon"><img src="../brandingUI/icons/game/transitive-order.svg" alt="Transitive"></span>
           <span class="unlock-icon"><img src="../brandingUI/icons/game/graph-directed.svg" alt="Graph"></span>

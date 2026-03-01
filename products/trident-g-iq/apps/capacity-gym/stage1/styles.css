@@ -251,6 +251,10 @@ body {
   font-weight: 900;
 }
 
+.result-stage .home-primary-btn {
+  margin-top: 22px;
+}
+
 .mode-action {
   cursor: pointer;
   font: inherit;
@@ -362,6 +366,27 @@ body {
   background: rgba(26, 36, 54, 0.72);
   padding: 10px 12px;
   margin-top: 10px;
+}
+
+.coach-next-block {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.coach-next-title {
+  margin: 0;
+  color: var(--brand-text);
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  font-size: 1.1rem;
+}
+
+.coach-next-icon {
+  width: 42px;
+  height: 42px;
+  display: block;
+  margin: 8px auto 0 auto;
+  filter: brightness(1.24) saturate(1.24);
 }
 
 .quiz-head-row {
@@ -1074,6 +1099,25 @@ input:disabled {
   color: var(--brand-text);
   font-size: 1.03rem;
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.target-mode-icon {
+  width: 20px;
+  height: 20px;
+  filter: brightness(1.2) saturate(1.2);
+}
+
+.target-mode-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  background: linear-gradient(135deg, #7ec5ff, #5a8fd8);
+  box-shadow: 0 0 0 2px rgba(18, 29, 43, 0.7);
 }
 
 .hub-runtime {
