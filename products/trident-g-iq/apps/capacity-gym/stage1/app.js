@@ -694,6 +694,119 @@ function setActiveNav(route) {
   });
 }
 
+function wrapperDisplayName(wrapper) {
+  if (wrapper === "hub_noncat") {
+    return "Hub Non-Categorical";
+  }
+  if (wrapper === "hub_cat") {
+    return "Hub Categorical";
+  }
+  if (wrapper === "transitive") {
+    return "Transitive";
+  }
+  if (wrapper === "graph") {
+    return "Graph";
+  }
+  if (wrapper === "propositional") {
+    return "Propositional";
+  }
+  return wrapper || "Unknown";
+}
+
+function getDayGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) {
+    return "Good morning";
+  }
+  if (hour < 18) {
+    return "Good afternoon";
+  }
+  return "Good evening";
+}
+
+function computeSessionVisualStats(summary) {
+  const blocks = Array.isArray(summary?.blocks) ? summary.blocks : [];
+  if (!blocks.length) {
+    return {
+      peakN: 1,
+      finalN: 1,
+      holdUpCount: 0,
+      totalBlocks: 0
+    };
+  }
+  let peakN = 1;
+  let holdUpCount = 0;
+  for (let i = 0; i < blocks.length; i += 1) {
+    const block = blocks[i];
+    peakN = Math.max(peakN, Number(block?.nEnd || block?.nStart || 1));
+    if (Number(block?.accuracy || 0) >= 0.75) {
+      holdUpCount += 1;
+    }
+  }
+  const finalN = Number(blocks[blocks.length - 1]?.nEnd || blocks[blocks.length - 1]?.nStart || 1);
+  return {
+    peakN,
+    finalN,
+    holdUpCount,
+    totalBlocks: blocks.length
+  };
+}
+
+function clampPercent(value) {
+  return Math.max(0, Math.min(100, Number(value || 0)));
+}
+
+function renderAccuracyRing(accuracyPercent, subLabel = "accuracy") {
+  const safePct = clampPercent(accuracyPercent);
+  const radius = 54;
+  const circumference = 2 * Math.PI * radius;
+  const dash = (safePct / 100) * circumference;
+  return `
+    <div class="result-ring-wrap" aria-label="${safePct.toFixed(1)} percent ${escapeHtml(subLabel)}">
+      <svg class="result-ring" viewBox="0 0 140 140" role="img">
+        <circle cx="70" cy="70" r="${radius}" class="result-ring-bg"></circle>
+        <circle cx="70" cy="70" r="${radius}" class="result-ring-fg" stroke-dasharray="${dash} ${circumference}" transform="rotate(-90 70 70)"></circle>
+      </svg>
+      <div class="result-ring-text">
+        <strong>${safePct.toFixed(0)}%</strong>
+        <span>${escapeHtml(subLabel)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderAccuracyBars(blocks) {
+  const safeBlocks = Array.isArray(blocks) ? blocks : [];
+  if (!safeBlocks.length) {
+    return "";
+  }
+  const bars = safeBlocks.map((block, idx) => {
+    const pct = clampPercent(Number(block?.accuracy || 0) * 100);
+    const band = deriveOutcomeBandFromAccuracy(Number(block?.accuracy || 0));
+    const className = band === "UP" ? "up" : (band === "DOWN" ? "down" : "hold");
+    const height = Math.max(8, Math.round((pct / 100) * 74));
+    return `<span class="acc-bar ${className}" style="height:${height}px;" title="Block ${idx + 1}: ${pct.toFixed(1)}%"></span>`;
+  }).join("");
+  return `
+    <div class="session-chart-card">
+      <p class="kicker">Accuracy by Block</p>
+      <div class="acc-bars">${bars}</div>
+      <p class="hint">Green = UP, Blue = HOLD, Red = DOWN</p>
+    </div>
+  `;
+}
+
+function updateShellHeaderStats(state) {
+  const streakEl = document.querySelector("#shell-streak");
+  const bankEl = document.querySelector("#shell-bank");
+  if (streakEl) {
+    streakEl.textContent = String(Number(state?.settings?.streakCurrent || 0));
+  }
+  if (bankEl) {
+    bankEl.textContent = String(Number(state?.bankUnits || 0));
+  }
+}
+
 function renderFlash() {
   if (!flash) {
     return "";
@@ -866,24 +979,79 @@ function renderHome(state) {
   const mission = getMissionPreview(state, todayKey, unlockProgress);
   const streakCurrent = Number(state.settings?.streakCurrent || 0);
   const streakBest = Number(state.settings?.streakBest || 0);
+  const greeting = getDayGreeting();
+  const tierLabel = mission.tier === "tier1" ? "Tier 1: Reset - Control - Reason" : "Tier 0: Control";
+  const missionSteps = mission.steps.map((stepId, idx) => {
+    const done = idx < mission.completedSteps;
+    const label = stepId === "reset"
+      ? "Start any session"
+      : (stepId === "control" ? "Complete one Hub session" : "Complete one Relational session");
+    return `<div class="mission-step"><span class="mission-dot ${done ? "done" : ""}"></span><span>${label}</span></div>`;
+  }).join("");
+  const relModeLocked = !unlockProgress.relationalUnlocked;
+  const relLockText = relModeLocked ? "Locked" : "Available";
   return `
     <section class="card">
-      <h2>Home / Today</h2>
-      <p class="hint">Stage 3 includes playable hub_cat and hub_noncat sessions (10 blocks).</p>
+      <h2>${greeting}</h2>
+      <p class="hint">${mission.tier === "tier1" ? "Tier 1 - Reset - Control - Reason" : "Complete a Hub session today."}</p>
+      <div class="hero-grid">
+        <div class="mission-card">
+          <p class="kicker">Daily Mission</p>
+          <p><strong>${tierLabel}</strong> <span class="pill-soft">+3 bonus</span></p>
+          ${missionSteps}
+          <p class="hint">${mission.rewardClaimed ? "Mission reward claimed for today." : "Complete mission to earn +3 bank units."}</p>
+        </div>
+        <div class="snapshot-card snapshot-list">
+          <p><strong>Sessions:</strong> ${state.history.length}</p>
+          <p><strong>Bank:</strong> ${state.bankUnits}</p>
+          <p><strong>Streak:</strong> ${streakCurrent} (best ${streakBest})</p>
+          <p><strong>Relational:</strong> ${unlockProgress.relationalUnlocked ? "Unlocked" : "Locked"}</p>
+        </div>
+      </div>
       <div class="row">
         <button class="btn primary" data-action="go-play-hub">Start Recommended Session</button>
       </div>
-      ${renderFlash()}
-    </section>
-    <section class="card">
-      <h3>Today Snapshot</h3>
-      <p>Stored sessions: <strong>${state.history.length}</strong></p>
-      <p>Bank units: <strong>${state.bankUnits}</strong></p>
-      <p>Mission (${mission.tier === "tier1" ? "Tier 1" : "Tier 0"}): <strong>${mission.completedSteps}/${mission.steps.length}</strong>${mission.rewardClaimed ? " | Reward claimed" : ""}</p>
-      <p>Streak: <strong>${streakCurrent}</strong> (best ${streakBest})</p>
-      <p>Relational unlocks: <strong>${unlockProgress.relationalUnlocked ? "Available" : "Locked"}</strong></p>
-      <p class="hint">Unlock checklist: hub_cat ${unlockProgress.catQualified ? "qualified" : "pending"}, hub_noncat ${unlockProgress.noncatQualified ? "qualified" : "pending"}.</p>
+      <p class="hint home-cta-hint">~10 min | Hub (category) | Level 2 recommended</p>
+      <div class="mode-panel">
+        <p class="kicker">Choose a Mode</p>
+        <div class="mode-group">
+          <p class="hint">Hub</p>
+          <div class="mode-grid mode-grid-hub">
+            <div class="mode-tile">
+              <img src="../brandingUI/icons/game/location-spatial.svg" alt="" aria-hidden="true">
+              <strong>Hub Cat</strong>
+              <span>Available</span>
+            </div>
+            <div class="mode-tile">
+              <img src="../brandingUI/icons/game/symbol.svg" alt="" aria-hidden="true">
+              <strong>Hub Noncat</strong>
+              <span>Available</span>
+            </div>
+          </div>
+        </div>
+        <div class="mode-group">
+          <p class="hint">Relational</p>
+          <div class="mode-grid mode-grid-rel">
+            <div class="mode-tile ${relModeLocked ? "locked" : ""}">
+              <img src="../brandingUI/icons/game/transitive-order.svg" alt="" aria-hidden="true">
+              <strong>Transitive</strong>
+              <span>${relLockText}</span>
+            </div>
+            <div class="mode-tile ${relModeLocked ? "locked" : ""}">
+              <img src="../brandingUI/icons/game/graph-directed.svg" alt="" aria-hidden="true">
+              <strong>Graph</strong>
+              <span>${relLockText}</span>
+            </div>
+            <div class="mode-tile ${relModeLocked ? "locked" : ""}">
+              <img src="../brandingUI/icons/game/propositional.svg" alt="" aria-hidden="true">
+              <strong>Propositional</strong>
+              <span>${relLockText}</span>
+            </div>
+          </div>
+        </div>
+      </div>
       ${renderRelationalProgressCard(unlockProgress)}
+      ${renderFlash()}
     </section>
   `;
 }
@@ -891,9 +1059,9 @@ function renderHome(state) {
 function renderRelationalUnlockChecklist(unlockProgress) {
   return `
     <div class="unlock-checklist">
-      <p><strong>Unlock checklist</strong></p>
-      <p>hub_cat qualification: <strong>${unlockProgress.catQualified ? "complete" : "pending"}</strong></p>
-      <p>hub_noncat qualification: <strong>${unlockProgress.noncatQualified ? "complete" : "pending"}</strong></p>
+      <p><strong>Relational Unlock Checklist</strong></p>
+      <p>${unlockProgress.catQualified ? "[x]" : "[ ]"} hub_cat qualification ${unlockProgress.catQualified ? "complete" : "pending"}</p>
+      <p>${unlockProgress.noncatQualified ? "[x]" : "[ ]"} hub_noncat qualification ${unlockProgress.noncatQualified ? "complete" : "pending"}</p>
     </div>
   `;
 }
@@ -902,9 +1070,9 @@ function renderRelationalModeButtons(locked) {
   const lockAttr = locked ? "disabled" : "";
   return `
     <div class="row">
-      <button class="btn primary" data-action="start-relational-session" data-mode="transitive" ${lockAttr}>Start Transitive</button>
-      <button class="btn primary" data-action="start-relational-session" data-mode="graph" ${lockAttr}>Start Graph</button>
-      <button class="btn primary" data-action="start-relational-session" data-mode="propositional" ${lockAttr}>Start Propositional</button>
+      <button class="btn primary" data-action="start-relational-session" data-mode="transitive" ${lockAttr}><img class="btn-inline-icon" src="../brandingUI/icons/game/transitive-order.svg" alt="" aria-hidden="true">Start Transitive</button>
+      <button class="btn primary" data-action="start-relational-session" data-mode="graph" ${lockAttr}><img class="btn-inline-icon" src="../brandingUI/icons/game/graph-directed.svg" alt="" aria-hidden="true">Start Graph</button>
+      <button class="btn primary" data-action="start-relational-session" data-mode="propositional" ${lockAttr}><img class="btn-inline-icon" src="../brandingUI/icons/game/propositional.svg" alt="" aria-hidden="true">Start Propositional</button>
     </div>
   `;
 }
@@ -924,7 +1092,7 @@ function renderHubConfigControls({
         Wrapper
         <select id="hub-wrapper-select" ${wrapperLock}>
           ${HUB_WRAPPERS.map((wrapperId) => (
-            `<option value="${wrapperId}" ${hubPreferences.wrapper === wrapperId ? "selected" : ""}>${wrapperId}</option>`
+            `<option value="${wrapperId}" ${hubPreferences.wrapper === wrapperId ? "selected" : ""}>${wrapperId === "hub_noncat" ? "hub_noncat (non-categorical)" : "hub_cat (categorical)"}</option>`
           )).join("")}
         </select>
       </label>
@@ -941,8 +1109,8 @@ function renderHubConfigControls({
       <label class="hub-config-item">
         Speed
         <select id="hub-speed-select" ${dialLock}>
-          <option value="slow" ${speedValue === "slow" ? "selected" : ""}>Slow (3000ms SOA)</option>
-          <option value="fast" ${speedValue === "fast" ? "selected" : ""}>Fast (1400ms SOA)</option>
+          <option value="slow" ${speedValue === "slow" ? "selected" : ""}>Slow pace</option>
+          <option value="fast" ${speedValue === "fast" ? "selected" : ""}>Fast pace</option>
         </select>
       </label>
       <label class="hub-config-item">
@@ -953,7 +1121,7 @@ function renderHubConfigControls({
         </select>
       </label>
     </div>
-    <p class="hint">Interference controls cross-feature lure rate (LOW 10%, HIGH 25% of target non-match trials).</p>
+    <p class="hint">Interference controls how distracting the stream feels. Changes apply to the next block.</p>
   `;
 }
 
@@ -973,13 +1141,13 @@ function renderHubStimulus(trial, visible, targetLabel, renderMapping, wrapper, 
 
   const meta = trial
     ? visible
-      ? `Colour: <strong>${escapeHtml(trial.display.colourLabel)}</strong> | Symbol: <strong>${escapeHtml(trial.display.symbolLabel)}</strong>`
-      : "Stimulus cleared. Response window remains open until trial end."
-    : "Get ready. Trials start after cue.";
+      ? "Respond MATCH only if this target stream repeats at N-back."
+      : "Hold attention. Response window is still open."
+    : "Get ready.";
 
   return `
     <div class="hub-stimulus">
-      <p class="hub-target">Target: <strong>${escapeHtml(targetLabel)}</strong> | Wrapper: <strong>${escapeHtml(wrapper)}</strong></p>
+      <p class="hub-target">Target: <strong>${escapeHtml(targetLabel)}</strong> | Wrapper: <strong>${escapeHtml(wrapperDisplayName(wrapper))}</strong></p>
       ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
       <div class="hub-arena">
         <div class="hub-ring"></div>
@@ -998,14 +1166,29 @@ function renderBlockSummary(block) {
   const cleanBlock = isCleanBlock(block);
   const outcomeBand = deriveOutcomeBandFromAccuracy(block.accuracy);
   const coachNarrative = makeCoachNarrative(block?.flags?.coachState, "");
+  const accuracyPercent = Number(block.accuracy || 0) * 100;
+  const blockUnits = outcomeBand === "UP" ? 2 : (outcomeBand === "HOLD" ? 1 : 0);
   return `
     <div class="hub-summary">
-      <p><strong>Block ${block.blockIndex} Result</strong> (${outcomeBand})</p>
-      <p>N: ${block.nStart} -> ${block.nEnd} | Trials: ${block.trials}</p>
-      <p>Hits: ${block.hits} | Misses: ${block.misses} | FA: ${block.falseAlarms} | CR: ${block.correctRejections}</p>
-      <p>Accuracy: ${(block.accuracy * 100).toFixed(1)}% | Mean RT: ${block.meanRtMs ?? "n/a"} ms | RT SD: ${block.rtSdMs ?? "n/a"} ms</p>
-      <p>Lure trials: ${block.lureTrials ?? 0} | FA on lures: ${block.faOnLures ?? 0}</p>
-      <p>Error bursts: ${block.errorBursts} | Lapses (Hub match omissions): ${block.lapseCount}</p>
+      <p class="kicker">Block ${block.blockIndex} Complete</p>
+      <div class="result-hero">
+        ${renderAccuracyRing(accuracyPercent)}
+        <div class="result-hero-side">
+          <p class="result-outcome result-outcome-${outcomeBand.toLowerCase()}">${outcomeBand}</p>
+          <p>N level: <strong>${block.nStart} -> ${block.nEnd}</strong></p>
+          <p>Average response: <strong>${block.meanRtMs ?? "n/a"} ms</strong></p>
+        </div>
+      </div>
+      <div class="result-metric-grid">
+        <div class="result-metric"><span>Hits</span><strong>${block.hits}</strong></div>
+        <div class="result-metric"><span>Misses</span><strong>${block.misses}</strong></div>
+        <div class="result-metric"><span>False Alarms</span><strong>${block.falseAlarms}</strong></div>
+        <div class="result-metric"><span>CR</span><strong>${block.correctRejections}</strong></div>
+      </div>
+      <div class="result-earned-row">
+        <span>Block earned</span>
+        <strong>+${blockUnits} units</strong>
+      </div>
       <p class="hint">Next block targets: >=75% for HOLD, >=90% to advance N.</p>
       ${cleanBlock ? `<p class="status clean">Clean control block.</p>` : ""}
       ${coachNarrative ? `<p class="hint">Coach action: ${escapeHtml(coachNarrative)}</p>` : ""}
@@ -1017,8 +1200,8 @@ function renderRelationalStimulus(trial, visible, runtimeInfo = "") {
   const display = trial?.display || {};
   const textVisible = Boolean(trial && visible);
   const cueOrBlankCaption = trial
-    ? "Stimulus cleared. Response window remains open until trial end."
-    : "Get ready. Trials start after cue.";
+    ? "Hold attention. Response window is still open."
+    : "Get ready.";
 
   if (display.type === "graph") {
     const nodes = Array.isArray(display.nodes) ? display.nodes : [];
@@ -1078,13 +1261,29 @@ function renderRelationalBlockSummary(block) {
   const cleanBlock = isCleanBlock(block);
   const outcomeBand = deriveOutcomeBandFromAccuracy(block.accuracy);
   const coachNarrative = makeCoachNarrative(block?.flags?.coachState, "");
+  const accuracyPercent = Number(block.accuracy || 0) * 100;
+  const blockUnits = outcomeBand === "UP" ? 2 : (outcomeBand === "HOLD" ? 1 : 0);
   return `
     <div class="hub-summary">
-      <p><strong>Block ${block.blockIndex} Result</strong> (${outcomeBand})</p>
-      <p>N: ${block.nStart} -> ${block.nEnd} | Trials: ${block.trials}</p>
-      <p>Hits: ${block.hits} | Misses: ${block.misses} | FA: ${block.falseAlarms} | CR: ${block.correctRejections}</p>
-      <p>Accuracy: ${(block.accuracy * 100).toFixed(1)}% | Mean RT: ${block.meanRtMs ?? "n/a"} ms | RT SD: ${block.rtSdMs ?? "n/a"} ms</p>
-      <p>Quiz: ${block.quizCorrect ?? 0}/${block.quizTotal ?? 2} | Error bursts: ${block.errorBursts}</p>
+      <p class="kicker">Block ${block.blockIndex} Complete</p>
+      <div class="result-hero">
+        ${renderAccuracyRing(accuracyPercent)}
+        <div class="result-hero-side">
+          <p class="result-outcome result-outcome-${outcomeBand.toLowerCase()}">${outcomeBand}</p>
+          <p>N level: <strong>${block.nStart} -> ${block.nEnd}</strong></p>
+          <p>Quiz score: <strong>${block.quizCorrect ?? 0}/${block.quizTotal ?? 2}</strong></p>
+        </div>
+      </div>
+      <div class="result-metric-grid">
+        <div class="result-metric"><span>Hits</span><strong>${block.hits}</strong></div>
+        <div class="result-metric"><span>Misses</span><strong>${block.misses}</strong></div>
+        <div class="result-metric"><span>False Alarms</span><strong>${block.falseAlarms}</strong></div>
+        <div class="result-metric"><span>Lapses</span><strong>${block.lapseCount}</strong></div>
+      </div>
+      <div class="result-earned-row">
+        <span>Block earned</span>
+        <strong>+${blockUnits} units</strong>
+      </div>
       <p class="hint">Next block targets: >=75% for HOLD, >=90% to advance N.</p>
       ${cleanBlock ? `<p class="status clean">Clean control block.</p>` : ""}
       ${coachNarrative ? `<p class="hint">Coach action: ${escapeHtml(coachNarrative)}</p>` : ""}
@@ -1101,13 +1300,13 @@ function renderPlayHub() {
   if (!running && !completed) {
     return `
       <section class="card">
-        <h2>Play Hub</h2>
-        <p class="hint">Stage 3: choose hub_cat or hub_noncat with cue, timed trials, lure-based interference, and deterministic block mappings.</p>
+        <h2>Hub Training</h2>
+        <p class="hint">Choose wrapper, speed, and interference before starting.</p>
         ${renderHubConfigControls({ showWrapperSelect: true, wrapperLocked: false, dialsLocked: false })}
         <div class="row">
-          <button class="btn primary" data-action="start-hub-session">Start ${requestedWrapper} Session</button>
+          <button class="btn primary" data-action="start-hub-session">Start ${wrapperDisplayName(requestedWrapper)} Session</button>
         </div>
-        <p class="hint">Session shape: 10 blocks, each block trials = ${HUB_BASE_TRIALS} + N.</p>
+        <p class="hint">Session shape: 10 blocks. Trial count scales with your level.</p>
         ${renderFlash()}
       </section>
     `;
@@ -1130,20 +1329,26 @@ function renderPlayHub() {
     const allCleanNote = progressDelta?.allBlocksClean
       ? `<p class="prestige-note">All Blocks Clean (prestige)</p>`
       : "";
+    const visualStats = computeSessionVisualStats(summary);
+    const accuracyChart = renderAccuracyBars(summary.blocks);
     return `
       <section class="card">
-        <h2>Play Hub</h2>
+        <h2>Session Complete</h2>
+        <p class="hint">${wrapperDisplayName(summary.blocksPlanned?.[0]?.wrapper)} | 10 blocks</p>
         ${renderHubConfigControls({ showWrapperSelect: true, wrapperLocked: false, dialsLocked: false })}
         <div class="status success">Session complete and saved.</div>
         ${progressionSummary}
         ${allCleanNote}
-        <p>Session ID: <code>${escapeHtml(summary.id)}</code></p>
-        <p>Blocks saved: <strong>${summary.blocks.length}</strong> / ${HUB_TOTAL_BLOCKS}</p>
-        <p>Session start: ${new Date(summary.tsStart).toLocaleString()}</p>
-        <p>Session end: ${new Date(summary.tsEnd).toLocaleString()}</p>
+        <div class="session-stats-grid">
+          <div class="session-stat"><span>Peak Level</span><strong>${visualStats.peakN}</strong></div>
+          <div class="session-stat"><span>Final Level</span><strong>${visualStats.finalN}</strong></div>
+          <div class="session-stat"><span>Stability</span><strong>${visualStats.holdUpCount}/${visualStats.totalBlocks}</strong></div>
+        </div>
+        ${accuracyChart}
         ${renderBlockSummary(finalBlock)}
         <div class="row">
-          <button class="btn primary" data-action="start-hub-session">Start New ${requestedWrapper} Session</button>
+          <button class="btn" data-action="go-home">Done</button>
+          <button class="btn primary" data-action="start-hub-session">Start New Session</button>
         </div>
         ${renderFlash()}
       </section>
@@ -1190,7 +1395,7 @@ function renderPlayHub() {
   const coachAction = makeCoachNarrative(preview.coachState, "");
   const coachBriefingPreview = getCoachBriefingPreviewCopy(preview.coachState);
   const runtimeInfo = block
-    ? `SOA: ${block.soaMs}ms | Interference: ${block.plan.interference} | Coach: ${block.plan.flags?.coachState || "STABILISE"}`
+    ? `Block ${block.plan.blockIndex}/${HUB_TOTAL_BLOCKS} | Coach: ${block.plan.flags?.coachState || "STABILISE"}`
     : "";
 
   let phasePanel = "";
@@ -1198,27 +1403,27 @@ function renderPlayHub() {
     phasePanel = `
       <div class="hub-phase cue">
         <p class="hub-phase-title">Briefing</p>
-        <p class="hint">Review the block briefing overlay, then start the block.</p>
+        <p class="hint">Review the block briefing, then start when ready.</p>
       </div>
     `;
   } else if (hubSession.phase === "cue") {
     phasePanel = `
       <div class="hub-phase cue">
-        <p class="hub-phase-title">Cue</p>
+        <p class="hub-phase-title">Focus Cue</p>
         ${renderHubStimulus(null, false, targetLabel, block?.renderMapping, block?.plan?.wrapper || hubPreferences.wrapper, runtimeInfo)}
-        <p class="hint">Cue duration: ${HUB_CUE_MS} ms</p>
+        <p class="hint">Prepare your attention target.</p>
       </div>
     `;
   } else if (hubSession.phase === "trial") {
     phasePanel = `
       <div class="hub-phase trial">
         <p class="hub-phase-title">Trial ${trialNumber} / ${trialCount}</p>
-        <p>Respond MATCH when the target modality matches ${block.plan.n}-back.</p>
+        <p>Press MATCH when the target stream repeats ${block.plan.n}-back.</p>
         ${renderHubStimulus(trial, block.stimulusVisible, targetLabel, block.renderMapping, block.plan.wrapper, runtimeInfo)}
         <div class="row">
           <button class="btn primary match-btn" data-action="hub-match" ${responseCaptured ? "disabled" : ""}>MATCH (Space)</button>
         </div>
-        <p class="hint">${responseCaptured ? `Response recorded at ${block.responseRtMs} ms.` : "No response recorded yet."}</p>
+        <p class="hint">${responseCaptured ? "Response recorded for this trial." : "Waiting for response."}</p>
       </div>
     `;
   } else {
@@ -1236,7 +1441,7 @@ function renderPlayHub() {
 
   return `
     <section class="card">
-      <h2>Play Hub</h2>
+      <h2>Hub Training</h2>
       ${renderHubConfigControls({
         showWrapperSelect: false,
         wrapperLocked: true,
@@ -1244,12 +1449,14 @@ function renderPlayHub() {
         speedValue: blockActive && block ? block.plan.speed : hubPreferences.speed,
         interferenceValue: blockActive && block ? block.plan.interference : hubPreferences.interference
       })}
-      <p>Block: <strong>${hubSession.blockCursor + (hubSession.phase === "block-result" ? 0 : 1)}</strong> / ${HUB_TOTAL_BLOCKS}</p>
-      <p>Current N: <strong>${hubSession.currentN}</strong> (bounds 1..${HUB_N_MAX})</p>
-      <p>Active wrapper: <strong>${currentWrapper}</strong></p>
-      <p>Current block settings: <strong>${currentSpeed}</strong> speed, <strong>${currentInterference}</strong> interference.</p>
+      <div class="running-status-row">
+        <span class="running-pill">Block ${hubSession.blockCursor + (hubSession.phase === "block-result" ? 0 : 1)} / ${HUB_TOTAL_BLOCKS}</span>
+        <span class="running-pill">N ${hubSession.currentN}</span>
+        <span class="running-pill">${wrapperDisplayName(currentWrapper)}</span>
+      </div>
+      <p>Current settings: <strong>${currentSpeed}</strong> speed, <strong>${currentInterference}</strong> interference.</p>
       ${baselineNotice}
-      ${hubSession.phase === "block-result" ? `<p>Next block settings: <strong>${preview.wrapper}</strong> wrapper, <strong>${preview.speed}</strong> speed, <strong>${preview.interference}</strong> interference${preview.coachState ? ` | Coach: <strong>${preview.coachState}</strong>` : ""}.</p>` : ""}
+      ${hubSession.phase === "block-result" ? `<p>Next block: <strong>${wrapperDisplayName(preview.wrapper)}</strong>, <strong>${preview.speed}</strong> speed, <strong>${preview.interference}</strong> interference${preview.coachState ? ` | Coach: <strong>${preview.coachState}</strong>` : ""}.</p>` : ""}
       ${hubSession.phase === "block-result" && coachBriefingPreview ? `<p class="hint">${escapeHtml(coachBriefingPreview)}</p>` : ""}
       ${coachOverrideNote}
       ${hubSession.phase === "block-result" ? coachNotice : ""}
@@ -1270,13 +1477,13 @@ function renderPlayRelational(state) {
   if (!running && !completed) {
     return `
       <section class="card">
-        <h2>Play Relational</h2>
-        <p class="hint">Stage 4 foundation: full 10-block relational runtime with canonical scoring and timed quizzes.</p>
+        <h2>Relational Training</h2>
+        <p class="hint">Train transitive, graph, and propositional reasoning with the same MATCH rhythm.</p>
         <p>Unlock status: <strong>${relationalUnlocked ? "Unlocked" : "Locked"}</strong></p>
         ${unlockChecklist}
         ${modeButtons}
         ${!relationalUnlocked ? `<p class="hint">Relational modes unlock after qualifying hub_cat and hub_noncat sessions.</p>` : ""}
-        <p class="hint">Response model: press MATCH (Space) only on match trials. Each block ends with 2 timed TRUE/FALSE quiz items.</p>
+        <p class="hint">Play model: MATCH-only responses during trials, then 2 timed quiz prompts per block.</p>
         ${renderFlash()}
       </section>
     `;
@@ -1301,20 +1508,29 @@ function renderPlayRelational(state) {
     const allCleanNote = progressDelta?.allBlocksClean
       ? `<p class="prestige-note">All Blocks Clean (prestige)</p>`
       : "";
+    const visualStats = computeSessionVisualStats(summary);
+    const accuracyChart = renderAccuracyBars(summary.blocks);
     return `
       <section class="card">
-        <h2>Play Relational</h2>
+        <h2>Session Complete</h2>
+        <p class="hint">${escapeHtml(wrapperDisplayName(summary.blocksPlanned?.[0]?.wrapper || "unknown"))} | 10 blocks</p>
         <div class="status success">Session complete and saved.</div>
         ${progressionSummary}
         ${allCleanNote}
-        <p>Mode: <strong>${escapeHtml(summary.blocksPlanned?.[0]?.wrapper || "unknown")}</strong></p>
-        <p>Session ID: <code>${escapeHtml(summary.id)}</code></p>
-        <p>Blocks saved: <strong>${summary.blocks.length}</strong> / ${REL_TOTAL_BLOCKS}</p>
+        <div class="session-stats-grid">
+          <div class="session-stat"><span>Peak Level</span><strong>${visualStats.peakN}</strong></div>
+          <div class="session-stat"><span>Final Level</span><strong>${visualStats.finalN}</strong></div>
+          <div class="session-stat"><span>Stability</span><strong>${visualStats.holdUpCount}/${visualStats.totalBlocks}</strong></div>
+        </div>
         <p>Quiz total: <strong>${quizCorrect}/${quizTotal}</strong></p>
-        <p>Session start: ${new Date(summary.tsStart).toLocaleString()}</p>
-        <p>Session end: ${new Date(summary.tsEnd).toLocaleString()}</p>
+        ${accuracyChart}
         ${renderRelationalBlockSummary(finalBlock)}
-        ${modeButtons}
+        <div class="row">
+          <button class="btn" data-action="go-home">Done</button>
+          <button class="btn primary" data-action="start-relational-session" data-mode="transitive"><img class="btn-inline-icon" src="../brandingUI/icons/game/transitive-order.svg" alt="" aria-hidden="true">Start Transitive</button>
+          <button class="btn primary" data-action="start-relational-session" data-mode="graph"><img class="btn-inline-icon" src="../brandingUI/icons/game/graph-directed.svg" alt="" aria-hidden="true">Start Graph</button>
+          <button class="btn primary" data-action="start-relational-session" data-mode="propositional"><img class="btn-inline-icon" src="../brandingUI/icons/game/propositional.svg" alt="" aria-hidden="true">Start Propositional</button>
+        </div>
         ${renderFlash()}
       </section>
     `;
@@ -1332,7 +1548,7 @@ function renderPlayRelational(state) {
   const pendingRelCoachState = relSession?.pendingPlanPatch?.flags?.coachState || null;
   const relCoachBriefingPreview = getCoachBriefingPreviewCopy(pendingRelCoachState);
   const runtimeInfo = block
-    ? `SOA: ${block.soaMs}ms | Mode: ${relSession.wrapper.toUpperCase()}${coachState ? ` | Coach: ${coachState}` : ""}`
+    ? `Block ${block.plan.blockIndex}/${REL_TOTAL_BLOCKS} | ${wrapperDisplayName(relSession.wrapper)}${coachState ? ` | Coach: ${coachState}` : ""}`
     : "";
   const premiseBankMarkup = block && Array.isArray(block.blockMeta?.premiseBankLines) && block.blockMeta.premiseBankLines.length
     ? `
@@ -1350,17 +1566,17 @@ function renderPlayRelational(state) {
     phasePanel = `
       <div class="hub-phase cue">
         <p class="hub-phase-title">Briefing</p>
-        <p class="hint">Review the block briefing overlay, then start the block.</p>
+        <p class="hint">Review the block briefing, then start when ready.</p>
       </div>
     `;
   } else if (relSession.phase === "cue") {
     phasePanel = `
       <div class="hub-phase cue">
-        <p class="hub-phase-title">Cue</p>
-        <p class="hint">Mode: <strong>${escapeHtml(relSession.wrapper)}</strong> | Current N: <strong>${relSession.currentN}</strong></p>
+        <p class="hub-phase-title">Focus Cue</p>
+        <p class="hint">Mode: <strong>${escapeHtml(wrapperDisplayName(relSession.wrapper))}</strong> | Current N: <strong>${relSession.currentN}</strong></p>
         ${premiseBankMarkup}
         ${renderRelationalStimulus(null, false, runtimeInfo)}
-        <p class="hint">Cue duration: ${REL_CUE_MS} ms</p>
+        <p class="hint">Prepare for the next trial sequence.</p>
       </div>
     `;
   } else if (relSession.phase === "trial") {
@@ -1372,7 +1588,7 @@ function renderPlayRelational(state) {
         <div class="row">
           <button class="btn primary match-btn" data-action="rel-match" ${responseCaptured ? "disabled" : ""}>MATCH (Space)</button>
         </div>
-        <p class="hint">${responseCaptured ? `Response recorded at ${block.responseRtMs} ms.` : "No response recorded yet."}</p>
+        <p class="hint">${responseCaptured ? "Response recorded for this trial." : "Waiting for response."}</p>
       </div>
     `;
   } else if (relSession.phase === "quiz") {
@@ -1403,10 +1619,12 @@ function renderPlayRelational(state) {
 
   return `
     <section class="card">
-      <h2>Play Relational</h2>
-      <p>Mode: <strong>${escapeHtml(relSession.wrapper)}</strong></p>
-      <p>Block: <strong>${relSession.blockCursor + (relSession.phase === "block-result" ? 0 : 1)}</strong> / ${REL_TOTAL_BLOCKS}</p>
-      <p>Current N: <strong>${relSession.currentN}</strong> (bounds 1..${REL_N_MAX})</p>
+      <h2>Relational Training</h2>
+      <div class="running-status-row">
+        <span class="running-pill">Block ${relSession.blockCursor + (relSession.phase === "block-result" ? 0 : 1)} / ${REL_TOTAL_BLOCKS}</span>
+        <span class="running-pill">N ${relSession.currentN}</span>
+        <span class="running-pill">${escapeHtml(wrapperDisplayName(relSession.wrapper))}</span>
+      </div>
       ${coachNotice}
       ${relSession.phase === "block-result" && relCoachBriefingPreview ? `<p class="hint">${escapeHtml(relCoachBriefingPreview)}</p>` : ""}
       ${phasePanel}
@@ -1417,37 +1635,38 @@ function renderPlayRelational(state) {
 
 function renderHistory(history) {
   const items = history.map((session) => {
-    const started = new Date(session.tsStart).toLocaleString();
-    const ended = new Date(session.tsEnd).toLocaleString();
     const blockCount = Array.isArray(session.blocks) ? session.blocks.length : 0;
     const mode = Array.isArray(session.blocksPlanned) && session.blocksPlanned.length
       ? session.blocksPlanned[0].wrapper
       : "";
+    const units = computeSessionUnits(session.blocks || []);
+    const stats = computeSessionVisualStats(session);
     const quizCorrectTotal = Array.isArray(session.blocks)
       ? session.blocks.reduce((sum, block) => sum + Number(block.quizCorrect || 0), 0)
       : 0;
     const quizLine = session.wrapperFamily === "relational"
       ? `<p>Quiz: ${quizCorrectTotal}/${REL_TOTAL_BLOCKS * 2}</p>`
       : "";
-    const modeLine = mode ? `<p>Mode: ${escapeHtml(mode)}</p>` : "";
+    const modeText = mode ? wrapperDisplayName(mode) : "";
     return `
       <li class="history-item">
-        <p><strong>${escapeHtml(session.id)}</strong></p>
-        <p>Family: ${escapeHtml(session.wrapperFamily || "unknown")}</p>
-        ${modeLine}
-        <p>Date: ${escapeHtml(session.dateLocal || "")}</p>
-        <p>Blocks: ${blockCount}</p>
+        <p><strong>${escapeHtml(wrapperDisplayName(mode || session.wrapperFamily || "session"))}</strong></p>
+        <p>Date: ${escapeHtml(session.dateLocal || "")} | Blocks: ${blockCount}</p>
+        <div class="history-mini-grid">
+          <span>Peak ${stats.peakN}</span>
+          <span>Final ${stats.finalN}</span>
+          <span>+${units} units</span>
+        </div>
         ${quizLine}
-        <p>Start: ${escapeHtml(started)}</p>
-        <p>End: ${escapeHtml(ended)}</p>
+        ${modeText ? `<p class="hint">Mode: ${escapeHtml(modeText)}</p>` : ""}
       </li>
     `;
   }).join("");
 
   return `
     <section class="card">
-      <h2>History</h2>
-      <p class="hint">Session summaries loaded from versioned localStorage.</p>
+      <h2>Progress History</h2>
+      <p class="hint">Your completed sessions are saved locally on this device.</p>
       ${renderFlash()}
       ${history.length ? `<ul class="history-list">${items}</ul>` : "<p>No sessions yet.</p>"}
     </section>
@@ -1468,7 +1687,7 @@ function renderSettings(state) {
         <button class="btn" data-action="export-json">Export JSON</button>
         <button class="btn danger" data-action="reset-data">Reset Local Data</button>
       </div>
-      <p class="hint">Reset only affects key <code>tg_capacity_gym_v1</code>.</p>
+      <p class="hint">Export gives you a full backup of local training data.</p>
       ${renderFlash()}
     </section>
   `;
@@ -1481,8 +1700,8 @@ function renderSplashOverlay() {
       <div class="overlay-card splash-overlay" data-action="splash-dismiss">
         <img class="splash-logo" src="../brandingUI/Trident-G-Icon.svg" alt="Trident G">
         <h2>Capacity Gym</h2>
-        <p>Train cognitive control. 10 minutes a day.</p>
-        <p class="hint">Tap, click, or press Space / Enter / Escape to continue.</p>
+        <p>Train your mind.</p>
+        <p class="hint">Tap anywhere or press Space / Enter / Escape.</p>
       </div>
     </div>
   `;
@@ -1502,7 +1721,8 @@ function renderHubBriefingOverlay() {
         <h3>Block ${block.plan.blockIndex} of ${HUB_TOTAL_BLOCKS}</h3>
         <p>Target: <strong>${escapeHtml(modalityLabel(block.plan.targetModality))}</strong></p>
         <p>N-Back: <strong>${block.plan.n}</strong></p>
-        <p>Speed: <strong>${block.plan.speed}</strong> | Interference: <strong>${block.plan.interference}</strong></p>
+        <p>Pace: <strong>${block.plan.speed}</strong> | Interference: <strong>${block.plan.interference}</strong></p>
+        <p class="hint">Press MATCH only when the target repeats at N-back.</p>
         ${coachPreview ? `<p class="hint">${escapeHtml(coachPreview)}</p>` : ""}
         <div class="overlay-actions">
           <button class="btn primary" data-action="hub-start-block">Start Block</button>
@@ -1525,9 +1745,9 @@ function renderRelationalBriefingOverlay() {
       <div class="overlay-backdrop" ${canTapDismiss ? 'data-action="briefing-dismiss"' : ""}></div>
       <div class="overlay-card">
         <h3>Block ${block.plan.blockIndex} of ${REL_TOTAL_BLOCKS}</h3>
-        <p>Mode: <strong>${escapeHtml(relSession.wrapper)}</strong></p>
+        <p>Mode: <strong>${escapeHtml(wrapperDisplayName(relSession.wrapper))}</strong></p>
         <p>N-Back: <strong>${block.plan.n}</strong></p>
-        <p>Speed: <strong>${block.plan.speed}</strong> | Interference: <strong>${block.plan.interference}</strong></p>
+        <p>Pace: <strong>${block.plan.speed}</strong> | Interference: <strong>${block.plan.interference}</strong></p>
         <p class="hint">Press MATCH only when current token matches ${block.plan.n}-back.</p>
         ${coachPreview ? `<p class="hint">${escapeHtml(coachPreview)}</p>` : ""}
         <div class="overlay-actions">
@@ -1545,7 +1765,7 @@ function renderUnlockCelebrationOverlay() {
       <div class="overlay-backdrop" data-action="unlock-close"></div>
       <div class="overlay-card">
         <h3>Relational Modes Unlocked</h3>
-        <p>You have qualified both Hub wrappers. Relational training is now available.</p>
+        <p>You qualified in both Hub wrappers. Relational modes are now available.</p>
         <div class="unlock-icons">
           <span class="unlock-icon"><img src="../brandingUI/icons/game/transitive-order.svg" alt="Transitive"></span>
           <span class="unlock-icon"><img src="../brandingUI/icons/game/graph-directed.svg" alt="Graph"></span>
@@ -1604,6 +1824,7 @@ function render() {
 
   dropRunningSessionsIfLeaving(route);
   const state = loadStateWithSyncedUnlocks();
+  updateShellHeaderStats(state);
   setActiveNav(route);
   let pageHtml = "";
   if (route === "home") {
@@ -2503,6 +2724,11 @@ document.addEventListener("click", (event) => {
 
   if (action === "go-play-hub") {
     window.location.hash = "/play-hub";
+    return;
+  }
+
+  if (action === "go-home") {
+    window.location.hash = "/home";
     return;
   }
 
