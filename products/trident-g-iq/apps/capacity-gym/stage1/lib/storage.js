@@ -9,7 +9,10 @@ function makeDefaultState() {
       lastSpeed: null,
       lastInterference: null,
       soundOn: true,
-      hasRunHubBefore: false
+      hasRunHubBefore: false,
+      streakCurrent: 0,
+      streakBest: 0,
+      lastMissionCompletedDate: null
     },
     history: [],
     bankUnits: 0,
@@ -38,6 +41,56 @@ function safeParse(raw) {
   }
 }
 
+function normalizeMissionRecord(rawMission) {
+  if (!isObject(rawMission)) {
+    return null;
+  }
+  const steps = Array.isArray(rawMission.steps)
+    ? rawMission.steps.filter((step) => typeof step === "string")
+    : [];
+  const completedStepIds = Array.isArray(rawMission.completedStepIds)
+    ? rawMission.completedStepIds.filter((step) => typeof step === "string")
+    : [];
+  const completedStepsFromIds = completedStepIds.filter((step) => steps.includes(step)).length;
+  const completedStepsRaw = Number.isFinite(rawMission.completedSteps)
+    ? Math.max(0, Math.floor(rawMission.completedSteps))
+    : 0;
+  const completedSteps = Math.min(steps.length || completedStepsRaw, Math.max(completedStepsRaw, completedStepsFromIds));
+
+  const mission = {
+    steps,
+    completedSteps,
+    rewardClaimed: Boolean(rawMission.rewardClaimed)
+  };
+  if (typeof rawMission.tier === "string") {
+    mission.tier = rawMission.tier;
+  }
+  if (completedStepIds.length) {
+    mission.completedStepIds = completedStepIds;
+  }
+  if (typeof rawMission.hasSessionStarted === "boolean") {
+    mission.hasSessionStarted = rawMission.hasSessionStarted;
+  }
+  return mission;
+}
+
+function normalizeMissionsByDate(rawMissions) {
+  if (!isObject(rawMissions)) {
+    return {};
+  }
+  const normalized = {};
+  for (const [dateKey, missionRaw] of Object.entries(rawMissions)) {
+    if (typeof dateKey !== "string") {
+      continue;
+    }
+    const mission = normalizeMissionRecord(missionRaw);
+    if (mission) {
+      normalized[dateKey] = mission;
+    }
+  }
+  return normalized;
+}
+
 function normalizeState(raw) {
   const defaults = makeDefaultState();
   if (!isObject(raw) || raw.version !== 1) {
@@ -56,7 +109,7 @@ function normalizeState(raw) {
       ...defaults.unlocks,
       ...(isObject(raw.unlocks) ? raw.unlocks : {})
     },
-    missionsByDate: isObject(raw.missionsByDate) ? raw.missionsByDate : {}
+    missionsByDate: normalizeMissionsByDate(raw.missionsByDate)
   };
 }
 

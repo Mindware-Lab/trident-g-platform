@@ -110,6 +110,11 @@ select {
   cursor: pointer;
 }
 
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .btn.primary {
   background: var(--primary);
   color: #ffffff;
@@ -154,6 +159,31 @@ select {
   background: #f0f6ff;
   border-color: #c9dcff;
   color: #1d4b8f;
+}
+
+.status.clean {
+  background: #eef7ff;
+  border-color: #d1e6ff;
+  color: #145394;
+}
+
+.unlock-checklist {
+  margin-top: 10px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #f9fbff;
+}
+
+.unlock-checklist p {
+  margin: 4px 0;
+}
+
+.prestige-note {
+  margin: 10px 0 0 0;
+  font-weight: 700;
+  color: #8a6d1d;
+  letter-spacing: 0.02em;
 }
 
 .history-list {

@@ -3,6 +3,7 @@ import {
   exportGymStateJson,
   getSessionHistory,
   loadGymState,
+  saveGymState,
   resetGymState,
   updateSettings
 } from "./lib/storage.js";
@@ -41,7 +42,7 @@ import { propositionalMode } from "./games/propositional.js";
 const ROUTES = new Set(["home", "play-hub", "play-relational", "history", "settings"]);
 const DEFAULT_ROUTE = "home";
 const appRoot = document.querySelector("#app");
-const initialState = loadGymState();
+const initialState = loadStateWithSyncedUnlocks();
 const initialSettings = initialState.settings;
 
 const hubPreferences = {
@@ -84,6 +85,504 @@ const relTimers = {
   quizTick: null,
   quizAdvance: null
 };
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MISSION_TIER0_STEPS = ["control"];
+const MISSION_TIER1_STEPS = ["reset", "control", "reason"];
+
+function pad2(value) {
+  return String(value).padStart(2, "0");
+}
+
+function toDateKeyLocal(ts = Date.now()) {
+  const date = new Date(ts);
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+}
+
+function dateKeyToUtcDays(dateKey) {
+  if (typeof dateKey !== "string") {
+    return null;
+  }
+  const parts = dateKey.split("-");
+  if (parts.length !== 3) {
+    return null;
+  }
+  const year = Number(parts[0]);
+  const month = Number(parts[1]);
+  const day = Number(parts[2]);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) {
+    return null;
+  }
+  return Math.floor(Date.UTC(year, month - 1, day) / DAY_MS);
+}
+
+function dayDiffByDateKeys(fromDateKey, toDateKey) {
+  const fromDays = dateKeyToUtcDays(fromDateKey);
+  const toDays = dateKeyToUtcDays(toDateKey);
+  if (fromDays === null || toDays === null) {
+    return null;
+  }
+  return toDays - fromDays;
+}
+
+function deriveOutcomeBandFromAccuracy(accuracy) {
+  const safeAccuracy = Number(accuracy || 0);
+  if (safeAccuracy >= 0.9) {
+    return "UP";
+  }
+  if (safeAccuracy < 0.75) {
+    return "DOWN";
+  }
+  return "HOLD";
+}
+
+function isCleanBlock(block) {
+  return Number(block?.errorBursts || 0) === 0 && Number(block?.lapseCount || 0) === 0;
+}
+
+function computeSessionUnits(blocks) {
+  const safeBlocks = Array.isArray(blocks) ? blocks : [];
+  let units = 0;
+  for (let i = 0; i < safeBlocks.length; i += 1) {
+    const band = deriveOutcomeBandFromAccuracy(safeBlocks[i]?.accuracy);
+    if (band === "UP") {
+      units += 2;
+    } else if (band === "HOLD") {
+      units += 1;
+    }
+  }
+  return units;
+}
+
+function getSessionBaselineWrapper(session) {
+  const wrapper = session?.blocksPlanned?.[0]?.wrapper;
+  return wrapper === "hub_noncat" ? "hub_noncat" : (wrapper === "hub_cat" ? "hub_cat" : null);
+}
+
+function isQualifyingWrapperSession(session, wrapper) {
+  if (!session || session.wrapperFamily !== "hub") {
+    return false;
+  }
+  if (getSessionBaselineWrapper(session) !== wrapper) {
+    return false;
+  }
+  const safeBlocks = Array.isArray(session.blocks) ? session.blocks : [];
+  const wrapperBlocks = safeBlocks.filter((block) => block?.wrapper === wrapper);
+  if (!wrapperBlocks.length) {
+    return false;
+  }
+  const finalWrapperBlock = wrapperBlocks[wrapperBlocks.length - 1];
+  if (!finalWrapperBlock || Number(finalWrapperBlock.nEnd || 0) < 3) {
+    return false;
+  }
+  let holdOrUpCount = 0;
+  for (let i = 0; i < wrapperBlocks.length; i += 1) {
+    const block = wrapperBlocks[i];
+    if (Number(block?.nStart || 0) < 3) {
+      continue;
+    }
+    if (Number(block?.accuracy || 0) >= 0.75) {
+      holdOrUpCount += 1;
+    }
+  }
+  return holdOrUpCount >= 3;
+}
+
+function deriveRelationalUnlockProgress(history) {
+  const safeHistory = Array.isArray(history) ? history : [];
+  let catQualified = false;
+  let noncatQualified = false;
+  for (let i = 0; i < safeHistory.length; i += 1) {
+    const session = safeHistory[i];
+    if (!catQualified && isQualifyingWrapperSession(session, "hub_cat")) {
+      catQualified = true;
+    }
+    if (!noncatQualified && isQualifyingWrapperSession(session, "hub_noncat")) {
+      noncatQualified = true;
+    }
+    if (catQualified && noncatQualified) {
+      break;
+    }
+  }
+  return {
+    catQualified,
+    noncatQualified,
+    relationalUnlocked: catQualified && noncatQualified
+  };
+}
+
+function syncRelationalUnlockFlags(state) {
+  const unlockProgress = deriveRelationalUnlockProgress(state?.history);
+  const nextUnlockValue = unlockProgress.relationalUnlocked;
+  const unlocks = {
+    ...(state?.unlocks || {}),
+    transitive: nextUnlockValue,
+    graph: nextUnlockValue,
+    propositional: nextUnlockValue
+  };
+  const changed = !state?.unlocks
+    || state.unlocks.transitive !== unlocks.transitive
+    || state.unlocks.graph !== unlocks.graph
+    || state.unlocks.propositional !== unlocks.propositional;
+  return {
+    state: changed ? { ...state, unlocks } : state,
+    unlockProgress,
+    changed
+  };
+}
+
+function loadStateWithSyncedUnlocks() {
+  const state = loadGymState();
+  const sync = syncRelationalUnlockFlags(state);
+  if (sync.changed) {
+    saveGymState(sync.state);
+  }
+  return sync.state;
+}
+
+function createMissionByTier(tier) {
+  const missionTier = tier === "tier1" ? "tier1" : "tier0";
+  const steps = missionTier === "tier1" ? MISSION_TIER1_STEPS.slice() : MISSION_TIER0_STEPS.slice();
+  return {
+    tier: missionTier,
+    steps,
+    completedStepIds: [],
+    completedSteps: 0,
+    rewardClaimed: false,
+    hasSessionStarted: false
+  };
+}
+
+function getMissionTierForDay(state, dateKey, unlockProgress) {
+  const relationalUnlocked = Boolean(unlockProgress?.relationalUnlocked);
+  if (!relationalUnlocked) {
+    return "tier0";
+  }
+  const mission = state?.missionsByDate?.[dateKey];
+  if (!mission) {
+    return "tier1";
+  }
+  if (!mission.hasSessionStarted) {
+    return "tier1";
+  }
+  return mission.tier === "tier1" ? "tier1" : "tier0";
+}
+
+function normalizeMission(missionRaw, tier) {
+  const base = createMissionByTier(tier);
+  if (!missionRaw || typeof missionRaw !== "object") {
+    return base;
+  }
+  const steps = Array.isArray(missionRaw.steps) ? missionRaw.steps.filter((step) => typeof step === "string") : base.steps;
+  const completedStepIds = Array.isArray(missionRaw.completedStepIds)
+    ? missionRaw.completedStepIds.filter((step) => steps.includes(step))
+    : [];
+  const completedStepsRaw = Number.isFinite(missionRaw.completedSteps) ? Math.floor(missionRaw.completedSteps) : 0;
+  return {
+    tier: tier || missionRaw.tier || base.tier,
+    steps,
+    completedStepIds,
+    completedSteps: Math.min(steps.length, Math.max(completedStepsRaw, completedStepIds.length)),
+    rewardClaimed: Boolean(missionRaw.rewardClaimed),
+    hasSessionStarted: Boolean(missionRaw.hasSessionStarted)
+  };
+}
+
+function ensureMissionForDate(state, dateKey, unlockProgress) {
+  const safeState = state && typeof state === "object" ? state : loadGymState();
+  const missionTier = getMissionTierForDay(safeState, dateKey, unlockProgress);
+  const existing = safeState.missionsByDate?.[dateKey];
+  const normalized = normalizeMission(existing, missionTier);
+  if (normalized.tier === "tier1") {
+    normalized.steps = MISSION_TIER1_STEPS.slice();
+    normalized.completedStepIds = normalized.completedStepIds.filter((step) => normalized.steps.includes(step));
+    normalized.completedSteps = normalized.completedStepIds.length;
+  } else {
+    normalized.steps = MISSION_TIER0_STEPS.slice();
+    normalized.completedStepIds = normalized.completedStepIds.filter((step) => normalized.steps.includes(step));
+    normalized.completedSteps = normalized.completedStepIds.length;
+  }
+  const unchanged = existing
+    && existing.tier === normalized.tier
+    && existing.completedSteps === normalized.completedSteps
+    && existing.rewardClaimed === normalized.rewardClaimed
+    && Boolean(existing.hasSessionStarted) === normalized.hasSessionStarted
+    && JSON.stringify(existing.steps || []) === JSON.stringify(normalized.steps)
+    && JSON.stringify(existing.completedStepIds || []) === JSON.stringify(normalized.completedStepIds);
+
+  if (unchanged) {
+    return { state: safeState, mission: normalized, changed: false };
+  }
+  return {
+    state: {
+      ...safeState,
+      missionsByDate: {
+        ...(safeState.missionsByDate || {}),
+        [dateKey]: normalized
+      }
+    },
+    mission: normalized,
+    changed: true
+  };
+}
+
+function markMissionStep(mission, stepId) {
+  if (!mission || !Array.isArray(mission.steps) || !mission.steps.includes(stepId)) {
+    return mission;
+  }
+  const completed = Array.isArray(mission.completedStepIds) ? mission.completedStepIds.slice() : [];
+  if (!completed.includes(stepId)) {
+    completed.push(stepId);
+  }
+  return {
+    ...mission,
+    completedStepIds: completed,
+    completedSteps: Math.min(mission.steps.length, completed.length)
+  };
+}
+
+function isMissionComplete(mission) {
+  return Boolean(mission && Array.isArray(mission.steps) && mission.steps.length > 0 && mission.completedSteps >= mission.steps.length);
+}
+
+function maybeAwardMissionReward(mission, currentBankUnits) {
+  const missionComplete = isMissionComplete(mission);
+  if (!missionComplete || mission.rewardClaimed) {
+    return {
+      mission,
+      bankUnits: currentBankUnits,
+      missionBonusEarned: 0,
+      missionJustCompleted: false
+    };
+  }
+  return {
+    mission: {
+      ...mission,
+      rewardClaimed: true
+    },
+    bankUnits: currentBankUnits + 3,
+    missionBonusEarned: 3,
+    missionJustCompleted: true
+  };
+}
+
+function applyMissionStreakOnCompletion(settings, dateKey, missionJustCompleted) {
+  const safeSettings = settings && typeof settings === "object" ? settings : {};
+  if (!missionJustCompleted) {
+    return safeSettings;
+  }
+  const lastDate = safeSettings.lastMissionCompletedDate;
+  const currentStreak = Number.isFinite(safeSettings.streakCurrent) ? safeSettings.streakCurrent : 0;
+  const bestStreak = Number.isFinite(safeSettings.streakBest) ? safeSettings.streakBest : 0;
+  let nextCurrent = 1;
+
+  if (typeof lastDate === "string") {
+    const dayDiff = dayDiffByDateKeys(lastDate, dateKey);
+    if (dayDiff === 1 || dayDiff === 2) {
+      nextCurrent = Math.max(1, currentStreak + 1);
+    } else if (dayDiff === 0) {
+      nextCurrent = Math.max(1, currentStreak);
+    }
+  }
+  return {
+    ...safeSettings,
+    streakCurrent: nextCurrent,
+    streakBest: Math.max(bestStreak, nextCurrent),
+    lastMissionCompletedDate: dateKey
+  };
+}
+
+function registerMissionSessionStart() {
+  const dateKey = toDateKeyLocal();
+  let state = loadGymState();
+  const synced = syncRelationalUnlockFlags(state);
+  state = synced.state;
+
+  const ensured = ensureMissionForDate(state, dateKey, synced.unlockProgress);
+  state = ensured.state;
+
+  let mission = ensured.mission;
+  if (!mission.hasSessionStarted) {
+    mission = {
+      ...mission,
+      hasSessionStarted: true
+    };
+  }
+  if (mission.tier === "tier1") {
+    mission = markMissionStep(mission, "reset");
+  }
+
+  state = {
+    ...state,
+    missionsByDate: {
+      ...(state.missionsByDate || {}),
+      [dateKey]: mission
+    }
+  };
+  saveGymState(state);
+  return mission;
+}
+
+function applySessionProgressAndSave(summary, family) {
+  const dateKey = toDateKeyLocal(summary?.tsEnd || Date.now());
+  let state = loadGymState();
+  const synced = syncRelationalUnlockFlags(state);
+  state = synced.state;
+  const unlockProgress = synced.unlockProgress;
+
+  const ensured = ensureMissionForDate(state, dateKey, unlockProgress);
+  state = ensured.state;
+  let mission = ensured.mission;
+  const missionWasComplete = isMissionComplete(mission);
+
+  if (family === "hub") {
+    mission = markMissionStep(mission, "control");
+  } else if (family === "relational" && mission.tier === "tier1") {
+    mission = markMissionStep(mission, "reason");
+  }
+
+  const sessionUnitsEarned = computeSessionUnits(summary?.blocks || []);
+  let bankUnits = Number(state.bankUnits || 0) + sessionUnitsEarned;
+  const rewardOutcome = maybeAwardMissionReward(mission, bankUnits);
+  mission = rewardOutcome.mission;
+  bankUnits = rewardOutcome.bankUnits;
+  const missionNowComplete = isMissionComplete(mission);
+  const missionJustCompleted = !missionWasComplete && missionNowComplete;
+
+  const nextSettings = applyMissionStreakOnCompletion(state.settings, dateKey, missionJustCompleted);
+  const nextState = {
+    ...state,
+    bankUnits,
+    settings: nextSettings,
+    missionsByDate: {
+      ...(state.missionsByDate || {}),
+      [dateKey]: mission
+    }
+  };
+  saveGymState(nextState);
+
+  return {
+    sessionUnitsEarned,
+    missionBonusEarned: rewardOutcome.missionBonusEarned,
+    missionCompletedToday: missionNowComplete,
+    missionTier: mission.tier || "tier0",
+    missionCompletedSteps: mission.completedSteps || 0,
+    missionStepTotal: Array.isArray(mission.steps) ? mission.steps.length : 0,
+    bankTotal: bankUnits,
+    streakCurrent: Number(nextSettings.streakCurrent || 0),
+    streakBest: Number(nextSettings.streakBest || 0),
+    unlockProgress,
+    allBlocksClean: Array.isArray(summary?.blocks) && summary.blocks.length > 0
+      ? summary.blocks.every((block) => isCleanBlock(block))
+      : false
+  };
+}
+
+function getMissionPreview(state, dateKey, unlockProgress) {
+  const mission = state?.missionsByDate?.[dateKey];
+  if (mission) {
+    const tierForToday = getMissionTierForDay(state, dateKey, unlockProgress);
+    return normalizeMission(mission, tierForToday);
+  }
+  return normalizeMission(null, unlockProgress?.relationalUnlocked ? "tier1" : "tier0");
+}
+
+function hasRecentPulse(completedBlocks, pulseType, lookback = 2) {
+  const safeBlocks = Array.isArray(completedBlocks) ? completedBlocks : [];
+  const recent = safeBlocks.slice(-lookback);
+  return recent.some((entry) => entry?.plan?.flags?.pulseType === pulseType);
+}
+
+function hasRecentSwapProbe(completedBlocks, lookback = 2) {
+  const safeBlocks = Array.isArray(completedBlocks) ? completedBlocks : [];
+  const recent = safeBlocks.slice(-lookback);
+  return recent.some((entry) => Boolean(entry?.plan?.flags?.wasSwapProbe));
+}
+
+function makeCoachNarrative(coachState, fallbackMessage = "") {
+  if (coachState === "RECOVER") {
+    return "Recovery block scheduled.";
+  }
+  if (coachState === "STABILISE") {
+    return "Stabilise block scheduled.";
+  }
+  if (coachState === "TUNE") {
+    return "Targeted challenge pulse scheduled.";
+  }
+  if (coachState === "SPIKE_TUNE") {
+    return "Probe wrapper block scheduled.";
+  }
+  if (coachState === "CONSOLIDATE") {
+    return "Consolidation block scheduled.";
+  }
+  return fallbackMessage || "";
+}
+
+function resolveHubAlternativePatch(session, pendingPatch) {
+  const safePatch = pendingPatch && typeof pendingPatch === "object" ? pendingPatch : {};
+  const flags = safePatch.flags && typeof safePatch.flags === "object" ? safePatch.flags : {};
+  const lastPlan = session?.completedBlocks?.length
+    ? session.completedBlocks[session.completedBlocks.length - 1].plan
+    : null;
+  const canUseSpeed = !hasRecentPulse(session?.completedBlocks, "speed") && (lastPlan?.speed || "slow") === "slow";
+  const canUseInterference = !hasRecentPulse(session?.completedBlocks, "interference") && (lastPlan?.interference || "low") === "low";
+  const canUseSwap = !hasRecentSwapProbe(session?.completedBlocks);
+
+  let alternativeType = null;
+  if (flags.pulseType === "speed") {
+    if (canUseInterference) {
+      alternativeType = "interference";
+    }
+  } else if (flags.pulseType === "interference") {
+    if (canUseSpeed) {
+      alternativeType = "speed";
+    }
+  } else if (flags.wasSwapProbe || flags.swapSegment === "B") {
+    // Wrapper-swap alternative would be allowed only if no recent swap probe.
+    if (!canUseSwap) {
+      return null;
+    }
+    if (canUseSpeed) {
+      alternativeType = "speed";
+    } else if (canUseInterference) {
+      alternativeType = "interference";
+    }
+  }
+
+  if (!alternativeType) {
+    return null;
+  }
+
+  const nextFlags = {
+    coachState: "TUNE",
+    pulseType: alternativeType === "speed" || alternativeType === "interference" ? alternativeType : null,
+    swapSegment: null,
+    wasSwapProbe: false,
+    userOverride: "alternative"
+  };
+
+  const base = {
+    n: safePatch.n,
+    targetModality: safePatch.targetModality,
+    wrapper: lastPlan?.wrapper || safePatch.wrapper || "hub_cat"
+  };
+  if (alternativeType === "speed") {
+    return {
+      ...base,
+      speed: "fast",
+      interference: undefined,
+      flags: nextFlags
+    };
+  }
+  if (alternativeType === "interference") {
+    return {
+      ...base,
+      speed: undefined,
+      interference: "high",
+      flags: nextFlags
+    };
+  }
+  return null;
+}
 
 function ensureRoute() {
   const raw = (window.location.hash || "").replace(/^#\//, "").trim();
@@ -196,7 +695,10 @@ function normalizeCoachFlags(flags) {
     coachState: flags.coachState,
     pulseType: flags.pulseType ?? null,
     swapSegment: flags.swapSegment ?? null,
-    wasSwapProbe: Boolean(flags.wasSwapProbe)
+    wasSwapProbe: Boolean(flags.wasSwapProbe),
+    userOverride: flags.userOverride === "coach" || flags.userOverride === "alternative"
+      ? flags.userOverride
+      : undefined
   };
 }
 
@@ -206,7 +708,10 @@ function normalizeRelationalCoachFlags(flags) {
     coachState: safeFlags.coachState ?? null,
     pulseType: null,
     swapSegment: null,
-    wasSwapProbe: false
+    wasSwapProbe: false,
+    userOverride: safeFlags.userOverride === "coach" || safeFlags.userOverride === "alternative"
+      ? safeFlags.userOverride
+      : undefined
   };
 }
 
@@ -242,6 +747,11 @@ function resolveNextBlockPreview(session) {
 }
 
 function renderHome(state) {
+  const unlockProgress = deriveRelationalUnlockProgress(state.history);
+  const todayKey = toDateKeyLocal();
+  const mission = getMissionPreview(state, todayKey, unlockProgress);
+  const streakCurrent = Number(state.settings?.streakCurrent || 0);
+  const streakBest = Number(state.settings?.streakBest || 0);
   return `
     <section class="card">
       <h2>Home / Today</h2>
@@ -255,8 +765,32 @@ function renderHome(state) {
       <h3>Today Snapshot</h3>
       <p>Stored sessions: <strong>${state.history.length}</strong></p>
       <p>Bank units: <strong>${state.bankUnits}</strong></p>
-      <p>Relational unlocks: <strong>${state.unlocks.transitive || state.unlocks.graph || state.unlocks.propositional ? "Available" : "Locked"}</strong></p>
+      <p>Mission (${mission.tier === "tier1" ? "Tier 1" : "Tier 0"}): <strong>${mission.completedSteps}/${mission.steps.length}</strong>${mission.rewardClaimed ? " | Reward claimed" : ""}</p>
+      <p>Streak: <strong>${streakCurrent}</strong> (best ${streakBest})</p>
+      <p>Relational unlocks: <strong>${unlockProgress.relationalUnlocked ? "Available" : "Locked"}</strong></p>
+      <p class="hint">Unlock checklist: hub_cat ${unlockProgress.catQualified ? "qualified" : "pending"}, hub_noncat ${unlockProgress.noncatQualified ? "qualified" : "pending"}.</p>
     </section>
+  `;
+}
+
+function renderRelationalUnlockChecklist(unlockProgress) {
+  return `
+    <div class="unlock-checklist">
+      <p><strong>Unlock checklist</strong></p>
+      <p>hub_cat qualification: <strong>${unlockProgress.catQualified ? "complete" : "pending"}</strong></p>
+      <p>hub_noncat qualification: <strong>${unlockProgress.noncatQualified ? "complete" : "pending"}</strong></p>
+    </div>
+  `;
+}
+
+function renderRelationalModeButtons(locked) {
+  const lockAttr = locked ? "disabled" : "";
+  return `
+    <div class="row">
+      <button class="btn primary" data-action="start-relational-session" data-mode="transitive" ${lockAttr}>Start Transitive</button>
+      <button class="btn primary" data-action="start-relational-session" data-mode="graph" ${lockAttr}>Start Graph</button>
+      <button class="btn primary" data-action="start-relational-session" data-mode="propositional" ${lockAttr}>Start Propositional</button>
+    </div>
   `;
 }
 
@@ -346,14 +880,20 @@ function renderBlockSummary(block) {
   if (!block) {
     return "";
   }
+  const cleanBlock = isCleanBlock(block);
+  const outcomeBand = deriveOutcomeBandFromAccuracy(block.accuracy);
+  const coachNarrative = makeCoachNarrative(block?.flags?.coachState, "");
   return `
     <div class="hub-summary">
-      <p><strong>Block ${block.blockIndex} Result</strong> (${block.outcomeBand})</p>
+      <p><strong>Block ${block.blockIndex} Result</strong> (${outcomeBand})</p>
       <p>N: ${block.nStart} -> ${block.nEnd} | Trials: ${block.trials}</p>
       <p>Hits: ${block.hits} | Misses: ${block.misses} | FA: ${block.falseAlarms} | CR: ${block.correctRejections}</p>
       <p>Accuracy: ${(block.accuracy * 100).toFixed(1)}% | Mean RT: ${block.meanRtMs ?? "n/a"} ms | RT SD: ${block.rtSdMs ?? "n/a"} ms</p>
       <p>Lure trials: ${block.lureTrials ?? 0} | FA on lures: ${block.faOnLures ?? 0}</p>
       <p>Error bursts: ${block.errorBursts} | Lapses (Hub match omissions): ${block.lapseCount}</p>
+      <p class="hint">Next block targets: >=75% for HOLD, >=90% to advance N.</p>
+      ${cleanBlock ? `<p class="status clean">Clean control block.</p>` : ""}
+      ${coachNarrative ? `<p class="hint">Coach action: ${escapeHtml(coachNarrative)}</p>` : ""}
     </div>
   `;
 }
@@ -420,13 +960,19 @@ function renderRelationalBlockSummary(block) {
   if (!block) {
     return "";
   }
+  const cleanBlock = isCleanBlock(block);
+  const outcomeBand = deriveOutcomeBandFromAccuracy(block.accuracy);
+  const coachNarrative = makeCoachNarrative(block?.flags?.coachState, "");
   return `
     <div class="hub-summary">
-      <p><strong>Block ${block.blockIndex} Result</strong> (${block.outcomeBand})</p>
+      <p><strong>Block ${block.blockIndex} Result</strong> (${outcomeBand})</p>
       <p>N: ${block.nStart} -> ${block.nEnd} | Trials: ${block.trials}</p>
       <p>Hits: ${block.hits} | Misses: ${block.misses} | FA: ${block.falseAlarms} | CR: ${block.correctRejections}</p>
       <p>Accuracy: ${(block.accuracy * 100).toFixed(1)}% | Mean RT: ${block.meanRtMs ?? "n/a"} ms | RT SD: ${block.rtSdMs ?? "n/a"} ms</p>
       <p>Quiz: ${block.quizCorrect ?? 0}/${block.quizTotal ?? 2} | Error bursts: ${block.errorBursts}</p>
+      <p class="hint">Next block targets: >=75% for HOLD, >=90% to advance N.</p>
+      ${cleanBlock ? `<p class="status clean">Clean control block.</p>` : ""}
+      ${coachNarrative ? `<p class="hint">Coach action: ${escapeHtml(coachNarrative)}</p>` : ""}
     </div>
   `;
 }
@@ -455,11 +1001,27 @@ function renderPlayHub() {
   if (completed) {
     const summary = hubSession.sessionSummary;
     const finalBlock = hubSession.lastBlockSummary;
+    const progressDelta = hubSession.progressDelta || null;
+    const progressionSummary = progressDelta
+      ? `
+        <div class="status success">
+          <p>Session units: <strong>+${progressDelta.sessionUnitsEarned}</strong></p>
+          <p>Mission bonus: <strong>+${progressDelta.missionBonusEarned}</strong></p>
+          <p>Bank total: <strong>${progressDelta.bankTotal}</strong></p>
+          <p>Streak: <strong>${progressDelta.streakCurrent}</strong> (best ${progressDelta.streakBest})</p>
+        </div>
+      `
+      : "";
+    const allCleanNote = progressDelta?.allBlocksClean
+      ? `<p class="prestige-note">All Blocks Clean (prestige)</p>`
+      : "";
     return `
       <section class="card">
         <h2>Play Hub</h2>
         ${renderHubConfigControls({ showWrapperSelect: true, wrapperLocked: false, dialsLocked: false })}
         <div class="status success">Session complete and saved.</div>
+        ${progressionSummary}
+        ${allCleanNote}
         <p>Session ID: <code>${escapeHtml(summary.id)}</code></p>
         <p>Blocks saved: <strong>${summary.blocks.length}</strong> / ${HUB_TOTAL_BLOCKS}</p>
         <p>Session start: ${new Date(summary.tsStart).toLocaleString()}</p>
@@ -498,6 +1060,19 @@ function renderPlayHub() {
   const coachOverrideNote = hubSession.phase === "block-result" && hasCoachDialOverride
     ? `<p class="hint">Coach override active for next block (${escapeHtml(preview.coachState || "STABILISE")}). Your settings will apply after this coach block.</p>`
     : "";
+  const overrideEligible = hubSession.phase === "block-result"
+    && (preview.coachState === "TUNE" || preview.coachState === "SPIKE_TUNE");
+  const alternativePatch = overrideEligible ? resolveHubAlternativePatch(hubSession, pendingPatch) : null;
+  const overrideControls = overrideEligible
+    ? `
+      <div class="row">
+        <button class="btn" data-action="hub-accept-coach">Accept Coach</button>
+        <button class="btn" data-action="hub-try-alternative" ${alternativePatch ? "" : "disabled"}>Try Alternative</button>
+      </div>
+      ${alternativePatch ? "" : `<p class="hint">Coach recommendation is optimal right now.</p>`}
+    `
+    : "";
+  const coachAction = makeCoachNarrative(preview.coachState, "");
   const runtimeInfo = block
     ? `SOA: ${block.soaMs}ms | Interference: ${block.plan.interference} | Coach: ${block.plan.flags?.coachState || "STABILISE"}`
     : "";
@@ -527,6 +1102,8 @@ function renderPlayHub() {
     phasePanel = `
       <div class="hub-phase result">
         ${renderBlockSummary(hubSession.lastBlockSummary)}
+        ${coachAction ? `<p class="hint">Coach action: ${escapeHtml(coachAction)}</p>` : ""}
+        ${overrideControls}
         <div class="row">
           <button class="btn primary" data-action="hub-next-block">Start Next Block</button>
         </div>
@@ -559,24 +1136,22 @@ function renderPlayHub() {
 }
 
 function renderPlayRelational(state) {
-  const relationalUnlocked = state.unlocks.transitive || state.unlocks.graph || state.unlocks.propositional;
+  const unlockProgress = deriveRelationalUnlockProgress(state.history);
+  const relationalUnlocked = unlockProgress.relationalUnlocked;
   const running = Boolean(relSession && relSession.status === "running");
   const completed = Boolean(relSession && relSession.status === "completed");
-  const modeButtons = `
-    <div class="row">
-      <button class="btn primary" data-action="start-relational-session" data-mode="transitive">Start Transitive</button>
-      <button class="btn primary" data-action="start-relational-session" data-mode="graph">Start Graph</button>
-      <button class="btn primary" data-action="start-relational-session" data-mode="propositional">Start Propositional</button>
-    </div>
-  `;
+  const modeButtons = renderRelationalModeButtons(!relationalUnlocked);
+  const unlockChecklist = renderRelationalUnlockChecklist(unlockProgress);
 
   if (!running && !completed) {
     return `
       <section class="card">
         <h2>Play Relational</h2>
         <p class="hint">Stage 4 foundation: full 10-block relational runtime with canonical scoring and timed quizzes.</p>
-        <p>Unlock status: <strong>${relationalUnlocked ? "Unlocked (at least one mode)" : "Locked by default in Stage 1 state"}</strong></p>
+        <p>Unlock status: <strong>${relationalUnlocked ? "Unlocked" : "Locked"}</strong></p>
+        ${unlockChecklist}
         ${modeButtons}
+        ${!relationalUnlocked ? `<p class="hint">Relational modes unlock after qualifying hub_cat and hub_noncat sessions.</p>` : ""}
         <p class="hint">Response model: press MATCH (Space) only on match trials. Each block ends with 2 timed TRUE/FALSE quiz items.</p>
         ${renderFlash()}
       </section>
@@ -588,10 +1163,26 @@ function renderPlayRelational(state) {
     const finalBlock = relSession.lastBlockSummary;
     const quizCorrect = summary.blocks.reduce((sum, block) => sum + Number(block.quizCorrect || 0), 0);
     const quizTotal = REL_TOTAL_BLOCKS * 2;
+    const progressDelta = relSession.progressDelta || null;
+    const progressionSummary = progressDelta
+      ? `
+        <div class="status success">
+          <p>Session units: <strong>+${progressDelta.sessionUnitsEarned}</strong></p>
+          <p>Mission bonus: <strong>+${progressDelta.missionBonusEarned}</strong></p>
+          <p>Bank total: <strong>${progressDelta.bankTotal}</strong></p>
+          <p>Streak: <strong>${progressDelta.streakCurrent}</strong> (best ${progressDelta.streakBest})</p>
+        </div>
+      `
+      : "";
+    const allCleanNote = progressDelta?.allBlocksClean
+      ? `<p class="prestige-note">All Blocks Clean (prestige)</p>`
+      : "";
     return `
       <section class="card">
         <h2>Play Relational</h2>
         <div class="status success">Session complete and saved.</div>
+        ${progressionSummary}
+        ${allCleanNote}
         <p>Mode: <strong>${escapeHtml(summary.blocksPlanned?.[0]?.wrapper || "unknown")}</strong></p>
         <p>Session ID: <code>${escapeHtml(summary.id)}</code></p>
         <p>Blocks saved: <strong>${summary.blocks.length}</strong> / ${REL_TOTAL_BLOCKS}</p>
@@ -769,7 +1360,7 @@ function render() {
   }
 
   dropRunningSessionsIfLeaving(route);
-  const state = loadGymState();
+  const state = loadStateWithSyncedUnlocks();
   setActiveNav(route);
 
   if (route === "home") {
@@ -832,9 +1423,11 @@ function startHubSession() {
     },
     introNotice: firstHubRun ? "Starting with a gentle baseline block." : "",
     coachNotice: "",
+    missionStartRecorded: false,
     currentBlock: null,
     lastBlockSummary: null,
-    sessionSummary: null
+    sessionSummary: null,
+    progressDelta: null
   };
 
   updateSettings({
@@ -863,24 +1456,35 @@ function beginHubBlock() {
   const pendingPatch = hubSession.pendingPlanPatch && typeof hubSession.pendingPlanPatch === "object"
     ? hubSession.pendingPlanPatch
     : {};
+  const pendingFlags = pendingPatch.flags && typeof pendingPatch.flags === "object" ? pendingPatch.flags : {};
+  const isOverrideCoachState = pendingFlags.coachState === "TUNE" || pendingFlags.coachState === "SPIKE_TUNE";
+  const patchWithDefaultOverride = isOverrideCoachState && !pendingFlags.userOverride
+    ? {
+      ...pendingPatch,
+      flags: {
+        ...pendingFlags,
+        userOverride: "coach"
+      }
+    }
+    : pendingPatch;
 
-  const wrapper = pendingPatch.wrapper
-    ? normalizeHubWrapper(pendingPatch.wrapper)
+  const wrapper = patchWithDefaultOverride.wrapper
+    ? normalizeHubWrapper(patchWithDefaultOverride.wrapper)
     : normalizeHubWrapper(lastPlan?.wrapper || hubPreferences.wrapper);
-  const targetModality = normalizeHubTargetModality(pendingPatch.targetModality, blockIndex);
+  const targetModality = normalizeHubTargetModality(patchWithDefaultOverride.targetModality, blockIndex);
   const mappingSeed = wrapper === "hub_noncat"
     ? hash32(`${hubSession.sessionSeed}:hub_noncat:v1:${blockIndexZero}`)
     : undefined;
-  const nextN = Number.isFinite(pendingPatch.n)
-    ? Math.max(1, Math.min(HUB_N_MAX, Math.round(pendingPatch.n)))
+  const nextN = Number.isFinite(patchWithDefaultOverride.n)
+    ? Math.max(1, Math.min(HUB_N_MAX, Math.round(patchWithDefaultOverride.n)))
     : hubSession.currentN;
-  const speed = pendingPatch.speed
-    ? normalizeHubSpeed(pendingPatch.speed)
+  const speed = patchWithDefaultOverride.speed
+    ? normalizeHubSpeed(patchWithDefaultOverride.speed)
     : normalizeHubSpeed(hubPreferences.speed);
-  const interference = pendingPatch.interference
-    ? normalizeHubInterference(pendingPatch.interference)
+  const interference = patchWithDefaultOverride.interference
+    ? normalizeHubInterference(patchWithDefaultOverride.interference)
     : normalizeHubInterference(hubPreferences.interference);
-  const flags = normalizeCoachFlags(pendingPatch.flags);
+  const flags = normalizeCoachFlags(patchWithDefaultOverride.flags);
 
   const plan = createHubBlockPlan({
     wrapper,
@@ -892,6 +1496,9 @@ function beginHubBlock() {
     mappingSeed,
     flags
   });
+  if (plan.flags && flags?.userOverride) {
+    plan.flags.userOverride = flags.userOverride;
+  }
   const blockBuild = createHubBlockTrials({
     wrapper: plan.wrapper,
     n: plan.n,
@@ -939,6 +1546,10 @@ function startHubTrial(trialIndex) {
   }
 
   const block = hubSession.currentBlock;
+  if (trialIndex === 0 && !hubSession.missionStartRecorded) {
+    registerMissionSessionStart();
+    hubSession.missionStartRecorded = true;
+  }
   block.trialIndex = trialIndex;
   block.stimulusVisible = true;
   block.responseCaptured = false;
@@ -1079,7 +1690,8 @@ function finishHubBlock() {
     hubSession.coachContext = coachDecision.coachContext && typeof coachDecision.coachContext === "object"
       ? coachDecision.coachContext
       : hubSession.coachContext;
-    hubSession.coachNotice = typeof coachDecision.notice === "string" ? coachDecision.notice : "";
+    const coachState = coachDecision.patch?.flags?.coachState;
+    hubSession.coachNotice = makeCoachNarrative(coachState, typeof coachDecision.notice === "string" ? coachDecision.notice : "");
   } else {
     hubSession.pendingPlanPatch = {};
     hubSession.coachNotice = "";
@@ -1103,16 +1715,26 @@ function completeHubSession() {
     blocks: hubSession.blocks
   });
   appendSessionSummary(summary);
+  const progressDelta = applySessionProgressAndSave(summary, "hub");
   updateSettings({ hasRunHubBefore: true });
 
   hubSession.status = "completed";
   hubSession.phase = "session-done";
   hubSession.sessionSummary = summary;
+  hubSession.progressDelta = progressDelta;
   setFlash("Hub session complete and saved to History.", "success");
   render();
 }
 
 function startRelationalSession(mode) {
+  const state = loadStateWithSyncedUnlocks();
+  const unlockProgress = deriveRelationalUnlockProgress(state.history);
+  if (!unlockProgress.relationalUnlocked) {
+    setFlash("Relational modes are locked. Complete qualifying hub_cat and hub_noncat sessions first.", "warn");
+    render();
+    return;
+  }
+
   const modeDef = REL_MODE_MAP[mode];
   if (!modeDef) {
     setFlash("Unknown relational mode.", "warn");
@@ -1152,9 +1774,11 @@ function startRelationalSession(mode) {
       }
     },
     coachNotice: "",
+    missionStartRecorded: false,
     currentBlock: null,
     lastBlockSummary: null,
-    sessionSummary: null
+    sessionSummary: null,
+    progressDelta: null
   };
   beginRelationalBlock();
 }
@@ -1247,6 +1871,10 @@ function startRelationalTrial(trialIndex) {
     return;
   }
   const block = relSession.currentBlock;
+  if (trialIndex === 0 && !relSession.missionStartRecorded) {
+    registerMissionSessionStart();
+    relSession.missionStartRecorded = true;
+  }
   block.trialIndex = trialIndex;
   block.stimulusVisible = true;
   block.responseCaptured = false;
@@ -1489,7 +2117,8 @@ function finishRelationalBlock() {
     relSession.coachContext = coachDecision.coachContext && typeof coachDecision.coachContext === "object"
       ? coachDecision.coachContext
       : relSession.coachContext;
-    relSession.coachNotice = typeof coachDecision.notice === "string" ? coachDecision.notice : "";
+    const coachState = coachDecision.patch?.flags?.coachState;
+    relSession.coachNotice = makeCoachNarrative(coachState, typeof coachDecision.notice === "string" ? coachDecision.notice : "");
   } else {
     relSession.pendingPlanPatch = {
       speed: "slow",
@@ -1523,10 +2152,12 @@ function completeRelationalSession() {
     blocks: relSession.blocks
   });
   appendSessionSummary(summary);
+  const progressDelta = applySessionProgressAndSave(summary, "relational");
 
   relSession.status = "completed";
   relSession.phase = "session-done";
   relSession.sessionSummary = summary;
+  relSession.progressDelta = progressDelta;
   setFlash("Relational session complete and saved to History.", "success");
   render();
 }
@@ -1557,6 +2188,52 @@ document.addEventListener("click", (event) => {
 
   if (action === "hub-match") {
     captureHubResponse();
+    return;
+  }
+
+  if (action === "hub-accept-coach") {
+    if (hubSession && hubSession.status === "running" && hubSession.phase === "block-result") {
+      const pendingPatch = hubSession.pendingPlanPatch && typeof hubSession.pendingPlanPatch === "object"
+        ? hubSession.pendingPlanPatch
+        : {};
+      const pendingFlags = pendingPatch.flags && typeof pendingPatch.flags === "object"
+        ? pendingPatch.flags
+        : {};
+      hubSession.pendingPlanPatch = {
+        ...pendingPatch,
+        flags: {
+          ...pendingFlags,
+          userOverride: "coach"
+        }
+      };
+      render();
+    }
+    return;
+  }
+
+  if (action === "hub-try-alternative") {
+    if (hubSession && hubSession.status === "running" && hubSession.phase === "block-result") {
+      const pendingPatch = hubSession.pendingPlanPatch && typeof hubSession.pendingPlanPatch === "object"
+        ? hubSession.pendingPlanPatch
+        : {};
+      const alternativePatch = resolveHubAlternativePatch(hubSession, pendingPatch);
+      if (!alternativePatch) {
+        setFlash("Coach recommendation is optimal right now.", "warn");
+        render();
+        return;
+      }
+      hubSession.pendingPlanPatch = {
+        ...pendingPatch,
+        ...alternativePatch,
+        flags: {
+          ...(pendingPatch.flags && typeof pendingPatch.flags === "object" ? pendingPatch.flags : {}),
+          ...(alternativePatch.flags || {}),
+          userOverride: "alternative"
+        }
+      };
+      hubSession.coachNotice = "Alternative challenge selected for next block.";
+      render();
+    }
     return;
   }
 
