@@ -360,6 +360,31 @@ body {
   letter-spacing: 0.03em;
 }
 
+.game-match-btn:disabled {
+  opacity: 1;
+  cursor: default;
+  filter: none;
+}
+
+.game-match-btn.captured {
+  animation: matchPulse 180ms ease-out 1;
+}
+
+@keyframes matchPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: var(--shadow-primary);
+  }
+  45% {
+    transform: scale(0.97);
+    box-shadow: 0 0 0 2px rgba(204, 255, 102, 0.35), 0 0 18px rgba(204, 255, 102, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: var(--shadow-primary);
+  }
+}
+
 .coach-choice-box {
   border: 1px solid rgba(110, 198, 255, 0.35);
   border-radius: var(--radius-sm);

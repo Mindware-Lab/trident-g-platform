@@ -735,6 +735,14 @@ function wrapperIconPath(wrapper) {
   return "../brandingUI/icons/tab-bar/history.svg";
 }
 
+function displayHubTargetLabel(targetModality, wrapper) {
+  const base = modalityLabel(targetModality);
+  if (wrapper === "hub_cat" && targetModality === "sym") {
+    return "LETTER";
+  }
+  return base;
+}
+
 function targetModalityIconPath(targetLabel) {
   const text = String(targetLabel || "").toLowerCase();
   if (text.includes("location")) {
@@ -1117,7 +1125,7 @@ function renderHome(state) {
         <p class="hint">${mission.rewardClaimed ? "Mission reward claimed for today." : "Complete mission to earn +3 bank units."}</p>
       </div>
       <div class="row home-primary-row">
-        <button class="btn primary home-primary-btn" data-action="go-play-hub">
+        <button class="btn primary home-primary-btn" data-action="go-play-hub" data-wrapper="hub_cat">
           <img class="btn-inline-icon btn-inline-icon-lg" src="../brandingUI/icons/tab-bar/play-hub.svg" alt="" aria-hidden="true">
           Start Recommended Session
         </button>
@@ -1127,12 +1135,12 @@ function renderHome(state) {
         <p class="kicker">Choose a Mode</p>
         <div class="mode-group">
           <div class="mode-grid mode-grid-hub">
-            <button class="mode-tile mode-action" data-action="go-play-hub">
+            <button class="mode-tile mode-action" data-action="go-play-hub" data-wrapper="hub_cat">
               <img src="../brandingUI/icons/game/location-spatial.svg" alt="" aria-hidden="true">
               <strong>Hub (category)</strong>
               <span>Available</span>
             </button>
-            <button class="mode-tile mode-action" data-action="go-play-hub">
+            <button class="mode-tile mode-action" data-action="go-play-hub" data-wrapper="hub_noncat">
               <img src="../brandingUI/icons/game/symbol.svg" alt="" aria-hidden="true">
               <strong>Hub (non-cat)</strong>
               <span>Available</span>
@@ -1486,7 +1494,7 @@ function renderPlayHub() {
   const trialNumber = block ? block.trialIndex + 1 : 0;
   const trialCount = block ? block.trials.length : 0;
   const responseCaptured = block ? block.responseCaptured : false;
-  const targetLabel = block ? modalityLabel(block.plan.targetModality) : "";
+  const targetLabel = block ? displayHubTargetLabel(block.plan.targetModality, block.plan.wrapper) : "";
   const preview = resolveNextBlockPreview(hubSession);
   const currentWrapper = block
     ? block.plan.wrapper
@@ -1542,7 +1550,7 @@ function renderPlayHub() {
         <p class="hint">Trial ${trialNumber}/${trialCount}</p>
         ${renderHubStimulus(trial, block.stimulusVisible, targetLabel, block.renderMapping, block.plan.wrapper, runtimeInfo)}
         <p class="coach-inline">${escapeHtml(makeCoachNarrative(block?.plan?.flags?.coachState, "Stabilise block"))}</p>
-        <button class="btn primary match-btn game-match-btn" data-action="hub-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
+        <button class="btn primary match-btn game-match-btn ${responseCaptured ? "captured" : ""}" data-action="hub-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
       </div>
     `;
   } else {
@@ -1720,7 +1728,7 @@ function renderPlayRelational(state) {
         <div class="trial-progress-track"><span style="width:${trialProgressPct}%;"></span></div>
         <p class="hint">Trial ${trialNumber}/${trialCount}</p>
         ${renderRelationalStimulus(trial, block.stimulusVisible, runtimeInfo)}
-        <button class="btn primary match-btn game-match-btn" data-action="rel-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
+        <button class="btn primary match-btn game-match-btn ${responseCaptured ? "captured" : ""}" data-action="rel-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
       </div>
     `;
   } else if (relSession.phase === "quiz") {
@@ -1912,7 +1920,7 @@ function renderHubBriefingOverlay() {
           <p><strong>Block ${block.plan.blockIndex} of ${HUB_TOTAL_BLOCKS}</strong></p>
           <p>T = ${block.trials.length} trials</p>
         </div>
-        <h3>Remember ${escapeHtml(modalityLabel(block.plan.targetModality).toLowerCase())}</h3>
+        <h3>Remember ${escapeHtml(displayHubTargetLabel(block.plan.targetModality, block.plan.wrapper).toLowerCase())}</h3>
         <p>Press MATCH when the target repeats at ${block.plan.n}-back.</p>
         <div class="briefing-chip-row">
           <span class="briefing-chip"><small>Level</small><strong>${block.plan.n}</strong></span>
@@ -2051,7 +2059,7 @@ function startHubSession() {
   const tsStart = Date.now();
   const selectedWrapper = normalizeHubWrapper(hubPreferences.wrapper);
   const sessionSeed = hash32(String(tsStart));
-  const initialWrapper = firstHubRun ? FIRST_RUN_BASELINE_BLOCK.wrapper : selectedWrapper;
+  const initialWrapper = selectedWrapper;
   const initialN = firstHubRun ? FIRST_RUN_BASELINE_BLOCK.n : 1;
   const initialSpeed = firstHubRun ? FIRST_RUN_BASELINE_BLOCK.speed : undefined;
   const initialInterference = firstHubRun ? FIRST_RUN_BASELINE_BLOCK.interference : undefined;
@@ -2411,7 +2419,7 @@ function startRelationalSession(mode) {
   const state = loadStateWithSyncedUnlocks();
   const unlockProgress = deriveRelationalUnlockProgress(state.history);
   if (!unlockProgress.relationalUnlocked) {
-    setFlash("Relational modes are locked. Complete qualifying hub_cat and hub_noncat sessions first.", "warn");
+    setFlash("Relational modes are locked. Complete qualifying Hub category and Hub non-cat games first.", "warn");
     render();
     return;
   }
@@ -2922,6 +2930,11 @@ document.addEventListener("click", (event) => {
   }
 
   if (action === "go-play-hub") {
+    const requestedWrapper = target.getAttribute("data-wrapper");
+    if (requestedWrapper === "hub_cat" || requestedWrapper === "hub_noncat") {
+      hubPreferences.wrapper = requestedWrapper;
+      updateSettings({ lastWrapper: requestedWrapper });
+    }
     window.location.hash = "/play-hub";
     return;
   }
