@@ -755,10 +755,10 @@ function wrapperDisplayName(wrapper) {
 
 function wrapperIconPath(wrapper) {
   if (wrapper === "hub_cat") {
-    return "../brandingUI/icons/game/location-spatial.svg";
+    return "../brandingUI/icons/game/location-response.svg";
   }
   if (wrapper === "hub_noncat") {
-    return "../brandingUI/icons/game/symbol.svg";
+    return "../brandingUI/icons/game/symbol-response.svg";
   }
   if (wrapper === "transitive") {
     return "../brandingUI/icons/game/transitive-order.svg";
@@ -783,43 +783,47 @@ function displayHubTargetLabel(targetModality, wrapper) {
 function targetModalityIconPath(targetLabel) {
   const text = String(targetLabel || "").toLowerCase();
   if (text.includes("location")) {
-    return "../brandingUI/icons/game/location-spatial.svg";
+    return "../brandingUI/icons/game/location-response.svg";
   }
-  if (text.includes("symbol") || text.includes("letter")) {
-    return "../brandingUI/icons/game/symbol.svg";
+  if (text.includes("colour") || text.includes("color")) {
+    return "../brandingUI/icons/game/colour-response.svg";
+  }
+  if (text.includes("letter")) {
+    return "../brandingUI/icons/game/letter-response.svg";
+  }
+  if (text.includes("symbol")) {
+    return "../brandingUI/icons/game/symbol-response.svg";
   }
   return "";
 }
 
 function renderTargetModalityLegend(targetModality, wrapper) {
-  const letterOrSymbol = wrapper === "hub_cat" ? "LETTER" : "SYMBOL";
+  const isCategorical = wrapper === "hub_cat";
+  const letterOrSymbol = isCategorical ? "LETTER" : "SYMBOL";
   const items = [
     {
       id: "loc",
       label: "LOCATION",
-      icon: "../brandingUI/icons/game/location-spatial.svg",
-      isColour: false
+      icon: "../brandingUI/icons/game/location-response.svg"
     },
     {
       id: "col",
       label: "COLOUR",
-      icon: "",
-      isColour: true
+      icon: "../brandingUI/icons/game/colour-response.svg"
     },
     {
       id: "sym",
       label: letterOrSymbol,
-      icon: "../brandingUI/icons/game/symbol.svg",
-      isColour: false
+      icon: isCategorical
+        ? "../brandingUI/icons/game/letter-response.svg"
+        : "../brandingUI/icons/game/symbol-response.svg"
     }
   ];
   return `
     <div class="target-legend-row" aria-label="Target options">
       ${items.map((item) => `
         <span class="target-legend-item ${targetModality === item.id ? "active" : ""}">
-          ${item.isColour
-            ? '<span class="target-legend-colour" aria-hidden="true"></span>'
-            : `<img src="${item.icon}" alt="" aria-hidden="true">`}
+          <img src="${item.icon}" alt="" aria-hidden="true">
           ${escapeHtml(item.label)}
         </span>
       `).join("")}
@@ -1117,7 +1121,7 @@ function renderRelationalProgressCard(unlockProgress) {
       </div>
       <p class="hint">${catDone && noncatDone ? "Relational modes are now available." : "Qualify in both Hub modes to unlock Relational."}</p>
       <details class="rel-progress-help">
-        <summary>[?] What counts as stable?</summary>
+        <summary><img src="../brandingUI/icons/status/help-information.svg" alt="" aria-hidden="true">What counts as stable?</summary>
         <p>Stable = 3 blocks at N >= 3 with accuracy >= 75% in the same game baseline.</p>
       </details>
     </div>
@@ -1209,12 +1213,12 @@ function renderHome(state) {
         <div class="mode-group">
           <div class="mode-grid mode-grid-hub">
             <button class="mode-tile mode-action" data-action="go-play-hub" data-wrapper="hub_cat">
-              <img src="../brandingUI/icons/game/location-spatial.svg" alt="" aria-hidden="true">
+              <img src="../brandingUI/icons/game/location-response.svg" alt="" aria-hidden="true">
               <strong>Hub (category)</strong>
               <span>Available</span>
             </button>
             <button class="mode-tile mode-action" data-action="go-play-hub" data-wrapper="hub_noncat">
-              <img src="../brandingUI/icons/game/symbol.svg" alt="" aria-hidden="true">
+              <img src="../brandingUI/icons/game/symbol-response.svg" alt="" aria-hidden="true">
               <strong>Hub (non-categorical)</strong>
               <span>Available</span>
             </button>
@@ -1618,7 +1622,7 @@ function renderPlayHub() {
         <div class="trial-progress-track"><span style="width:${trialProgressPct}%;"></span></div>
         <p class="hint">Trial ${trialNumber}/${trialCount}</p>
         ${renderHubStimulus(trial, block.stimulusVisible, targetLabel, block.renderMapping, block.plan.wrapper)}
-        <button class="btn primary match-btn game-match-btn ${responseCaptured ? "captured" : ""}" data-action="hub-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
+        <button class="btn primary match-btn game-match-btn" data-action="hub-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
       </div>
     `;
   } else {
@@ -1793,7 +1797,7 @@ function renderPlayRelational(state) {
         <div class="trial-progress-track"><span style="width:${trialProgressPct}%;"></span></div>
         <p class="hint">Trial ${trialNumber}/${trialCount}</p>
         ${renderRelationalStimulus(trial, block.stimulusVisible)}
-        <button class="btn primary match-btn game-match-btn ${responseCaptured ? "captured" : ""}" data-action="rel-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
+        <button class="btn primary match-btn game-match-btn" data-action="rel-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
       </div>
     `;
   } else if (relSession.phase === "quiz") {
