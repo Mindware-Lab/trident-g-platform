@@ -1184,7 +1184,7 @@ function renderHome(state) {
           <button class="topbar-icon-btn" data-action="go-home" aria-label="Home">
             <img src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">
           </button>
-          <strong>Capacity</strong>
+          <strong>IQ Capacity</strong>
         </div>
         <div class="game-topbar-stats">
           <span><img src="../brandingUI/icons/gamification/streak-flame.svg" alt="" aria-hidden="true"> ${streakCurrent}</span>
@@ -1966,7 +1966,7 @@ function renderSplashOverlay() {
       <div class="overlay-backdrop" data-action="splash-dismiss"></div>
       <div class="overlay-card splash-overlay" data-action="splash-dismiss">
         <img class="splash-logo" src="../brandingUI/Trident-G-Icon.svg" alt="Trident G">
-        <h2>Capacity Gym</h2>
+        <h2>IQ Capacity</h2>
         <p>Train your mind.</p>
         <p class="hint">Tap anywhere or press Space / Enter / Escape.</p>
       </div>
