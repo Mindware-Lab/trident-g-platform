@@ -393,6 +393,10 @@ body {
   margin-top: 10px;
 }
 
+.summary-help-row {
+  margin-top: 8px;
+}
+
 .coach-next-block {
   margin-top: 14px;
   text-align: center;
@@ -720,6 +724,13 @@ input:disabled {
 .btn.danger {
   color: #ffc6d0;
   border-color: #ff9db5;
+}
+
+.btn.subtle {
+  min-height: 40px;
+  font-size: 0.86rem;
+  color: var(--brand-text-muted);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .match-btn {
@@ -1145,6 +1156,45 @@ input:disabled {
   box-shadow: 0 0 0 2px rgba(18, 29, 43, 0.7);
 }
 
+.target-legend-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.target-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(110, 198, 255, 0.25);
+  background: rgba(110, 198, 255, 0.08);
+  color: var(--brand-text-dim);
+  padding: 5px 9px;
+  font-size: 0.75rem;
+  font-weight: 760;
+}
+
+.target-legend-item img,
+.target-legend-colour {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.target-legend-colour {
+  border-radius: 50%;
+  background: conic-gradient(from 30deg, #ff6f91, #ffd166, #7dffb3, #7ec5ff, #b794ff, #ff6f91);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+
+.target-legend-item.active {
+  border-color: rgba(204, 255, 102, 0.55);
+  background: rgba(204, 255, 102, 0.12);
+  color: #e5ffad;
+}
+
 .hub-runtime {
   margin: 0 0 8px 0;
   color: var(--brand-text-dim);
@@ -1416,6 +1466,19 @@ input:disabled {
 
 .unlock-sheet {
   text-align: center;
+}
+
+.help-sheet {
+  max-width: 460px;
+}
+
+.help-lines {
+  margin-top: 8px;
+}
+
+.help-lines p {
+  margin: 7px 0;
+  color: var(--brand-text-muted);
 }
 
 .unlock-badge {

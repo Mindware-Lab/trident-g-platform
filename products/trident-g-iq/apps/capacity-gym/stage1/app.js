@@ -106,6 +106,25 @@ const COACH_BRIEFING_COPY = Object.freeze({
   SPIKE_TUNE: "Next: Probe game block",
   CONSOLIDATE: "Next: Consolidation block"
 });
+const HELP_TOPICS = Object.freeze({
+  "hub-metrics": {
+    title: "Block Stats",
+    lines: [
+      "Hits = correct MATCH taps.",
+      "Misses = times a MATCH was expected but not tapped.",
+      "Extra taps = taps when no MATCH was present.",
+      "Correct skips = correct no-tap moments."
+    ]
+  },
+  "rel-metrics": {
+    title: "Relational Stats",
+    lines: [
+      "Hits/Misses track MATCH timing during stream trials.",
+      "Quiz score is your reasoning check after each block.",
+      "Level moves up with strong accuracy and holds when stable."
+    ]
+  }
+});
 const uiTimers = {
   splash: null
 };
@@ -114,7 +133,8 @@ const uiState = {
   splashDismissed: false,
   activeOverlay: "none",
   overlayCanTapDismiss: false,
-  pendingUnlockCelebration: false
+  pendingUnlockCelebration: false,
+  helpTopic: null
 };
 
 function pad2(value) {
@@ -587,6 +607,23 @@ function closeBriefingOverlay() {
   uiState.overlayCanTapDismiss = false;
 }
 
+function openHelpOverlay(topic) {
+  if (!topic || !HELP_TOPICS[topic]) {
+    return;
+  }
+  uiState.helpTopic = topic;
+  uiState.activeOverlay = "help";
+  uiState.overlayCanTapDismiss = true;
+  render();
+}
+
+function closeHelpOverlay() {
+  uiState.helpTopic = null;
+  if (uiState.activeOverlay === "help") {
+    uiState.activeOverlay = "none";
+  }
+}
+
 function queueUnlockCelebration() {
   uiState.pendingUnlockCelebration = true;
 }
@@ -748,10 +785,46 @@ function targetModalityIconPath(targetLabel) {
   if (text.includes("location")) {
     return "../brandingUI/icons/game/location-spatial.svg";
   }
-  if (text.includes("symbol")) {
+  if (text.includes("symbol") || text.includes("letter")) {
     return "../brandingUI/icons/game/symbol.svg";
   }
   return "";
+}
+
+function renderTargetModalityLegend(targetModality, wrapper) {
+  const letterOrSymbol = wrapper === "hub_cat" ? "LETTER" : "SYMBOL";
+  const items = [
+    {
+      id: "loc",
+      label: "LOCATION",
+      icon: "../brandingUI/icons/game/location-spatial.svg",
+      isColour: false
+    },
+    {
+      id: "col",
+      label: "COLOUR",
+      icon: "",
+      isColour: true
+    },
+    {
+      id: "sym",
+      label: letterOrSymbol,
+      icon: "../brandingUI/icons/game/symbol.svg",
+      isColour: false
+    }
+  ];
+  return `
+    <div class="target-legend-row" aria-label="Target options">
+      ${items.map((item) => `
+        <span class="target-legend-item ${targetModality === item.id ? "active" : ""}">
+          ${item.isColour
+            ? '<span class="target-legend-colour" aria-hidden="true"></span>'
+            : `<img src="${item.icon}" alt="" aria-hidden="true">`}
+          ${escapeHtml(item.label)}
+        </span>
+      `).join("")}
+    </div>
+  `;
 }
 
 function coachStateDisplayLabel(coachState) {
@@ -1309,6 +1382,9 @@ function renderBlockSummary(block) {
         <span>Block earned</span>
         <strong>+${blockUnits} units</strong>
       </div>
+      <div class="row summary-help-row">
+        <button class="btn subtle" data-action="show-help" data-topic="hub-metrics">What do these stats mean?</button>
+      </div>
     </div>
   `;
 }
@@ -1367,9 +1443,7 @@ function renderRelationalBlockSummary(block) {
   if (!block) {
     return "";
   }
-  const cleanBlock = isCleanBlock(block);
   const outcomeBand = deriveOutcomeBandFromAccuracy(block.accuracy);
-  const coachNarrative = makeCoachNarrative(block?.flags?.coachState, "");
   const accuracyPercent = Number(block.accuracy || 0) * 100;
   const blockUnits = outcomeBand === "UP" ? 2 : (outcomeBand === "HOLD" ? 1 : 0);
   return `
@@ -1393,9 +1467,9 @@ function renderRelationalBlockSummary(block) {
         <span>Block earned</span>
         <strong>+${blockUnits} units</strong>
       </div>
-      <p class="hint">Next block targets: >=75% for HOLD, >=90% to advance N.</p>
-      ${cleanBlock ? `<p class="status clean">Clean control block.</p>` : ""}
-      ${coachNarrative ? `<p class="hint">Coach action: ${escapeHtml(coachNarrative)}</p>` : ""}
+      <div class="row summary-help-row">
+        <button class="btn subtle" data-action="show-help" data-topic="rel-metrics">What do these stats mean?</button>
+      </div>
     </div>
   `;
 }
@@ -1499,8 +1573,6 @@ function renderPlayHub() {
   const currentWrapper = block
     ? block.plan.wrapper
     : (hubSession.lastBlockSummary?.wrapper || preview.wrapper);
-  const currentSpeed = block ? block.plan.speed : (hubSession.lastBlockSummary ? hubSession.lastBlockSummary.speed : "n/a");
-  const currentInterference = block ? block.plan.interference : (hubSession.lastBlockSummary ? hubSession.lastBlockSummary.interference : "n/a");
   const pendingPatch = hubSession.pendingPlanPatch && typeof hubSession.pendingPlanPatch === "object"
     ? hubSession.pendingPlanPatch
     : {};
@@ -1522,9 +1594,6 @@ function renderPlayHub() {
     : "";
 
   const trialProgressPct = trialCount > 0 ? Math.max(0, Math.min(100, Math.round((trialNumber / trialCount) * 100))) : 0;
-  const runtimeInfo = block
-    ? `SOA: ${block.soaMs}ms | Interference: ${block.plan.interference} | Coach: ${block.plan.flags?.coachState || "STABILISE"}`
-    : "";
 
   let phasePanel = "";
   if (hubSession.phase === "briefing") {
@@ -1548,8 +1617,7 @@ function renderPlayHub() {
       <div class="stage-panel trial-stage">
         <div class="trial-progress-track"><span style="width:${trialProgressPct}%;"></span></div>
         <p class="hint">Trial ${trialNumber}/${trialCount}</p>
-        ${renderHubStimulus(trial, block.stimulusVisible, targetLabel, block.renderMapping, block.plan.wrapper, runtimeInfo)}
-        <p class="coach-inline">${escapeHtml(makeCoachNarrative(block?.plan?.flags?.coachState, "Stabilise block"))}</p>
+        ${renderHubStimulus(trial, block.stimulusVisible, targetLabel, block.renderMapping, block.plan.wrapper)}
         <button class="btn primary match-btn game-match-btn ${responseCaptured ? "captured" : ""}" data-action="hub-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
       </div>
     `;
@@ -1581,7 +1649,7 @@ function renderPlayHub() {
           <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${loadGymState().bankUnits || 0}</span>
         </div>
       </div>
-      <p class="hint run-context-line">${wrapperDisplayName(currentWrapper)} | ${currentSpeed} speed | ${currentInterference} interference</p>
+      <p class="hint run-context-line">${wrapperDisplayName(currentWrapper)} game</p>
       ${phasePanel}
       ${renderFlash()}
     </section>
@@ -1701,9 +1769,6 @@ function renderPlayRelational(state) {
   const trialCount = block ? block.trials.length : 0;
   const responseCaptured = block ? block.responseCaptured : false;
   const trialProgressPct = trialCount > 0 ? Math.max(0, Math.min(100, Math.round((trialNumber / trialCount) * 100))) : 0;
-  const runtimeInfo = block
-    ? `SOA: ${block.soaMs}ms | Coach: ${block.plan.flags?.coachState || "STABILISE"}`
-    : "";
 
   let phasePanel = "";
   if (relSession.phase === "briefing") {
@@ -1727,7 +1792,7 @@ function renderPlayRelational(state) {
       <div class="stage-panel trial-stage">
         <div class="trial-progress-track"><span style="width:${trialProgressPct}%;"></span></div>
         <p class="hint">Trial ${trialNumber}/${trialCount}</p>
-        ${renderRelationalStimulus(trial, block.stimulusVisible, runtimeInfo)}
+        ${renderRelationalStimulus(trial, block.stimulusVisible)}
         <button class="btn primary match-btn game-match-btn ${responseCaptured ? "captured" : ""}" data-action="rel-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
       </div>
     `;
@@ -1778,7 +1843,7 @@ function renderPlayRelational(state) {
           <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${state.bankUnits}</span>
         </div>
       </div>
-      <p class="hint run-context-line">${wrapperDisplayName(relSession.wrapper)} | max level ${REL_N_MAX}</p>
+      <p class="hint run-context-line">${wrapperDisplayName(relSession.wrapper)} game</p>
       ${phasePanel}
       ${renderFlash()}
     </section>
@@ -1922,6 +1987,7 @@ function renderHubBriefingOverlay() {
         </div>
         <h3>Remember ${escapeHtml(displayHubTargetLabel(block.plan.targetModality, block.plan.wrapper).toLowerCase())}</h3>
         <p>Press MATCH when the target repeats at ${block.plan.n}-back.</p>
+        ${renderTargetModalityLegend(block.plan.targetModality, block.plan.wrapper)}
         <div class="briefing-chip-row">
           <span class="briefing-chip"><small>Level</small><strong>${block.plan.n}</strong></span>
           <span class="briefing-chip"><small>Speed</small><strong>${escapeHtml(block.plan.speed)}</strong></span>
@@ -1931,7 +1997,7 @@ function renderHubBriefingOverlay() {
         <div class="overlay-actions">
           <button class="btn primary home-primary-btn" data-action="hub-start-block">Start Block</button>
         </div>
-        ${canTapDismiss ? '<p class="hint">Tip: tap outside to start quickly.</p>' : '<p class="hint">Block 1 includes a full start confirmation.</p>'}
+        ${canTapDismiss ? '<p class="hint">Tip: tap outside to start quickly.</p>' : ""}
       </div>
     </div>
   `;
@@ -1963,7 +2029,7 @@ function renderRelationalBriefingOverlay() {
         <div class="overlay-actions">
           <button class="btn primary home-primary-btn" data-action="rel-start-block">Start Block</button>
         </div>
-        ${canTapDismiss ? '<p class="hint">Tip: tap outside to start quickly.</p>' : '<p class="hint">Block 1 includes a full start confirmation.</p>'}
+        ${canTapDismiss ? '<p class="hint">Tip: tap outside to start quickly.</p>' : ""}
       </div>
     </div>
   `;
@@ -1991,6 +2057,29 @@ function renderUnlockCelebrationOverlay() {
   `;
 }
 
+function renderHelpOverlay() {
+  const topic = uiState.helpTopic && HELP_TOPICS[uiState.helpTopic]
+    ? HELP_TOPICS[uiState.helpTopic]
+    : null;
+  if (!topic) {
+    return "";
+  }
+  return `
+    <div class="app-overlay">
+      <div class="overlay-backdrop" data-action="help-close"></div>
+      <div class="overlay-card help-sheet">
+        <h3>${escapeHtml(topic.title)}</h3>
+        <div class="help-lines">
+          ${topic.lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
+        </div>
+        <div class="overlay-actions">
+          <button class="btn primary" data-action="help-close">Got it</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderActiveOverlay(state) {
   ensureSplashTimer();
   if (uiState.showSplash) {
@@ -2006,6 +2095,9 @@ function renderActiveOverlay(state) {
     closeBriefingOverlay();
   }
   showUnlockCelebrationIfPending(state);
+  if (uiState.activeOverlay === "help") {
+    return renderHelpOverlay();
+  }
   if (uiState.activeOverlay === "unlock-celebration") {
     return renderUnlockCelebrationOverlay();
   }
@@ -2925,6 +3017,18 @@ document.addEventListener("click", (event) => {
   if (action === "unlock-close") {
     dismissUnlockCelebration();
     window.location.hash = "/home";
+    render();
+    return;
+  }
+
+  if (action === "show-help") {
+    const topic = target.getAttribute("data-topic");
+    openHelpOverlay(topic);
+    return;
+  }
+
+  if (action === "help-close") {
+    closeHelpOverlay();
     render();
     return;
   }
