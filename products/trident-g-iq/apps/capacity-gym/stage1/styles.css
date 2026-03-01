@@ -360,6 +360,10 @@ body {
   letter-spacing: 0.03em;
 }
 
+.game-match-btn:active:not(:disabled) {
+  transform: none;
+}
+
 .game-match-btn:disabled {
   opacity: 1;
   cursor: default;
