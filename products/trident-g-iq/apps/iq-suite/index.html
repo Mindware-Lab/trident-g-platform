@@ -84,6 +84,21 @@
       box-shadow: 0 30px 70px rgba(3,7,16,.38), inset 0 1px 0 rgba(255,255,255,.05);
       position: relative;
     }
+    body.suite-rebrand .suite-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(460px 460px at 50% -15%, rgba(255,255,255,.18), transparent 62%),
+        linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(221,234,248,.38) 47%, rgba(130,154,181,.32) 50%, rgba(221,234,248,.34) 53%, rgba(255,255,255,0) 100%);
+      opacity: .52;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body.suite-rebrand .suite-shell > * {
+      position: relative;
+      z-index: 1;
+    }
     body.suite-rebrand .tg-desktop-chrome {
       position: relative;
       inset: auto;
@@ -169,8 +184,18 @@
       border: 1px solid transparent;
     }
     body.suite-rebrand .suite-tab-icon {
-      font-size: 16px;
-      line-height: 1;
+      width: 16px;
+      height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    body.suite-rebrand .suite-tab-icon img {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 0 6px rgba(110,198,255,.25));
     }
     body.suite-rebrand .suite-tab-active {
       color: #d8e9ff;
@@ -245,11 +270,11 @@
       </section>
     </main>
     <nav class="suite-bottom-nav" aria-label="Suite navigation preview">
-      <a class="suite-tab suite-tab-active" href="#"><span class="suite-tab-icon">&#8962;</span><span>Home</span></a>
-      <a class="suite-tab" href="#"><span class="suite-tab-icon">&#9673;</span><span>Zone</span></a>
-      <a class="suite-tab" href="#"><span class="suite-tab-icon">&#9679;</span><span>Gym</span></a>
-      <a class="suite-tab" href="#"><span class="suite-tab-icon">&#128200;</span><span>Data</span></a>
-      <a class="suite-tab" href="#"><span class="suite-tab-icon">&#9881;</span><span>Settings</span></a>
+      <a class="suite-tab suite-tab-active" href="#"><span class="suite-tab-icon"><img src="../../../../branding/icons/trident.svg" alt=""></span><span>Home</span></a>
+      <a class="suite-tab" href="#"><span class="suite-tab-icon"><img src="../../../../branding/icons/brain-state.svg" alt=""></span><span>Zone</span></a>
+      <a class="suite-tab" href="#"><span class="suite-tab-icon"><img src="../../../../branding/icons/ccc.svg" alt=""></span><span>Gym</span></a>
+      <a class="suite-tab" href="#"><span class="suite-tab-icon"><img src="../../../../branding/icons/graph.svg" alt=""></span><span>Data</span></a>
+      <a class="suite-tab" href="#"><span class="suite-tab-icon"><img src="../../../../branding/icons/confidence-level.svg" alt=""></span><span>Settings</span></a>
     </nav>
   </div>
 

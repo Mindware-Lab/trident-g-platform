@@ -219,6 +219,21 @@
       box-shadow: 0 30px 70px rgba(3,7,16,.38), inset 0 1px 0 rgba(255,255,255,.05);
       position: relative;
     }
+    body.zc-rebrand .zoneAppShell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(460px 460px at 50% -15%, rgba(255,255,255,.18), transparent 62%),
+        linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(221,234,248,.38) 47%, rgba(130,154,181,.32) 50%, rgba(221,234,248,.34) 53%, rgba(255,255,255,0) 100%);
+      opacity: .52;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body.zc-rebrand .zoneAppShell > * {
+      position: relative;
+      z-index: 1;
+    }
     body.zc-rebrand .tg-desktop-chrome {
       position: relative;
       inset: auto;
@@ -303,7 +318,20 @@
       border-radius: 12px;
       border: 1px solid transparent;
     }
-    body.zc-rebrand .zc-tab-icon { font-size: 16px; line-height: 1; }
+    body.zc-rebrand .zc-tab-icon {
+      width: 16px;
+      height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    body.zc-rebrand .zc-tab-icon img {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 0 6px rgba(110,198,255,.25));
+    }
     body.zc-rebrand .zc-tab-active { color: #d8e9ff; border-color: rgba(110,198,255,.36); background: rgba(110,198,255,.12); }
     @media (max-width: 520px) {
       body.zc-rebrand { padding: 0; }
@@ -462,11 +490,11 @@
   </div>
     </main>
     <nav class="zc-bottom-nav" aria-label="Zone Coach navigation preview">
-      <a class="zc-tab" href="#"><span class="zc-tab-icon">&#8962;</span><span>Home</span></a>
-      <a class="zc-tab" href="#"><span class="zc-tab-icon">&#8635;</span><span>Run</span></a>
-      <a class="zc-tab zc-tab-active" href="#"><span class="zc-tab-icon">&#9679;</span><span>Zone</span></a>
-      <a class="zc-tab" href="#"><span class="zc-tab-icon">&#128200;</span><span>Data</span></a>
-      <a class="zc-tab" href="#"><span class="zc-tab-icon">&#9881;</span><span>Settings</span></a>
+      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../../../../branding/icons/trident.svg" alt=""></span><span>Home</span></a>
+      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../../../../branding/icons/ccc.svg" alt=""></span><span>Run</span></a>
+      <a class="zc-tab zc-tab-active" href="#"><span class="zc-tab-icon"><img src="../../../../branding/icons/brain-state.svg" alt=""></span><span>Zone</span></a>
+      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../../../../branding/icons/graph.svg" alt=""></span><span>Data</span></a>
+      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../../../../branding/icons/confidence-level.svg" alt=""></span><span>Settings</span></a>
     </nav>
   </div>
 
