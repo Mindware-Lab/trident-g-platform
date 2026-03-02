@@ -97,9 +97,10 @@
       </article>
       <article class="ui-card" style="margin-top:10px;">
         <h2 class="ui-title" style="font-size:1rem;">Phase 1 Entitlement Config (Dev)</h2>
-        <p class="ui-text">Set your entitlement endpoint and bearer token for server-truth access checks.</p>
+        <p class="ui-text">Set endpoint URLs and bearer token for server entitlements and event logging.</p>
         <div class="ui-row" style="margin-top:10px;">
           <input id="entEndpointInput" class="ui-input" type="text" placeholder="Entitlements endpoint URL">
+          <input id="eventsEndpointInput" class="ui-input" type="text" placeholder="Events endpoint URL">
           <input id="entTokenInput" class="ui-input" type="password" placeholder="Bearer token">
         </div>
         <div class="ui-row" style="margin-top:10px;">
@@ -305,8 +306,10 @@
         ? window.IQEntitlementsClient.loadConfig()
         : { entitlementsEndpoint: "", authToken: "" };
       const endpointInput = document.getElementById("entEndpointInput");
+      const eventsEndpointInput = document.getElementById("eventsEndpointInput");
       const tokenInput = document.getElementById("entTokenInput");
       if (endpointInput) endpointInput.value = config.entitlementsEndpoint || "";
+      if (eventsEndpointInput) eventsEndpointInput.value = config.eventsEndpoint || "";
       if (tokenInput) tokenInput.value = config.authToken || "";
 
       renderState.render = async () => {
@@ -324,6 +327,7 @@
         saveBtn.addEventListener("click", async () => {
           window.IQEntitlementsClient.saveConfig({
             entitlementsEndpoint: endpointInput ? endpointInput.value : "",
+            eventsEndpoint: eventsEndpointInput ? eventsEndpointInput.value : "",
             authToken: tokenInput ? tokenInput.value : ""
           });
           await renderState.render();
@@ -335,6 +339,7 @@
         clearBtn.addEventListener("click", async () => {
           window.IQEntitlementsClient.clearConfig();
           if (endpointInput) endpointInput.value = "";
+          if (eventsEndpointInput) eventsEndpointInput.value = "";
           if (tokenInput) tokenInput.value = "";
           await renderState.render();
         });

@@ -7,6 +7,7 @@ This contract defines the minimum client/server interfaces needed to replace Pha
 - User is authenticated (Supabase auth session exists).
 - Client requests entitlements for the authenticated user only.
 - Client does not mutate entitlements directly.
+- Client may POST event records to a dedicated events endpoint using the same bearer auth.
 
 ## 2) Server-truth response shape
 
@@ -52,8 +53,12 @@ Clients append user events into `public.events`:
 - `event_type=app_gate_allow|app_gate_deny|activation_attempt|activation_success`
 - include `app_id`, `bundle_id`, and a lightweight JSON payload
 
+Client hook:
+
+- `window.IQEntitlementsClient.postEvent(eventType, payload)`
+- if events endpoint is not configured, logging is skipped (no-blocking behavior)
+
 RLS must enforce:
 
 - users read their own rows only
 - users insert rows for themselves only
-

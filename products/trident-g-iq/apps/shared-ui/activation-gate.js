@@ -121,6 +121,19 @@
     return Array.from(allowed);
   }
 
+  function emitClientEvent(eventType, payload) {
+    var client = global.IQEntitlementsClient;
+    if (!client || typeof client.postEvent !== "function") {
+      return;
+    }
+    try {
+      var result = client.postEvent(eventType, payload || {});
+      if (result && typeof result.catch === "function") {
+        result.catch(function () {});
+      }
+    } catch (_) {}
+  }
+
   function resolveCodeBundle(code) {
     var normalized = normalizeCode(code);
     return BUNDLE_CODES[normalized] || null;
@@ -211,6 +224,13 @@
         input.focus();
         return;
       }
+      emitClientEvent("activation_attempt", {
+        appId: opts.appId || "",
+        appLabel: appLabel,
+        bundleIdHint: opts.bundleIdHint || "",
+        source: "manual",
+        codeLength: rawCode.length
+      });
 
       var bundleId = resolveCodeBundle(rawCode);
       if (!bundleId) {
@@ -220,6 +240,12 @@
       }
 
       var activation = saveActivation(bundleId, manifests, "manual");
+      emitClientEvent("activation_success", {
+        appId: opts.appId || "",
+        appLabel: appLabel,
+        bundleId: bundleId,
+        source: "manual"
+      });
       if (opts.appId && !activationAllowsApp(activation, opts.appId, manifests)) {
         var bundle = getBundleById(bundleId, manifests);
         var label = bundle && bundle.label ? bundle.label : bundleId;
@@ -391,14 +417,34 @@
     }
     return resolveAccessState(safeOpts).then(function (state) {
       if (state.allowed) {
+        emitClientEvent("app_gate_allow", {
+          appId: safeOpts.appId || "",
+          appLabel: safeOpts.appLabel || "",
+          mode: state.mode,
+          bundleId: state.activation && state.activation.bundleId ? state.activation.bundleId : "",
+          serverConfigured: Boolean(state.server && state.server.configured)
+        });
         return true;
       }
       if (state.server.configured && state.server.ok) {
+        emitClientEvent("app_gate_deny", {
+          appId: safeOpts.appId || "",
+          appLabel: safeOpts.appLabel || "",
+          mode: "server",
+          reason: "missing_entitlement",
+          bundleIdHint: safeOpts.bundleIdHint || ""
+        });
         renderServerDeniedModal(safeOpts);
         return new Promise(function () {});
       }
       return new Promise(function (resolve) {
         renderModal(safeOpts, state.manifests, function () {
+          emitClientEvent("app_gate_allow", {
+            appId: safeOpts.appId || "",
+            appLabel: safeOpts.appLabel || "",
+            mode: "activation",
+            bundleIdHint: safeOpts.bundleIdHint || ""
+          });
           resolve(true);
         });
       });
@@ -410,10 +456,22 @@
     return loadManifests(safeOpts.manifestUrl).then(function (manifests) {
       var activation = loadActivation();
       if (activationAllowsApp(activation, safeOpts.appId, manifests)) {
+        emitClientEvent("app_gate_allow", {
+          appId: safeOpts.appId || "",
+          appLabel: safeOpts.appLabel || "",
+          mode: "activation",
+          bundleId: activation.bundleId || ""
+        });
         return true;
       }
       return new Promise(function (resolve) {
         renderModal(safeOpts, manifests, function () {
+          emitClientEvent("app_gate_allow", {
+            appId: safeOpts.appId || "",
+            appLabel: safeOpts.appLabel || "",
+            mode: "activation",
+            bundleIdHint: safeOpts.bundleIdHint || ""
+          });
           resolve(true);
         });
       });

@@ -21,6 +21,7 @@
     }
     return {
       entitlementsEndpoint: "",
+      eventsEndpoint: "",
       authToken: ""
     };
   }
@@ -28,6 +29,7 @@
   function saveConfig(config) {
     var next = {
       entitlementsEndpoint: String(config && config.entitlementsEndpoint || ""),
+      eventsEndpoint: String(config && config.eventsEndpoint || ""),
       authToken: String(config && config.authToken || "")
     };
     global.localStorage.setItem(CONFIG_KEY, JSON.stringify(next));
@@ -82,13 +84,45 @@
       });
   }
 
+  function postEvent(eventType, payload) {
+    var config = loadConfig();
+    if (!config.eventsEndpoint || !config.authToken) {
+      return Promise.resolve({
+        ok: false,
+        reason: "not_configured"
+      });
+    }
+    return fetch(config.eventsEndpoint, {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + config.authToken,
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        eventType: String(eventType || ""),
+        occurredAt: new Date().toISOString(),
+        payload: payload && typeof payload === "object" ? payload : {}
+      })
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return { ok: false, reason: "http_" + response.status };
+        }
+        return { ok: true };
+      })
+      .catch(function () {
+        return { ok: false, reason: "network_error" };
+      });
+  }
+
   global.IQEntitlementsClient = {
     CONFIG_KEY: CONFIG_KEY,
     loadConfig: loadConfig,
     saveConfig: saveConfig,
     clearConfig: clearConfig,
     isConfigured: isConfigured,
-    fetchEntitlements: fetchEntitlements
+    fetchEntitlements: fetchEntitlements,
+    postEvent: postEvent
   };
 })(window);
-
