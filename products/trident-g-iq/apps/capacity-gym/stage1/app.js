@@ -1804,7 +1804,7 @@ function renderPlayHub() {
       </div>
     `;
   } else if (hubSession.phase === "trial") {
-    const showPauseControl = block?.plan?.wrapper === "hub_cat";
+    const showPauseControl = block?.plan?.wrapper === "hub_cat" || block?.plan?.wrapper === "hub_noncat";
     const pauseControls = showPauseControl
       ? `
         <div class="row pause-control-row">
@@ -1983,6 +1983,7 @@ function renderPlayRelational(state) {
   const trialNumber = block ? block.trialIndex + 1 : 0;
   const trialCount = block ? block.trials.length : 0;
   const responseCaptured = block ? block.responseCaptured : false;
+  const relTrialPaused = Boolean(relSession?.trialPaused);
   const trialProgressPct = trialCount > 0 ? Math.max(0, Math.min(100, Math.round((trialNumber / trialCount) * 100))) : 0;
 
   let phasePanel = "";
@@ -2003,12 +2004,19 @@ function renderPlayRelational(state) {
       </div>
     `;
   } else if (relSession.phase === "trial") {
+    const pauseControls = `
+      <div class="row pause-control-row">
+        <button class="btn subtle pause-btn" data-action="rel-toggle-pause">${relTrialPaused ? "Resume" : "Pause"}</button>
+        <button class="btn danger stop-btn" data-action="rel-stop-session">Stop</button>
+      </div>
+    `;
     phasePanel = `
       <div class="stage-panel trial-stage">
         <div class="trial-progress-track"><span style="width:${trialProgressPct}%;"></span></div>
         <p class="hint">Trial ${trialNumber}/${trialCount}</p>
         ${renderRelationalStimulus(trial, block.stimulusVisible)}
-        <button class="btn primary match-btn game-match-btn" data-action="rel-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
+        <button class="btn primary match-btn game-match-btn" data-action="rel-match" ${(responseCaptured || relTrialPaused) ? "disabled" : ""}>MATCH</button>
+        ${pauseControls}
       </div>
     `;
   } else if (relSession.phase === "quiz") {
@@ -2533,8 +2541,8 @@ function beginHubBlock() {
     stimulusVisible: false,
     responseCaptured: false,
     responseRtMs: null,
-    trialStartedAtMs: 0,
     trialElapsedMs: 0,
+    trialStartedAtMs: 0,
     trialOutcomes: []
   };
   clearHubTimers();
@@ -2611,9 +2619,6 @@ function pauseHubTrial() {
     return;
   }
   const block = hubSession.currentBlock;
-  if (block.plan.wrapper !== "hub_cat") {
-    return;
-  }
 
   block.trialElapsedMs = Math.max(0, Math.round(performance.now() - block.trialStartedAtMs));
   hubSession.trialPaused = true;
@@ -2637,9 +2642,6 @@ function resumeHubTrial() {
     return;
   }
   const block = hubSession.currentBlock;
-  if (block.plan.wrapper !== "hub_cat") {
-    return;
-  }
 
   const elapsedMs = Number.isFinite(block.trialElapsedMs)
     ? Math.max(0, Math.round(block.trialElapsedMs))
@@ -2693,9 +2695,6 @@ function toggleHubPause() {
   if (!hubSession || hubSession.status !== "running" || hubSession.phase !== "trial" || !hubSession.currentBlock) {
     return;
   }
-  if (hubSession.currentBlock.plan.wrapper !== "hub_cat") {
-    return;
-  }
   if (hubSession.trialPaused) {
     resumeHubTrial();
     return;
@@ -2711,6 +2710,106 @@ function stopHubSession() {
   hubSession = null;
   closeBriefingOverlay();
   setFlash("Hub session stopped. Session discarded and not logged.", "warn");
+  window.location.hash = "/home";
+}
+
+function pauseRelationalTrial() {
+  if (!relSession || relSession.status !== "running" || relSession.phase !== "trial" || !relSession.currentBlock) {
+    return;
+  }
+  if (relSession.trialPaused) {
+    return;
+  }
+  const block = relSession.currentBlock;
+  block.trialElapsedMs = Math.max(0, Math.round(performance.now() - block.trialStartedAtMs));
+  relSession.trialPaused = true;
+
+  if (relTimers.display) {
+    clearTimeout(relTimers.display);
+    relTimers.display = null;
+  }
+  if (relTimers.trial) {
+    clearTimeout(relTimers.trial);
+    relTimers.trial = null;
+  }
+  render();
+}
+
+function resumeRelationalTrial() {
+  if (!relSession || relSession.status !== "running" || relSession.phase !== "trial" || !relSession.currentBlock) {
+    return;
+  }
+  if (!relSession.trialPaused) {
+    return;
+  }
+  const block = relSession.currentBlock;
+  const elapsedMs = Number.isFinite(block.trialElapsedMs)
+    ? Math.max(0, Math.round(block.trialElapsedMs))
+    : 0;
+  const remainingSoaMs = Math.max(0, block.soaMs - elapsedMs);
+  const remainingDisplayMs = Math.max(0, block.displayMs - elapsedMs);
+  if (remainingSoaMs <= 0) {
+    relSession.trialPaused = false;
+    finishRelationalTrial();
+    return;
+  }
+
+  block.trialStartedAtMs = performance.now() - elapsedMs;
+  relSession.trialPaused = false;
+
+  if (relTimers.display) {
+    clearTimeout(relTimers.display);
+    relTimers.display = null;
+  }
+  if (relTimers.trial) {
+    clearTimeout(relTimers.trial);
+    relTimers.trial = null;
+  }
+
+  if (block.stimulusVisible) {
+    if (remainingDisplayMs <= 0) {
+      block.stimulusVisible = false;
+    } else {
+      const trialIndex = block.trialIndex;
+      relTimers.display = setTimeout(() => {
+        if (!relSession || relSession.status !== "running" || relSession.phase !== "trial" || relSession.trialPaused) {
+          return;
+        }
+        const current = relSession.currentBlock;
+        if (!current || current.trialIndex !== trialIndex) {
+          return;
+        }
+        current.stimulusVisible = false;
+        render();
+      }, remainingDisplayMs);
+    }
+  }
+
+  relTimers.trial = setTimeout(() => {
+    finishRelationalTrial();
+  }, remainingSoaMs);
+  render();
+}
+
+function toggleRelationalPause() {
+  if (!relSession || relSession.status !== "running" || relSession.phase !== "trial" || !relSession.currentBlock) {
+    return;
+  }
+  if (relSession.trialPaused) {
+    resumeRelationalTrial();
+    return;
+  }
+  pauseRelationalTrial();
+}
+
+function stopRelationalSession() {
+  if (!relSession || relSession.status !== "running") {
+    return;
+  }
+  clearRelTimers();
+  relSession = null;
+  closeBriefingOverlay();
+  setFlash("Relational session stopped. Session discarded and not logged.", "warn");
   window.location.hash = "/home";
 }
 
@@ -2919,6 +3018,7 @@ function startRelationalSession(mode) {
       }
     },
     coachNotice: "",
+    trialPaused: false,
     missionStartRecorded: false,
     currentBlock: null,
     lastBlockSummary: null,
@@ -2994,6 +3094,7 @@ function beginRelationalBlock() {
     stimulusVisible: false,
     responseCaptured: false,
     responseRtMs: null,
+    trialElapsedMs: 0,
     trialStartedAtMs: 0,
     trialOutcomes: [],
     quizIndex: -1,
@@ -3037,7 +3138,9 @@ function startRelationalTrial(trialIndex) {
   block.stimulusVisible = true;
   block.responseCaptured = false;
   block.responseRtMs = null;
+  block.trialElapsedMs = 0;
   block.trialStartedAtMs = performance.now();
+  relSession.trialPaused = false;
   relSession.phase = "trial";
 
   render();
@@ -3049,7 +3152,7 @@ function startRelationalTrial(trialIndex) {
   }
 
   relTimers.display = setTimeout(() => {
-    if (!relSession || relSession.status !== "running" || relSession.phase !== "trial") {
+    if (!relSession || relSession.status !== "running" || relSession.phase !== "trial" || relSession.trialPaused) {
       return;
     }
     const current = relSession.currentBlock;
@@ -3069,6 +3172,9 @@ function captureRelationalMatch() {
   if (!relSession || relSession.status !== "running" || relSession.phase !== "trial" || !relSession.currentBlock) {
     return false;
   }
+  if (relSession.trialPaused) {
+    return false;
+  }
   const block = relSession.currentBlock;
   if (block.responseCaptured) {
     return false;
@@ -3083,6 +3189,7 @@ function finishRelationalTrial() {
   if (!relSession || relSession.status !== "running" || !relSession.currentBlock) {
     return;
   }
+  relSession.trialPaused = false;
   const block = relSession.currentBlock;
   const trial = block.trials[block.trialIndex];
   const isMatch = isRelationalMatchAtIndex(block.trials, block.trialIndex, block.plan.n);
@@ -3499,6 +3606,16 @@ document.addEventListener("click", (event) => {
 
   if (action === "rel-match") {
     captureRelationalMatch();
+    return;
+  }
+
+  if (action === "rel-toggle-pause") {
+    toggleRelationalPause();
+    return;
+  }
+
+  if (action === "rel-stop-session") {
+    stopRelationalSession();
     return;
   }
 
