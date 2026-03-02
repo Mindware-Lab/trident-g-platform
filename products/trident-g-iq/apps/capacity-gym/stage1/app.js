@@ -38,6 +38,12 @@ import { coachUpdateAfterBlock, relationalCoachUpdateAfterBlock } from "./lib/co
 import { transitiveMode } from "./games/transitive.js";
 import { graphMode } from "./games/graph.js";
 import { propositionalMode } from "./games/propositional.js";
+import {
+  initAudio,
+  unlockAudioContextFromUserGesture,
+  setAudioEnabled,
+  playSfx
+} from "./lib/audio.js";
 import { resolvePrimaryScreen } from "./ui/screen-coordinator.js";
 import { renderPrimaryScreen } from "./ui/screens.js";
 import { buildShellViewModel } from "./ui/view-models.js";
@@ -48,6 +54,10 @@ const DEFAULT_ROUTE = "home";
 const appRoot = document.querySelector("#app");
 const initialState = loadStateWithSyncedUnlocks();
 const initialSettings = initialState.settings;
+initAudio({
+  enabled: Boolean(initialSettings.soundOn),
+  preloadTier: "p0"
+});
 
 const hubPreferences = {
   wrapper: initialSettings.lastWrapper === "hub_noncat" ? "hub_noncat" : "hub_cat",
@@ -270,6 +280,21 @@ const HELP_TOPICS = Object.freeze({
     ]
   }
 });
+const UI_TAP_ACTIONS = new Set([
+  "go-home",
+  "go-play-hub",
+  "go-play-relational",
+  "go-history",
+  "go-settings",
+  "show-help",
+  "help-close",
+  "hub-next-block",
+  "rel-next-block",
+  "start-hub-session",
+  "start-relational-session",
+  "unlock-go-relational",
+  "unlock-close"
+]);
 const uiTimers = {
   splash: null
 };
@@ -281,6 +306,7 @@ const uiState = {
   pendingUnlockCelebration: false,
   helpTopic: null
 };
+let audioFullPreloadRequested = false;
 
 function pad2(value) {
   return String(value).padStart(2, "0");
@@ -789,6 +815,7 @@ function showUnlockCelebrationIfPending(state) {
   }
   uiState.pendingUnlockCelebration = false;
   uiState.activeOverlay = "unlock-celebration";
+  playSfx("unlock_relational");
 }
 
 function dismissUnlockCelebration() {
@@ -1187,14 +1214,96 @@ function clearRelTimers() {
   relTimers.quizAdvance = null;
 }
 
-function setFlash(message, kind = "success") {
+function setFlash(message, kind = "success", options = {}) {
   flash = message;
   flashKind = kind;
+  const playWarningSound = options && typeof options === "object"
+    ? options.playWarningSound !== false
+    : true;
+  if (kind === "warn" && message && playWarningSound) {
+    playSfx("warning_flash");
+  }
 }
 
 function clearFlash() {
   flash = "";
   flashKind = "success";
+}
+
+function warmAudioAfterSessionStart() {
+  if (audioFullPreloadRequested) {
+    return;
+  }
+  audioFullPreloadRequested = true;
+  initAudio({
+    enabled: Boolean(loadGymState().settings?.soundOn),
+    preloadTier: "all"
+  });
+}
+
+function outcomeSfxFromClassification(classification) {
+  if (classification === "hit") {
+    return "trial_hit";
+  }
+  if (classification === "false_alarm") {
+    return "trial_false_alarm";
+  }
+  if (classification === "miss") {
+    return "trial_miss";
+  }
+  return "";
+}
+
+function hubTrialAudioBaseKey(block) {
+  return `hub:block-${Number(block?.plan?.blockIndex || 0)}:trial-${Number(block?.trialIndex || 0)}`;
+}
+
+function relationalTrialAudioBaseKey(block) {
+  return `rel:block-${Number(block?.plan?.blockIndex || 0)}:trial-${Number(block?.trialIndex || 0)}`;
+}
+
+function playHubTrialOutcomeSfx(block, classification) {
+  const eventId = outcomeSfxFromClassification(classification);
+  if (!eventId) {
+    return;
+  }
+  playSfx(eventId, {
+    onceKey: `${hubTrialAudioBaseKey(block)}:outcome`
+  });
+}
+
+function playRelationalTrialOutcomeSfx(block, classification) {
+  const eventId = outcomeSfxFromClassification(classification);
+  if (!eventId) {
+    return;
+  }
+  playSfx(eventId, {
+    onceKey: `${relationalTrialAudioBaseKey(block)}:outcome`
+  });
+}
+
+function playBlockProgressSfx(blockResult) {
+  const nStart = Number(blockResult?.nStart || 0);
+  const nEnd = Number(blockResult?.nEnd || nStart);
+  if (nEnd > nStart) {
+    playSfx("n_level_up");
+    return;
+  }
+  if (nEnd < nStart) {
+    playSfx("n_level_down");
+    return;
+  }
+  playSfx("block_complete_neutral");
+}
+
+function playSessionRewardSfx(progressDelta) {
+  playSfx("session_complete");
+  if (Number(progressDelta?.sessionUnitsEarned || 0) > 0) {
+    playSfx("bank_units_awarded", { delayMs: 120 });
+  }
+  if (Number(progressDelta?.missionBonusEarned || 0) > 0) {
+    playSfx("mission_bonus_awarded", { delayMs: 520 });
+  }
 }
 
 function normalizeHubWrapper(value) {
@@ -2392,6 +2501,7 @@ function render() {
 }
 
 function startHubSession() {
+  warmAudioAfterSessionStart();
   clearHubTimers();
   clearFlash();
   dismissUnlockCelebration();
@@ -2631,6 +2741,7 @@ function pauseHubTrial() {
     clearTimeout(hubTimers.trial);
     hubTimers.trial = null;
   }
+  playSfx("pause_on");
   render();
 }
 
@@ -2688,6 +2799,7 @@ function resumeHubTrial() {
   hubTimers.trial = setTimeout(() => {
     finishHubTrial();
   }, remainingSoaMs);
+  playSfx("resume_on");
   render();
 }
 
@@ -2709,7 +2821,8 @@ function stopHubSession() {
   clearHubTimers();
   hubSession = null;
   closeBriefingOverlay();
-  setFlash("Hub session stopped. Session discarded and not logged.", "warn");
+  playSfx("session_stop_discard");
+  setFlash("Hub session stopped. Session discarded and not logged.", "warn", { playWarningSound: false });
   window.location.hash = "/home";
 }
 
@@ -2732,6 +2845,7 @@ function pauseRelationalTrial() {
     clearTimeout(relTimers.trial);
     relTimers.trial = null;
   }
+  playSfx("pause_on");
   render();
 }
 
@@ -2788,6 +2902,7 @@ function resumeRelationalTrial() {
   relTimers.trial = setTimeout(() => {
     finishRelationalTrial();
   }, remainingSoaMs);
+  playSfx("resume_on");
   render();
 }
 
@@ -2809,7 +2924,8 @@ function stopRelationalSession() {
   clearRelTimers();
   relSession = null;
   closeBriefingOverlay();
-  setFlash("Relational session stopped. Session discarded and not logged.", "warn");
+  playSfx("session_stop_discard");
+  setFlash("Relational session stopped. Session discarded and not logged.", "warn", { playWarningSound: false });
   window.location.hash = "/home";
 }
 
@@ -2826,6 +2942,11 @@ function captureHubResponse() {
   }
   block.responseCaptured = true;
   block.responseRtMs = Math.max(0, Math.round(performance.now() - block.trialStartedAtMs));
+  playSfx("game_match_press", {
+    onceKey: `${hubTrialAudioBaseKey(block)}:match-press`
+  });
+  const isMatch = isHubMatchAtIndex(block.trials, block.trialIndex, block.plan.n);
+  playHubTrialOutcomeSfx(block, isMatch ? "hit" : "false_alarm");
   render();
   return true;
 }
@@ -2851,6 +2972,7 @@ function finishHubTrial() {
     classification = "miss";
     isError = true;
   }
+  playHubTrialOutcomeSfx(block, classification);
 
   block.trialOutcomes.push({
     trialIndex: block.trialIndex,
@@ -2913,6 +3035,8 @@ function finishHubBlock() {
     completeHubSession();
     return;
   }
+  playBlockProgressSfx(blockSummary.blockResult);
+  playSfx("coach_next_block");
 
   const coachDecision = coachUpdateAfterBlock(hubSession.lastBlockSummary, {
     completedBlocks: hubSession.completedBlocks,
@@ -2964,6 +3088,7 @@ function completeHubSession() {
   hubSession.phase = "session-done";
   hubSession.sessionSummary = summary;
   hubSession.progressDelta = progressDelta;
+  playSessionRewardSfx(progressDelta);
   setFlash("Hub session complete and saved to History.", "success");
   render();
 }
@@ -2983,6 +3108,7 @@ function startRelationalSession(mode) {
     render();
     return;
   }
+  warmAudioAfterSessionStart();
 
   clearRelTimers();
   clearFlash();
@@ -3181,6 +3307,11 @@ function captureRelationalMatch() {
   }
   block.responseCaptured = true;
   block.responseRtMs = Math.max(0, Math.round(performance.now() - block.trialStartedAtMs));
+  playSfx("game_match_press", {
+    onceKey: `${relationalTrialAudioBaseKey(block)}:match-press`
+  });
+  const isMatch = isRelationalMatchAtIndex(block.trials, block.trialIndex, block.plan.n);
+  playRelationalTrialOutcomeSfx(block, isMatch ? "hit" : "false_alarm");
   render();
   return true;
 }
@@ -3206,6 +3337,7 @@ function finishRelationalTrial() {
     classification = "miss";
     isError = true;
   }
+  playRelationalTrialOutcomeSfx(block, classification);
 
   block.trialOutcomes.push({
     trialIndex: block.trialIndex,
@@ -3297,12 +3429,27 @@ function submitRelationalQuizAnswer(userAnswer) {
   if (!quizItem) {
     return;
   }
+  const quizAudioKey = `rel:block-${Number(block.plan?.blockIndex || 0)}:quiz-${Number(block.quizIndex || 0)}`;
+  if (userAnswer === null) {
+    playSfx("quiz_timeout", {
+      onceKey: `${quizAudioKey}:timeout`
+    });
+  } else {
+    playSfx("quiz_answer_lock", {
+      onceKey: `${quizAudioKey}:lock`
+    });
+  }
   const nextQuizIndex = block.quizIndex + 1;
   const responseTime = performance.now();
   const rtMs = userAnswer === null
     ? null
     : Math.max(0, Math.round(responseTime - block.quizItemStartedAtMs));
   const isCorrect = userAnswer !== null && userAnswer === quizItem.answerTrue;
+  if (userAnswer !== null) {
+    playSfx(isCorrect ? "quiz_correct" : "quiz_incorrect", {
+      onceKey: `${quizAudioKey}:graded`
+    });
+  }
 
   block.quizOutcomes.push({
     prompt: quizItem.prompt,
@@ -3361,6 +3508,8 @@ function finishRelationalBlock() {
     completeRelationalSession();
     return;
   }
+  playBlockProgressSfx(blockSummary.blockResult);
+  playSfx("coach_next_block");
 
   const coachDecision = relationalCoachUpdateAfterBlock(relSession.lastBlockSummary, {
     completedBlocks: relSession.completedBlocks,
@@ -3430,6 +3579,7 @@ function completeRelationalSession() {
   relSession.phase = "session-done";
   relSession.sessionSummary = summary;
   relSession.progressDelta = progressDelta;
+  playSessionRewardSfx(progressDelta);
   setFlash("Relational session complete and saved to History.", "success");
   render();
 }
@@ -3439,8 +3589,12 @@ document.addEventListener("click", (event) => {
   if (!target) {
     return;
   }
+  unlockAudioContextFromUserGesture();
 
   const action = target.getAttribute("data-action");
+  if (UI_TAP_ACTIONS.has(action)) {
+    playSfx("ui_tap_soft");
+  }
 
   if (action === "splash-dismiss") {
     dismissSplashOverlay();
@@ -3697,6 +3851,10 @@ document.addEventListener("change", (event) => {
   const hubLocked = Boolean(hubSession && hubSession.status === "running" && (hubSession.phase === "cue" || hubSession.phase === "trial"));
 
   if (target.id === "sound-toggle" && target instanceof HTMLInputElement) {
+    if (target.checked) {
+      unlockAudioContextFromUserGesture();
+    }
+    setAudioEnabled(target.checked);
     updateSettings({ soundOn: target.checked });
     setFlash("Settings saved.", "success");
     render();
@@ -3725,6 +3883,8 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+  unlockAudioContextFromUserGesture();
+
   if (uiState.showSplash) {
     if (event.code === "Space" || event.code === "Enter" || event.code === "Escape") {
       event.preventDefault();
