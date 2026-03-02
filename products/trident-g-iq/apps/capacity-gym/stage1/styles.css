@@ -749,6 +749,11 @@ input:disabled {
   margin: 10px auto 0 auto;
 }
 
+.pause-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
 .quiz-btn {
   min-width: 120px;
   min-height: 52px;

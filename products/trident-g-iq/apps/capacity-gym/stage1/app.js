@@ -1724,6 +1724,7 @@ function renderPlayHub() {
   const trialNumber = block ? block.trialIndex + 1 : 0;
   const trialCount = block ? block.trials.length : 0;
   const responseCaptured = block ? block.responseCaptured : false;
+  const hubTrialPaused = Boolean(hubSession?.trialPaused);
   const targetLabel = block ? displayHubTargetLabel(block.plan.targetModality, block.plan.wrapper) : "";
   const preview = resolveNextBlockPreview(hubSession);
   const currentWrapper = block
@@ -1769,12 +1770,15 @@ function renderPlayHub() {
       </div>
     `;
   } else if (hubSession.phase === "trial") {
+    const showPauseControl = block?.plan?.wrapper === "hub_cat";
     phasePanel = `
       <div class="stage-panel trial-stage">
         <div class="trial-progress-track"><span style="width:${trialProgressPct}%;"></span></div>
         <p class="hint">Trial ${trialNumber}/${trialCount}</p>
         ${renderHubStimulus(trial, block.stimulusVisible, targetLabel, block.renderMapping, block.plan.wrapper)}
-        <button class="btn primary match-btn game-match-btn" data-action="hub-match" ${responseCaptured ? "disabled" : ""}>MATCH</button>
+        <button class="btn primary match-btn game-match-btn" data-action="hub-match" ${(responseCaptured || hubTrialPaused) ? "disabled" : ""}>MATCH</button>
+        ${showPauseControl ? `<button class="btn subtle pause-btn" data-action="hub-toggle-pause">${hubTrialPaused ? "Resume" : "Pause"}</button>` : ""}
+        ${showPauseControl && hubTrialPaused ? '<p class="hint">Paused. Press Resume to continue this trial.</p>' : ""}
       </div>
     `;
   } else {
@@ -2381,6 +2385,7 @@ function startHubSession() {
     },
     introNotice: firstHubRun ? "Starting with a gentle baseline block." : "",
     coachNotice: "",
+    trialPaused: false,
     missionStartRecorded: false,
     currentBlock: null,
     lastBlockSummary: null,
@@ -2476,6 +2481,7 @@ function beginHubBlock() {
 
   hubSession.pendingPlanPatch = {};
   hubSession.blocksPlanned.push(plan);
+  hubSession.trialPaused = false;
   hubSession.currentBlock = {
     plan,
     trials: blockBuild.trials,
@@ -2487,6 +2493,7 @@ function beginHubBlock() {
     responseCaptured: false,
     responseRtMs: null,
     trialStartedAtMs: 0,
+    trialElapsedMs: 0,
     trialOutcomes: []
   };
   clearHubTimers();
@@ -2525,7 +2532,9 @@ function startHubTrial(trialIndex) {
   block.stimulusVisible = true;
   block.responseCaptured = false;
   block.responseRtMs = null;
+  block.trialElapsedMs = 0;
   block.trialStartedAtMs = performance.now();
+  hubSession.trialPaused = false;
   hubSession.phase = "trial";
 
   render();
@@ -2553,8 +2562,111 @@ function startHubTrial(trialIndex) {
   }, block.soaMs);
 }
 
+function pauseHubTrial() {
+  if (!hubSession || hubSession.status !== "running" || hubSession.phase !== "trial" || !hubSession.currentBlock) {
+    return;
+  }
+  if (hubSession.trialPaused) {
+    return;
+  }
+  const block = hubSession.currentBlock;
+  if (block.plan.wrapper !== "hub_cat") {
+    return;
+  }
+
+  block.trialElapsedMs = Math.max(0, Math.round(performance.now() - block.trialStartedAtMs));
+  hubSession.trialPaused = true;
+
+  if (hubTimers.display) {
+    clearTimeout(hubTimers.display);
+    hubTimers.display = null;
+  }
+  if (hubTimers.trial) {
+    clearTimeout(hubTimers.trial);
+    hubTimers.trial = null;
+  }
+  render();
+}
+
+function resumeHubTrial() {
+  if (!hubSession || hubSession.status !== "running" || hubSession.phase !== "trial" || !hubSession.currentBlock) {
+    return;
+  }
+  if (!hubSession.trialPaused) {
+    return;
+  }
+  const block = hubSession.currentBlock;
+  if (block.plan.wrapper !== "hub_cat") {
+    return;
+  }
+
+  const elapsedMs = Number.isFinite(block.trialElapsedMs)
+    ? Math.max(0, Math.round(block.trialElapsedMs))
+    : 0;
+  const remainingSoaMs = Math.max(0, block.soaMs - elapsedMs);
+  const remainingDisplayMs = Math.max(0, block.displayMs - elapsedMs);
+  if (remainingSoaMs <= 0) {
+    hubSession.trialPaused = false;
+    finishHubTrial();
+    return;
+  }
+
+  block.trialStartedAtMs = performance.now() - elapsedMs;
+  hubSession.trialPaused = false;
+
+  if (hubTimers.display) {
+    clearTimeout(hubTimers.display);
+    hubTimers.display = null;
+  }
+  if (hubTimers.trial) {
+    clearTimeout(hubTimers.trial);
+    hubTimers.trial = null;
+  }
+
+  if (block.stimulusVisible) {
+    if (remainingDisplayMs <= 0) {
+      block.stimulusVisible = false;
+    } else {
+      const trialIndex = block.trialIndex;
+      hubTimers.display = setTimeout(() => {
+        if (!hubSession || hubSession.status !== "running" || hubSession.phase !== "trial" || hubSession.trialPaused) {
+          return;
+        }
+        const current = hubSession.currentBlock;
+        if (!current || current.trialIndex !== trialIndex) {
+          return;
+        }
+        current.stimulusVisible = false;
+        render();
+      }, remainingDisplayMs);
+    }
+  }
+
+  hubTimers.trial = setTimeout(() => {
+    finishHubTrial();
+  }, remainingSoaMs);
+  render();
+}
+
+function toggleHubPause() {
+  if (!hubSession || hubSession.status !== "running" || hubSession.phase !== "trial" || !hubSession.currentBlock) {
+    return;
+  }
+  if (hubSession.currentBlock.plan.wrapper !== "hub_cat") {
+    return;
+  }
+  if (hubSession.trialPaused) {
+    resumeHubTrial();
+    return;
+  }
+  pauseHubTrial();
+}
+
 function captureHubResponse() {
   if (!hubSession || hubSession.status !== "running" || hubSession.phase !== "trial" || !hubSession.currentBlock) {
+    return false;
+  }
+  if (hubSession.trialPaused) {
     return false;
   }
   const block = hubSession.currentBlock;
@@ -2571,6 +2683,7 @@ function finishHubTrial() {
   if (!hubSession || hubSession.status !== "running" || !hubSession.currentBlock) {
     return;
   }
+  hubSession.trialPaused = false;
   const block = hubSession.currentBlock;
   const trial = block.trials[block.trialIndex];
   const isMatch = isHubMatchAtIndex(block.trials, block.trialIndex, block.plan.n);
@@ -3273,6 +3386,11 @@ document.addEventListener("click", (event) => {
 
   if (action === "hub-match") {
     captureHubResponse();
+    return;
+  }
+
+  if (action === "hub-toggle-pause") {
+    toggleHubPause();
     return;
   }
 
