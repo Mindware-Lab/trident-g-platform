@@ -21,6 +21,8 @@
     body{
       background: #dfe3e8 !important;
       padding-top: 72px;
+      font-family: var(--iq-font);
+      color: var(--iq-text);
     }
 
     .screen{
@@ -81,7 +83,7 @@
       align-items:stretch;
       gap: 10px;
       padding: 12px;
-      border-radius: 14px;
+      border-radius: var(--iq-radius-md, 16px);
       background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
       border: 1px solid var(--brand-border-soft);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
@@ -154,7 +156,7 @@
 
     .input{
       width: 100%;
-      border-radius: 12px;
+      border-radius: var(--iq-radius-sm, 12px);
       border: 1px solid var(--brand-border);
       background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.018));
       color: var(--brand-text);
@@ -369,10 +371,19 @@
       display: grid;
       gap: 10px;
       padding: 12px;
-      border-radius: 14px;
+      border-radius: var(--iq-radius-md, 16px);
       background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
       border: 1px solid var(--brand-border-soft);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+
+    .btn,
+    .btnPrimary,
+    .btnSecondary,
+    .btnInfo{
+      min-height: 44px;
+      border-radius: var(--iq-radius-sm, 12px);
+      font-family: var(--iq-font);
     }
 
     .trackerTitle{

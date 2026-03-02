@@ -31,39 +31,20 @@
       --zc-focus-ring: 0 0 0 2px rgba(11,17,24,.95), 0 0 0 4px rgba(110,198,255,.80), 0 0 0 8px rgba(110,198,255,.20);
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: var(--font, system-ui, sans-serif); background: #EFF3F8; color: #111; }
+    body { margin: 0; font-family: var(--iq-font, var(--font, system-ui, sans-serif)); background: #EFF3F8; color: #111; }
     .zoneAppShell { background:#EFF3F8; }
     .zoneContent { padding: 18px 20px 28px; }
     .app { width: min(980px, 100%); margin: 0 auto; padding: 0; color: var(--zc-text); }
-    .appIcon { width: 28px; height: 28px; object-fit: contain; display: block; margin: 0 auto; }
-    .topbar .title { font-weight: 900; color:#2A2A2A; }
-    .topbar .subtitle { color:#111; }
-    .topbar .chip.zoneBrandChip {
-      font-size: 13px; font-weight: 900; padding: 8px 16px; border-radius: 999px;
-      background: var(--lime, #CCFF66); color:#0B1A0B; border: 1px solid rgba(0,0,0,0.08);
-      letter-spacing: .4px;
-    }
-
-    .topbar-right { display:flex; align-items:center; gap:10px; }
-    .suite-back-link {
-      display:none;
-      color: var(--brand-info, #6ec6ff);
-      text-decoration: none;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: .02em;
-      white-space: nowrap;
-    }
-    .suite-back-link.is-visible { display:inline-flex; align-items:center; }
+    .appIcon { width: 30px; height: 30px; object-fit: contain; display: block; margin: 0 auto; }
 
     .top { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px; padding:12px; border:1px solid var(--zc-border); border-radius:14px; background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.015)), var(--zc-surface-card); box-shadow:var(--zc-shadow-card); }
     .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
     .title { font-weight: 800; }
     .pill { font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid var(--zc-border); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.025)); color:var(--zc-text-label); box-shadow:inset 0 1px 0 rgba(255,255,255,.02); }
-    .card { border:1px solid var(--zc-border); border-radius:16px; background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)), var(--zc-surface-card); padding:14px; box-shadow:var(--zc-shadow-card); }
+    .card { border:1px solid var(--zc-border); border-radius:var(--iq-radius-md, 16px); background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)), var(--zc-surface-card); padding:14px; box-shadow:var(--zc-shadow-card); }
     .router-screen { display:none; }
     .router-screen.active { display:block; }
-    .btn { border:1px solid var(--zc-border); background:var(--zc-surface-elevated); color:var(--zc-text); padding:10px 12px; border-radius:12px; font-weight:700; cursor:pointer; transition:transform .08s ease, filter .12s ease, border-color .12s ease, box-shadow .12s ease; box-shadow:inset 0 1px 0 rgba(255,255,255,.03); }
+    .btn { border:1px solid var(--zc-border); background:var(--zc-surface-elevated); color:var(--zc-text); min-height:44px; padding:10px 12px; border-radius:var(--iq-radius-sm, 12px); font:700 14px/1.1 var(--iq-font, var(--font, system-ui, sans-serif)); cursor:pointer; transition:transform .08s ease, filter .12s ease, border-color .12s ease, box-shadow .12s ease; box-shadow:inset 0 1px 0 rgba(255,255,255,.03); }
     .btn:disabled { opacity:.55; cursor:not-allowed; }
     .btn:hover:not(:disabled) { filter:brightness(1.04); border-color:rgba(255,255,255,.18); }
     .btn:active:not(:disabled) { transform:translateY(1px); }
@@ -205,7 +186,7 @@
       .top { padding:10px; border-radius:12px; }
       .top .row { width:100%; justify-content:space-between; }
       .pill { font-size:11px; padding:5px 8px; }
-      .card { padding:10px; border-radius:14px; }
+      .card { padding:10px; border-radius:var(--iq-radius-md, 16px); }
       .cta > .btn, .cta > a.btn { flex:1 1 100%; width:100%; }
       .splash-head { grid-template-columns:1fr; text-align:center; }
       .splash-logo { margin:0 auto; }
@@ -217,16 +198,16 @@
   </style>
 </head>
 <body>
-  <div class="screen zoneAppShell">
-    <div class="topbar">
-      <div class="brandleft">
-        <div class="icon"><img class="appIcon" src="../../../../branding/Trident-G-Icon.svg" alt="Trident G" /></div>
+  <div class="screen zoneAppShell appShellTopband">
+    <header class="tg-desktop-chrome" aria-hidden="true">
+      <div class="tg-topbar">
+        <div class="tg-topbar__inner">
+          <span class="tg-topbar__icon"><img class="appIcon" src="../../../../branding/Trident-G-Icon.svg" alt="" /></span>
+          <a id="suiteBackLink" class="tg-topbar__back" href="../iq-suite/index.html">Back to Suite</a>
+          <span class="tg-topbar__pill">Trident G - IQ</span>
+        </div>
       </div>
-      <div class="topbar-right">
-        <a id="suiteBackLink" class="suite-back-link" href="../iq-suite/index.html">Back to Suite</a>
-        <span class="chip zoneBrandChip">Trident G - IQ</span>
-      </div>
-    </div>
+    </header>
     <main class="content zoneContent">
   <div class="app">
     <div class="top hidden" aria-hidden="true">
