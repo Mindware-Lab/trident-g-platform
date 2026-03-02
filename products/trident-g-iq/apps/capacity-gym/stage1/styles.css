@@ -102,6 +102,10 @@ body {
   align-content: start;
 }
 
+.play-session-screen {
+  padding-bottom: 18px;
+}
+
 .has-bottom-tab {
   padding-bottom: 84px;
 }
@@ -1166,6 +1170,10 @@ input:disabled {
   margin-top: 10px;
 }
 
+.hub-stimulus.hub-stimulus-noncat {
+  margin-bottom: 10px;
+}
+
 .hub-target {
   margin: 0 0 8px 0;
   color: var(--brand-text);
@@ -1248,6 +1256,18 @@ input:disabled {
   margin: 6px auto 0 auto;
 }
 
+.hub-stimulus.hub-stimulus-noncat .hub-arena {
+  margin-bottom: 8px;
+}
+
+.hub-stimulus.hub-stimulus-noncat + .game-match-btn {
+  margin-top: 22px;
+}
+
+.hub-stimulus.hub-stimulus-noncat + .game-match-btn + .pause-control-row {
+  margin-top: 10px;
+}
+
 .hub-ring {
   position: absolute;
   inset: 8%;
@@ -1299,6 +1319,14 @@ input:disabled {
 
 .rel-stimulus {
   margin-top: 10px;
+}
+
+.rel-stimulus.rel-stimulus-graph {
+  margin-bottom: 10px;
+}
+
+.rel-stimulus.rel-stimulus-graph + .game-match-btn {
+  margin-top: 24px;
 }
 
 .rel-center-token {

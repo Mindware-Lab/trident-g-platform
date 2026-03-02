@@ -96,6 +96,7 @@ const relTimers = {
   display: null,
   trial: null,
   quizTimeout: null,
+  quizTimeoutFrame: null,
   quizTick: null,
   quizAdvance: null
 };
@@ -267,6 +268,8 @@ const HELP_TOPICS = Object.freeze({
       "Build stability in both Hub games: Categorical and Non-Categorical.",
       "Reach and hold a consistent 3-back level in both Hub variations to unlock Relational training.",
       "After unlock, practice all three relational n-back modes: Transitive, Graph, and Propositional.",
+      "Complete daily session missions to earn bonus bank units and keep your streak moving.",
+      "Units are earned from achievements: +2 for UP blocks, +1 for HOLD blocks, plus +3 mission bonus when a full daily mission is completed.",
       "The built-in coach follows the Trident G Far Transfer Protocol to support transfer of core IQ capacities to real life: attention control, working memory, and relational processing.",
       "For protocol details, visit IQMindware.com."
     ]
@@ -1200,6 +1203,9 @@ function clearRelTimers() {
   if (relTimers.quizTimeout) {
     clearTimeout(relTimers.quizTimeout);
   }
+  if (relTimers.quizTimeoutFrame) {
+    cancelAnimationFrame(relTimers.quizTimeoutFrame);
+  }
   if (relTimers.quizTick) {
     clearInterval(relTimers.quizTick);
   }
@@ -1210,6 +1216,7 @@ function clearRelTimers() {
   relTimers.display = null;
   relTimers.trial = null;
   relTimers.quizTimeout = null;
+  relTimers.quizTimeoutFrame = null;
   relTimers.quizTick = null;
   relTimers.quizAdvance = null;
 }
@@ -1617,6 +1624,7 @@ function renderHubConfigControls({
 }
 
 function renderHubStimulus(trial, visible, targetLabel, renderMapping, wrapper, runtimeInfo = "") {
+  const wrapperClass = wrapper === "hub_noncat" ? "hub-stimulus-noncat" : "hub-stimulus-cat";
   const points = Array.isArray(renderMapping?.markerPositions) ? renderMapping.markerPositions : [];
   const markerDots = points.map((point) => (
     `<span class="hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`
@@ -1635,7 +1643,7 @@ function renderHubStimulus(trial, visible, targetLabel, renderMapping, wrapper, 
     : '<span class="target-mode-dot" aria-hidden="true"></span>';
 
   return `
-    <div class="hub-stimulus">
+    <div class="hub-stimulus ${wrapperClass}">
       <p class="hub-target">Target: ${targetIcon}<strong>${escapeHtml(targetLabel)}</strong> | Game: <strong>${escapeHtml(wrapperDisplayName(wrapper))}</strong></p>
       ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
       <div class="hub-arena">
@@ -1686,6 +1694,7 @@ function renderRelationalStimulus(trial, visible, runtimeInfo = "") {
   const textVisible = Boolean(trial && visible);
 
   if (display.type === "graph") {
+    const arrowColor = "#acc0dd";
     const nodes = Array.isArray(display.nodes) ? display.nodes : [];
     const nodeMarkup = nodes.map((node) => (
       `<span class="rel-graph-node ${textVisible ? "" : "hidden"}" style="left:${node.xPct}%;top:${node.yPct}%;background:${node.colorHex};"></span>`
@@ -1696,18 +1705,15 @@ function renderRelationalStimulus(trial, visible, runtimeInfo = "") {
         <svg class="rel-graph-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
           <defs>
             <marker id="rel-arrow-head" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <polygon points="0,0 6,3 0,6" fill="#4b5f78"></polygon>
+              <polygon points="0,0 6,3 0,6" fill="${arrowColor}"></polygon>
             </marker>
           </defs>
-          <line x1="${arrow.x1}" y1="${arrow.y1}" x2="${arrow.x2}" y2="${arrow.y2}" marker-end="url(#rel-arrow-head)"></line>
+          <line x1="${arrow.x1}" y1="${arrow.y1}" x2="${arrow.x2}" y2="${arrow.y2}" stroke="${arrowColor}" marker-end="url(#rel-arrow-head)"></line>
         </svg>
       `
       : "";
-    const caption = textVisible
-      ? (display.caption || "")
-      : cueOrBlankCaption;
     return `
-      <div class="rel-stimulus">
+      <div class="rel-stimulus rel-stimulus-graph">
         ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
         <div class="hub-arena">
           <div class="hub-ring"></div>
@@ -1949,7 +1955,7 @@ function renderPlayHub() {
   }
 
   return `
-    <section class="card game-screen has-bottom-tab">
+    <section class="card game-screen play-session-screen">
       <div class="game-topbar">
         <div class="game-topbar-brand">
           <span>Block ${hubSession.blockCursor + (hubSession.phase === "block-result" ? 0 : 1)}/${HUB_TOTAL_BLOCKS}</span>
@@ -2165,7 +2171,7 @@ function renderPlayRelational(state) {
   }
 
   return `
-    <section class="card game-screen">
+    <section class="card game-screen play-session-screen">
       <div class="game-topbar">
         <div class="game-topbar-brand">
           <span>Block ${relSession.blockCursor + (relSession.phase === "block-result" ? 0 : 1)}/${REL_TOTAL_BLOCKS}</span>
@@ -3227,6 +3233,7 @@ function beginRelationalBlock() {
     quizOutcomes: [],
     quizItemStartedAtMs: 0,
     quizTimeLeftMs: REL_QUIZ_TIMEOUT_MS,
+    quizTimeoutPending: false,
     quizAnswerCommitted: false
   };
   clearRelTimers();
@@ -3380,11 +3387,16 @@ function startRelationalQuizItem(quizIndex) {
   block.quizIndex = quizIndex;
   block.quizItemStartedAtMs = performance.now();
   block.quizTimeLeftMs = REL_QUIZ_TIMEOUT_MS;
+  block.quizTimeoutPending = false;
   block.quizAnswerCommitted = false;
   relSession.phase = "quiz";
 
   if (relTimers.quizTimeout) {
     clearTimeout(relTimers.quizTimeout);
+  }
+  if (relTimers.quizTimeoutFrame) {
+    cancelAnimationFrame(relTimers.quizTimeoutFrame);
+    relTimers.quizTimeoutFrame = null;
   }
   if (relTimers.quizTick) {
     clearInterval(relTimers.quizTick);
@@ -3395,7 +3407,25 @@ function startRelationalQuizItem(quizIndex) {
   }
 
   relTimers.quizTimeout = setTimeout(() => {
-    submitRelationalQuizAnswer(null);
+    if (!relSession || relSession.status !== "running" || relSession.phase !== "quiz" || !relSession.currentBlock) {
+      return;
+    }
+    const current = relSession.currentBlock;
+    if (current.quizIndex !== quizIndex || current.quizAnswerCommitted) {
+      return;
+    }
+    current.quizTimeoutPending = true;
+    relTimers.quizTimeoutFrame = requestAnimationFrame(() => {
+      relTimers.quizTimeoutFrame = null;
+      if (!relSession || relSession.status !== "running" || relSession.phase !== "quiz" || !relSession.currentBlock) {
+        return;
+      }
+      const active = relSession.currentBlock;
+      if (active.quizIndex !== quizIndex || active.quizAnswerCommitted) {
+        return;
+      }
+      submitRelationalQuizAnswer(null);
+    });
   }, REL_QUIZ_TIMEOUT_MS);
   relTimers.quizTick = setInterval(() => {
     if (!relSession || relSession.status !== "running" || relSession.phase !== "quiz" || !relSession.currentBlock) {
@@ -3422,6 +3452,7 @@ function submitRelationalQuizAnswer(userAnswer) {
     return;
   }
   block.quizAnswerCommitted = true;
+  block.quizTimeoutPending = false;
   if (block.quizIndex < 0 || block.quizIndex >= block.quizItems.length) {
     return;
   }
@@ -3462,6 +3493,10 @@ function submitRelationalQuizAnswer(userAnswer) {
   if (relTimers.quizTimeout) {
     clearTimeout(relTimers.quizTimeout);
     relTimers.quizTimeout = null;
+  }
+  if (relTimers.quizTimeoutFrame) {
+    cancelAnimationFrame(relTimers.quizTimeoutFrame);
+    relTimers.quizTimeoutFrame = null;
   }
   if (relTimers.quizTick) {
     clearInterval(relTimers.quizTick);
