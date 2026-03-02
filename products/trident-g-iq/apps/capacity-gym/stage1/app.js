@@ -182,10 +182,10 @@ const HELP_TOPICS = Object.freeze({
     imagePath: "./help-graphics/hub-noncat-help-panel.svg",
     imageAlt: "Combined panel of four non-categorical hub match examples for colour and location at 1-back and 2-back.",
     lines: [
-      "Same rule: respond only to target-feature n-back matches.",
-      "Symbols and hues are arbitrary codes, not familiar categories.",
-      "Use the first trials to lock in the current block mapping.",
-      "Press MATCH on true target matches only."
+      "There are 3 features in each display: location, colour, and symbol. Keep track of the cued feature.",
+      "Press MATCH (or Space) only when the feature repeats at n-back. A 1-back and 2-back match (for two different features) are shown above. Depending on performance, your N-back level could be 3, 4 or higher.",
+      "Ignore non-target changes, and do not tap on non-matches.",
+      "You need to reach a consistent 3-back level in this and the non-categorical variation of this game to unlock the relational n-back games."
     ]
   },
   "rel-transitive-how": {
