@@ -1806,14 +1806,12 @@ function renderPlayHub() {
   } else if (hubSession.phase === "trial") {
     const showPauseControl = block?.plan?.wrapper === "hub_cat";
     const pauseControls = showPauseControl
-      ? (hubTrialPaused
-        ? `
-          <div class="row pause-control-row">
-            <button class="btn subtle pause-btn" data-action="hub-toggle-pause">Resume</button>
-            <button class="btn danger stop-btn" data-action="hub-stop-session">Stop</button>
-          </div>
-        `
-        : `<button class="btn subtle pause-btn" data-action="hub-toggle-pause">Pause</button>`)
+      ? `
+        <div class="row pause-control-row">
+          <button class="btn subtle pause-btn" data-action="hub-toggle-pause">${hubTrialPaused ? "Resume" : "Pause"}</button>
+          <button class="btn danger stop-btn" data-action="hub-stop-session">Stop</button>
+        </div>
+      `
       : "";
     phasePanel = `
       <div class="stage-panel trial-stage">
