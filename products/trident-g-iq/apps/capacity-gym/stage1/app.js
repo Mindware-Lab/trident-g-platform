@@ -1809,7 +1809,7 @@ function renderPlayHub() {
       ? `
         <div class="row pause-control-row">
           <button class="btn subtle pause-btn" data-action="hub-toggle-pause">${hubTrialPaused ? "Resume" : "Pause"}</button>
-          <button class="btn danger stop-btn" data-action="hub-stop-session">Stop</button>
+          <button class="btn subtle stop-btn" data-action="hub-stop-session">Stop</button>
         </div>
       `
       : "";
@@ -2007,7 +2007,7 @@ function renderPlayRelational(state) {
     const pauseControls = `
       <div class="row pause-control-row">
         <button class="btn subtle pause-btn" data-action="rel-toggle-pause">${relTrialPaused ? "Resume" : "Pause"}</button>
-        <button class="btn danger stop-btn" data-action="rel-stop-session">Stop</button>
+        <button class="btn subtle stop-btn" data-action="rel-stop-session">Stop</button>
       </div>
     `;
     phasePanel = `
