@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Graph 2-back Match</title>
+  <desc id="desc">Three displays showing a directed-edge graph 2-back match.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f4f8fc; }
+      .panel { fill: #ffffff; stroke: #d8e2ef; stroke-width: 2; }
+      .title { font: 700 34px 'Segoe UI', Arial, sans-serif; fill: #12223a; }
+      .sub { font: 500 20px 'Segoe UI', Arial, sans-serif; fill: #344861; }
+      .card { fill: #f9fbff; stroke: #d6e3f5; stroke-width: 2; rx: 14; }
+      .match { fill: #dbf4e6; stroke: #70bf8f; stroke-width: 2; rx: 14; }
+      .txt { font: 600 18px 'Segoe UI', Arial, sans-serif; fill: #12223a; }
+      .small { font: 500 15px 'Segoe UI', Arial, sans-serif; fill: #4b5f78; }
+      .accent { fill: #1f4b84; font: 700 19px 'Segoe UI', Arial, sans-serif; }
+      .chip { fill: #eaf2ff; stroke: #9dbcf1; stroke-width: 1.5; rx: 12; }
+      .edge { stroke: #4b5f78; stroke-width: 3.5; marker-end: url(#m); }
+      .nodeLabel { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #ffffff; text-anchor: middle; dominant-baseline: middle; }
+      .arrow { stroke: #73839a; stroke-width: 3; marker-end: url(#m2); }
+    </style>
+    <marker id="m" markerWidth="8" markerHeight="8" refX="6.8" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#4b5f78"/>
+    </marker>
+    <marker id="m2" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#73839a"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1200" height="720"/>
+  <rect class="panel" x="30" y="26" width="1140" height="668" rx="24"/>
+
+  <text class="title" x="66" y="82">Graph: 2-back Match</text>
+  <text class="sub" x="66" y="114">Press MATCH at t when directed edge matches t-2.</text>
+  <rect class="chip" x="66" y="144" width="290" height="42"/>
+  <text class="small" x="86" y="171">Canonical edge in this example: G-&gt;B</text>
+
+  <g transform="translate(50,220)">
+    <rect class="card" x="0" y="0" width="350" height="390"/>
+    <text class="txt" x="16" y="34">Display 1 (t-2)</text>
+    <circle cx="175" cy="200" r="108" fill="none" stroke="#cbd9ec" stroke-width="9"/>
+    <line class="edge" x1="282" y1="200" x2="175" y2="307"/>
+    <circle cx="175" cy="92" r="20" fill="#dc2626"/><text class="nodeLabel" x="175" y="92">R</text>
+    <circle cx="282" cy="200" r="20" fill="#16a34a"/><text class="nodeLabel" x="282" y="200">G</text>
+    <circle cx="175" cy="307" r="20" fill="#2563eb"/><text class="nodeLabel" x="175" y="307">B</text>
+    <circle cx="68" cy="200" r="20" fill="#f59e0b"/><text class="nodeLabel" x="68" y="200">Y</text>
+    <text class="small" x="16" y="362">Canonical edge: G-&gt;B</text>
+  </g>
+
+  <g transform="translate(425,220)">
+    <rect class="card" x="0" y="0" width="350" height="390"/>
+    <text class="txt" x="16" y="34">Display 2 (t-1)</text>
+    <circle cx="175" cy="200" r="108" fill="none" stroke="#cbd9ec" stroke-width="9"/>
+    <line class="edge" x1="175" y1="92" x2="282" y2="200"/>
+    <circle cx="175" cy="92" r="20" fill="#dc2626"/><text class="nodeLabel" x="175" y="92">R</text>
+    <circle cx="282" cy="200" r="20" fill="#16a34a"/><text class="nodeLabel" x="282" y="200">G</text>
+    <circle cx="175" cy="307" r="20" fill="#2563eb"/><text class="nodeLabel" x="175" y="307">B</text>
+    <circle cx="68" cy="200" r="20" fill="#f59e0b"/><text class="nodeLabel" x="68" y="200">Y</text>
+    <text class="small" x="16" y="362">Canonical edge: R-&gt;G</text>
+  </g>
+
+  <g transform="translate(800,220)">
+    <rect class="match" x="0" y="0" width="350" height="390"/>
+    <text class="txt" x="16" y="34">Display 3 (t)</text>
+    <circle cx="175" cy="200" r="108" fill="none" stroke="#cbd9ec" stroke-width="9"/>
+    <line class="edge" x1="68" y1="200" x2="175" y2="92"/>
+    <circle cx="175" cy="92" r="20" fill="#2563eb"/><text class="nodeLabel" x="175" y="92">B</text>
+    <circle cx="282" cy="200" r="20" fill="#f59e0b"/><text class="nodeLabel" x="282" y="200">Y</text>
+    <circle cx="175" cy="307" r="20" fill="#dc2626"/><text class="nodeLabel" x="175" y="307">R</text>
+    <circle cx="68" cy="200" r="20" fill="#16a34a"/><text class="nodeLabel" x="68" y="200">G</text>
+    <text class="small" x="16" y="362">Canonical edge: G-&gt;B (match)</text>
+  </g>
+
+  <line class="arrow" x1="225" y1="650" x2="960" y2="650"/>
+  <text class="accent" x="430" y="686">MATCH now: same directed edge at 2-back</text>
+</svg>

@@ -107,6 +107,7 @@ const COACH_BRIEFING_COPY = Object.freeze({
   CONSOLIDATE: "Next: Consolidation block"
 });
 const HELP_ICON_PATH = "../brandingUI/icons/status/help-information.svg";
+const TEMP_RELATIONAL_UNLOCK_FOR_INSPECTION = true;
 const HUB_MATCH_EXAMPLE_IMAGES = Object.freeze([
   Object.freeze({
     path: "./help-graphics/hub-colour-1back-match.svg",
@@ -129,6 +130,42 @@ const HUB_MATCH_EXAMPLE_IMAGES = Object.freeze([
     label: "LOCATION 2-back match"
   })
 ]);
+const REL_PROPOSITIONAL_MATCH_EXAMPLES = Object.freeze([
+  Object.freeze({
+    path: "./help-graphics/rel-propositional-1back-match.svg",
+    alt: "Two displays showing a propositional 1-back match with different surface notation.",
+    label: "Propositional 1-back match"
+  }),
+  Object.freeze({
+    path: "./help-graphics/rel-propositional-2back-match.svg",
+    alt: "Three displays showing a propositional 2-back match with different surface notation.",
+    label: "Propositional 2-back match"
+  })
+]);
+const REL_GRAPH_MATCH_EXAMPLES = Object.freeze([
+  Object.freeze({
+    path: "./help-graphics/rel-graph-1back-match.svg",
+    alt: "Two displays showing a graph 1-back directed-edge match.",
+    label: "Graph 1-back match"
+  }),
+  Object.freeze({
+    path: "./help-graphics/rel-graph-2back-match.svg",
+    alt: "Three displays showing a graph 2-back directed-edge match.",
+    label: "Graph 2-back match"
+  })
+]);
+const REL_TRANSITIVE_MATCH_EXAMPLES = Object.freeze([
+  Object.freeze({
+    path: "./help-graphics/rel-transitive-1back-match.svg",
+    alt: "Two displays showing a transitive 1-back match with alternate surface form.",
+    label: "Transitive 1-back match"
+  }),
+  Object.freeze({
+    path: "./help-graphics/rel-transitive-2back-match.svg",
+    alt: "Three displays showing a transitive 2-back match with alternate surface form.",
+    label: "Transitive 2-back match"
+  })
+]);
 const HELP_TOPICS = Object.freeze({
   "hub-cat-how": {
     title: "How to Play: Hub Categorical",
@@ -143,46 +180,46 @@ const HELP_TOPICS = Object.freeze({
   },
   "hub-noncat-how": {
     title: "How to Play: Hub Non-Categorical",
-    images: HUB_MATCH_EXAMPLE_IMAGES,
+    imagePath: "./help-graphics/hub-noncat-help-panel.svg",
+    imageAlt: "Combined panel of four non-categorical hub match examples for colour and location at 1-back and 2-back.",
     lines: [
       "Same rule: respond only to target-feature n-back matches.",
       "Symbols and hues are arbitrary codes, not familiar categories.",
       "Use the first trials to lock in the current block mapping.",
-      "Press MATCH on true target matches only.",
-      "Examples below show COLOUR and LOCATION matches at 1-back and 2-back."
+      "Press MATCH on true target matches only."
     ]
   },
   "rel-transitive-how": {
     title: "How to Play: Transitive",
-    imagePath: "./help-graphics/transitive-help.svg",
-    imageAlt: "Transitive relation stream and two-item true-false quiz example.",
+    images: REL_TRANSITIVE_MATCH_EXAMPLES,
     lines: [
       "Press MATCH when the same underlying relation repeats at n-back.",
       "Surface wording can change (A > B and B < A can be the same relation).",
       "After the stream: 2 timed True/False quiz items.",
-      "Quiz answers must follow from the block premise model."
+      "Quiz answers must follow from the block premise model.",
+      "Examples below show 1-back and 2-back match patterns."
     ]
   },
   "rel-graph-how": {
     title: "How to Play: Graph",
-    imagePath: "./help-graphics/graph-help.svg",
-    imageAlt: "Directed graph edge stream and exact-two-step path quiz example.",
+    images: REL_GRAPH_MATCH_EXAMPLES,
     lines: [
       "Press MATCH when the same directed edge repeats at n-back.",
       "Node positions can move, but edge direction defines meaning.",
       "After the stream: 2 timed True/False quiz items.",
-      "Quiz checks whether a directed path exists in exactly 2 steps."
+      "Quiz checks whether a directed path exists in exactly 2 steps.",
+      "Examples below show 1-back and 2-back match patterns."
     ]
   },
   "rel-propositional-how": {
     title: "How to Play: Propositional",
-    imagePath: "./help-graphics/propositional-help.svg",
-    imageAlt: "Propositional premise stream and rule-consistent true-false quiz example.",
+    images: REL_PROPOSITIONAL_MATCH_EXAMPLES,
     lines: [
       "Press MATCH when the same canonical premise repeats at n-back.",
       "Surface can be symbolic or verbal while meaning stays fixed.",
       "After the stream: 2 timed True/False quiz items.",
-      "Use session premises to decide if each quiz statement is true."
+      "Use session premises to decide if each quiz statement is true.",
+      "Examples below show 1-back and 2-back match patterns."
     ]
   },
   "hub-metrics": {
@@ -329,10 +366,12 @@ function deriveRelationalUnlockProgress(history) {
       break;
     }
   }
+  const unlockOverrideActive = TEMP_RELATIONAL_UNLOCK_FOR_INSPECTION === true;
   return {
     catQualified,
     noncatQualified,
-    relationalUnlocked: catQualified && noncatQualified
+    unlockOverrideActive,
+    relationalUnlocked: unlockOverrideActive || (catQualified && noncatQualified)
   };
 }
 
@@ -1209,6 +1248,10 @@ function resolveNextBlockPreview(session) {
 function renderRelationalProgressCard(unlockProgress) {
   const catDone = Boolean(unlockProgress?.catQualified);
   const noncatDone = Boolean(unlockProgress?.noncatQualified);
+  const unlockOverrideActive = Boolean(unlockProgress?.unlockOverrideActive);
+  const unlockHint = unlockOverrideActive
+    ? "Relational unlock is temporarily forced ON for inspection."
+    : (catDone && noncatDone ? "Relational modes are now available." : "Qualify in both Hub modes to unlock Relational.");
   return `
     <div class="rel-progress-card">
       <p class="kicker">Relational Unlock</p>
@@ -1222,7 +1265,7 @@ function renderRelationalProgressCard(unlockProgress) {
           Hub (non-categorical)
         </span>
       </div>
-      <p class="hint">${catDone && noncatDone ? "Relational modes are now available." : "Qualify in both Hub modes to unlock Relational."}</p>
+      <p class="hint">${unlockHint}</p>
       <details class="rel-progress-help">
         <summary><img src="../brandingUI/icons/status/help-information.svg" alt="" aria-hidden="true">What counts as stable?</summary>
         <p>Stable = 3 blocks at N >= 3 with accuracy >= 75% in the same game baseline.</p>
@@ -1779,9 +1822,11 @@ function renderPlayRelational(state) {
   const completed = Boolean(relSession && relSession.status === "completed");
 
   if (!running && !completed) {
-    const lockText = relationalUnlocked
-      ? "Relational modes are available."
-      : "Complete both Hub games to unlock Relational.";
+    const lockText = unlockProgress.unlockOverrideActive
+      ? "Relational unlock override is active for inspection."
+      : (relationalUnlocked
+        ? "Relational modes are available."
+        : "Complete both Hub games to unlock Relational.");
     return `
       <section class="card game-screen">
         <div class="game-topbar">
