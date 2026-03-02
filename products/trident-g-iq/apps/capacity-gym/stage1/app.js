@@ -251,6 +251,16 @@ const HELP_TOPICS = Object.freeze({
       "Correct skips = correct no-tap moments."
     ]
   },
+  "training-progression": {
+    title: "How to Progress Through Training",
+    lines: [
+      "Build stability in both Hub games: Categorical and Non-Categorical.",
+      "Reach and hold a consistent 3-back level in both Hub variations to unlock Relational training.",
+      "After unlock, practice all three relational n-back modes: Transitive, Graph, and Propositional.",
+      "The built-in coach follows the Trident G Far Transfer Protocol to support transfer of core IQ capacities to real life: attention control, working memory, and relational processing.",
+      "For protocol details, visit IQMindware.com."
+    ]
+  },
   "rel-metrics": {
     title: "Relational Stats",
     lines: [
@@ -1675,7 +1685,7 @@ function renderPlayHub() {
           ${renderHelpButton(helpTopicForHubWrapper(requestedWrapper), "How to play this game")}
         </div>
         <div class="row home-footer-actions">
-          <button class="btn" data-action="go-home"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">Return Home</button>
+          ${renderHelpButton("training-progression", "How to progress through training")}
         </div>
         ${renderFlash()}
         ${renderBottomTab("hub")}

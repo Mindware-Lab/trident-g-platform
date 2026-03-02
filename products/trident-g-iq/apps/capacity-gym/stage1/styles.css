@@ -1535,6 +1535,7 @@ input:disabled {
   margin-top: 6px;
   color: var(--brand-text-dim);
   font-size: 0.8rem;
+  line-height: 1.35;
   letter-spacing: 0.01em;
 }
 
@@ -1545,6 +1546,7 @@ input:disabled {
 .help-lines p {
   margin: 7px 0;
   color: var(--brand-text-muted);
+  line-height: 1.45;
 }
 
 .unlock-badge {
