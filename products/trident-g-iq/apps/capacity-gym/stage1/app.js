@@ -106,7 +106,63 @@ const COACH_BRIEFING_COPY = Object.freeze({
   SPIKE_TUNE: "Next: Probe game block",
   CONSOLIDATE: "Next: Consolidation block"
 });
+const HELP_ICON_PATH = "../brandingUI/icons/status/help-information.svg";
 const HELP_TOPICS = Object.freeze({
+  "hub-cat-how": {
+    title: "How to Play: Hub Categorical",
+    imagePath: "./help-graphics/hub-categorical-help.svg",
+    imageAlt: "Hub categorical n-back visual example with target letter matching.",
+    lines: [
+      "Watch all three features: location, colour, and letter.",
+      "The target feature is shown before each block.",
+      "Press MATCH (or Space) only when the target repeats at n-back.",
+      "Ignore non-target changes, and do not tap on non-matches."
+    ]
+  },
+  "hub-noncat-how": {
+    title: "How to Play: Hub Non-Categorical",
+    imagePath: "./help-graphics/hub-noncategorical-help.svg",
+    imageAlt: "Hub non-categorical n-back visual with abstract symbols and mapped positions.",
+    lines: [
+      "Same rule: respond only to target-feature n-back matches.",
+      "Symbols and hues are arbitrary codes, not familiar categories.",
+      "Use the first trials to lock in the current block mapping.",
+      "Press MATCH on true target matches only."
+    ]
+  },
+  "rel-transitive-how": {
+    title: "How to Play: Transitive",
+    imagePath: "./help-graphics/transitive-help.svg",
+    imageAlt: "Transitive relation stream and two-item true-false quiz example.",
+    lines: [
+      "Press MATCH when the same underlying relation repeats at n-back.",
+      "Surface wording can change (A > B and B < A can be the same relation).",
+      "After the stream: 2 timed True/False quiz items.",
+      "Quiz answers must follow from the block premise model."
+    ]
+  },
+  "rel-graph-how": {
+    title: "How to Play: Graph",
+    imagePath: "./help-graphics/graph-help.svg",
+    imageAlt: "Directed graph edge stream and exact-two-step path quiz example.",
+    lines: [
+      "Press MATCH when the same directed edge repeats at n-back.",
+      "Node positions can move, but edge direction defines meaning.",
+      "After the stream: 2 timed True/False quiz items.",
+      "Quiz checks whether a directed path exists in exactly 2 steps."
+    ]
+  },
+  "rel-propositional-how": {
+    title: "How to Play: Propositional",
+    imagePath: "./help-graphics/propositional-help.svg",
+    imageAlt: "Propositional premise stream and rule-consistent true-false quiz example.",
+    lines: [
+      "Press MATCH when the same canonical premise repeats at n-back.",
+      "Surface can be symbolic or verbal while meaning stays fixed.",
+      "After the stream: 2 timed True/False quiz items.",
+      "Use session premises to decide if each quiz statement is true."
+    ]
+  },
   "hub-metrics": {
     title: "Block Stats",
     lines: [
@@ -770,6 +826,31 @@ function wrapperIconPath(wrapper) {
     return "../brandingUI/icons/game/propositional.svg";
   }
   return "../brandingUI/icons/tab-bar/history.svg";
+}
+
+function helpTopicForHubWrapper(wrapper) {
+  return wrapper === "hub_noncat" ? "hub-noncat-how" : "hub-cat-how";
+}
+
+function helpTopicForRelWrapper(wrapper) {
+  if (wrapper === "graph") {
+    return "rel-graph-how";
+  }
+  if (wrapper === "propositional") {
+    return "rel-propositional-how";
+  }
+  return "rel-transitive-how";
+}
+
+function renderHelpButton(topic, label = "How to play") {
+  if (!HELP_TOPICS[topic]) {
+    return "";
+  }
+  return `
+    <button class="btn subtle help-icon-btn" data-action="show-help" data-topic="${topic}">
+      <img class="btn-inline-icon" src="${HELP_ICON_PATH}" alt="" aria-hidden="true">${escapeHtml(label)}
+    </button>
+  `;
 }
 
 function displayHubTargetLabel(targetModality, wrapper) {
@@ -1505,6 +1586,9 @@ function renderPlayHub() {
             <button class="btn primary home-primary-btn" data-action="start-hub-session">Start ${wrapperDisplayName(requestedWrapper)} Session</button>
           </div>
         </div>
+        <div class="row help-action-row">
+          ${renderHelpButton(helpTopicForHubWrapper(requestedWrapper), "How to play this game")}
+        </div>
         <div class="row home-footer-actions">
           <button class="btn" data-action="go-home"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">Return Home</button>
         </div>
@@ -1516,6 +1600,7 @@ function renderPlayHub() {
 
   if (completed) {
     const summary = hubSession.sessionSummary;
+    const completedWrapper = summary.blocksPlanned?.[0]?.wrapper || "hub_cat";
     const progressDelta = hubSession.progressDelta || null;
     const visualStats = computeSessionVisualStats(summary);
     const accuracyChart = renderAccuracyBars(summary.blocks);
@@ -1545,7 +1630,7 @@ function renderPlayHub() {
             <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${progressDelta?.bankTotal || loadGymState().bankUnits || 0}</span>
           </div>
         </div>
-        <h2>${wrapperDisplayName(summary.blocksPlanned?.[0]?.wrapper || "hub_cat")}</h2>
+        <h2>${wrapperDisplayName(completedWrapper)}</h2>
         <p class="hint">10 blocks completed</p>
         <div class="session-stats-grid">
           <div class="session-stat"><span>Peak Level</span><strong>${visualStats.peakN}</strong></div>
@@ -1555,6 +1640,9 @@ function renderPlayHub() {
         ${accuracyChart}
         ${progressionSummary}
         ${allCleanNote}
+        <div class="row help-action-row">
+          ${renderHelpButton(helpTopicForHubWrapper(completedWrapper), "How to play this game")}
+        </div>
         <div class="row home-primary-row">
           <button class="btn primary home-primary-btn" data-action="start-hub-session"><img class="btn-inline-icon btn-inline-icon-lg" src="../brandingUI/icons/tab-bar/play-hub.svg" alt="" aria-hidden="true">Play Again</button>
         </div>
@@ -1654,6 +1742,9 @@ function renderPlayHub() {
         </div>
       </div>
       <p class="hint run-context-line">${wrapperDisplayName(currentWrapper)} game</p>
+      <div class="row help-action-row">
+        ${renderHelpButton(helpTopicForHubWrapper(currentWrapper), "How to play this game")}
+      </div>
       ${phasePanel}
       ${renderFlash()}
     </section>
@@ -1702,6 +1793,11 @@ function renderPlayRelational(state) {
               <span>${relationalUnlocked ? "Available" : "Locked"}</span>
             </button>
           </div>
+          <div class="row mode-help-row">
+            ${renderHelpButton("rel-transitive-how", "Transitive help")}
+            ${renderHelpButton("rel-graph-how", "Graph help")}
+            ${renderHelpButton("rel-propositional-how", "Propositional help")}
+          </div>
         </div>
         ${renderRelationalProgressCard(unlockProgress)}
         <p class="hint">${lockText}</p>
@@ -1715,6 +1811,7 @@ function renderPlayRelational(state) {
 
   if (completed) {
     const summary = relSession.sessionSummary;
+    const completedWrapper = summary.blocksPlanned?.[0]?.wrapper || "transitive";
     const quizCorrect = summary.blocks.reduce((sum, block) => sum + Number(block.quizCorrect || 0), 0);
     const quizTotal = REL_TOTAL_BLOCKS * 2;
     const progressDelta = relSession.progressDelta || null;
@@ -1746,7 +1843,7 @@ function renderPlayRelational(state) {
             <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${progressDelta?.bankTotal || state.bankUnits}</span>
           </div>
         </div>
-        <h2>${wrapperDisplayName(summary.blocksPlanned?.[0]?.wrapper || "transitive")}</h2>
+        <h2>${wrapperDisplayName(completedWrapper)}</h2>
         <p class="hint">Quiz total ${quizCorrect}/${quizTotal}</p>
         <div class="session-stats-grid">
           <div class="session-stat"><span>Peak Level</span><strong>${visualStats.peakN}</strong></div>
@@ -1756,6 +1853,9 @@ function renderPlayRelational(state) {
         ${accuracyChart}
         ${progressionSummary}
         ${allCleanNote}
+        <div class="row help-action-row">
+          ${renderHelpButton(helpTopicForRelWrapper(completedWrapper), "How to play this game")}
+        </div>
         <div class="row home-primary-row">
           <button class="btn primary home-primary-btn" data-action="start-relational-session" data-mode="transitive"><img class="btn-inline-icon btn-inline-icon-lg" src="../brandingUI/icons/tab-bar/play-relational.svg" alt="" aria-hidden="true">Play Again</button>
         </div>
@@ -1848,6 +1948,9 @@ function renderPlayRelational(state) {
         </div>
       </div>
       <p class="hint run-context-line">${wrapperDisplayName(relSession.wrapper)} game</p>
+      <div class="row help-action-row">
+        ${renderHelpButton(helpTopicForRelWrapper(relSession.wrapper), "How to play this game")}
+      </div>
       ${phasePanel}
       ${renderFlash()}
     </section>
@@ -2068,11 +2171,15 @@ function renderHelpOverlay() {
   if (!topic) {
     return "";
   }
+  const imagePath = typeof topic.imagePath === "string" ? topic.imagePath : "";
+  const imageAlt = typeof topic.imageAlt === "string" ? topic.imageAlt : topic.title;
+  const hasGraphic = Boolean(imagePath);
   return `
     <div class="app-overlay">
       <div class="overlay-backdrop" data-action="help-close"></div>
-      <div class="overlay-card help-sheet">
+      <div class="overlay-card help-sheet ${hasGraphic ? "with-media" : ""}">
         <h3>${escapeHtml(topic.title)}</h3>
+        ${hasGraphic ? `<img class="help-graphic" src="${imagePath}" alt="${escapeHtml(imageAlt)}">` : ""}
         <div class="help-lines">
           ${topic.lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
         </div>

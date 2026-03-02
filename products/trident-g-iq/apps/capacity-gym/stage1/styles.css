@@ -390,6 +390,23 @@ body {
   margin-top: 8px;
 }
 
+.help-action-row {
+  margin-top: 6px;
+}
+
+.help-action-row .help-icon-btn {
+  flex: 1 1 100%;
+}
+
+.mode-help-row {
+  margin-top: 10px;
+}
+
+.mode-help-row .help-icon-btn {
+  flex: 1 1 calc(33.333% - 10px);
+  min-height: 42px;
+}
+
 .coach-next-block {
   margin-top: 14px;
   text-align: center;
@@ -1478,6 +1495,22 @@ input:disabled {
   max-width: 460px;
 }
 
+.help-sheet.with-media {
+  width: min(940px, calc(100% - 24px));
+  max-width: none;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.help-graphic {
+  width: 100%;
+  height: auto;
+  margin-top: 10px;
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+}
+
 .help-lines {
   margin-top: 8px;
 }
@@ -1543,6 +1576,10 @@ input:disabled {
   }
 
   .row .quiz-btn {
+    flex: 1 1 calc(50% - 10px);
+  }
+
+  .mode-help-row .help-icon-btn {
     flex: 1 1 calc(50% - 10px);
   }
 
