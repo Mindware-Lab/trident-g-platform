@@ -18,44 +18,203 @@
 
   <style>
     /* Hub-specific helpers (keeps brand.css clean) */
-    body{
-      background: #dfe3e8 !important;
-      padding-top: 72px;
+    body.gt-rebrand{
+      min-height: 100vh;
+      background:
+        radial-gradient(920px 460px at 50% -24%, rgba(110,198,255,.24), transparent 58%),
+        linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%) !important;
+      padding: 16px 14px 24px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
       font-family: var(--iq-font);
       color: var(--iq-text);
+      margin: 0;
+    }
+
+    .gt-shell{
+      width: min(470px, calc(100% - 12px));
+      min-height: calc(100vh - 36px);
+      border-radius: 42px;
+      border: 1.5px solid rgba(255,255,255,.45);
+      overflow: hidden;
+      background:
+        radial-gradient(700px 420px at 50% -10%, rgba(110,198,255,.18), transparent 62%),
+        linear-gradient(180deg, #081326 0%, #050e1f 45%, #031029 100%);
+      box-shadow: 0 22px 44px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08);
+      position: relative;
+    }
+
+    .gt-shell::before{
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(460px 460px at 50% -15%, rgba(255,255,255,.18), transparent 62%),
+        linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(221,234,248,.38) 47%, rgba(130,154,181,.32) 50%, rgba(221,234,248,.34) 53%, rgba(255,255,255,0) 100%);
+      opacity: .56;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .gt-shell::after{
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 132px;
+      height: 20px;
+      border-radius: 0 0 16px 16px;
+      background: rgba(6,12,23,.95);
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .gt-shell > *{
+      position: relative;
+      z-index: 1;
+    }
+
+    .ui-screen{
+      min-height: auto;
+      padding-top: 0;
+    }
+
+    .ui-content{
+      width: 100%;
+      padding: 16px 12px 94px;
+    }
+
+    .gt-brand-row{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding: 4px 2px 2px;
+    }
+
+    .gt-brand-left{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .gt-brand-icon{
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      border: 1px solid rgba(110,198,255,.22);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)), rgba(15,18,26,.94);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .gt-brand-icon img{
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .gt-suite-back{
+      color: #9ed3ff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      opacity: .94;
+    }
+
+    .gt-brand-pill{
+      border-radius: 999px;
+      background: #ccff66;
+      color: #0b1a0b;
+      border: 1px solid rgba(0,0,0,.08);
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      white-space: nowrap;
     }
 
     .screen{
-      min-height: calc(100vh - 72px);
-    }
-
-    @media (min-width: 960px){
-      body{ padding-top: 90px; }
-      .screen{ min-height: calc(100vh - 90px); }
-      .tg-topbar{ height: 90px; }
-      .tg-topbar__inner{ padding: 0 14px; }
-      .tg-topbar__icon{
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-      }
-      .tg-topbar__icon img{
-        width: 30px;
-        height: 30px;
-      }
-      .tg-topbar__pill{
-        padding: 9px 16px;
-        font-size: 12px;
-      }
+      min-height: auto;
     }
 
     .grid { display: grid; gap: 12px; }
     .grid2 { grid-template-columns: 1fr; }
 
     .content{
-      max-width: 768px;
+      max-width: none;
       width: 100%;
       margin: 0 auto;
+    }
+
+    .gt-bottom-nav{
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 2px;
+      padding: 8px 8px 12px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(16,22,35,.94), rgba(9,14,24,.97));
+      z-index: 5;
+    }
+
+    .gt-tab{
+      border: 1px solid transparent;
+      background: transparent;
+      display: grid;
+      justify-items: center;
+      gap: 4px;
+      color: #9fb4d0;
+      text-decoration: none;
+      font: 700 11px/1.1 var(--iq-font);
+      min-height: 60px;
+      padding: 6px 2px;
+      border-radius: 10px;
+    }
+
+    .gt-tab-icon{
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gt-tab-icon img{
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      display: block;
+      opacity: 1;
+      filter: invert(89%) sepia(49%) saturate(1179%) hue-rotate(23deg) brightness(105%) contrast(102%) drop-shadow(0 0 7px rgba(204,255,102,.42));
+    }
+
+    .gt-tab span:last-child{
+      font-size: .72rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .gt-tab-active{
+      color: #9bd7ff;
+      border-color: rgba(110,198,255,.36);
+      background: rgba(110,198,255,.08);
+    }
+
+    .gt-tab-active .gt-tab-icon img{
+      filter: invert(89%) sepia(49%) saturate(1179%) hue-rotate(23deg) brightness(105%) contrast(102%) drop-shadow(0 0 9px rgba(204,255,102,.56));
     }
 
     .sectionTitle{
@@ -800,20 +959,49 @@
         font-size: 20px;
       }
     }
+
+    @media (max-width: 520px){
+      body.gt-rebrand{
+        padding: 0;
+      }
+      .gt-shell{
+        width: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+        border: none;
+      }
+      .ui-content{
+        padding: 10px 10px 92px;
+      }
+      .gt-shell::after{
+        display: none;
+      }
+    }
   </style>
 </head>
 
-<body>
-  <header class="tg-desktop-chrome" aria-hidden="true">
-    <div class="tg-topbar">
-      <div class="tg-topbar__inner">
-        <span class="tg-topbar__icon"><img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="" /></span>
-        <a id="suiteBackLink" class="tg-topbar__back" href="../../iq-suite/index.html">Back to Suite</a>
-        <span class="tg-topbar__pill">Trident G - IQ</span>
-      </div>
-    </div>
-  </header>
-  <div id="root"></div>
+<body class="gt-rebrand">
+  <div class="gt-shell">
+    <main class="ui-screen">
+      <section class="ui-content">
+        <div class="gt-brand-row" aria-label="G Tracker branding">
+          <div class="gt-brand-left">
+            <span class="gt-brand-icon"><img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="" /></span>
+            <a id="suiteBackLink" class="gt-suite-back" href="../../iq-suite/index.html">Back to Suite</a>
+          </div>
+          <span class="gt-brand-pill">Trident G - IQ</span>
+        </div>
+        <div id="root"></div>
+      </section>
+    </main>
+    <nav class="gt-bottom-nav" aria-label="G Tracker navigation preview">
+      <a class="gt-tab" href="#"><span class="gt-tab-icon"><img src="../../capacity-gym/brandingUI/icons/tab-bar/home.svg" alt=""></span><span>Home</span></a>
+      <a class="gt-tab" href="#"><span class="gt-tab-icon"><img src="../../capacity-gym/brandingUI/icons/tab-bar/play-hub.svg" alt=""></span><span>Hub</span></a>
+      <a class="gt-tab" href="#"><span class="gt-tab-icon"><img src="../../capacity-gym/brandingUI/icons/tab-bar/play-relational.svg" alt=""></span><span>Relational</span></a>
+      <a class="gt-tab gt-tab-active" href="#"><span class="gt-tab-icon"><img src="../../capacity-gym/brandingUI/icons/tab-bar/history.svg" alt=""></span><span>Progress</span></a>
+      <a class="gt-tab" href="#"><span class="gt-tab-icon"><img src="../../capacity-gym/brandingUI/icons/tab-bar/settings.svg" alt=""></span><span>Settings</span></a>
+    </nav>
+  </div>
   <script src="../../shared-ui/entitlements-client.js"></script>
   <script src="../../shared-ui/activation-gate.js"></script>
   <script type="text/babel" data-presets="env,react">
@@ -830,13 +1018,12 @@
     (() => {
       const link = document.querySelector("#suiteBackLink");
       if (!link) return;
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("from") !== "iq-suite") return;
       const suiteUrl = new URL("../../iq-suite/index.html", window.location.href);
-      suiteUrl.search = window.location.search || "";
-      suiteUrl.hash = window.location.hash || "";
+      if (window.location.search || window.location.hash) {
+        suiteUrl.search = window.location.search || "";
+        suiteUrl.hash = window.location.hash || "";
+      }
       link.href = suiteUrl.toString();
-      link.classList.add("is-visible");
     })();
 
     const { useEffect, useMemo, useState } = React;
