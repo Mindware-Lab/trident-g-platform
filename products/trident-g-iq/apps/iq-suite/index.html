@@ -88,8 +88,12 @@
         <h1 class="suite-title">IQ Suite Launcher</h1>
         <p class="suite-subtitle">Canonical launcher route: <code>apps/iq-suite/index.html</code>. This page passes context to apps using query params and preserves return context.</p>
         <div id="bundleContext" class="ui-notice" style="margin-top:12px; display:none;"></div>
+        <div id="activationContext" class="ui-notice" style="margin-top:12px; display:none;"></div>
+        <div class="ui-row" style="margin-top:10px;">
+          <button id="resetActivationBtn" class="ui-btn ui-btn-ghost" type="button">Reset activation on this device</button>
+        </div>
         <div class="suite-grid" id="suiteGrid"></div>
-        <p class="suite-foot">Phase 0 mode: explore-ready launcher with context-aware deep links.</p>
+        <p class="suite-foot">Phase 0.5 mode: bundled paid apps require device activation; outside-bundle apps remain browseable.</p>
       </article>
       <div class="suite-back">
         <a class="ui-link" href="../../index.html">Back to product root</a>
@@ -97,6 +101,7 @@
     </section>
   </main>
 
+  <script src="../shared-ui/activation-gate.js"></script>
   <script>
     const APP_REGISTRY_FALLBACK = [
       { appId: "zone_coach", label: "Zone Coach", route: "../zone-coach/", iconRef: "iq-icon-zone", category: "readiness" },
@@ -141,7 +146,30 @@
       contextEl.style.display = "block";
     }
 
-    function renderApps(apps, bundleId, bundleManifests) {
+    function renderActivationContext(bundleId, activation, bundleManifests) {
+      const activationEl = document.getElementById("activationContext");
+      if (!activationEl) {
+        return;
+      }
+      if (!bundleId) {
+        activationEl.style.display = "none";
+        activationEl.textContent = "";
+        return;
+      }
+      if (!activation || activation.isActive !== true || !activation.bundleId) {
+        activationEl.style.display = "block";
+        activationEl.className = "ui-notice ui-lock";
+        activationEl.textContent = "Activation required for bundled paid apps. Browse mode remains available for non-bundled apps.";
+        return;
+      }
+      const bundle = bundleManifests.find((item) => item.bundleId === activation.bundleId);
+      const label = bundle && bundle.label ? bundle.label : activation.bundleId;
+      activationEl.style.display = "block";
+      activationEl.className = "ui-notice";
+      activationEl.textContent = `Activated on this device: ${label}.`;
+    }
+
+    function renderApps(apps, bundleId, bundleManifests, activation) {
       const gridEl = document.getElementById("suiteGrid");
       if (!gridEl) {
         return;
@@ -149,11 +177,22 @@
       const bundle = bundleManifests.find((item) => item.bundleId === bundleId);
       const includedSet = new Set(Array.isArray(bundle && bundle.includedAppIds) ? bundle.includedAppIds : []);
       const showBundleHints = Boolean(bundleId);
+      const activationBundleId = activation && activation.isActive ? activation.bundleId : "";
+      const activationBundle = bundleManifests.find((item) => item.bundleId === activationBundleId);
+      const unlockedSet = new Set(Array.isArray(activationBundle && activationBundle.includedAppIds) ? activationBundle.includedAppIds : []);
       gridEl.innerHTML = apps.map((app) => {
         const inBundle = includedSet.has(app.appId);
+        const requiresActivation = showBundleHints && inBundle;
+        const isUnlocked = requiresActivation ? unlockedSet.has(app.appId) : true;
         const bundleChip = showBundleHints
           ? `<span class="ui-chip ${inBundle ? "ui-chip-primary" : "ui-chip-info"}">${inBundle ? "Included in bundle" : "Outside bundle scope"}</span>`
           : "";
+        const gateChip = requiresActivation
+          ? `<span class="ui-chip ${isUnlocked ? "ui-chip-primary" : "ui-lock"}">${isUnlocked ? "Activated" : "Activation needed"}</span>`
+          : "";
+        const actionMarkup = requiresActivation && !isUnlocked
+          ? `<button class="ui-btn ui-btn-primary" data-action="activate-app" data-app-id="${app.appId}" data-app-label="${app.label}" data-bundle-id="${bundleId}">Activate to open</button>`
+          : `<a class="ui-btn ui-btn-primary" href="${buildLaunchUrl(app.route, app.appId)}">Open ${app.label}</a>`;
         return `
           <article class="ui-card suite-app">
             <header class="suite-app-head">
@@ -163,11 +202,34 @@
             <p>${app.category}</p>
             <div class="ui-row">
               ${bundleChip}
+              ${gateChip}
             </div>
-            <a class="ui-btn ui-btn-primary" href="${buildLaunchUrl(app.route, app.appId)}">Open ${app.label}</a>
+            ${actionMarkup}
           </article>
         `;
       }).join("");
+    }
+
+    function wireActivationButtons(renderState) {
+      const buttons = Array.from(document.querySelectorAll("[data-action='activate-app']"));
+      buttons.forEach((button) => {
+        button.addEventListener("click", async () => {
+          button.disabled = true;
+          const appId = button.getAttribute("data-app-id") || "";
+          const appLabel = button.getAttribute("data-app-label") || "this app";
+          const bundleId = button.getAttribute("data-bundle-id") || "";
+          await window.IQActivationGate.requestActivation({
+            appId,
+            appLabel,
+            bundleIdHint: bundleId,
+            manifestUrl: "./bundle-manifests.json"
+          });
+          const nextActivation = window.IQActivationGate.loadActivation();
+          renderActivationContext(renderState.bundleId, nextActivation, renderState.bundles);
+          renderApps(renderState.apps, renderState.bundleId, renderState.bundles, nextActivation);
+          wireActivationButtons(renderState);
+        });
+      });
     }
 
     async function init() {
@@ -177,12 +239,26 @@
       ]);
       const params = new URLSearchParams(window.location.search);
       const bundleId = params.get("bundle") || "";
+      const activation = window.IQActivationGate.loadActivation();
+      const renderState = { apps, bundles, bundleId };
       renderBundleContext(bundleId, bundles);
-      renderApps(apps, bundleId, bundles);
+      renderActivationContext(bundleId, activation, bundles);
+      renderApps(apps, bundleId, bundles, activation);
+      wireActivationButtons(renderState);
+
+      const resetBtn = document.getElementById("resetActivationBtn");
+      if (resetBtn) {
+        resetBtn.addEventListener("click", () => {
+          window.IQActivationGate.clearActivation();
+          const nextActivation = window.IQActivationGate.loadActivation();
+          renderActivationContext(bundleId, nextActivation, bundles);
+          renderApps(apps, bundleId, bundles, nextActivation);
+          wireActivationButtons(renderState);
+        });
+      }
     }
 
     init();
   </script>
 </body>
 </html>
-

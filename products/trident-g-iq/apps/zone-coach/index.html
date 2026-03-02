@@ -367,8 +367,17 @@
     </main>
   </div>
 
+  <script src="../shared-ui/activation-gate.js"></script>
   <script>
   (() => {
+    if (window.IQActivationGate) {
+      window.IQActivationGate.enforceAppActivation({
+        appId: "zone_coach",
+        appLabel: "Zone Coach",
+        manifestUrl: "../iq-suite/bundle-manifests.json",
+        bundleIdHint: new URLSearchParams(window.location.search).get("bundle") || ""
+      });
+    }
     const initSuiteBackLink = () => {
       const link = document.querySelector("#suiteBackLink");
       if (!link) return;

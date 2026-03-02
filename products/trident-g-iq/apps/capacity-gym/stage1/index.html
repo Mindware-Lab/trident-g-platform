@@ -23,6 +23,17 @@
     </nav>
     <main id="app" class="main" aria-live="polite"></main>
   </div>
+  <script src="../../shared-ui/activation-gate.js"></script>
+  <script>
+    if (window.IQActivationGate) {
+      window.IQActivationGate.enforceAppActivation({
+        appId: "capacity_gym",
+        appLabel: "Capacity Gym",
+        manifestUrl: "../../iq-suite/bundle-manifests.json",
+        bundleIdHint: new URLSearchParams(window.location.search).get("bundle") || ""
+      });
+    }
+  </script>
   <script type="module" src="./app.js"></script>
 </body>
 </html>
