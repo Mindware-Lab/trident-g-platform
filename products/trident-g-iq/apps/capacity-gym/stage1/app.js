@@ -42,6 +42,7 @@ import { resolvePrimaryScreen } from "./ui/screen-coordinator.js";
 import { renderPrimaryScreen } from "./ui/screens.js";
 import { buildShellViewModel } from "./ui/view-models.js";
 
+const TEMP_RELATIONAL_UNLOCK_FOR_INSPECTION = true;
 const ROUTES = new Set(["home", "play-hub", "play-relational", "history", "settings"]);
 const DEFAULT_ROUTE = "home";
 const appRoot = document.querySelector("#app");
@@ -107,7 +108,6 @@ const COACH_BRIEFING_COPY = Object.freeze({
   CONSOLIDATE: "Next: Consolidation block"
 });
 const HELP_ICON_PATH = "../brandingUI/icons/status/help-information.svg";
-const TEMP_RELATIONAL_UNLOCK_FOR_INSPECTION = true;
 const HUB_MATCH_EXAMPLE_IMAGES = Object.freeze([
   Object.freeze({
     path: "./help-graphics/hub-colour-1back-match.svg",
