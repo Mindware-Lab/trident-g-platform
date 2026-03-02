@@ -1805,14 +1805,23 @@ function renderPlayHub() {
     `;
   } else if (hubSession.phase === "trial") {
     const showPauseControl = block?.plan?.wrapper === "hub_cat";
+    const pauseControls = showPauseControl
+      ? (hubTrialPaused
+        ? `
+          <div class="row pause-control-row">
+            <button class="btn subtle pause-btn" data-action="hub-toggle-pause">Resume</button>
+            <button class="btn danger stop-btn" data-action="hub-stop-session">Stop</button>
+          </div>
+        `
+        : `<button class="btn subtle pause-btn" data-action="hub-toggle-pause">Pause</button>`)
+      : "";
     phasePanel = `
       <div class="stage-panel trial-stage">
         <div class="trial-progress-track"><span style="width:${trialProgressPct}%;"></span></div>
         <p class="hint">Trial ${trialNumber}/${trialCount}</p>
         ${renderHubStimulus(trial, block.stimulusVisible, targetLabel, block.renderMapping, block.plan.wrapper)}
         <button class="btn primary match-btn game-match-btn" data-action="hub-match" ${(responseCaptured || hubTrialPaused) ? "disabled" : ""}>MATCH</button>
-        ${showPauseControl ? `<button class="btn subtle pause-btn" data-action="hub-toggle-pause">${hubTrialPaused ? "Resume" : "Pause"}</button>` : ""}
-        ${showPauseControl && hubTrialPaused ? '<p class="hint">Paused. Press Resume to continue this trial.</p>' : ""}
+        ${pauseControls}
       </div>
     `;
   } else {
@@ -2696,6 +2705,17 @@ function toggleHubPause() {
   pauseHubTrial();
 }
 
+function stopHubSession() {
+  if (!hubSession || hubSession.status !== "running") {
+    return;
+  }
+  clearHubTimers();
+  hubSession = null;
+  closeBriefingOverlay();
+  setFlash("Hub session stopped. Session discarded and not logged.", "warn");
+  window.location.hash = "/home";
+}
+
 function captureHubResponse() {
   if (!hubSession || hubSession.status !== "running" || hubSession.phase !== "trial" || !hubSession.currentBlock) {
     return false;
@@ -3425,6 +3445,11 @@ document.addEventListener("click", (event) => {
 
   if (action === "hub-toggle-pause") {
     toggleHubPause();
+    return;
+  }
+
+  if (action === "hub-stop-session") {
+    stopHubSession();
     return;
   }
 

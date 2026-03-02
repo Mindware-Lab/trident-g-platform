@@ -754,6 +754,18 @@ input:disabled {
   margin-top: 8px;
 }
 
+.pause-control-row {
+  margin-top: 8px;
+}
+
+.pause-control-row .pause-btn,
+.pause-control-row .stop-btn {
+  flex: 1 1 calc(50% - 5px);
+  min-height: 40px;
+  width: auto;
+  margin-top: 0;
+}
+
 .quiz-btn {
   min-width: 120px;
   min-height: 52px;
