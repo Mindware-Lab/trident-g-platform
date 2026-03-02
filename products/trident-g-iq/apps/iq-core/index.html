@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IQ Core</title>
+  <script>
+    (function () {
+      var target = new URL("../iq-suite/index.html", window.location.href);
+      var params = new URLSearchParams(window.location.search);
+      if (!params.get("bundle")) {
+        params.set("bundle", "performance_bundle");
+      }
+      target.search = params.toString();
+      target.hash = window.location.hash || "";
+      window.location.replace(target.toString());
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirecting to IQ Core...</p>
+  <p>If you are not redirected, <a href="../iq-suite/index.html?bundle=performance_bundle">open IQ Core</a>.</p>
+</body>
+</html>

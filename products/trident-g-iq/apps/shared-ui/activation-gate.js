@@ -2,22 +2,47 @@
   "use strict";
 
   var ACTIVATION_KEY = "iqmw.activation.v1";
+  var DEFAULT_LAUNCH_PASS_DAYS = 90;
   var manifestCache = {};
 
   var MANIFEST_FALLBACK = Object.freeze([
     Object.freeze({ bundleId: "g_tracker", label: "G Tracker", includedAppIds: ["g_tracker"] }),
     Object.freeze({ bundleId: "zone_coach", label: "Zone Coach", includedAppIds: ["zone_coach"] }),
-    Object.freeze({ bundleId: "performance_bundle", label: "Performance Bundle", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] }),
+    Object.freeze({ bundleId: "capacity_gym", label: "Capacity Gym", includedAppIds: ["capacity_gym"] }),
+    Object.freeze({ bundleId: "performance_bundle", label: "IQ Core", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] }),
     Object.freeze({ bundleId: "cohort_bundle", label: "Cohort Bundle", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] }),
     Object.freeze({ bundleId: "premium_1to1", label: "1:1 Premium", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] })
   ]);
 
-  var BUNDLE_CODES = Object.freeze({
-    "GTRACKER-2026": "g_tracker",
-    "ZONE-2026": "zone_coach",
-    "PERFORMANCE-2026": "performance_bundle",
-    "COHORT-2026": "cohort_bundle",
-    "PREMIUM-2026": "premium_1to1"
+  var CODE_METADATA = Object.freeze({
+    "GTRACKER-2026": Object.freeze({ bundleId: "g_tracker", segment: "standard", campaign: "founders_launch_2026", durationDays: 90 }),
+    "ZONE-2026": Object.freeze({ bundleId: "zone_coach", segment: "standard", campaign: "founders_launch_2026", durationDays: 90 }),
+    "CAPACITY-2026": Object.freeze({ bundleId: "capacity_gym", segment: "standard", campaign: "founders_launch_2026", durationDays: 90 }),
+    "IQCORE-2026": Object.freeze({ bundleId: "performance_bundle", segment: "standard", campaign: "founders_launch_2026", durationDays: 90 }),
+    "PERFORMANCE-2026": Object.freeze({ bundleId: "performance_bundle", segment: "standard", campaign: "legacy_alias_2026", durationDays: 90 }),
+    "COHORT-2026": Object.freeze({ bundleId: "cohort_bundle", segment: "standard", campaign: "founders_launch_2026", durationDays: 90 }),
+    "LIVECOHORT-2026": Object.freeze({ bundleId: "cohort_bundle", segment: "standard", campaign: "founders_launch_2026", durationDays: 90 }),
+    "PREMIUM-2026": Object.freeze({ bundleId: "premium_1to1", segment: "standard", campaign: "founders_launch_2026", durationDays: 90 }),
+    "PREMIUM1TO1-2026": Object.freeze({ bundleId: "premium_1to1", segment: "standard", campaign: "founders_launch_2026", durationDays: 90 }),
+
+    "EARLY-GTRACKER-2026": Object.freeze({ bundleId: "g_tracker", segment: "early_bird", campaign: "founders_launch_2026", durationDays: 90 }),
+    "EARLY-ZONE-2026": Object.freeze({ bundleId: "zone_coach", segment: "early_bird", campaign: "founders_launch_2026", durationDays: 90 }),
+    "EARLY-CAPACITY-2026": Object.freeze({ bundleId: "capacity_gym", segment: "early_bird", campaign: "founders_launch_2026", durationDays: 90 }),
+    "EARLY-IQCORE-2026": Object.freeze({ bundleId: "performance_bundle", segment: "early_bird", campaign: "founders_launch_2026", durationDays: 90 }),
+    "EARLY-COHORT-2026": Object.freeze({ bundleId: "cohort_bundle", segment: "early_bird", campaign: "founders_launch_2026", durationDays: 90 }),
+    "EARLY-PREMIUM-2026": Object.freeze({ bundleId: "premium_1to1", segment: "early_bird", campaign: "founders_launch_2026", durationDays: 90 }),
+
+    "STUDENT-GTRACKER-2026": Object.freeze({ bundleId: "g_tracker", segment: "student", campaign: "founders_launch_2026", durationDays: 90 }),
+    "STUDENT-ZONE-2026": Object.freeze({ bundleId: "zone_coach", segment: "student", campaign: "founders_launch_2026", durationDays: 90 }),
+    "STUDENT-CAPACITY-2026": Object.freeze({ bundleId: "capacity_gym", segment: "student", campaign: "founders_launch_2026", durationDays: 90 }),
+    "STUDENT-IQCORE-2026": Object.freeze({ bundleId: "performance_bundle", segment: "student", campaign: "founders_launch_2026", durationDays: 90 }),
+
+    "LEGACY-GTRACKER-2026": Object.freeze({ bundleId: "g_tracker", segment: "legacy_reactivation", campaign: "legacy_reactivation_2026", durationDays: 90 }),
+    "LEGACY-ZONE-2026": Object.freeze({ bundleId: "zone_coach", segment: "legacy_reactivation", campaign: "legacy_reactivation_2026", durationDays: 90 }),
+    "LEGACY-CAPACITY-2026": Object.freeze({ bundleId: "capacity_gym", segment: "legacy_reactivation", campaign: "legacy_reactivation_2026", durationDays: 90 }),
+    "LEGACY-IQCORE-2026": Object.freeze({ bundleId: "performance_bundle", segment: "legacy_reactivation", campaign: "legacy_reactivation_2026", durationDays: 90 }),
+    "LEGACY-COHORT-2026": Object.freeze({ bundleId: "cohort_bundle", segment: "legacy_reactivation", campaign: "legacy_reactivation_2026", durationDays: 90 }),
+    "LEGACY-PREMIUM-2026": Object.freeze({ bundleId: "premium_1to1", segment: "legacy_reactivation", campaign: "legacy_reactivation_2026", durationDays: 90 })
   });
 
   function normalizeCode(value) {
@@ -35,11 +60,69 @@
     }
   }
 
+  function toPositiveInteger(value) {
+    var parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      return null;
+    }
+    return Math.floor(parsed);
+  }
+
+  function parseIsoDate(value) {
+    if (typeof value !== "string" || !value) {
+      return null;
+    }
+    var time = Date.parse(value);
+    if (!Number.isFinite(time)) {
+      return null;
+    }
+    return new Date(time).toISOString();
+  }
+
+  function computeExpiresAt(activatedAtIso, durationDays, explicitExpiresAt) {
+    var explicit = parseIsoDate(explicitExpiresAt);
+    if (explicit) {
+      return explicit;
+    }
+    var start = parseIsoDate(activatedAtIso);
+    var duration = toPositiveInteger(durationDays);
+    if (!start || !duration) {
+      return null;
+    }
+    var expiryMs = Date.parse(start) + (duration * 24 * 60 * 60 * 1000);
+    return new Date(expiryMs).toISOString();
+  }
+
+  function isActivationExpired(activation) {
+    if (!activation || activation.isActive !== true) {
+      return false;
+    }
+    var expiresAt = parseIsoDate(activation.expiresAt);
+    if (!expiresAt) {
+      return false;
+    }
+    return Date.now() >= Date.parse(expiresAt);
+  }
+
   function loadActivation() {
     try {
       var parsed = safeParse(global.localStorage.getItem(ACTIVATION_KEY));
       if (!parsed || typeof parsed !== "object") {
         return null;
+      }
+      if (parsed.isActive === true) {
+        var expiresAt = computeExpiresAt(
+          parsed.activatedAt || "",
+          parsed.durationDays,
+          parsed.expiresAt
+        );
+        if (expiresAt) {
+          parsed.expiresAt = expiresAt;
+        }
+        if (isActivationExpired(parsed)) {
+          parsed.isActive = false;
+          parsed.expired = true;
+        }
       }
       return parsed;
     } catch (_) {
@@ -57,14 +140,23 @@
     return [];
   }
 
-  function saveActivation(bundleId, manifests, source) {
+  function saveActivation(codeMeta, manifests, source, codeKey) {
+    var nowIso = new Date().toISOString();
+    var durationDays = toPositiveInteger(codeMeta && codeMeta.durationDays) || DEFAULT_LAUNCH_PASS_DAYS;
+    var expiresAt = computeExpiresAt(nowIso, durationDays, codeMeta && codeMeta.expiresAt);
+    var bundleId = codeMeta && codeMeta.bundleId ? codeMeta.bundleId : "";
     var activation = {
       isActive: true,
-      activatedAt: new Date().toISOString(),
+      activatedAt: nowIso,
       bundleId: bundleId,
       source: source || "manual",
       version: 1,
-      unlockedAppIds: deriveUnlockedAppIds(bundleId, manifests)
+      unlockedAppIds: deriveUnlockedAppIds(bundleId, manifests),
+      codeKey: codeKey || "",
+      segment: codeMeta && codeMeta.segment ? codeMeta.segment : "standard",
+      campaign: codeMeta && codeMeta.campaign ? codeMeta.campaign : "founders_launch_2026",
+      durationDays: durationDays,
+      expiresAt: expiresAt
     };
     global.localStorage.setItem(ACTIVATION_KEY, JSON.stringify(activation));
     return activation;
@@ -95,6 +187,9 @@
 
   function activationAllowsApp(activation, appId, manifests) {
     if (!activation || activation.isActive !== true || !activation.bundleId) {
+      return false;
+    }
+    if (isActivationExpired(activation)) {
       return false;
     }
     return bundleIncludesApp(activation.bundleId, appId, manifests);
@@ -136,7 +231,22 @@
 
   function resolveCodeBundle(code) {
     var normalized = normalizeCode(code);
-    return BUNDLE_CODES[normalized] || null;
+    var meta = CODE_METADATA[normalized];
+    if (!meta) {
+      return null;
+    }
+    return Object.assign({ codeKey: normalized }, meta);
+  }
+
+  function codeExpired(codeMeta) {
+    if (!codeMeta) {
+      return false;
+    }
+    var expiresAt = parseIsoDate(codeMeta.expiresAt);
+    if (!expiresAt) {
+      return false;
+    }
+    return Date.now() >= Date.parse(expiresAt);
   }
 
   function escapeHtml(value) {
@@ -183,6 +293,8 @@
 
     var bundleHint = opts.bundleIdHint ? getBundleById(opts.bundleIdHint, manifests) : null;
     var hintLabel = bundleHint && bundleHint.label ? bundleHint.label : opts.bundleIdHint;
+    var requiredBundle = opts.requiredBundleId ? getBundleById(opts.requiredBundleId, manifests) : null;
+    var requiredBundleLabel = requiredBundle && requiredBundle.label ? requiredBundle.label : opts.requiredBundleId;
     var appLabel = opts.appLabel || "this app";
 
     overlay.innerHTML = [
@@ -190,6 +302,7 @@
       "<h3>Activate Access</h3>",
       "<p>Enter your activation code to use " + escapeHtml(appLabel) + " on this device.</p>",
       (hintLabel ? "<p>Bundle context: <strong>" + escapeHtml(hintLabel) + "</strong></p>" : ""),
+      (requiredBundleLabel ? "<p>This page requires: <strong>" + escapeHtml(requiredBundleLabel) + "</strong></p>" : ""),
       '<div class="iq-activation-note">Device-based activation (temporary while account login rolls out). Clearing site data or switching device/browser requires re-entry.</div>',
       '<div class="iq-activation-row">',
       '<input id="iqActivationCodeInput" class="iq-activation-input" type="text" autocomplete="off" placeholder="Enter activation code">',
@@ -228,27 +341,45 @@
         appId: opts.appId || "",
         appLabel: appLabel,
         bundleIdHint: opts.bundleIdHint || "",
+        requiredBundleId: opts.requiredBundleId || "",
         source: "manual",
-        codeLength: rawCode.length
+        codeLength: rawCode.length,
+        codeKey: rawCode
       });
 
-      var bundleId = resolveCodeBundle(rawCode);
-      if (!bundleId) {
+      var codeMeta = resolveCodeBundle(rawCode);
+      if (!codeMeta) {
         setStatus("That code is not valid.");
         button.disabled = false;
         return;
       }
+      if (codeExpired(codeMeta)) {
+        setStatus("That code has expired.");
+        button.disabled = false;
+        return;
+      }
+      if (opts.requiredBundleId && codeMeta.bundleId !== opts.requiredBundleId) {
+        var resolvedBundle = getBundleById(codeMeta.bundleId, manifests);
+        var resolvedLabel = resolvedBundle && resolvedBundle.label ? resolvedBundle.label : codeMeta.bundleId;
+        setStatus("That code is for " + resolvedLabel + ". This page requires " + requiredBundleLabel + ".");
+        button.disabled = false;
+        return;
+      }
 
-      var activation = saveActivation(bundleId, manifests, "manual");
+      var activation = saveActivation(codeMeta, manifests, "manual", rawCode);
       emitClientEvent("activation_success", {
         appId: opts.appId || "",
         appLabel: appLabel,
-        bundleId: bundleId,
-        source: "manual"
+        bundleId: activation.bundleId || "",
+        segment: activation.segment || "",
+        campaign: activation.campaign || "",
+        expiresAt: activation.expiresAt || "",
+        source: "manual",
+        codeKey: rawCode
       });
       if (opts.appId && !activationAllowsApp(activation, opts.appId, manifests)) {
-        var bundle = getBundleById(bundleId, manifests);
-        var label = bundle && bundle.label ? bundle.label : bundleId;
+        var bundle = getBundleById(activation.bundleId, manifests);
+        var label = bundle && bundle.label ? bundle.label : activation.bundleId;
         setStatus("Code accepted for " + label + ", but it does not include this app.");
         button.disabled = false;
         return;

@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>1:1 Premium Access</title>
+  <link rel="stylesheet" href="../shared-ui/tokens.css">
+  <link rel="stylesheet" href="../shared-ui/shell.css">
+  <link rel="stylesheet" href="../shared-ui/components.css">
+  <style>
+    body.premium-wrap {
+      min-height: 100vh;
+      background:
+        radial-gradient(920px 460px at 50% -24%, rgba(110,198,255,.24), transparent 58%),
+        linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%);
+      padding: 16px 14px 24px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      margin: 0;
+      font-family: var(--iq-font);
+      color: var(--iq-text);
+    }
+    .premium-shell {
+      width: min(470px, calc(100% - 12px));
+      min-height: calc(100vh - 36px);
+      border-radius: 42px;
+      border: 1.5px solid rgba(255,255,255,.45);
+      overflow: hidden;
+      background:
+        radial-gradient(700px 420px at 50% -10%, rgba(110,198,255,.18), transparent 62%),
+        linear-gradient(180deg, #081326 0%, #050e1f 45%, #031029 100%);
+      box-shadow: 0 22px 44px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08);
+      position: relative;
+    }
+    .premium-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(460px 460px at 50% -15%, rgba(255,255,255,.18), transparent 62%),
+        linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(221,234,248,.38) 47%, rgba(130,154,181,.32) 50%, rgba(221,234,248,.34) 53%, rgba(255,255,255,0) 100%);
+      opacity: .56;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .premium-shell::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 132px;
+      height: 20px;
+      border-radius: 0 0 16px 16px;
+      background: rgba(6,12,23,.95);
+      z-index: 3;
+      pointer-events: none;
+    }
+    .premium-shell > * {
+      position: relative;
+      z-index: 1;
+    }
+    .premium-content {
+      width: 100%;
+      padding: 16px 12px 28px;
+      min-height: calc(100vh - 36px);
+      display: grid;
+      align-content: start;
+      gap: 10px;
+    }
+    .premium-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 4px 2px 2px;
+    }
+    .premium-head-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .premium-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      border: 1px solid rgba(110,198,255,.22);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)), rgba(15,18,26,.94);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .premium-icon img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      display: block;
+    }
+    .premium-back {
+      color: #9ed3ff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      opacity: .94;
+    }
+    .premium-pill {
+      border-radius: 999px;
+      background: #ccff66;
+      color: #0b1a0b;
+      border: 1px solid rgba(0,0,0,.08);
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .premium-title {
+      margin: 0;
+      font-size: clamp(30px, 7vw, 40px);
+      line-height: 1.05;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+    .premium-sub {
+      margin: 6px 0 0 0;
+      color: var(--iq-text-muted);
+      line-height: 1.45;
+      font-size: 0.95rem;
+    }
+    .premium-row {
+      display: grid;
+      gap: 10px;
+    }
+    @media (max-width: 520px) {
+      body.premium-wrap {
+        padding: 0;
+      }
+      .premium-shell {
+        width: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+        border: none;
+      }
+      .premium-shell::after {
+        display: none;
+      }
+      .premium-content {
+        padding: 10px 10px 24px;
+        min-height: 100vh;
+      }
+    }
+  </style>
+</head>
+<body class="premium-wrap">
+  <div class="premium-shell">
+    <main class="premium-content">
+      <header class="premium-head" aria-label="1:1 Premium branding">
+        <div class="premium-head-left">
+          <span class="premium-icon"><img src="../../../../branding/Trident-G-Icon.svg" alt=""></span>
+          <a class="premium-back" href="../iq-suite/index.html?bundle=premium_1to1">Back to Suite</a>
+        </div>
+        <span class="premium-pill">Trident G - IQ</span>
+      </header>
+
+      <article class="ui-card">
+        <h1 class="premium-title">1:1 Premium</h1>
+        <p class="premium-sub">Access wrapper for private coaching clients. Activation requires a premium-specific code.</p>
+        <div id="premiumStatus" class="ui-notice" style="margin-top:10px;">Checking access...</div>
+        <div class="premium-row" style="margin-top:10px;">
+          <a id="openWorkspaceBtn" class="ui-btn ui-btn-primary" href="../iq-suite/index.html?bundle=premium_1to1">Open IQ Core Workspace</a>
+          <a id="openCalendarBtn" class="ui-btn ui-btn-info" href="https://example.com/premium-calendar" target="_blank" rel="noopener noreferrer">Open 1:1 Calendar</a>
+          <button id="reactivateBtn" class="ui-btn ui-btn-ghost" type="button">Enter/Change Activation Code</button>
+        </div>
+      </article>
+    </main>
+  </div>
+
+  <script src="../shared-ui/activation-gate.js"></script>
+  <script>
+    (function () {
+      var REQUIRED_BUNDLE_ID = "premium_1to1";
+      var MANIFEST_URL = "../iq-suite/bundle-manifests.json";
+      var WORKSPACE_ROUTE = "../iq-suite/index.html?bundle=premium_1to1";
+      var DEFAULT_CALENDAR_URL = "https://example.com/premium-calendar";
+
+      var statusEl = document.getElementById("premiumStatus");
+      var workspaceBtn = document.getElementById("openWorkspaceBtn");
+      var calendarBtn = document.getElementById("openCalendarBtn");
+      var reactivateBtn = document.getElementById("reactivateBtn");
+
+      var params = new URLSearchParams(window.location.search);
+      var calendarOverride = params.get("calendar");
+      if (calendarOverride) {
+        calendarBtn.href = calendarOverride;
+      } else {
+        calendarBtn.href = DEFAULT_CALENDAR_URL;
+      }
+
+      function setStatus(message, lock) {
+        statusEl.textContent = message;
+        if (lock) {
+          statusEl.className = "ui-notice ui-lock";
+          workspaceBtn.className = "ui-btn ui-btn-ghost";
+        } else {
+          statusEl.className = "ui-notice";
+          workspaceBtn.className = "ui-btn ui-btn-primary";
+        }
+      }
+
+      function isValidPremiumActivation(activation) {
+        return Boolean(activation && activation.isActive === true && activation.bundleId === REQUIRED_BUNDLE_ID);
+      }
+
+      function enforcePremiumAccess() {
+        if (!window.IQActivationGate) {
+          setStatus("Activation service unavailable in this build.", true);
+          return;
+        }
+        var current = window.IQActivationGate.loadActivation();
+        if (isValidPremiumActivation(current)) {
+          setStatus("Premium access active on this device.", false);
+          return;
+        }
+        setStatus("Premium activation required. Enter your premium access code.", true);
+        window.IQActivationGate.requestActivation({
+          appLabel: "1:1 Premium",
+          bundleIdHint: REQUIRED_BUNDLE_ID,
+          requiredBundleId: REQUIRED_BUNDLE_ID,
+          manifestUrl: MANIFEST_URL
+        }).then(function () {
+          var updated = window.IQActivationGate.loadActivation();
+          if (isValidPremiumActivation(updated)) {
+            setStatus("Premium access active on this device.", false);
+            return;
+          }
+          setStatus("Activation did not complete. Please try again.", true);
+        });
+      }
+
+      workspaceBtn.href = WORKSPACE_ROUTE;
+      reactivateBtn.addEventListener("click", enforcePremiumAccess);
+      enforcePremiumAccess();
+    })();
+  </script>
+</body>
+</html>

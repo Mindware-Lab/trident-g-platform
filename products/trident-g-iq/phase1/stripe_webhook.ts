@@ -50,6 +50,8 @@ function mapStripePriceToBundleId(priceId: string): string | null {
     // Replace with real Stripe price IDs:
     "price_g_tracker": "g_tracker",
     "price_zone_coach": "zone_coach",
+    "price_capacity_gym": "capacity_gym",
+    "price_iq_core": "performance_bundle",
     "price_performance_bundle": "performance_bundle",
     "price_cohort_bundle": "cohort_bundle",
     "price_premium_1to1": "premium_1to1"
@@ -165,4 +167,3 @@ export async function handleStripeWebhook(
   await markProcessed(db, event);
   return { ok: true, message: "processed" };
 }
-

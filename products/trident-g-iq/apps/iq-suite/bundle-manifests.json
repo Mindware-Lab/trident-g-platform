@@ -14,25 +14,31 @@
     "ctaLabel": "Open Zone Coach"
   },
   {
+    "bundleId": "capacity_gym",
+    "label": "Capacity Gym",
+    "includedAppIds": ["capacity_gym"],
+    "description": "Working memory, attention, and relational reasoning training.",
+    "ctaLabel": "Open Capacity Gym"
+  },
+  {
     "bundleId": "performance_bundle",
-    "label": "Performance Bundle",
+    "label": "IQ Core",
     "includedAppIds": ["zone_coach", "capacity_gym", "g_tracker"],
-    "description": "Zone + Capacity + G Tracker.",
-    "ctaLabel": "Open Bundle"
+    "description": "All three apps: G Tracker + Zone Coach + Capacity Gym.",
+    "ctaLabel": "Open IQ Core"
   },
   {
     "bundleId": "cohort_bundle",
     "label": "Cohort Bundle",
     "includedAppIds": ["zone_coach", "capacity_gym", "g_tracker"],
-    "description": "Performance Bundle + cohort support.",
+    "description": "IQ Core + live cohort support.",
     "ctaLabel": "Open Cohort Bundle"
   },
   {
     "bundleId": "premium_1to1",
     "label": "1:1 Premium",
     "includedAppIds": ["zone_coach", "capacity_gym", "g_tracker"],
-    "description": "Everything + private coaching support.",
+    "description": "IQ Core + private coaching support.",
     "ctaLabel": "Open Premium"
   }
 ]
-
