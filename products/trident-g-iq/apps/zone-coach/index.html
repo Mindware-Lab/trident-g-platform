@@ -28,6 +28,8 @@
       --zc-blue-soft: #d9ecff;
       --zc-lime: #CCFF66;
       --zc-ink: #0b0b0d;
+      --zc-lime-filter: invert(89%) sepia(49%) saturate(1179%) hue-rotate(23deg) brightness(105%) contrast(102%);
+      --zc-lime-glow: drop-shadow(0 0 7px rgba(204,255,102,.42));
       --zc-focus-ring: 0 0 0 2px rgba(11,17,24,.95), 0 0 0 4px rgba(110,198,255,.80), 0 0 0 8px rgba(110,198,255,.20);
     }
     * { box-sizing: border-box; }
@@ -303,36 +305,51 @@
       grid-template-columns: repeat(5, minmax(0,1fr));
       gap: 2px;
       padding: 8px 8px 12px;
-      border-top: 1px solid rgba(255,255,255,.1);
-      background: linear-gradient(180deg, rgba(6,15,31,.95), rgba(4,11,24,.98));
+      border-top: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(16,22,35,.94), rgba(9,14,24,.97));
       z-index: 5;
     }
     body.zc-rebrand .zc-tab {
+      border: 1px solid transparent;
+      background: transparent;
       display: grid;
       justify-items: center;
       gap: 4px;
       color: #9fb4d0;
       text-decoration: none;
       font: 700 11px/1.1 var(--iq-font, var(--font, system-ui, sans-serif));
-      padding: 6px 4px;
-      border-radius: 12px;
-      border: 1px solid transparent;
+      min-height: 60px;
+      padding: 6px 2px;
+      border-radius: 10px;
     }
     body.zc-rebrand .zc-tab-icon {
-      width: 16px;
-      height: 16px;
+      width: 28px;
+      height: 28px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
     }
     body.zc-rebrand .zc-tab-icon img {
-      width: 16px;
-      height: 16px;
+      width: 28px;
+      height: 28px;
       object-fit: contain;
       display: block;
-      filter: drop-shadow(0 0 6px rgba(110,198,255,.25));
+      opacity: 1;
+      filter: var(--zc-lime-filter) var(--zc-lime-glow);
     }
-    body.zc-rebrand .zc-tab-active { color: #d8e9ff; border-color: rgba(110,198,255,.36); background: rgba(110,198,255,.12); }
+    body.zc-rebrand .zc-tab span:last-child {
+      font-size: .72rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    body.zc-rebrand .zc-tab-active {
+      color: #9bd7ff;
+      border-color: rgba(110,198,255,.36);
+      background: rgba(110,198,255,.08);
+    }
+    body.zc-rebrand .zc-tab-active .zc-tab-icon img {
+      filter: var(--zc-lime-filter) drop-shadow(0 0 9px rgba(204,255,102,.56));
+    }
     @media (max-width: 520px) {
       body.zc-rebrand { padding: 0; }
       body.zc-rebrand .zoneAppShell { width: 100%; min-height: 100vh; border-radius: 0; border: none; }
@@ -490,11 +507,11 @@
   </div>
     </main>
     <nav class="zc-bottom-nav" aria-label="Zone Coach navigation preview">
-      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../../../../branding/icons/trident.svg" alt=""></span><span>Home</span></a>
-      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../../../../branding/icons/ccc.svg" alt=""></span><span>Run</span></a>
-      <a class="zc-tab zc-tab-active" href="#"><span class="zc-tab-icon"><img src="../../../../branding/icons/brain-state.svg" alt=""></span><span>Zone</span></a>
-      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../../../../branding/icons/graph.svg" alt=""></span><span>Data</span></a>
-      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../../../../branding/icons/confidence-level.svg" alt=""></span><span>Settings</span></a>
+      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/home.svg" alt=""></span><span>Home</span></a>
+      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/play-hub.svg" alt=""></span><span>Hub</span></a>
+      <a class="zc-tab zc-tab-active" href="#"><span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/play-relational.svg" alt=""></span><span>Relational</span></a>
+      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/history.svg" alt=""></span><span>Progress</span></a>
+      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/settings.svg" alt=""></span><span>Settings</span></a>
     </nav>
   </div>
 
