@@ -195,124 +195,9 @@
       .splash-sub { text-align:center; }
       .session-panel-head .pill { width:100%; text-align:center; }
     }
-  
-    /* Capacity shell rebrand */
-    body.zc-rebrand {
-      min-height: 100vh;
-      background:
-        radial-gradient(920px 460px at 50% -24%, rgba(110,198,255,.24), transparent 58%),
-        linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%);
-      padding: 18px;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-    }
-    body.zc-rebrand .zoneAppShell {
-      width: min(430px, 100%);
-      min-height: calc(100vh - 36px);
-      border-radius: 38px;
-      border: 1px solid rgba(255,255,255,.20);
-      overflow: hidden;
-      background:
-        radial-gradient(700px 420px at 50% -10%, rgba(110,198,255,.18), transparent 62%),
-        linear-gradient(180deg, #081326 0%, #050e1f 45%, #031029 100%);
-      box-shadow: 0 30px 70px rgba(3,7,16,.38), inset 0 1px 0 rgba(255,255,255,.05);
-      position: relative;
-    }
-    body.zc-rebrand .tg-desktop-chrome {
-      position: relative;
-      inset: auto;
-      z-index: 4;
-    }
-    body.zc-rebrand .tg-topbar {
-      height: auto;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      background: linear-gradient(180deg, rgba(20,28,44,.92), rgba(11,18,34,.88));
-      box-shadow: none;
-    }
-    body.zc-rebrand .tg-topbar__inner {
-      min-height: 72px;
-      padding: 12px;
-      gap: 10px;
-    }
-    body.zc-rebrand .tg-topbar__pill {
-      background: #ccff66;
-      color: #09140a;
-      border-color: rgba(0,0,0,.09);
-      font-size: 10px;
-      padding: 8px 10px;
-    }
-    body.zc-rebrand .tg-topbar__back {
-      display: inline-flex;
-      margin-right: auto;
-      font-size: 11px;
-      color: #9ed3ff;
-      opacity: .92;
-    }
-    body.zc-rebrand .zoneContent {
-      padding: 12px 12px 94px;
-    }
-    body.zc-rebrand .app { width: 100%; }
-    body.zc-rebrand .card {
-      border-radius: 22px;
-      border-color: rgba(120,167,222,.22);
-      background:
-        radial-gradient(620px 300px at 50% 8%, rgba(110,198,255,.13), transparent 65%),
-        linear-gradient(180deg, rgba(255,255,255,.026), rgba(255,255,255,.01)),
-        rgba(10,22,42,.92);
-      box-shadow: 0 14px 30px rgba(2,6,15,.35), inset 0 1px 0 rgba(255,255,255,.04);
-      padding: 12px;
-    }
-    body.zc-rebrand .splash-panel,
-    body.zc-rebrand .task,
-    body.zc-rebrand .block,
-    body.zc-rebrand .metric,
-    body.zc-rebrand .splash-tile,
-    body.zc-rebrand .result-guide-card,
-    body.zc-rebrand .result-guide-goal {
-      border-color: rgba(120,167,222,.24);
-      border-radius: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.012)), rgba(13,27,50,.78);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
-    }
-    body.zc-rebrand .btn { min-height: 46px; border-radius: 14px; }
-    body.zc-rebrand .btn-primary { box-shadow: 0 0 0 1px rgba(204,255,102,.18), 0 10px 24px rgba(190,239,78,.16); }
-    body.zc-rebrand .splash-title { font-size: clamp(28px, 8vw, 36px); letter-spacing: -.02em; }
-    body.zc-rebrand .splash-kicker { color: #c3e6ff; letter-spacing: .1em; }
-    body.zc-rebrand .zc-bottom-nav {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0,1fr));
-      gap: 2px;
-      padding: 8px 8px 12px;
-      border-top: 1px solid rgba(255,255,255,.1);
-      background: linear-gradient(180deg, rgba(6,15,31,.95), rgba(4,11,24,.98));
-      z-index: 5;
-    }
-    body.zc-rebrand .zc-tab {
-      display: grid;
-      justify-items: center;
-      gap: 4px;
-      color: #9fb4d0;
-      text-decoration: none;
-      font: 700 11px/1.1 var(--iq-font, var(--font, system-ui, sans-serif));
-      padding: 6px 4px;
-      border-radius: 12px;
-      border: 1px solid transparent;
-    }
-    body.zc-rebrand .zc-tab-icon { font-size: 16px; line-height: 1; }
-    body.zc-rebrand .zc-tab-active { color: #d8e9ff; border-color: rgba(110,198,255,.36); background: rgba(110,198,255,.12); }
-    @media (max-width: 520px) {
-      body.zc-rebrand { padding: 0; }
-      body.zc-rebrand .zoneAppShell { width: 100%; min-height: 100vh; border-radius: 0; border: none; }
-      body.zc-rebrand .zoneContent { padding: 10px 10px 92px; }
-    }
   </style>
 </head>
-<body class="zc-rebrand">
+<body>
   <div class="screen zoneAppShell appShellTopband">
     <header class="tg-desktop-chrome" aria-hidden="true">
       <div class="tg-topbar">
@@ -461,13 +346,6 @@
     </div>
   </div>
     </main>
-    <nav class="zc-bottom-nav" aria-label="Zone Coach navigation preview">
-      <a class="zc-tab" href="#"><span class="zc-tab-icon">&#8962;</span><span>Home</span></a>
-      <a class="zc-tab" href="#"><span class="zc-tab-icon">&#8635;</span><span>Run</span></a>
-      <a class="zc-tab zc-tab-active" href="#"><span class="zc-tab-icon">&#9679;</span><span>Zone</span></a>
-      <a class="zc-tab" href="#"><span class="zc-tab-icon">&#128200;</span><span>Data</span></a>
-      <a class="zc-tab" href="#"><span class="zc-tab-icon">&#9881;</span><span>Settings</span></a>
-    </nav>
   </div>
 
   <script src="../shared-ui/entitlements-client.js"></script>
@@ -1920,8 +1798,7 @@
     button:hover { filter: brightness(1.04); border-color: rgba(255,255,255,.18); }
     button:active { transform: translateY(1px); }
     button:focus-visible { outline: none; box-shadow: var(--zc-focus-ring); }
-  
-    </style>
+  </style>
 </head>
 <body>
   <div class="wrap">

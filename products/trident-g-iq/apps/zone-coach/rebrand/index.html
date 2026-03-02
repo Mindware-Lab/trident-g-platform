@@ -196,7 +196,7 @@
       .session-panel-head .pill { width:100%; text-align:center; }
     }
   
-    /* Capacity shell rebrand */
+    /* Rebrand preview: Capacity Gym style mobile shell */
     body.zc-rebrand {
       min-height: 100vh;
       background:
@@ -252,7 +252,9 @@
     body.zc-rebrand .zoneContent {
       padding: 12px 12px 94px;
     }
-    body.zc-rebrand .app { width: 100%; }
+    body.zc-rebrand .app {
+      width: 100%;
+    }
     body.zc-rebrand .card {
       border-radius: 22px;
       border-color: rgba(120,167,222,.22);
@@ -272,13 +274,26 @@
     body.zc-rebrand .result-guide-goal {
       border-color: rgba(120,167,222,.24);
       border-radius: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.012)), rgba(13,27,50,.78);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.012)),
+        rgba(13,27,50,.78);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
     }
-    body.zc-rebrand .btn { min-height: 46px; border-radius: 14px; }
-    body.zc-rebrand .btn-primary { box-shadow: 0 0 0 1px rgba(204,255,102,.18), 0 10px 24px rgba(190,239,78,.16); }
-    body.zc-rebrand .splash-title { font-size: clamp(28px, 8vw, 36px); letter-spacing: -.02em; }
-    body.zc-rebrand .splash-kicker { color: #c3e6ff; letter-spacing: .1em; }
+    body.zc-rebrand .btn {
+      min-height: 46px;
+      border-radius: 14px;
+    }
+    body.zc-rebrand .btn-primary {
+      box-shadow: 0 0 0 1px rgba(204,255,102,.18), 0 10px 24px rgba(190,239,78,.16);
+    }
+    body.zc-rebrand .splash-title {
+      font-size: clamp(28px, 8vw, 36px);
+      letter-spacing: -.02em;
+    }
+    body.zc-rebrand .splash-kicker {
+      color: #c3e6ff;
+      letter-spacing: .1em;
+    }
     body.zc-rebrand .zc-bottom-nav {
       position: absolute;
       left: 0;
@@ -303,12 +318,28 @@
       border-radius: 12px;
       border: 1px solid transparent;
     }
-    body.zc-rebrand .zc-tab-icon { font-size: 16px; line-height: 1; }
-    body.zc-rebrand .zc-tab-active { color: #d8e9ff; border-color: rgba(110,198,255,.36); background: rgba(110,198,255,.12); }
+    body.zc-rebrand .zc-tab-icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+    body.zc-rebrand .zc-tab-active {
+      color: #d8e9ff;
+      border-color: rgba(110,198,255,.36);
+      background: rgba(110,198,255,.12);
+    }
     @media (max-width: 520px) {
-      body.zc-rebrand { padding: 0; }
-      body.zc-rebrand .zoneAppShell { width: 100%; min-height: 100vh; border-radius: 0; border: none; }
-      body.zc-rebrand .zoneContent { padding: 10px 10px 92px; }
+      body.zc-rebrand {
+        padding: 0;
+      }
+      body.zc-rebrand .zoneAppShell {
+        width: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+        border: none;
+      }
+      body.zc-rebrand .zoneContent {
+        padding: 10px 10px 92px;
+      }
     }
   </style>
 </head>

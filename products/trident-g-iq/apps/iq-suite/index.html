@@ -62,6 +62,121 @@
     .suite-back {
       margin-top: 10px;
     }
+    body.suite-rebrand {
+      min-height: 100vh;
+      background:
+        radial-gradient(920px 460px at 50% -24%, rgba(110,198,255,.24), transparent 58%),
+        linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%);
+      padding: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    body.suite-rebrand .suite-shell {
+      width: min(430px, 100%);
+      min-height: calc(100vh - 36px);
+      border-radius: 38px;
+      border: 1px solid rgba(255,255,255,.2);
+      overflow: hidden;
+      background:
+        radial-gradient(700px 420px at 50% -10%, rgba(110,198,255,.18), transparent 62%),
+        linear-gradient(180deg, #081326 0%, #050e1f 45%, #031029 100%);
+      box-shadow: 0 30px 70px rgba(3,7,16,.38), inset 0 1px 0 rgba(255,255,255,.05);
+      position: relative;
+    }
+    body.suite-rebrand .tg-desktop-chrome {
+      position: relative;
+      inset: auto;
+      z-index: 4;
+    }
+    body.suite-rebrand .tg-topbar {
+      height: auto;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(20,28,44,.92), rgba(11,18,34,.88));
+      box-shadow: none;
+    }
+    body.suite-rebrand .tg-topbar__inner {
+      min-height: 72px;
+      padding: 12px;
+      gap: 10px;
+      justify-content: space-between;
+    }
+    body.suite-rebrand .tg-topbar__pill {
+      background: #ccff66;
+      color: #09140a;
+      border-color: rgba(0,0,0,.09);
+      font-size: 10px;
+      padding: 8px 10px;
+    }
+    body.suite-rebrand .ui-screen {
+      min-height: auto;
+      padding-top: 0;
+    }
+    body.suite-rebrand .ui-content {
+      width: 100%;
+      padding: 12px 12px 94px;
+    }
+    body.suite-rebrand .ui-card {
+      border-radius: 22px;
+      border-color: rgba(120,167,222,.22);
+      background:
+        radial-gradient(620px 300px at 50% 8%, rgba(110,198,255,.13), transparent 65%),
+        linear-gradient(180deg, rgba(255,255,255,.026), rgba(255,255,255,.01)),
+        rgba(10,22,42,.92);
+      box-shadow: 0 14px 30px rgba(2,6,15,.35), inset 0 1px 0 rgba(255,255,255,.04);
+      padding: 12px;
+    }
+    body.suite-rebrand .suite-title {
+      font-size: clamp(32px, 8vw, 44px);
+    }
+    body.suite-rebrand .suite-subtitle {
+      font-size: 0.98rem;
+    }
+    body.suite-rebrand .suite-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    body.suite-rebrand .suite-app {
+      min-height: 148px;
+      border-radius: 16px;
+    }
+    body.suite-rebrand .ui-btn {
+      min-height: 46px;
+      border-radius: 14px;
+    }
+    body.suite-rebrand .suite-bottom-nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 2px;
+      padding: 8px 8px 12px;
+      border-top: 1px solid rgba(255,255,255,.1);
+      background: linear-gradient(180deg, rgba(6,15,31,.95), rgba(4,11,24,.98));
+      z-index: 5;
+    }
+    body.suite-rebrand .suite-tab {
+      display: grid;
+      justify-items: center;
+      gap: 4px;
+      color: #9fb4d0;
+      text-decoration: none;
+      font: 700 11px/1.1 var(--iq-font);
+      padding: 6px 4px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+    }
+    body.suite-rebrand .suite-tab-icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+    body.suite-rebrand .suite-tab-active {
+      color: #d8e9ff;
+      border-color: rgba(110,198,255,.36);
+      background: rgba(110,198,255,.12);
+    }
     @media (max-width: 820px) {
       .suite-grid {
         grid-template-columns: 1fr;
@@ -70,50 +185,73 @@
         padding: 12px;
       }
     }
+    @media (max-width: 520px) {
+      body.suite-rebrand {
+        padding: 0;
+      }
+      body.suite-rebrand .suite-shell {
+        width: 100%;
+        min-height: 100vh;
+        border-radius: 0;
+        border: none;
+      }
+      body.suite-rebrand .ui-content {
+        padding: 10px 10px 92px;
+      }
+    }
   </style>
 </head>
-<body>
-  <header class="tg-desktop-chrome" aria-hidden="true">
-    <div class="tg-topbar">
-      <div class="tg-topbar__inner">
-        <span class="tg-topbar__icon"><img src="../../../../branding/Trident-G-Icon.svg" alt=""></span>
-        <span class="tg-topbar__pill">Trident G - IQ</span>
+<body class="suite-rebrand">
+  <div class="suite-shell">
+    <header class="tg-desktop-chrome" aria-hidden="true">
+      <div class="tg-topbar">
+        <div class="tg-topbar__inner">
+          <span class="tg-topbar__icon"><img src="../../../../branding/Trident-G-Icon.svg" alt=""></span>
+          <span class="tg-topbar__pill">Trident G - IQ</span>
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main class="ui-screen">
-    <section class="ui-content">
-      <article class="ui-card">
-        <h1 class="suite-title">IQ Suite Launcher</h1>
-        <p class="suite-subtitle">Canonical launcher route: <code>apps/iq-suite/index.html</code>. This page passes context to apps using query params and preserves return context.</p>
-        <div id="bundleContext" class="ui-notice" style="margin-top:12px; display:none;"></div>
-        <div id="activationContext" class="ui-notice" style="margin-top:12px; display:none;"></div>
-        <div class="ui-row" style="margin-top:10px;">
-          <button id="resetActivationBtn" class="ui-btn ui-btn-ghost" type="button">Reset activation on this device</button>
+    <main class="ui-screen">
+      <section class="ui-content">
+        <article class="ui-card">
+          <h1 class="suite-title">IQ Suite Launcher</h1>
+          <p class="suite-subtitle">Canonical launcher route: <code>apps/iq-suite/index.html</code>. This page passes context to apps using query params and preserves return context.</p>
+          <div id="bundleContext" class="ui-notice" style="margin-top:12px; display:none;"></div>
+          <div id="activationContext" class="ui-notice" style="margin-top:12px; display:none;"></div>
+          <div class="ui-row" style="margin-top:10px;">
+            <button id="resetActivationBtn" class="ui-btn ui-btn-ghost" type="button">Reset activation on this device</button>
+          </div>
+          <div class="suite-grid" id="suiteGrid"></div>
+          <p class="suite-foot">Phase 1 wiring: server entitlements are authoritative when configured; device activation is fallback.</p>
+        </article>
+        <article class="ui-card" style="margin-top:10px;">
+          <h2 class="ui-title" style="font-size:1rem;">Phase 1 Entitlement Config (Dev)</h2>
+          <p class="ui-text">Set endpoint URLs and bearer token for server entitlements and event logging.</p>
+          <div class="ui-row" style="margin-top:10px;">
+            <input id="entEndpointInput" class="ui-input" type="text" placeholder="Entitlements endpoint URL">
+            <input id="eventsEndpointInput" class="ui-input" type="text" placeholder="Events endpoint URL">
+            <input id="entTokenInput" class="ui-input" type="password" placeholder="Bearer token">
+          </div>
+          <div class="ui-row" style="margin-top:10px;">
+            <button id="saveEntConfigBtn" class="ui-btn ui-btn-info" type="button">Save auth config</button>
+            <button id="clearEntConfigBtn" class="ui-btn ui-btn-ghost" type="button">Clear auth config</button>
+          </div>
+          <p class="suite-foot">Stored locally in <code>iqmw.auth.config.v1</code>.</p>
+        </article>
+        <div class="suite-back">
+          <a class="ui-link" href="../../index.html">Back to product root</a>
         </div>
-        <div class="suite-grid" id="suiteGrid"></div>
-        <p class="suite-foot">Phase 1 wiring: server entitlements are authoritative when configured; device activation is fallback.</p>
-      </article>
-      <article class="ui-card" style="margin-top:10px;">
-        <h2 class="ui-title" style="font-size:1rem;">Phase 1 Entitlement Config (Dev)</h2>
-        <p class="ui-text">Set endpoint URLs and bearer token for server entitlements and event logging.</p>
-        <div class="ui-row" style="margin-top:10px;">
-          <input id="entEndpointInput" class="ui-input" type="text" placeholder="Entitlements endpoint URL">
-          <input id="eventsEndpointInput" class="ui-input" type="text" placeholder="Events endpoint URL">
-          <input id="entTokenInput" class="ui-input" type="password" placeholder="Bearer token">
-        </div>
-        <div class="ui-row" style="margin-top:10px;">
-          <button id="saveEntConfigBtn" class="ui-btn ui-btn-info" type="button">Save auth config</button>
-          <button id="clearEntConfigBtn" class="ui-btn ui-btn-ghost" type="button">Clear auth config</button>
-        </div>
-        <p class="suite-foot">Stored locally in <code>iqmw.auth.config.v1</code>.</p>
-      </article>
-      <div class="suite-back">
-        <a class="ui-link" href="../../index.html">Back to product root</a>
-      </div>
-    </section>
-  </main>
+      </section>
+    </main>
+    <nav class="suite-bottom-nav" aria-label="Suite navigation preview">
+      <a class="suite-tab suite-tab-active" href="#"><span class="suite-tab-icon">&#8962;</span><span>Home</span></a>
+      <a class="suite-tab" href="#"><span class="suite-tab-icon">&#9673;</span><span>Zone</span></a>
+      <a class="suite-tab" href="#"><span class="suite-tab-icon">&#9679;</span><span>Gym</span></a>
+      <a class="suite-tab" href="#"><span class="suite-tab-icon">&#128200;</span><span>Data</span></a>
+      <a class="suite-tab" href="#"><span class="suite-tab-icon">&#9881;</span><span>Settings</span></a>
+    </nav>
+  </div>
 
   <script src="../shared-ui/entitlements-client.js"></script>
   <script src="../shared-ui/activation-gate.js"></script>
