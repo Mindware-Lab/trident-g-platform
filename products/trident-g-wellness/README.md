@@ -27,7 +27,7 @@
 
 ### Positioning
 
-“Prevent bad-state work, reduce state drift, and keep performance consistent.”
+Catch burnout drift early and protect your best work. Zone Coach helps you spot when you’re in a good state for deep work, and when you need a short reset or a lighter block so you don’t waste hours pushing in the wrong state.
 
 ### Onboarding (what you ask)
 
@@ -69,7 +69,7 @@ Add a “meeting-safe” option:
 
 ### Positioning
 
-“Maintain cognitive stability, speed of recovery, and long-term brain health habits.”
+Support your memory and keep your brain engaged.Zone Coach helps you choose the best daily mix of learning, exercise and recovery.More confidence in your mental clarity. Zone Coach helps you track your day-to-day cognitive stability and gives simple next steps to protect attention, reduce drift, and keep your brain healthy. 
 
 ### Onboarding
 
