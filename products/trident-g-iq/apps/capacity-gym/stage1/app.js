@@ -1377,6 +1377,9 @@ function renderHome(state) {
         ${missionSteps}
         <p class="hint">${mission.rewardClaimed ? "Mission reward claimed for today." : "Complete mission to earn +3 bank units."}</p>
       </div>
+      <div class="row help-action-row">
+        ${renderHelpButton("training-progression", "How to progress through training")}
+      </div>
       <div class="row home-primary-row">
         <button class="btn primary home-primary-btn" data-action="go-play-hub" data-wrapper="hub_cat">
           <img class="btn-inline-icon btn-inline-icon-lg" src="../brandingUI/icons/tab-bar/play-hub.svg" alt="" aria-hidden="true">
