@@ -236,38 +236,71 @@
       position: relative;
       z-index: 1;
     }
-    body.zc-rebrand .tg-desktop-chrome {
-      position: relative;
-      inset: auto;
-      z-index: 4;
+    body.zc-rebrand .zoneAppShell::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 132px;
+      height: 20px;
+      border-radius: 0 0 16px 16px;
+      background: rgba(6,12,23,.95);
+      z-index: 3;
+      pointer-events: none;
     }
-    body.zc-rebrand .tg-topbar {
-      height: auto;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      background: linear-gradient(180deg, rgba(20,28,44,.92), rgba(11,18,34,.88));
-      box-shadow: none;
+    body.zc-rebrand .tg-desktop-chrome { display: none; }
+    body.zc-rebrand .zoneContent { padding: 16px 12px 94px; }
+    body.zc-rebrand .zc-brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding: 4px 2px 2px;
     }
-    body.zc-rebrand .tg-topbar__inner {
-      min-height: 72px;
-      padding: 12px;
+    body.zc-rebrand .zc-brand-left {
+      display: inline-flex;
+      align-items: center;
       gap: 10px;
     }
-    body.zc-rebrand .tg-topbar__pill {
-      background: #ccff66;
-      color: #09140a;
-      border-color: rgba(0,0,0,.09);
-      font-size: 10px;
-      padding: 8px 10px;
-    }
-    body.zc-rebrand .tg-topbar__back {
+    body.zc-rebrand .zc-brand-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      border: 1px solid rgba(110,198,255,.22);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)), rgba(15,18,26,.94);
       display: inline-flex;
-      margin-right: auto;
-      font-size: 11px;
-      color: #9ed3ff;
-      opacity: .92;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+      overflow: hidden;
+      flex-shrink: 0;
     }
-    body.zc-rebrand .zoneContent {
-      padding: 12px 12px 94px;
+    body.zc-rebrand .zc-brand-icon img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      display: block;
+    }
+    body.zc-rebrand .zc-brand-pill {
+      border-radius: 999px;
+      background: #ccff66;
+      color: #0b1a0b;
+      border: 1px solid rgba(0,0,0,.08);
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    body.zc-rebrand .zc-suite-back {
+      color: #9ed3ff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      opacity: .94;
     }
     body.zc-rebrand .app { width: 100%; }
     body.zc-rebrand .card {
@@ -354,21 +387,20 @@
       body.zc-rebrand { padding: 0; }
       body.zc-rebrand .zoneAppShell { width: 100%; min-height: 100vh; border-radius: 0; border: none; }
       body.zc-rebrand .zoneContent { padding: 10px 10px 92px; }
+      body.zc-rebrand .zoneAppShell::after { display: none; }
     }
   </style>
 </head>
 <body class="zc-rebrand">
   <div class="screen zoneAppShell appShellTopband">
-    <header class="tg-desktop-chrome" aria-hidden="true">
-      <div class="tg-topbar">
-        <div class="tg-topbar__inner">
-          <span class="tg-topbar__icon"><img class="appIcon" src="../../../../branding/Trident-G-Icon.svg" alt="" /></span>
-          <a id="suiteBackLink" class="tg-topbar__back" href="../iq-suite/index.html">Back to Suite</a>
-          <span class="tg-topbar__pill">Trident G - IQ</span>
+<main class="content zoneContent">
+      <div class="zc-brand-row" aria-label="Zone Coach branding">
+        <div class="zc-brand-left">
+          <span class="zc-brand-icon"><img class="appIcon" src="../../../../branding/Trident-G-Icon.svg" alt="" /></span>
+          <a id="suiteBackLink" class="zc-suite-back" href="../iq-suite/index.html">Back to Suite</a>
         </div>
+        <span class="zc-brand-pill">Trident G - IQ</span>
       </div>
-    </header>
-    <main class="content zoneContent">
   <div class="app">
     <div class="top hidden" aria-hidden="true">
       <div class="row">
