@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IQ Suite Launcher</title>
+  <link rel="stylesheet" href="../shared-ui/tokens.css">
+  <link rel="stylesheet" href="../shared-ui/shell.css">
+  <link rel="stylesheet" href="../shared-ui/components.css">
+  <style>
+    .suite-title {
+      font-size: clamp(26px, 4vw, 34px);
+      font-weight: 900;
+      margin: 0;
+      letter-spacing: -0.03em;
+    }
+    .suite-subtitle {
+      margin: 8px 0 0 0;
+      color: var(--iq-text-muted);
+      line-height: 1.45;
+    }
+    .suite-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .suite-app {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+      min-height: 190px;
+    }
+    .suite-app-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .suite-icon {
+      width: 34px;
+      height: 34px;
+      color: var(--iq-primary);
+      filter: drop-shadow(0 0 8px rgba(204, 255, 102, 0.35));
+      flex-shrink: 0;
+    }
+    .suite-app h3 {
+      margin: 0;
+      font-size: 1.02rem;
+      line-height: 1.2;
+    }
+    .suite-app p {
+      margin: 0;
+      color: var(--iq-text-muted);
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    .suite-foot {
+      margin-top: 12px;
+      color: var(--iq-text-quiet);
+      font-size: 0.82rem;
+    }
+    .suite-back {
+      margin-top: 10px;
+    }
+    @media (max-width: 820px) {
+      .suite-grid {
+        grid-template-columns: 1fr;
+      }
+      .ui-content {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="tg-desktop-chrome" aria-hidden="true">
+    <div class="tg-topbar">
+      <div class="tg-topbar__inner">
+        <span class="tg-topbar__icon"><img src="../../../../branding/Trident-G-Icon.svg" alt=""></span>
+        <span class="tg-topbar__pill">Trident G - IQ</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="ui-screen">
+    <section class="ui-content">
+      <article class="ui-card">
+        <h1 class="suite-title">IQ Suite Launcher</h1>
+        <p class="suite-subtitle">Canonical launcher route: <code>apps/iq-suite/index.html</code>. This page passes context to apps using query params and preserves return context.</p>
+        <div id="bundleContext" class="ui-notice" style="margin-top:12px; display:none;"></div>
+        <div class="suite-grid" id="suiteGrid"></div>
+        <p class="suite-foot">Phase 0 mode: explore-ready launcher with context-aware deep links.</p>
+      </article>
+      <div class="suite-back">
+        <a class="ui-link" href="../../index.html">Back to product root</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const APP_REGISTRY_FALLBACK = [
+      { appId: "zone_coach", label: "Zone Coach", route: "../zone-coach/", iconRef: "iq-icon-zone", category: "readiness" },
+      { appId: "capacity_gym", label: "Capacity Gym", route: "../capacity-gym/", iconRef: "iq-icon-capacity", category: "training" },
+      { appId: "g_tracker", label: "G Tracker", route: "../g-tracker/", iconRef: "iq-icon-tracker", category: "assessment" }
+    ];
+
+    const BUNDLE_MANIFESTS_FALLBACK = [
+      { bundleId: "performance_bundle", label: "Performance Bundle", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] }
+    ];
+
+    async function loadJson(path, fallback) {
+      try {
+        const response = await fetch(path, { cache: "no-store" });
+        if (!response.ok) {
+          return fallback;
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : fallback;
+      } catch (_) {
+        return fallback;
+      }
+    }
+
+    function buildLaunchUrl(route, appId) {
+      const params = new URLSearchParams(window.location.search);
+      params.set("from", "iq-suite");
+      params.set("entryAppId", appId);
+      const url = new URL(route, window.location.href);
+      url.search = params.toString();
+      return url.toString();
+    }
+
+    function renderBundleContext(bundleId, bundleManifests) {
+      const contextEl = document.getElementById("bundleContext");
+      if (!bundleId || !contextEl) {
+        return;
+      }
+      const bundle = bundleManifests.find((item) => item.bundleId === bundleId);
+      const label = bundle && bundle.label ? bundle.label : bundleId;
+      contextEl.textContent = `Bundle context active: ${label}`;
+      contextEl.style.display = "block";
+    }
+
+    function renderApps(apps, bundleId, bundleManifests) {
+      const gridEl = document.getElementById("suiteGrid");
+      if (!gridEl) {
+        return;
+      }
+      const bundle = bundleManifests.find((item) => item.bundleId === bundleId);
+      const includedSet = new Set(Array.isArray(bundle && bundle.includedAppIds) ? bundle.includedAppIds : []);
+      const showBundleHints = Boolean(bundleId);
+      gridEl.innerHTML = apps.map((app) => {
+        const inBundle = includedSet.has(app.appId);
+        const bundleChip = showBundleHints
+          ? `<span class="ui-chip ${inBundle ? "ui-chip-primary" : "ui-chip-info"}">${inBundle ? "Included in bundle" : "Outside bundle scope"}</span>`
+          : "";
+        return `
+          <article class="ui-card suite-app">
+            <header class="suite-app-head">
+              <svg class="suite-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="../shared-ui/icons.svg#${app.iconRef}"></use></svg>
+              <h3>${app.label}</h3>
+            </header>
+            <p>${app.category}</p>
+            <div class="ui-row">
+              ${bundleChip}
+            </div>
+            <a class="ui-btn ui-btn-primary" href="${buildLaunchUrl(app.route, app.appId)}">Open ${app.label}</a>
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function init() {
+      const [apps, bundles] = await Promise.all([
+        loadJson("./app-registry.json", APP_REGISTRY_FALLBACK),
+        loadJson("./bundle-manifests.json", BUNDLE_MANIFESTS_FALLBACK)
+      ]);
+      const params = new URLSearchParams(window.location.search);
+      const bundleId = params.get("bundle") || "";
+      renderBundleContext(bundleId, bundles);
+      renderApps(apps, bundleId, bundles);
+    }
+
+    init();
+  </script>
+</body>
+</html>
+

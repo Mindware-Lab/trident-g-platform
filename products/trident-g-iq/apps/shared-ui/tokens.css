@@ -1,0 +1,30 @@
+:root {
+  color-scheme: dark;
+  --iq-page: #dfe3e8;
+  --iq-shell: #0b1118;
+  --iq-surface: rgba(15, 18, 26, 0.92);
+  --iq-surface-elevated: #1d2230;
+  --iq-surface-soft: rgba(255, 255, 255, 0.03);
+  --iq-border: rgba(255, 255, 255, 0.1);
+  --iq-border-soft: rgba(255, 255, 255, 0.07);
+  --iq-border-crisp: rgba(255, 255, 255, 0.15);
+  --iq-text: #edf0f7;
+  --iq-text-muted: #d5dceb;
+  --iq-text-label: #b7c2d6;
+  --iq-text-quiet: #93a0b4;
+  --iq-info: #6ec6ff;
+  --iq-info-strong: #4ea0e8;
+  --iq-primary: #ccff66;
+  --iq-primary-strong: #beef4e;
+  --iq-ink: #0b0b0d;
+  --iq-radius-xs: 10px;
+  --iq-radius-sm: 12px;
+  --iq-radius-md: 16px;
+  --iq-radius-xl: 20px;
+  --iq-shadow-card: 0 10px 24px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  --iq-shadow-info: 0 0 0 1px rgba(110, 198, 255, 0.18), 0 8px 22px rgba(78, 160, 232, 0.16);
+  --iq-shadow-primary: 0 0 0 1px rgba(204, 255, 102, 0.14), 0 8px 22px rgba(190, 239, 78, 0.14);
+  --iq-focus-ring: 0 0 0 2px rgba(11, 17, 24, 0.95), 0 0 0 4px rgba(110, 198, 255, 0.8), 0 0 0 8px rgba(110, 198, 255, 0.2);
+  --iq-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+

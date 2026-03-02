@@ -4,6 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Zone Coach - MFT-M Router</title>
+  <link rel="stylesheet" href="../shared-ui/tokens.css" />
+  <link rel="stylesheet" href="../shared-ui/shell.css" />
+  <link rel="stylesheet" href="../shared-ui/components.css" />
   <link rel="stylesheet" href="../../../../branding/brand.css?v=2" />
   <style>
     :root { color-scheme: dark; }
@@ -40,6 +43,19 @@
       background: var(--lime, #CCFF66); color:#0B1A0B; border: 1px solid rgba(0,0,0,0.08);
       letter-spacing: .4px;
     }
+
+    .topbar-right { display:flex; align-items:center; gap:10px; }
+    .suite-back-link {
+      display:none;
+      color: var(--brand-info, #6ec6ff);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .02em;
+      white-space: nowrap;
+    }
+    .suite-back-link.is-visible { display:inline-flex; align-items:center; }
+
     .top { display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px; padding:12px; border:1px solid var(--zc-border); border-radius:14px; background:linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.015)), var(--zc-surface-card); box-shadow:var(--zc-shadow-card); }
     .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
     .title { font-weight: 800; }
@@ -206,7 +222,10 @@
       <div class="brandleft">
         <div class="icon"><img class="appIcon" src="../../../../branding/Trident-G-Icon.svg" alt="Trident G" /></div>
       </div>
-      <span class="chip zoneBrandChip">Trident G - IQ</span>
+      <div class="topbar-right">
+        <a id="suiteBackLink" class="suite-back-link" href="../iq-suite/index.html">Back to Suite</a>
+        <span class="chip zoneBrandChip">Trident G - IQ</span>
+      </div>
     </div>
     <main class="content zoneContent">
   <div class="app">
@@ -350,6 +369,18 @@
 
   <script>
   (() => {
+    const initSuiteBackLink = () => {
+      const link = document.querySelector("#suiteBackLink");
+      if (!link) return;
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("from") !== "iq-suite") return;
+      const suiteUrl = new URL("../iq-suite/index.html", window.location.href);
+      suiteUrl.search = window.location.search || "";
+      suiteUrl.hash = window.location.hash || "";
+      link.href = suiteUrl.toString();
+      link.classList.add("is-visible");
+    };
+    initSuiteBackLink();
     const CFG = {
       appVersion: 'mftm_router_mvp1',
       schemaVersion: 1,

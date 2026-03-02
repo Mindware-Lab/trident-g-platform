@@ -7,6 +7,9 @@
 
   <!-- Shared brand CSS (your deep blue header kit) -->
   <!-- Sync marker: 2026-02-27 -->
+  <link rel="stylesheet" href="../../shared-ui/tokens.css">
+  <link rel="stylesheet" href="../../shared-ui/shell.css">
+  <link rel="stylesheet" href="../../shared-ui/components.css">
   <link rel="stylesheet" href="/trident-g-platform/branding/brand.css">
 
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -794,12 +797,25 @@
     <div class="tg-topbar">
       <div class="tg-topbar__inner">
         <span class="tg-topbar__icon"><img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="" /></span>
+        <a id="suiteBackLink" class="tg-topbar__back" href="../../iq-suite/index.html">Back to Suite</a>
         <span class="tg-topbar__pill">Trident G - IQ</span>
       </div>
     </div>
   </header>
   <div id="root"></div>
   <script type="text/babel" data-presets="env,react">
+    (() => {
+      const link = document.querySelector("#suiteBackLink");
+      if (!link) return;
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("from") !== "iq-suite") return;
+      const suiteUrl = new URL("../../iq-suite/index.html", window.location.href);
+      suiteUrl.search = window.location.search || "";
+      suiteUrl.hash = window.location.hash || "";
+      link.href = suiteUrl.toString();
+      link.classList.add("is-visible");
+    })();
+
     const { useEffect, useMemo, useState } = React;
 
     const HUB_VERSION = "ct_hub_v3";
