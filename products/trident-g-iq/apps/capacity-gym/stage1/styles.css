@@ -1511,6 +1511,28 @@ input:disabled {
   background: rgba(255, 255, 255, 0.03);
 }
 
+.help-graphic-grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.help-graphic-tile {
+  margin: 0;
+}
+
+.help-graphic-tile .help-graphic {
+  margin-top: 0;
+}
+
+.help-graphic-caption {
+  margin-top: 6px;
+  color: var(--brand-text-dim);
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+}
+
 .help-lines {
   margin-top: 8px;
 }
@@ -1556,6 +1578,10 @@ input:disabled {
   }
 
   .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .help-graphic-grid {
     grid-template-columns: 1fr;
   }
 }

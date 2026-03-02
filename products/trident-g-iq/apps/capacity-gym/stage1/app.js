@@ -107,27 +107,49 @@ const COACH_BRIEFING_COPY = Object.freeze({
   CONSOLIDATE: "Next: Consolidation block"
 });
 const HELP_ICON_PATH = "../brandingUI/icons/status/help-information.svg";
+const HUB_MATCH_EXAMPLE_IMAGES = Object.freeze([
+  Object.freeze({
+    path: "./help-graphics/hub-colour-1back-match.svg",
+    alt: "Two displays showing a colour 1-back match.",
+    label: "COLOUR 1-back match"
+  }),
+  Object.freeze({
+    path: "./help-graphics/hub-colour-2back-match.svg",
+    alt: "Three displays showing a colour 2-back match.",
+    label: "COLOUR 2-back match"
+  }),
+  Object.freeze({
+    path: "./help-graphics/hub-location-1back-match.svg",
+    alt: "Two displays showing a location 1-back match.",
+    label: "LOCATION 1-back match"
+  }),
+  Object.freeze({
+    path: "./help-graphics/hub-location-2back-match.svg",
+    alt: "Three displays showing a location 2-back match.",
+    label: "LOCATION 2-back match"
+  })
+]);
 const HELP_TOPICS = Object.freeze({
   "hub-cat-how": {
     title: "How to Play: Hub Categorical",
-    imagePath: "./help-graphics/hub-categorical-help.svg",
-    imageAlt: "Hub categorical n-back visual example with target letter matching.",
+    images: HUB_MATCH_EXAMPLE_IMAGES,
     lines: [
       "Watch all three features: location, colour, and letter.",
       "The target feature is shown before each block.",
       "Press MATCH (or Space) only when the target repeats at n-back.",
-      "Ignore non-target changes, and do not tap on non-matches."
+      "Ignore non-target changes, and do not tap on non-matches.",
+      "Examples below show COLOUR and LOCATION matches at 1-back and 2-back."
     ]
   },
   "hub-noncat-how": {
     title: "How to Play: Hub Non-Categorical",
-    imagePath: "./help-graphics/hub-noncategorical-help.svg",
-    imageAlt: "Hub non-categorical n-back visual with abstract symbols and mapped positions.",
+    images: HUB_MATCH_EXAMPLE_IMAGES,
     lines: [
       "Same rule: respond only to target-feature n-back matches.",
       "Symbols and hues are arbitrary codes, not familiar categories.",
       "Use the first trials to lock in the current block mapping.",
-      "Press MATCH on true target matches only."
+      "Press MATCH on true target matches only.",
+      "Examples below show COLOUR and LOCATION matches at 1-back and 2-back."
     ]
   },
   "rel-transitive-how": {
@@ -2171,15 +2193,35 @@ function renderHelpOverlay() {
   if (!topic) {
     return "";
   }
-  const imagePath = typeof topic.imagePath === "string" ? topic.imagePath : "";
+  const images = Array.isArray(topic.images)
+    ? topic.images.filter((item) => item && typeof item.path === "string")
+    : [];
+  const hasGallery = images.length > 0;
+  const imagePath = !hasGallery && typeof topic.imagePath === "string" ? topic.imagePath : "";
   const imageAlt = typeof topic.imageAlt === "string" ? topic.imageAlt : topic.title;
-  const hasGraphic = Boolean(imagePath);
+  const hasGraphic = hasGallery || Boolean(imagePath);
+  const galleryMarkup = hasGallery
+    ? `
+      <div class="help-graphic-grid">
+        ${images.map((item) => {
+          const alt = typeof item.alt === "string" ? item.alt : topic.title;
+          const label = typeof item.label === "string" ? item.label : "";
+          return `
+            <figure class="help-graphic-tile">
+              <img class="help-graphic" src="${item.path}" alt="${escapeHtml(alt)}">
+              ${label ? `<figcaption class="help-graphic-caption">${escapeHtml(label)}</figcaption>` : ""}
+            </figure>
+          `;
+        }).join("")}
+      </div>
+    `
+    : (hasGraphic ? `<img class="help-graphic" src="${imagePath}" alt="${escapeHtml(imageAlt)}">` : "");
   return `
     <div class="app-overlay">
       <div class="overlay-backdrop" data-action="help-close"></div>
       <div class="overlay-card help-sheet ${hasGraphic ? "with-media" : ""}">
         <h3>${escapeHtml(topic.title)}</h3>
-        ${hasGraphic ? `<img class="help-graphic" src="${imagePath}" alt="${escapeHtml(imageAlt)}">` : ""}
+        ${galleryMarkup}
         <div class="help-lines">
           ${topic.lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
         </div>
