@@ -130,6 +130,28 @@ const HUB_MATCH_EXAMPLE_IMAGES = Object.freeze([
     label: "LOCATION 2-back match"
   })
 ]);
+const HUB_NONCAT_MATCH_EXAMPLE_IMAGES = Object.freeze([
+  Object.freeze({
+    path: "./help-graphics/hub-noncat-colour-1back-match.svg",
+    alt: "Two displays showing a non-categorical colour 1-back match.",
+    label: "COLOUR 1-back match"
+  }),
+  Object.freeze({
+    path: "./help-graphics/hub-noncat-colour-2back-match.svg",
+    alt: "Three displays showing a non-categorical colour 2-back match.",
+    label: "COLOUR 2-back match"
+  }),
+  Object.freeze({
+    path: "./help-graphics/hub-noncat-location-1back-match.svg",
+    alt: "Two displays showing a non-categorical location 1-back match.",
+    label: "LOCATION 1-back match"
+  }),
+  Object.freeze({
+    path: "./help-graphics/hub-noncat-location-2back-match.svg",
+    alt: "Three displays showing a non-categorical location 2-back match.",
+    label: "LOCATION 2-back match"
+  })
+]);
 const REL_PROPOSITIONAL_MATCH_EXAMPLES = Object.freeze([
   Object.freeze({
     path: "./help-graphics/rel-propositional-1back-match.svg",
@@ -179,8 +201,7 @@ const HELP_TOPICS = Object.freeze({
   },
   "hub-noncat-how": {
     title: "How to Play: Hub Non-Categorical",
-    imagePath: "./help-graphics/hub-noncat-help-panel.svg",
-    imageAlt: "Combined panel of four non-categorical hub match examples for colour and location at 1-back and 2-back.",
+    images: HUB_NONCAT_MATCH_EXAMPLE_IMAGES,
     lines: [
       "There are 3 features in each display: location, colour, and symbol. Keep track of the cued feature.",
       "Press MATCH (or Space) only when the feature repeats at n-back. A 1-back and 2-back match (for two different features) are shown above. Depending on performance, your N-back level could be 3, 4 or higher.",
@@ -196,7 +217,7 @@ const HELP_TOPICS = Object.freeze({
       "Surface wording can change (A > B and B < A can be the same relation).",
       "After the stream: 2 timed True/False quiz items.",
       "Quiz answers must follow from the block premise model.",
-      "Examples below show 1-back and 2-back match patterns."
+      "Examples above show 1-back and 2-back match patterns."
     ]
   },
   "rel-graph-how": {
@@ -207,7 +228,7 @@ const HELP_TOPICS = Object.freeze({
       "Node positions can move, but edge direction defines meaning.",
       "After the stream: 2 timed True/False quiz items.",
       "Quiz checks whether a directed path exists in exactly 2 steps.",
-      "Examples below show 1-back and 2-back match patterns."
+      "Examples above show 1-back and 2-back match patterns."
     ]
   },
   "rel-propositional-how": {
@@ -218,7 +239,7 @@ const HELP_TOPICS = Object.freeze({
       "Surface can be symbolic or verbal while meaning stays fixed.",
       "After the stream: 2 timed True/False quiz items.",
       "Use session premises to decide if each quiz statement is true.",
-      "Examples below show 1-back and 2-back match patterns."
+      "Examples above show 1-back and 2-back match patterns."
     ]
   },
   "hub-metrics": {
