@@ -81,6 +81,10 @@ let flash = "";
 let flashKind = "success";
 let hubSession = null;
 let relSession = null;
+let helpGraphicsPreloadScheduled = false;
+const helpGraphicsPreloadedPaths = new Set();
+const helpGraphicsPreloadRefs = [];
+const helpGraphicPreloadLinks = new Set();
 const REL_MODE_MAP = {
   transitive: transitiveMode,
   graph: graphMode,
@@ -310,6 +314,114 @@ const uiState = {
   helpTopic: null
 };
 let audioFullPreloadRequested = false;
+
+function collectTopicGraphicPaths(topic) {
+  if (!topic || typeof topic !== "object") {
+    return [];
+  }
+  const paths = [];
+  if (Array.isArray(topic.images)) {
+    for (let i = 0; i < topic.images.length; i += 1) {
+      const path = topic.images[i]?.path;
+      if (typeof path === "string" && path.trim()) {
+        paths.push(path.trim());
+      }
+    }
+  }
+  if (typeof topic.imagePath === "string" && topic.imagePath.trim()) {
+    paths.push(topic.imagePath.trim());
+  }
+  return paths;
+}
+
+function injectHelpGraphicPreloadLink(path, priority = "auto") {
+  if (
+    typeof path !== "string" ||
+    !path ||
+    helpGraphicPreloadLinks.has(path) ||
+    typeof document === "undefined" ||
+    !document.head
+  ) {
+    return;
+  }
+  helpGraphicPreloadLinks.add(path);
+  const link = document.createElement("link");
+  link.rel = "preload";
+  link.as = "image";
+  link.href = path;
+  if (priority === "high") {
+    link.fetchPriority = "high";
+  }
+  document.head.appendChild(link);
+}
+
+function preloadHelpGraphicPath(path, priority = "auto") {
+  if (typeof path !== "string" || !path) {
+    return;
+  }
+  const normalized = path.trim();
+  if (!normalized) {
+    return;
+  }
+  injectHelpGraphicPreloadLink(normalized, priority);
+  if (helpGraphicsPreloadedPaths.has(normalized)) {
+    return;
+  }
+  helpGraphicsPreloadedPaths.add(normalized);
+  const img = new Image();
+  img.decoding = "async";
+  img.loading = "eager";
+  if (priority === "high") {
+    img.fetchPriority = "high";
+  }
+  img.src = normalized;
+  if (typeof img.decode === "function") {
+    img.decode().catch(() => {});
+  }
+  helpGraphicsPreloadRefs.push(img);
+  if (helpGraphicsPreloadRefs.length > 48) {
+    helpGraphicsPreloadRefs.splice(0, helpGraphicsPreloadRefs.length - 48);
+  }
+}
+
+function preloadHelpGraphicsForTopic(topicId, priority = "auto") {
+  if (!topicId || !HELP_TOPICS[topicId]) {
+    return;
+  }
+  const paths = collectTopicGraphicPaths(HELP_TOPICS[topicId]);
+  for (let i = 0; i < paths.length; i += 1) {
+    preloadHelpGraphicPath(paths[i], priority);
+  }
+}
+
+function preloadCriticalHelpGraphics() {
+  const priorityTopics = [
+    "rel-transitive-how",
+    "rel-graph-how",
+    "rel-propositional-how"
+  ];
+  for (let i = 0; i < priorityTopics.length; i += 1) {
+    preloadHelpGraphicsForTopic(priorityTopics[i], "high");
+  }
+}
+
+function scheduleHelpGraphicsPreload() {
+  if (helpGraphicsPreloadScheduled) {
+    return;
+  }
+  helpGraphicsPreloadScheduled = true;
+  preloadCriticalHelpGraphics();
+  const run = () => {
+    const allPaths = [];
+    for (const topic of Object.values(HELP_TOPICS)) {
+      allPaths.push(...collectTopicGraphicPaths(topic));
+    }
+    allPaths.forEach((path) => preloadHelpGraphicPath(path));
+  };
+  window.setTimeout(run, 120);
+}
+
+scheduleHelpGraphicsPreload();
 
 function pad2(value) {
   return String(value).padStart(2, "0");
@@ -787,6 +899,7 @@ function openHelpOverlay(topic) {
   if (!topic || !HELP_TOPICS[topic]) {
     return;
   }
+  preloadHelpGraphicsForTopic(topic, "high");
   uiState.helpTopic = topic;
   uiState.activeOverlay = "help";
   uiState.overlayCanTapDismiss = true;
@@ -2420,14 +2533,14 @@ function renderHelpOverlay() {
           const label = typeof item.label === "string" ? item.label : "";
           return `
             <figure class="help-graphic-tile">
-              <img class="help-graphic" src="${item.path}" alt="${escapeHtml(alt)}">
+              <img class="help-graphic" src="${item.path}" alt="${escapeHtml(alt)}" loading="eager" decoding="sync" fetchpriority="high">
               ${label ? `<figcaption class="help-graphic-caption">${escapeHtml(label)}</figcaption>` : ""}
             </figure>
           `;
         }).join("")}
       </div>
     `
-    : (hasGraphic ? `<img class="help-graphic" src="${imagePath}" alt="${escapeHtml(imageAlt)}">` : "");
+    : (hasGraphic ? `<img class="help-graphic" src="${imagePath}" alt="${escapeHtml(imageAlt)}" loading="eager" decoding="sync" fetchpriority="high">` : "");
   return `
     <div class="app-overlay">
       <div class="overlay-backdrop" data-action="help-close"></div>
