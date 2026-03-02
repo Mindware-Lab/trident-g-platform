@@ -171,11 +171,10 @@ const HELP_TOPICS = Object.freeze({
     title: "How to Play: Hub Categorical",
     images: HUB_MATCH_EXAMPLE_IMAGES,
     lines: [
-      "Watch all three features: location, colour, and letter.",
-      "The target feature is shown before each block.",
-      "Press MATCH (or Space) only when the target repeats at n-back.",
+      "There are 3 features in each display: location, colour, and letter. Keep track of the cued feature.",
+      "Press MATCH (or Space) only when the target repeats at n-back. A 1-back and 2-back match (for two different features) are shown above. Depending on performance, your N-back level could be 3, 4 or higher.",
       "Ignore non-target changes, and do not tap on non-matches.",
-      "Examples below show COLOUR and LOCATION matches at 1-back and 2-back."
+      "You need to reach a consistent 3-back level in this and the non-categorical variation of this game to unlock the relational n-back games."
     ]
   },
   "hub-noncat-how": {
