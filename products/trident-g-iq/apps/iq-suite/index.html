@@ -71,21 +71,21 @@
       background:
         radial-gradient(920px 460px at 50% -24%, rgba(110,198,255,.24), transparent 58%),
         linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%);
-      padding: 18px;
+      padding: 16px 14px 24px;
       display: flex;
       justify-content: center;
       align-items: flex-start;
     }
     body.suite-rebrand .suite-shell {
-      width: min(560px, 100%);
+      width: min(470px, calc(100% - 12px));
       min-height: calc(100vh - 36px);
-      border-radius: 38px;
-      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 42px;
+      border: 1.5px solid rgba(255,255,255,.45);
       overflow: hidden;
       background:
         radial-gradient(700px 420px at 50% -10%, rgba(110,198,255,.18), transparent 62%),
         linear-gradient(180deg, #081326 0%, #050e1f 45%, #031029 100%);
-      box-shadow: 0 30px 70px rgba(3,7,16,.38), inset 0 1px 0 rgba(255,255,255,.05);
+      box-shadow: 0 22px 44px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08);
       position: relative;
     }
     body.suite-rebrand .suite-shell::before {
@@ -95,37 +95,29 @@
       background:
         radial-gradient(460px 460px at 50% -15%, rgba(255,255,255,.18), transparent 62%),
         linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(221,234,248,.38) 47%, rgba(130,154,181,.32) 50%, rgba(221,234,248,.34) 53%, rgba(255,255,255,0) 100%);
-      opacity: .52;
+      opacity: .56;
       pointer-events: none;
       z-index: 0;
+    }
+    body.suite-rebrand .suite-shell::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 132px;
+      height: 20px;
+      border-radius: 0 0 16px 16px;
+      background: rgba(6, 12, 23, 0.95);
+      z-index: 3;
+      pointer-events: none;
     }
     body.suite-rebrand .suite-shell > * {
       position: relative;
       z-index: 1;
     }
     body.suite-rebrand .tg-desktop-chrome {
-      position: relative;
-      inset: auto;
-      z-index: 4;
-    }
-    body.suite-rebrand .tg-topbar {
-      height: auto;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      background: linear-gradient(180deg, rgba(20,28,44,.92), rgba(11,18,34,.88));
-      box-shadow: none;
-    }
-    body.suite-rebrand .tg-topbar__inner {
-      min-height: 72px;
-      padding: 12px;
-      gap: 10px;
-      justify-content: space-between;
-    }
-    body.suite-rebrand .tg-topbar__pill {
-      background: #ccff66;
-      color: #09140a;
-      border-color: rgba(0,0,0,.09);
-      font-size: 10px;
-      padding: 8px 10px;
+      display: none;
     }
     body.suite-rebrand .ui-screen {
       min-height: auto;
@@ -133,7 +125,46 @@
     }
     body.suite-rebrand .ui-content {
       width: 100%;
-      padding: 12px 12px 94px;
+      padding: 16px 12px 94px;
+    }
+    body.suite-rebrand .suite-brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding: 4px 2px 2px;
+    }
+    body.suite-rebrand .suite-brand-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      border: 1px solid rgba(110,198,255,.22);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)), rgba(15,18,26,.94);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    body.suite-rebrand .suite-brand-icon img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      display: block;
+    }
+    body.suite-rebrand .suite-brand-pill {
+      border-radius: 999px;
+      background: var(--iq-primary);
+      color: #0b1a0b;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
     }
     body.suite-rebrand .ui-card {
       border-radius: 22px;
@@ -227,6 +258,9 @@
       body.suite-rebrand .ui-content {
         padding: 10px 10px 92px;
       }
+      body.suite-rebrand .suite-shell::after {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -243,6 +277,10 @@
 
     <main class="ui-screen">
       <section class="ui-content">
+        <div class="suite-brand-row" aria-label="Suite branding">
+          <span class="suite-brand-icon"><img src="../../../../branding/Trident-G-Icon.svg" alt=""></span>
+          <span class="suite-brand-pill">Trident G - IQ</span>
+        </div>
         <article class="ui-card">
           <h1 class="suite-title">IQ Suite Launcher</h1>
           <p class="suite-subtitle">Canonical launcher route: <code>apps/iq-suite/index.html</code>. This page passes context to apps using query params and preserves return context.</p>
