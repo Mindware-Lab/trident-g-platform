@@ -93,7 +93,20 @@
           <button id="resetActivationBtn" class="ui-btn ui-btn-ghost" type="button">Reset activation on this device</button>
         </div>
         <div class="suite-grid" id="suiteGrid"></div>
-        <p class="suite-foot">Phase 0.5 mode: bundled paid apps require device activation; outside-bundle apps remain browseable.</p>
+        <p class="suite-foot">Phase 1 wiring: server entitlements are authoritative when configured; device activation is fallback.</p>
+      </article>
+      <article class="ui-card" style="margin-top:10px;">
+        <h2 class="ui-title" style="font-size:1rem;">Phase 1 Entitlement Config (Dev)</h2>
+        <p class="ui-text">Set your entitlement endpoint and bearer token for server-truth access checks.</p>
+        <div class="ui-row" style="margin-top:10px;">
+          <input id="entEndpointInput" class="ui-input" type="text" placeholder="Entitlements endpoint URL">
+          <input id="entTokenInput" class="ui-input" type="password" placeholder="Bearer token">
+        </div>
+        <div class="ui-row" style="margin-top:10px;">
+          <button id="saveEntConfigBtn" class="ui-btn ui-btn-info" type="button">Save auth config</button>
+          <button id="clearEntConfigBtn" class="ui-btn ui-btn-ghost" type="button">Clear auth config</button>
+        </div>
+        <p class="suite-foot">Stored locally in <code>iqmw.auth.config.v1</code>.</p>
       </article>
       <div class="suite-back">
         <a class="ui-link" href="../../index.html">Back to product root</a>
@@ -101,6 +114,7 @@
     </section>
   </main>
 
+  <script src="../shared-ui/entitlements-client.js"></script>
   <script src="../shared-ui/activation-gate.js"></script>
   <script>
     const APP_REGISTRY_FALLBACK = [
@@ -146,7 +160,7 @@
       contextEl.style.display = "block";
     }
 
-    function renderActivationContext(bundleId, activation, bundleManifests) {
+    function renderActivationContext(bundleId, access, bundleManifests) {
       const activationEl = document.getElementById("activationContext");
       if (!activationEl) {
         return;
@@ -156,20 +170,28 @@
         activationEl.textContent = "";
         return;
       }
-      if (!activation || activation.isActive !== true || !activation.bundleId) {
+      if (access.mode === "server") {
         activationEl.style.display = "block";
-        activationEl.className = "ui-notice ui-lock";
-        activationEl.textContent = "Activation required for bundled paid apps. Browse mode remains available for non-bundled apps.";
+        activationEl.className = "ui-notice";
+        activationEl.textContent = "Server entitlement mode active. Access is controlled by account entitlements.";
         return;
       }
-      const bundle = bundleManifests.find((item) => item.bundleId === activation.bundleId);
-      const label = bundle && bundle.label ? bundle.label : activation.bundleId;
+      if (!access.activation || access.activation.isActive !== true || !access.activation.bundleId) {
+        activationEl.style.display = "block";
+        activationEl.className = "ui-notice ui-lock";
+        activationEl.textContent = access.serverConfigured
+          ? "Entitlement fetch unavailable. Activation fallback is enabled for bundled apps."
+          : "Activation required for bundled paid apps. Browse mode remains available for non-bundled apps.";
+        return;
+      }
+      const bundle = bundleManifests.find((item) => item.bundleId === access.activation.bundleId);
+      const label = bundle && bundle.label ? bundle.label : access.activation.bundleId;
       activationEl.style.display = "block";
       activationEl.className = "ui-notice";
       activationEl.textContent = `Activated on this device: ${label}.`;
     }
 
-    function renderApps(apps, bundleId, bundleManifests, activation) {
+    function renderApps(apps, bundleId, bundleManifests, access) {
       const gridEl = document.getElementById("suiteGrid");
       if (!gridEl) {
         return;
@@ -177,9 +199,7 @@
       const bundle = bundleManifests.find((item) => item.bundleId === bundleId);
       const includedSet = new Set(Array.isArray(bundle && bundle.includedAppIds) ? bundle.includedAppIds : []);
       const showBundleHints = Boolean(bundleId);
-      const activationBundleId = activation && activation.isActive ? activation.bundleId : "";
-      const activationBundle = bundleManifests.find((item) => item.bundleId === activationBundleId);
-      const unlockedSet = new Set(Array.isArray(activationBundle && activationBundle.includedAppIds) ? activationBundle.includedAppIds : []);
+      const unlockedSet = access.unlockedSet;
       gridEl.innerHTML = apps.map((app) => {
         const inBundle = includedSet.has(app.appId);
         const requiresActivation = showBundleHints && inBundle;
@@ -188,11 +208,16 @@
           ? `<span class="ui-chip ${inBundle ? "ui-chip-primary" : "ui-chip-info"}">${inBundle ? "Included in bundle" : "Outside bundle scope"}</span>`
           : "";
         const gateChip = requiresActivation
-          ? `<span class="ui-chip ${isUnlocked ? "ui-chip-primary" : "ui-lock"}">${isUnlocked ? "Activated" : "Activation needed"}</span>`
+          ? `<span class="ui-chip ${isUnlocked ? "ui-chip-primary" : "ui-lock"}">${
+              isUnlocked ? (access.mode === "server" ? "Entitled" : "Activated") : (access.mode === "server" ? "Entitlement required" : "Activation needed")
+            }</span>`
           : "";
-        const actionMarkup = requiresActivation && !isUnlocked
-          ? `<button class="ui-btn ui-btn-primary" data-action="activate-app" data-app-id="${app.appId}" data-app-label="${app.label}" data-bundle-id="${bundleId}">Activate to open</button>`
-          : `<a class="ui-btn ui-btn-primary" href="${buildLaunchUrl(app.route, app.appId)}">Open ${app.label}</a>`;
+        let actionMarkup = `<a class="ui-btn ui-btn-primary" href="${buildLaunchUrl(app.route, app.appId)}">Open ${app.label}</a>`;
+        if (requiresActivation && !isUnlocked) {
+          actionMarkup = access.mode === "server"
+            ? `<button class="ui-btn ui-btn-ghost" data-action="refresh-access">Refresh entitlements</button>`
+            : `<button class="ui-btn ui-btn-primary" data-action="activate-app" data-app-id="${app.appId}" data-app-label="${app.label}" data-bundle-id="${bundleId}">Activate to open</button>`;
+        }
         return `
           <article class="ui-card suite-app">
             <header class="suite-app-head">
@@ -210,7 +235,37 @@
       }).join("");
     }
 
-    function wireActivationButtons(renderState) {
+    async function resolveAccessState(bundleId, bundles) {
+      const activation = window.IQActivationGate.loadActivation();
+      const access = {
+        mode: "none",
+        serverConfigured: false,
+        activation,
+        unlockedSet: new Set()
+      };
+      if (window.IQEntitlementsClient && window.IQEntitlementsClient.isConfigured()) {
+        access.serverConfigured = true;
+        const result = await window.IQEntitlementsClient.fetchEntitlements();
+        if (result && result.ok) {
+          const appIds = window.IQActivationGate.deriveAllowedAppIdsFromEntitlements(result.entitlements || [], bundles);
+          access.mode = "server";
+          access.unlockedSet = new Set(appIds);
+          return access;
+        }
+      }
+      if (activation && activation.isActive && activation.bundleId) {
+        const activationBundle = bundles.find((item) => item.bundleId === activation.bundleId);
+        access.mode = "activation";
+        access.unlockedSet = new Set(Array.isArray(activationBundle && activationBundle.includedAppIds) ? activationBundle.includedAppIds : []);
+        return access;
+      }
+      if (access.serverConfigured) {
+        access.mode = "activation_fallback";
+      }
+      return access;
+    }
+
+    function wireButtons(renderState) {
       const buttons = Array.from(document.querySelectorAll("[data-action='activate-app']"));
       buttons.forEach((button) => {
         button.addEventListener("click", async () => {
@@ -224,10 +279,15 @@
             bundleIdHint: bundleId,
             manifestUrl: "./bundle-manifests.json"
           });
-          const nextActivation = window.IQActivationGate.loadActivation();
-          renderActivationContext(renderState.bundleId, nextActivation, renderState.bundles);
-          renderApps(renderState.apps, renderState.bundleId, renderState.bundles, nextActivation);
-          wireActivationButtons(renderState);
+          renderState.render();
+        });
+      });
+
+      const refreshButtons = Array.from(document.querySelectorAll("[data-action='refresh-access']"));
+      refreshButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          button.disabled = true;
+          renderState.render();
         });
       });
     }
@@ -239,21 +299,52 @@
       ]);
       const params = new URLSearchParams(window.location.search);
       const bundleId = params.get("bundle") || "";
-      const activation = window.IQActivationGate.loadActivation();
-      const renderState = { apps, bundles, bundleId };
-      renderBundleContext(bundleId, bundles);
-      renderActivationContext(bundleId, activation, bundles);
-      renderApps(apps, bundleId, bundles, activation);
-      wireActivationButtons(renderState);
+      const renderState = { apps, bundles, bundleId, render: null };
+
+      const config = window.IQEntitlementsClient && window.IQEntitlementsClient.loadConfig
+        ? window.IQEntitlementsClient.loadConfig()
+        : { entitlementsEndpoint: "", authToken: "" };
+      const endpointInput = document.getElementById("entEndpointInput");
+      const tokenInput = document.getElementById("entTokenInput");
+      if (endpointInput) endpointInput.value = config.entitlementsEndpoint || "";
+      if (tokenInput) tokenInput.value = config.authToken || "";
+
+      renderState.render = async () => {
+        const access = await resolveAccessState(bundleId, bundles);
+        renderBundleContext(bundleId, bundles);
+        renderActivationContext(bundleId, access, bundles);
+        renderApps(apps, bundleId, bundles, access);
+        wireButtons(renderState);
+      };
+
+      await renderState.render();
+
+      const saveBtn = document.getElementById("saveEntConfigBtn");
+      if (saveBtn && window.IQEntitlementsClient) {
+        saveBtn.addEventListener("click", async () => {
+          window.IQEntitlementsClient.saveConfig({
+            entitlementsEndpoint: endpointInput ? endpointInput.value : "",
+            authToken: tokenInput ? tokenInput.value : ""
+          });
+          await renderState.render();
+        });
+      }
+
+      const clearBtn = document.getElementById("clearEntConfigBtn");
+      if (clearBtn && window.IQEntitlementsClient) {
+        clearBtn.addEventListener("click", async () => {
+          window.IQEntitlementsClient.clearConfig();
+          if (endpointInput) endpointInput.value = "";
+          if (tokenInput) tokenInput.value = "";
+          await renderState.render();
+        });
+      }
 
       const resetBtn = document.getElementById("resetActivationBtn");
       if (resetBtn) {
-        resetBtn.addEventListener("click", () => {
+        resetBtn.addEventListener("click", async () => {
           window.IQActivationGate.clearActivation();
-          const nextActivation = window.IQActivationGate.loadActivation();
-          renderActivationContext(bundleId, nextActivation, bundles);
-          renderApps(apps, bundleId, bundles, nextActivation);
-          wireActivationButtons(renderState);
+          await renderState.render();
         });
       }
     }

@@ -100,6 +100,27 @@
     return bundleIncludesApp(activation.bundleId, appId, manifests);
   }
 
+  function deriveAllowedAppIdsFromEntitlements(entitlements, manifests) {
+    var allowed = new Set();
+    if (!Array.isArray(entitlements)) {
+      return [];
+    }
+    for (var i = 0; i < entitlements.length; i += 1) {
+      var row = entitlements[i];
+      if (!row || row.status !== "active" || typeof row.bundleId !== "string") {
+        continue;
+      }
+      var bundle = getBundleById(row.bundleId, manifests);
+      if (!bundle || !Array.isArray(bundle.includedAppIds)) {
+        continue;
+      }
+      for (var j = 0; j < bundle.includedAppIds.length; j += 1) {
+        allowed.add(bundle.includedAppIds[j]);
+      }
+    }
+    return Array.from(allowed);
+  }
+
   function resolveCodeBundle(code) {
     var normalized = normalizeCode(code);
     return BUNDLE_CODES[normalized] || null;
@@ -222,6 +243,42 @@
     input.focus();
   }
 
+  function renderServerDeniedModal(opts) {
+    ensureModalStyles();
+    var existing = document.getElementById("iq-entitlement-overlay");
+    if (existing) {
+      existing.remove();
+    }
+
+    var overlay = document.createElement("div");
+    overlay.className = "iq-activation-overlay";
+    overlay.id = "iq-entitlement-overlay";
+    var appLabel = opts.appLabel || "this app";
+    var bundleHint = opts.bundleIdHint ? escapeHtml(opts.bundleIdHint) : "current bundle";
+    overlay.innerHTML = [
+      '<div class="iq-activation-card">',
+      "<h3>Access Locked</h3>",
+      "<p>Your account does not have an active entitlement for " + escapeHtml(appLabel) + ".</p>",
+      "<p>Expected bundle context: <strong>" + bundleHint + "</strong></p>",
+      '<div class="iq-activation-note">This app is now controlled by server entitlements. Device activation codes are disabled in this mode.</div>',
+      '<div class="iq-activation-row">',
+      '<button id="iqEntitlementBackBtn" class="iq-activation-btn" type="button">Back to Suite</button>',
+      "</div>",
+      "</div>"
+    ].join("");
+    document.body.appendChild(overlay);
+
+    var backBtn = overlay.querySelector("#iqEntitlementBackBtn");
+    if (backBtn) {
+      backBtn.addEventListener("click", function () {
+        var suiteUrl = new URL(opts.returnTo || "../iq-suite/index.html", window.location.href);
+        suiteUrl.search = window.location.search || "";
+        suiteUrl.hash = window.location.hash || "";
+        window.location.replace(suiteUrl.toString());
+      });
+    }
+  }
+
   function loadManifests(manifestUrl) {
     var key = manifestUrl || "__default__";
     if (manifestCache[key]) {
@@ -266,6 +323,88 @@
     });
   }
 
+  function resolveServerAccessState(manifests) {
+    var client = global.IQEntitlementsClient;
+    if (!client || typeof client.isConfigured !== "function" || !client.isConfigured()) {
+      return Promise.resolve({
+        configured: false,
+        ok: false,
+        entitlements: [],
+        allowedAppIds: [],
+        reason: "not_configured"
+      });
+    }
+    return client.fetchEntitlements().then(function (result) {
+      if (!result || result.ok !== true) {
+        return {
+          configured: true,
+          ok: false,
+          entitlements: [],
+          allowedAppIds: [],
+          reason: result && result.reason ? result.reason : "fetch_failed"
+        };
+      }
+      return {
+        configured: true,
+        ok: true,
+        entitlements: result.entitlements || [],
+        allowedAppIds: deriveAllowedAppIdsFromEntitlements(result.entitlements || [], manifests),
+        reason: ""
+      };
+    });
+  }
+
+  function resolveAccessState(opts) {
+    var safeOpts = opts || {};
+    return loadManifests(safeOpts.manifestUrl).then(function (manifests) {
+      return resolveServerAccessState(manifests).then(function (server) {
+        var activation = loadActivation();
+        var allowed = false;
+        var mode = "none";
+
+        if (server.configured && server.ok) {
+          mode = "server";
+          allowed = server.allowedAppIds.indexOf(safeOpts.appId) !== -1;
+        } else if (activationAllowsApp(activation, safeOpts.appId, manifests)) {
+          mode = "activation";
+          allowed = true;
+        } else if (server.configured && !server.ok) {
+          mode = "activation_fallback";
+          allowed = activationAllowsApp(activation, safeOpts.appId, manifests);
+        }
+
+        return {
+          manifests: manifests,
+          server: server,
+          activation: activation,
+          mode: mode,
+          allowed: allowed
+        };
+      });
+    });
+  }
+
+  function enforceAppAccess(opts) {
+    var safeOpts = opts || {};
+    if (safeOpts.isPaidApp === false) {
+      return Promise.resolve(true);
+    }
+    return resolveAccessState(safeOpts).then(function (state) {
+      if (state.allowed) {
+        return true;
+      }
+      if (state.server.configured && state.server.ok) {
+        renderServerDeniedModal(safeOpts);
+        return new Promise(function () {});
+      }
+      return new Promise(function (resolve) {
+        renderModal(safeOpts, state.manifests, function () {
+          resolve(true);
+        });
+      });
+    });
+  }
+
   function enforceAppActivation(opts) {
     var safeOpts = opts || {};
     return loadManifests(safeOpts.manifestUrl).then(function (manifests) {
@@ -298,11 +437,13 @@
     loadActivation: loadActivation,
     clearActivation: clearActivation,
     deriveUnlockedAppIds: deriveUnlockedAppIds,
+    deriveAllowedAppIdsFromEntitlements: deriveAllowedAppIdsFromEntitlements,
     loadManifests: loadManifests,
     requestActivation: requestActivation,
+    resolveAccessState: resolveAccessState,
+    enforceAppAccess: enforceAppAccess,
     enforceAppActivation: enforceAppActivation,
     getAccessState: getAccessState,
     activationAllowsApp: activationAllowsApp
   };
 })(window);
-

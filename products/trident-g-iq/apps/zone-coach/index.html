@@ -367,14 +367,16 @@
     </main>
   </div>
 
+  <script src="../shared-ui/entitlements-client.js"></script>
   <script src="../shared-ui/activation-gate.js"></script>
   <script>
   (() => {
     if (window.IQActivationGate) {
-      window.IQActivationGate.enforceAppActivation({
+      window.IQActivationGate.enforceAppAccess({
         appId: "zone_coach",
         appLabel: "Zone Coach",
         manifestUrl: "../iq-suite/bundle-manifests.json",
+        returnTo: "../iq-suite/index.html",
         bundleIdHint: new URLSearchParams(window.location.search).get("bundle") || ""
       });
     }
