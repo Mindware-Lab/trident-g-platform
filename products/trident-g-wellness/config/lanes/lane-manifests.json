@@ -1,0 +1,30 @@
+[
+  {
+    "laneId": "longevity_global",
+    "label": "Longevity Global",
+    "status": "planned",
+    "primaryRegion": "global",
+    "entryRoute": "/products/trident-g-wellness/apps/zone-coach-wellness/",
+    "workspaceId": "wellness_primary",
+    "notes": "Activate after SA validation evidence is stable."
+  },
+  {
+    "laneId": "longevity_sa",
+    "label": "Longevity South Africa",
+    "status": "active_first",
+    "primaryRegion": "za",
+    "entryRoute": "/products/trident-g-wellness/apps/longevity-sa-site/",
+    "workspaceId": "wellness_sa",
+    "notes": "Consumer-first wedge for fast validation."
+  },
+  {
+    "laneId": "corporate_sa",
+    "label": "Corporate Wellness South Africa",
+    "status": "phase2",
+    "primaryRegion": "za",
+    "entryRoute": "/products/trident-g-wellness/apps/corporate-sa-site/",
+    "workspaceId": "wellness_sa",
+    "notes": "Activate after evidence pack and local procurement flow."
+  }
+]
+

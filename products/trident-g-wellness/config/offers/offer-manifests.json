@@ -1,0 +1,27 @@
+[
+  {
+    "offerId": "wellness_longevity_foundation",
+    "label": "Longevity Foundation",
+    "laneEligibility": ["longevity_sa", "longevity_global"],
+    "deliveryType": "consumer",
+    "activationPolicy": "device_activation_then_auth",
+    "workspaceId": "wellness_sa"
+  },
+  {
+    "offerId": "wellness_longevity_plus_coaching",
+    "label": "Longevity Plus Coaching",
+    "laneEligibility": ["longevity_sa", "longevity_global"],
+    "deliveryType": "consumer_plus_coaching",
+    "activationPolicy": "device_activation_then_auth",
+    "workspaceId": "wellness_sa"
+  },
+  {
+    "offerId": "wellness_corporate_pilot",
+    "label": "Corporate Pilot",
+    "laneEligibility": ["corporate_sa"],
+    "deliveryType": "b2b",
+    "activationPolicy": "entitlement_contract_first",
+    "workspaceId": "wellness_sa"
+  }
+]
+
