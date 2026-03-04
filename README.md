@@ -185,7 +185,7 @@ trident-g-platform/
         edhs/
       docs/                      # Product-specific notes, release notes, research notes
 
-    trident-g-resilience/        # “Resilience” product site (GitHub Pages path)
+    trident-g-recovery/          # “Resilience” product site (GitHub Pages path)
       index.html                 # Resilience hub entry
       apps/
         zone-coach/              # Same engine, resilience framing + prompts
@@ -266,7 +266,7 @@ Keep the same schemas, change the sink:
 Each product site can be hosted from:
 
 * `/products/trident-g-iq/`
-* `/products/trident-g-resilience/`
+* `/products/trident-g-recovery/`
 
 If needed later: split into separate repos, but keep this mono-root while iterating fast.
 
