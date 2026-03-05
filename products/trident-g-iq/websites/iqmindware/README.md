@@ -13,6 +13,22 @@ This folder implements the "Far-Transfer + Transparency by Design" plan.
 - Dedicated validation route: `/proof/g-tracker`.
 - Data publication policy under `/proof#data`.
 
+## CSS structure
+
+- `assets/css/brand.css`: site brand layer (imports `branding/IQ-Mindware-brand.css` + fallback tokens)
+- `assets/css/templates.css`: shared layout/components
+- `assets/css/pages/tools.css`: home/start/tools templates
+- `assets/css/pages/proof.css`: proof and protocol publication templates
+- `assets/css/pages/pricing.css`: pricing matrix and currency switcher
+- `assets/css/pages/learn.css`: learn and cases templates
+- `assets/css/pages/utility-pages.css`: support/legal/about/faq/coaching style baseline
+
+Pages now load CSS in this order:
+
+1. `brand.css`
+2. `templates.css`
+3. one page-specific file from `assets/css/pages/*`
+
 ## Contracts
 
 - `site-map.json`

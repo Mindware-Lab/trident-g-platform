@@ -1,0 +1,11 @@
+/* Utility Page CSS
+   Used by: faq/about/support/contact/privacy/terms/refunds/login/coaching/how-it-works
+*/
+
+.hero {
+  border-left: 4px solid #0f6abf;
+}
+
+.card h2 {
+  margin-top: 0;
+}

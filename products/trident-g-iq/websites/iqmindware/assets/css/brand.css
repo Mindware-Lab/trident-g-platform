@@ -1,0 +1,20 @@
+/* IQMindware Brand Layer
+   - Imports the seed brand system from /branding
+   - Defines fallback tokens used by site templates
+*/
+
+@import url("/branding/IQ-Mindware-brand.css");
+
+:root {
+  --bg: #f1f4f7;
+  --ink: #0d1b2a;
+  --muted: #4a5e74;
+  --card: #ffffff;
+  --accent: #0f6abf;
+  --line: #d5deea;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+}

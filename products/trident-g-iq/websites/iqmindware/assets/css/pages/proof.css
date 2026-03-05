@@ -1,0 +1,22 @@
+/* Proof Template CSS
+   Used by: /proof, /proof/g-tracker, /proof/protocols/*
+*/
+
+#claims,
+#protocols,
+#data {
+  scroll-margin-top: 24px;
+}
+
+.mini-policy {
+  margin-top: 0.8rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+}
+
+.cadence {
+  margin-top: 0.8rem;
+  padding: 0.6rem;
+  border: 1px dashed #9cb9d7;
+  border-radius: 8px;
+}

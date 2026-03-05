@@ -1,0 +1,11 @@
+/* Tools Template CSS
+   Used by: home, /start, /tools, /tools/*
+*/
+
+.quickline {
+  border-left: 4px solid #0f6abf;
+}
+
+.hero h1 {
+  letter-spacing: -0.02em;
+}

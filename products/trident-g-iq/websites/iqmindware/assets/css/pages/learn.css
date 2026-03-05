@@ -1,0 +1,11 @@
+/* Learn Template CSS
+   Used by: /learn, /learn/*, /cases
+*/
+
+.hero p {
+  max-width: 70ch;
+}
+
+.card em {
+  color: var(--muted);
+}
