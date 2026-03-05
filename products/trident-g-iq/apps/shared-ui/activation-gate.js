@@ -9,9 +9,9 @@
     Object.freeze({ bundleId: "g_tracker", label: "G Tracker", includedAppIds: ["g_tracker"] }),
     Object.freeze({ bundleId: "zone_coach", label: "Zone Coach", includedAppIds: ["zone_coach"] }),
     Object.freeze({ bundleId: "capacity_gym", label: "Capacity Gym", includedAppIds: ["capacity_gym"] }),
-    Object.freeze({ bundleId: "performance_bundle", label: "IQ Core", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] }),
-    Object.freeze({ bundleId: "cohort_bundle", label: "Cohort Bundle", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] }),
-    Object.freeze({ bundleId: "premium_1to1", label: "1:1 Premium", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] })
+    Object.freeze({ bundleId: "performance_bundle", label: "IQ Core (all 3 apps)", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] }),
+    Object.freeze({ bundleId: "cohort_bundle", label: "Live Cohort (4 x 1h weekly)", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] }),
+    Object.freeze({ bundleId: "premium_1to1", label: "1:1 Premium (3 x 1h flexible)", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] })
   ]);
 
   var CODE_METADATA = Object.freeze({
