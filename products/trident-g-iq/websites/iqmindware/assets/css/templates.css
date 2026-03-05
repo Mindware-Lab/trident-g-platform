@@ -82,12 +82,13 @@ a {
   height: auto;
   margin: 0;
   padding: 0.55rem 0.65rem 0.45rem;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 8px;
   background: transparent;
   color: #12253f;
   text-decoration: none;
   line-height: 1.15;
+  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
 }
 
 .nav-link span {
@@ -120,6 +121,18 @@ a {
 .nav-link:focus-visible {
   background: #eef3f9;
   outline: none;
+}
+
+.site-header .site-nav .nav-link.is-current,
+.site-header .site-nav .nav-link[aria-current="page"] {
+  background: #e8f1fb;
+  border-color: #c4d6ea;
+  box-shadow: inset 0 -2px 0 #22aaff;
+}
+
+.site-header .site-nav .nav-link.is-current span,
+.site-header .site-nav .nav-link[aria-current="page"] span {
+  color: #10385f;
 }
 
 .page {

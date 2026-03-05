@@ -81,5 +81,59 @@ async function renderCadence() {
     .join("")}</ul>`;
 }
 
+function normalizePath(path) {
+  if (!path) return "/";
+  const clean = path.split("?")[0].split("#")[0].toLowerCase();
+  if (clean === "/") return "/";
+  return clean.endsWith("/") ? clean : clean + "/";
+}
+
+function primaryNavPath(pathname) {
+  const path = normalizePath(pathname);
+
+  if (path.startsWith("/tools/")) return "/tools/";
+  if (path.startsWith("/proof/")) return "/proof/";
+  if (path.startsWith("/pricing/")) return "/pricing/";
+  if (path.startsWith("/coaching/")) return "/coaching/";
+  if (path.startsWith("/learn/")) return "/learn/";
+  if (path.startsWith("/about/")) return "/about/";
+  if (path.startsWith("/faq/")) return "/faq/";
+  if (path.startsWith("/login/")) return "/login/";
+  if (path.startsWith("/support/")) return "/support/";
+  if (path.startsWith("/contact/")) return "/support/";
+  if (path.startsWith("/privacy/")) return "/support/";
+  if (path.startsWith("/terms/")) return "/support/";
+  if (path.startsWith("/refunds/")) return "/support/";
+  if (path.startsWith("/cases/")) return "/proof/";
+  if (path.startsWith("/how-it-works/")) return "/start/";
+  if (path.startsWith("/start/")) return "/start/";
+
+  return null;
+}
+
+function highlightCurrentNav() {
+  const navLinks = Array.from(
+    document.querySelectorAll(".site-header .site-nav .nav-link")
+  );
+  if (!navLinks.length) return;
+
+  navLinks.forEach((link) => {
+    link.classList.remove("is-current");
+    link.removeAttribute("aria-current");
+  });
+
+  const activePath = primaryNavPath(window.location.pathname);
+  if (!activePath) return;
+
+  const activeLink = navLinks.find(
+    (link) => normalizePath(link.getAttribute("href")) === activePath
+  );
+  if (!activeLink) return;
+
+  activeLink.classList.add("is-current");
+  activeLink.setAttribute("aria-current", "page");
+}
+
+highlightCurrentNav();
 renderPricing();
 renderCadence();
