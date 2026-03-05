@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>IQMindware — Social Icons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0e1219;
+    --bg-card: #151b26;
+    --bdr:     rgba(255,255,255,.08);
+    --tc:      #e8eaf0;
+    --tcm:     rgba(232,234,240,.55);
+    --tcf:     rgba(232,234,240,.30);
+    --cyan:    #22AAFF;
+    --lime:    #CCFF66;
+    --violet:  #a78bfa;
+    --r:       10px;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Bricolage Grotesque', sans-serif;
+    color: var(--tc);
+    min-height: 100vh;
+    padding: 48px 32px 80px;
+  }
+
+  /* ── Page header ── */
+  .page-hd { max-width: 900px; margin: 0 auto 48px; }
+  .page-hd h1 {
+    font-size: 28px; font-weight: 800; letter-spacing: -.02em;
+    margin-bottom: 6px;
+  }
+  .page-hd h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--lime), var(--cyan));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .page-hd p {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: .10em; text-transform: uppercase;
+    color: var(--tcf);
+  }
+
+  /* ── Section label ── */
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--tcf); margin-bottom: 14px; display: block;
+  }
+
+  /* ── Icon grid ── */
+  .icon-grid {
+    max-width: 900px; margin: 0 auto 56px;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 12px;
+  }
+
+  .icon-tile {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 10px;
+    padding: 22px 10px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--bdr);
+    border-radius: var(--r);
+    cursor: pointer;
+    transition: border-color .15s ease, transform .15s ease, background .15s ease;
+    position: relative; overflow: hidden;
+  }
+  .icon-tile::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--icon-glow, transparent);
+    opacity: 0; border-radius: inherit;
+    transition: opacity .2s ease;
+    pointer-events: none;
+  }
+  .icon-tile:hover { transform: translateY(-3px); }
+  .icon-tile:hover::before { opacity: 1; }
+
+  /* Per-brand hover colours */
+  .tile-substack  { --icon-col: #FF6719; --icon-glow: radial-gradient(ellipse at 50% 100%, rgba(255,103,25,.10), transparent 70%); }
+  .tile-linkedin  { --icon-col: #0A66C2; --icon-glow: radial-gradient(ellipse at 50% 100%, rgba(10,102,194,.12), transparent 70%); }
+  .tile-instagram { --icon-col: #E1306C; --icon-glow: radial-gradient(ellipse at 50% 100%, rgba(225,48,108,.10), transparent 70%); }
+  .tile-youtube   { --icon-col: #FF0000; --icon-glow: radial-gradient(ellipse at 50% 100%, rgba(255,0,0,.10), transparent 70%); }
+  .tile-bluesky   { --icon-col: #0085FF; --icon-glow: radial-gradient(ellipse at 50% 100%, rgba(0,133,255,.10), transparent 70%); }
+  .tile-x         { --icon-col: #e8eaf0; --icon-glow: radial-gradient(ellipse at 50% 100%, rgba(232,234,240,.07), transparent 70%); }
+  .tile-github    { --icon-col: #e8eaf0; --icon-glow: radial-gradient(ellipse at 50% 100%, rgba(232,234,240,.07), transparent 70%); }
+  .tile-tiktok    { --icon-col: #69C9D0; --icon-glow: radial-gradient(ellipse at 50% 100%, rgba(105,201,208,.10), transparent 70%); }
+  .tile-discord   { --icon-col: #5865F2; --icon-glow: radial-gradient(ellipse at 50% 100%, rgba(88,101,242,.12), transparent 70%); }
+
+  .icon-tile:hover { border-color: var(--icon-col); }
+  .icon-tile:hover svg { color: var(--icon-col); }
+
+  .icon-tile svg {
+    width: 28px; height: 28px;
+    color: var(--tcm);
+    transition: color .15s ease;
+    flex-shrink: 0;
+  }
+  .icon-tile-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--tcf); white-space: nowrap;
+    transition: color .15s ease;
+  }
+  .icon-tile:hover .icon-tile-name { color: var(--icon-col); }
+
+  /* ── Size showcase ── */
+  .size-row {
+    max-width: 900px; margin: 0 auto 56px;
+    display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  }
+  .size-demo {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .size-demo svg { color: var(--tcm); }
+  .size-demo span {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: .08em; color: var(--tcf);
+  }
+
+  /* ── Colour variants ── */
+  .variant-row {
+    max-width: 900px; margin: 0 auto 56px;
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .variant-chip {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--bdr);
+    border-radius: 8px;
+  }
+  .variant-chip svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .variant-chip-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: .06em; color: var(--tcf);
+  }
+
+  /* ── Usage code block ── */
+  .code-section {
+    max-width: 900px; margin: 0 auto;
+    background: var(--bg-card);
+    border: 1px solid var(--bdr);
+    border-radius: var(--r);
+    overflow: hidden;
+  }
+  .code-hd {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--bdr);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .code-hd-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,.12);
+  }
+  .code-hd-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px; letter-spacing: .10em; color: var(--tcf);
+    margin-left: 4px;
+  }
+  .code-body {
+    padding: 20px 22px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11.5px; line-height: 1.75; color: var(--tcm);
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .code-body .kw  { color: var(--cyan); }
+  .code-body .str { color: var(--lime); }
+  .code-body .cmt { color: var(--tcf); font-style: italic; }
+
+  /* ── Divider ── */
+  .divider {
+    max-width: 900px; margin: 0 auto 36px;
+    border: none; border-top: 1px solid var(--bdr);
+  }
+
+  hr.sp { max-width:900px; margin: 0 auto 36px; border:none; border-top:1px solid var(--bdr); }
+</style>
+</head>
+<body>
+
+<div class="page-hd">
+  <h1>IQMindware <em>Social Icons</em></h1>
+  <p>9 icons &nbsp;·&nbsp; Consistent stroke style &nbsp;·&nbsp; Brand-matched &nbsp;·&nbsp; 24×24 viewBox &nbsp;·&nbsp; SVG</p>
+</div>
+
+<!-- ══ MAIN ICON GRID ══ -->
+<span class="section-label" style="max-width:900px;display:block;margin:0 auto 14px;">All icons — hover to preview brand colour</span>
+<div class="icon-grid">
+
+  <!-- Substack -->
+  <div class="icon-tile tile-substack">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-label="Substack">
+      <rect x="3" y="3" width="18" height="3.5" rx="1"/>
+      <rect x="3" y="9" width="18" height="3.5" rx="1"/>
+      <path d="M3 15.5 L12 21 L21 15.5 V20 L12 24 L3 20 Z" stroke-width="1.5"/>
+    </svg>
+    <span class="icon-tile-name">Substack</span>
+  </div>
+
+  <!-- LinkedIn -->
+  <div class="icon-tile tile-linkedin">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-label="LinkedIn">
+      <rect x="2" y="2" width="20" height="20" rx="4"/>
+      <line x1="7" y1="10" x2="7" y2="17"/>
+      <circle cx="7" cy="7" r="1" fill="currentColor" stroke="none"/>
+      <path d="M11 10 v7 M11 13 a3 3 0 0 1 6 0 v4"/>
+    </svg>
+    <span class="icon-tile-name">LinkedIn</span>
+  </div>
+
+  <!-- Instagram -->
+  <div class="icon-tile tile-instagram">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-label="Instagram">
+      <rect x="2" y="2" width="20" height="20" rx="5.5"/>
+      <circle cx="12" cy="12" r="4.2"/>
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+    </svg>
+    <span class="icon-tile-name">Instagram</span>
+  </div>
+
+  <!-- YouTube -->
+  <div class="icon-tile tile-youtube">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-label="YouTube">
+      <rect x="2" y="5" width="20" height="14" rx="4"/>
+      <polygon points="10,9 10,15 16,12" stroke-linejoin="round" stroke-width="1.5"/>
+    </svg>
+    <span class="icon-tile-name">YouTube</span>
+  </div>
+
+  <!-- BlueSky -->
+  <div class="icon-tile tile-bluesky">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-label="BlueSky">
+      <path d="M12 9 C10 5 4 2.5 3 5.5 C2 8.5 6 10 8 10.5 C6 10.5 2 11.5 3 14.5 C4 17.5 10 15.5 12 11.5"/>
+      <path d="M12 9 C14 5 20 2.5 21 5.5 C22 8.5 18 10 16 10.5 C18 10.5 22 11.5 21 14.5 C20 17.5 14 15.5 12 11.5"/>
+      <line x1="12" y1="11.5" x2="12" y2="21"/>
+    </svg>
+    <span class="icon-tile-name">BlueSky</span>
+  </div>
+
+  <!-- X -->
+  <div class="icon-tile tile-x">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-label="X (formerly Twitter)">
+      <path d="M4 4 L20 20 M20 4 L4 20"/>
+    </svg>
+    <span class="icon-tile-name">X</span>
+  </div>
+
+  <!-- GitHub -->
+  <div class="icon-tile tile-github">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-label="GitHub">
+      <path d="M9 19c-4 1-4-2-6-2m12 4v-4a3 3 0 0 0-.9-2.3c3-.3 6.1-1.5 6.1-6.6a5.1 5.1 0 0 0-1.4-3.6 4.8 4.8 0 0 0-.1-3.5s-1.1-.4-3.7 1.4a12.8 12.8 0 0 0-6.7 0C5.1 1 4 1.4 4 1.4a4.8 4.8 0 0 0-.1 3.5A5.1 5.1 0 0 0 2.5 8.5c0 5.1 3.1 6.3 6.1 6.6A3 3 0 0 0 7.7 17.3V21"/>
+    </svg>
+    <span class="icon-tile-name">GitHub</span>
+  </div>
+
+  <!-- TikTok -->
+  <div class="icon-tile tile-tiktok">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-label="TikTok">
+      <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
+    </svg>
+    <span class="icon-tile-name">TikTok</span>
+  </div>
+
+  <!-- Discord -->
+  <div class="icon-tile tile-discord">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-label="Discord">
+      <path d="M9 11.5 a1 1 0 1 0 0 .01"/>
+      <path d="M15 11.5 a1 1 0 1 0 0 .01"/>
+      <path d="M8.5 4.5 A16 16 0 0 1 15.5 4.5 C18 5.5 20 9 20 12 C20 15 18 18.5 15.5 19.5 L14 17.5 C13.4 17.8 12.7 18 12 18 C11.3 18 10.6 17.8 10 17.5 L8.5 19.5 C6 18.5 4 15 4 12 C4 9 6 5.5 8.5 4.5Z"/>
+    </svg>
+    <span class="icon-tile-name">Discord</span>
+  </div>
+
+</div>
+
+<hr class="sp">
+
+<!-- ══ SIZE SHOWCASE ══ -->
+<span class="section-label" style="max-width:900px;display:block;margin:0 auto 16px;">Size variants — same SVG, three display sizes</span>
+<div class="size-row">
+  <!-- 16px -->
+  <div class="size-demo">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+    <span>16px</span>
+  </div>
+  <div class="size-demo">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+    <span>20px</span>
+  </div>
+  <div class="size-demo">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+    <span>24px</span>
+  </div>
+  <div class="size-demo">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+    <span>32px</span>
+  </div>
+  <div class="size-demo">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+    <span>48px</span>
+  </div>
+</div>
+
+<hr class="sp">
+
+<!-- ══ COLOUR CONTEXTS ══ -->
+<span class="section-label" style="max-width:900px;display:block;margin:0 auto 16px;">Colour contexts — dark / light / brand accent</span>
+<div class="variant-row">
+  <!-- Default dark -->
+  <div class="variant-chip" style="background:#151b26;border-color:rgba(255,255,255,.08);">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(232,234,240,.55)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><line x1="7" y1="10" x2="7" y2="17"/><circle cx="7" cy="7" r="1" fill="rgba(232,234,240,.55)" stroke="none"/><path d="M11 10 v7 M11 13 a3 3 0 0 1 6 0 v4"/></svg>
+    <span class="variant-chip-label" style="color:rgba(232,234,240,.35);">dark bg</span>
+  </div>
+  <!-- Cyan on dark -->
+  <div class="variant-chip" style="background:#151b26;border-color:rgba(34,170,255,.25);">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22AAFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><line x1="7" y1="10" x2="7" y2="17"/><circle cx="7" cy="7" r="1" fill="#22AAFF" stroke="none"/><path d="M11 10 v7 M11 13 a3 3 0 0 1 6 0 v4"/></svg>
+    <span class="variant-chip-label" style="color:rgba(232,234,240,.35);">cyan accent</span>
+  </div>
+  <!-- Lime on dark -->
+  <div class="variant-chip" style="background:#151b26;border-color:rgba(204,255,102,.25);">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#CCFF66" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><line x1="7" y1="10" x2="7" y2="17"/><circle cx="7" cy="7" r="1" fill="#CCFF66" stroke="none"/><path d="M11 10 v7 M11 13 a3 3 0 0 1 6 0 v4"/></svg>
+    <span class="variant-chip-label" style="color:rgba(232,234,240,.35);">lime accent</span>
+  </div>
+  <!-- Light bg -->
+  <div class="variant-chip" style="background:#eceef2;border-color:rgba(0,0,0,.10);">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(30,40,60,.50)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><line x1="7" y1="10" x2="7" y2="17"/><circle cx="7" cy="7" r="1" fill="rgba(30,40,60,.50)" stroke="none"/><path d="M11 10 v7 M11 13 a3 3 0 0 1 6 0 v4"/></svg>
+    <span class="variant-chip-label" style="color:rgba(0,0,0,.35);">light bg</span>
+  </div>
+  <!-- Brand colour (LinkedIn blue) -->
+  <div class="variant-chip" style="background:#151b26;border-color:rgba(10,102,194,.35);">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0A66C2" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><line x1="7" y1="10" x2="7" y2="17"/><circle cx="7" cy="7" r="1" fill="#0A66C2" stroke="none"/><path d="M11 10 v7 M11 13 a3 3 0 0 1 6 0 v4"/></svg>
+    <span class="variant-chip-label" style="color:rgba(232,234,240,.35);">brand colour</span>
+  </div>
+</div>
+
+<hr class="sp">
+
+<!-- ══ FOOTER STRIP EXAMPLE ══ -->
+<span class="section-label" style="max-width:900px;display:block;margin:0 auto 16px;">Footer usage — as it would appear in the site footer</span>
+<div style="max-width:900px;margin:0 auto 52px;background:#151b26;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:24px 28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+  <!-- Substack -->
+  <a href="#" aria-label="Substack" style="display:grid;place-items:center;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:rgba(232,234,240,.45);text-decoration:none;transition:color .15s,border-color .15s,background .15s;" onmouseover="this.style.color='#FF6719';this.style.borderColor='rgba(255,103,25,.35)';this.style.background='rgba(255,103,25,.07)'" onmouseout="this.style.color='rgba(232,234,240,.45)';this.style.borderColor='rgba(255,255,255,.10)';this.style.background='rgba(255,255,255,.04)'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="3.5" rx="1"/><rect x="3" y="9" width="18" height="3.5" rx="1"/><path d="M3 15.5 L12 21 L21 15.5 V20 L12 24 L3 20 Z" stroke-width="1.5"/></svg>
+  </a>
+  <!-- LinkedIn -->
+  <a href="#" aria-label="LinkedIn" style="display:grid;place-items:center;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:rgba(232,234,240,.45);text-decoration:none;" onmouseover="this.style.color='#0A66C2';this.style.borderColor='rgba(10,102,194,.35)';this.style.background='rgba(10,102,194,.09)'" onmouseout="this.style.color='rgba(232,234,240,.45)';this.style.borderColor='rgba(255,255,255,.10)';this.style.background='rgba(255,255,255,.04)'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><line x1="7" y1="10" x2="7" y2="17"/><circle cx="7" cy="7" r="1" fill="currentColor" stroke="none"/><path d="M11 10 v7 M11 13 a3 3 0 0 1 6 0 v4"/></svg>
+  </a>
+  <!-- Instagram -->
+  <a href="#" aria-label="Instagram" style="display:grid;place-items:center;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:rgba(232,234,240,.45);text-decoration:none;" onmouseover="this.style.color='#E1306C';this.style.borderColor='rgba(225,48,108,.35)';this.style.background='rgba(225,48,108,.08)'" onmouseout="this.style.color='rgba(232,234,240,.45)';this.style.borderColor='rgba(255,255,255,.10)';this.style.background='rgba(255,255,255,.04)'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+  </a>
+  <!-- YouTube -->
+  <a href="#" aria-label="YouTube" style="display:grid;place-items:center;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:rgba(232,234,240,.45);text-decoration:none;" onmouseover="this.style.color='#FF0000';this.style.borderColor='rgba(255,0,0,.30)';this.style.background='rgba(255,0,0,.08)'" onmouseout="this.style.color='rgba(232,234,240,.45)';this.style.borderColor='rgba(255,255,255,.10)';this.style.background='rgba(255,255,255,.04)'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="4"/><polygon points="10,9 10,15 16,12" stroke-linejoin="round" stroke-width="1.5"/></svg>
+  </a>
+  <!-- BlueSky -->
+  <a href="#" aria-label="BlueSky" style="display:grid;place-items:center;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:rgba(232,234,240,.45);text-decoration:none;" onmouseover="this.style.color='#0085FF';this.style.borderColor='rgba(0,133,255,.35)';this.style.background='rgba(0,133,255,.09)'" onmouseout="this.style.color='rgba(232,234,240,.45)';this.style.borderColor='rgba(255,255,255,.10)';this.style.background='rgba(255,255,255,.04)'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9 C10 5 4 2.5 3 5.5 C2 8.5 6 10 8 10.5 C6 10.5 2 11.5 3 14.5 C4 17.5 10 15.5 12 11.5"/><path d="M12 9 C14 5 20 2.5 21 5.5 C22 8.5 18 10 16 10.5 C18 10.5 22 11.5 21 14.5 C20 17.5 14 15.5 12 11.5"/><line x1="12" y1="11.5" x2="12" y2="21"/></svg>
+  </a>
+  <!-- X -->
+  <a href="#" aria-label="X" style="display:grid;place-items:center;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:rgba(232,234,240,.45);text-decoration:none;" onmouseover="this.style.color='#e8eaf0';this.style.borderColor='rgba(255,255,255,.28)';this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.color='rgba(232,234,240,.45)';this.style.borderColor='rgba(255,255,255,.10)';this.style.background='rgba(255,255,255,.04)'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 4 L20 20 M20 4 L4 20"/></svg>
+  </a>
+  <!-- GitHub -->
+  <a href="#" aria-label="GitHub" style="display:grid;place-items:center;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:rgba(232,234,240,.45);text-decoration:none;" onmouseover="this.style.color='#e8eaf0';this.style.borderColor='rgba(255,255,255,.28)';this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.color='rgba(232,234,240,.45)';this.style.borderColor='rgba(255,255,255,.10)';this.style.background='rgba(255,255,255,.04)'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1-4-2-6-2m12 4v-4a3 3 0 0 0-.9-2.3c3-.3 6.1-1.5 6.1-6.6a5.1 5.1 0 0 0-1.4-3.6 4.8 4.8 0 0 0-.1-3.5s-1.1-.4-3.7 1.4a12.8 12.8 0 0 0-6.7 0C5.1 1 4 1.4 4 1.4a4.8 4.8 0 0 0-.1 3.5A5.1 5.1 0 0 0 2.5 8.5c0 5.1 3.1 6.3 6.1 6.6A3 3 0 0 0 7.7 17.3V21"/></svg>
+  </a>
+  <!-- TikTok -->
+  <a href="#" aria-label="TikTok" style="display:grid;place-items:center;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:rgba(232,234,240,.45);text-decoration:none;" onmouseover="this.style.color='#69C9D0';this.style.borderColor='rgba(105,201,208,.35)';this.style.background='rgba(105,201,208,.08)'" onmouseout="this.style.color='rgba(232,234,240,.45)';this.style.borderColor='rgba(255,255,255,.10)';this.style.background='rgba(255,255,255,.04)'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+  </a>
+  <!-- Discord -->
+  <a href="#" aria-label="Discord" style="display:grid;place-items:center;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);color:rgba(232,234,240,.45);text-decoration:none;" onmouseover="this.style.color='#5865F2';this.style.borderColor='rgba(88,101,242,.40)';this.style.background='rgba(88,101,242,.10)'" onmouseout="this.style.color='rgba(232,234,240,.45)';this.style.borderColor='rgba(255,255,255,.10)';this.style.background='rgba(255,255,255,.04)'">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11.5 a1 1 0 1 0 0 .01"/><path d="M15 11.5 a1 1 0 1 0 0 .01"/><path d="M8.5 4.5 A16 16 0 0 1 15.5 4.5 C18 5.5 20 9 20 12 C20 15 18 18.5 15.5 19.5 L14 17.5 C13.4 17.8 12.7 18 12 18 C11.3 18 10.6 17.8 10 17.5 L8.5 19.5 C6 18.5 4 15 4 12 C4 9 6 5.5 8.5 4.5Z"/></svg>
+  </a>
+  <span style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:rgba(232,234,240,.22);margin-left:4px;">footer strip · 36×36px</span>
+</div>
+
+<hr class="sp">
+
+<!-- ══ SVG CODE REFERENCE ══ -->
+<span class="section-label" style="max-width:900px;display:block;margin:0 auto 16px;">Copy-ready SVG — paste directly into HTML</span>
+<div class="code-section">
+  <div class="code-hd">
+    <span class="code-hd-dot"></span><span class="code-hd-dot"></span><span class="code-hd-dot"></span>
+    <span class="code-hd-label">social-icons.svg — all 9 icons · viewBox="0 0 24 24" · stroke-width="1.7" · stroke-linecap="round"</span>
+  </div>
+  <div class="code-body"><span class="cmt">&lt;!-- Substack --&gt;</span>
+<span class="kw">&lt;svg</span> viewBox=<span class="str">"0 0 24 24"</span> fill=<span class="str">"none"</span> stroke=<span class="str">"currentColor"</span> stroke-width=<span class="str">"1.7"</span> stroke-linecap=<span class="str">"round"</span> stroke-linejoin=<span class="str">"round"</span> aria-label=<span class="str">"Substack"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;rect</span> x=<span class="str">"3"</span> y=<span class="str">"3"</span> width=<span class="str">"18"</span> height=<span class="str">"3.5"</span> rx=<span class="str">"1"</span><span class="kw">/&gt;</span>
+  <span class="kw">&lt;rect</span> x=<span class="str">"3"</span> y=<span class="str">"9"</span> width=<span class="str">"18"</span> height=<span class="str">"3.5"</span> rx=<span class="str">"1"</span><span class="kw">/&gt;</span>
+  <span class="kw">&lt;path</span> d=<span class="str">"M3 15.5 L12 21 L21 15.5 V20 L12 24 L3 20 Z"</span> stroke-width=<span class="str">"1.5"</span><span class="kw">/&gt;</span>
+<span class="kw">&lt;/svg&gt;</span>
+
+<span class="cmt">&lt;!-- LinkedIn --&gt;</span>
+<span class="kw">&lt;svg</span> viewBox=<span class="str">"0 0 24 24"</span> fill=<span class="str">"none"</span> stroke=<span class="str">"currentColor"</span> stroke-width=<span class="str">"1.7"</span> stroke-linecap=<span class="str">"round"</span> stroke-linejoin=<span class="str">"round"</span> aria-label=<span class="str">"LinkedIn"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;rect</span> x=<span class="str">"2"</span> y=<span class="str">"2"</span> width=<span class="str">"20"</span> height=<span class="str">"20"</span> rx=<span class="str">"4"</span><span class="kw">/&gt;</span>
+  <span class="kw">&lt;line</span> x1=<span class="str">"7"</span> y1=<span class="str">"10"</span> x2=<span class="str">"7"</span> y2=<span class="str">"17"</span><span class="kw">/&gt;</span>
+  <span class="kw">&lt;circle</span> cx=<span class="str">"7"</span> cy=<span class="str">"7"</span> r=<span class="str">"1"</span> fill=<span class="str">"currentColor"</span> stroke=<span class="str">"none"</span><span class="kw">/&gt;</span>
+  <span class="kw">&lt;path</span> d=<span class="str">"M11 10 v7 M11 13 a3 3 0 0 1 6 0 v4"</span><span class="kw">/&gt;</span>
+<span class="kw">&lt;/svg&gt;</span>
+
+<span class="cmt">&lt;!-- Instagram --&gt;</span>
+<span class="kw">&lt;svg</span> viewBox=<span class="str">"0 0 24 24"</span> fill=<span class="str">"none"</span> stroke=<span class="str">"currentColor"</span> stroke-width=<span class="str">"1.7"</span> stroke-linecap=<span class="str">"round"</span> stroke-linejoin=<span class="str">"round"</span> aria-label=<span class="str">"Instagram"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;rect</span> x=<span class="str">"2"</span> y=<span class="str">"2"</span> width=<span class="str">"20"</span> height=<span class="str">"20"</span> rx=<span class="str">"5.5"</span><span class="kw">/&gt;</span>
+  <span class="kw">&lt;circle</span> cx=<span class="str">"12"</span> cy=<span class="str">"12"</span> r=<span class="str">"4.2"</span><span class="kw">/&gt;</span>
+  <span class="kw">&lt;circle</span> cx=<span class="str">"17.5"</span> cy=<span class="str">"6.5"</span> r=<span class="str">"1"</span> fill=<span class="str">"currentColor"</span> stroke=<span class="str">"none"</span><span class="kw">/&gt;</span>
+<span class="kw">&lt;/svg&gt;</span>
+
+<span class="cmt">&lt;!-- YouTube --&gt;</span>
+<span class="kw">&lt;svg</span> viewBox=<span class="str">"0 0 24 24"</span> fill=<span class="str">"none"</span> stroke=<span class="str">"currentColor"</span> stroke-width=<span class="str">"1.7"</span> stroke-linecap=<span class="str">"round"</span> stroke-linejoin=<span class="str">"round"</span> aria-label=<span class="str">"YouTube"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;rect</span> x=<span class="str">"2"</span> y=<span class="str">"5"</span> width=<span class="str">"20"</span> height=<span class="str">"14"</span> rx=<span class="str">"4"</span><span class="kw">/&gt;</span>
+  <span class="kw">&lt;polygon</span> points=<span class="str">"10,9 10,15 16,12"</span> stroke-linejoin=<span class="str">"round"</span> stroke-width=<span class="str">"1.5"</span><span class="kw">/&gt;</span>
+<span class="kw">&lt;/svg&gt;</span>
+
+<span class="cmt">&lt;!-- BlueSky --&gt;</span>
+<span class="kw">&lt;svg</span> viewBox=<span class="str">"0 0 24 24"</span> fill=<span class="str">"none"</span> stroke=<span class="str">"currentColor"</span> stroke-width=<span class="str">"1.7"</span> stroke-linecap=<span class="str">"round"</span> stroke-linejoin=<span class="str">"round"</span> aria-label=<span class="str">"BlueSky"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;path</span> d=<span class="str">"M12 9 C10 5 4 2.5 3 5.5 C2 8.5 6 10 8 10.5 C6 10.5 2 11.5 3 14.5 C4 17.5 10 15.5 12 11.5"</span><span class="kw">/&gt;</span>
+  <span class="kw">&lt;path</span> d=<span class="str">"M12 9 C14 5 20 2.5 21 5.5 C22 8.5 18 10 16 10.5 C18 10.5 22 11.5 21 14.5 C20 17.5 14 15.5 12 11.5"</span><span class="kw">/&gt;</span>
+  <span class="kw">&lt;line</span> x1=<span class="str">"12"</span> y1=<span class="str">"11.5"</span> x2=<span class="str">"12"</span> y2=<span class="str">"21"</span><span class="kw">/&gt;</span>
+<span class="kw">&lt;/svg&gt;</span>
+
+<span class="cmt">&lt;!-- X (formerly Twitter) --&gt;</span>
+<span class="kw">&lt;svg</span> viewBox=<span class="str">"0 0 24 24"</span> fill=<span class="str">"none"</span> stroke=<span class="str">"currentColor"</span> stroke-width=<span class="str">"1.9"</span> stroke-linecap=<span class="str">"round"</span> aria-label=<span class="str">"X"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;path</span> d=<span class="str">"M4 4 L20 20 M20 4 L4 20"</span><span class="kw">/&gt;</span>
+<span class="kw">&lt;/svg&gt;</span>
+
+<span class="cmt">&lt;!-- GitHub --&gt;</span>
+<span class="kw">&lt;svg</span> viewBox=<span class="str">"0 0 24 24"</span> fill=<span class="str">"none"</span> stroke=<span class="str">"currentColor"</span> stroke-width=<span class="str">"1.7"</span> stroke-linecap=<span class="str">"round"</span> stroke-linejoin=<span class="str">"round"</span> aria-label=<span class="str">"GitHub"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;path</span> d=<span class="str">"M9 19c-4 1-4-2-6-2m12 4v-4a3 3 0 0 0-.9-2.3c3-.3 6.1-1.5 6.1-6.6a5.1 5.1 0 0 0-1.4-3.6 4.8 4.8 0 0 0-.1-3.5s-1.1-.4-3.7 1.4a12.8 12.8 0 0 0-6.7 0C5.1 1 4 1.4 4 1.4a4.8 4.8 0 0 0-.1 3.5A5.1 5.1 0 0 0 2.5 8.5c0 5.1 3.1 6.3 6.1 6.6A3 3 0 0 0 7.7 17.3V21"</span><span class="kw">/&gt;</span>
+<span class="kw">&lt;/svg&gt;</span>
+
+<span class="cmt">&lt;!-- TikTok --&gt;</span>
+<span class="kw">&lt;svg</span> viewBox=<span class="str">"0 0 24 24"</span> fill=<span class="str">"none"</span> stroke=<span class="str">"currentColor"</span> stroke-width=<span class="str">"1.7"</span> stroke-linecap=<span class="str">"round"</span> stroke-linejoin=<span class="str">"round"</span> aria-label=<span class="str">"TikTok"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;path</span> d=<span class="str">"M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"</span><span class="kw">/&gt;</span>
+<span class="kw">&lt;/svg&gt;</span>
+
+<span class="cmt">&lt;!-- Discord --&gt;</span>
+<span class="kw">&lt;svg</span> viewBox=<span class="str">"0 0 24 24"</span> fill=<span class="str">"none"</span> stroke=<span class="str">"currentColor"</span> stroke-width=<span class="str">"1.7"</span> stroke-linecap=<span class="str">"round"</span> stroke-linejoin=<span class="str">"round"</span> aria-label=<span class="str">"Discord"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;path</span> d=<span class="str">"M9 11.5 a1 1 0 1 0 0 .01"</span><span class="kw">/&gt;</span>
+  <span class="kw">&lt;path</span> d=<span class="str">"M15 11.5 a1 1 0 1 0 0 .01"</span><span class="kw">/&gt;</span>
+  <span class="kw">&lt;path</span> d=<span class="str">"M8.5 4.5 A16 16 0 0 1 15.5 4.5 C18 5.5 20 9 20 12 C20 15 18 18.5 15.5 19.5 L14 17.5 C13.4 17.8 12.7 18 12 18 C11.3 18 10.6 17.8 10 17.5 L8.5 19.5 C6 18.5 4 15 4 12 C4 9 6 5.5 8.5 4.5Z"</span><span class="kw">/&gt;</span>
+<span class="kw">&lt;/svg&gt;</span></div>
+</div>
+
+</body>
+</html>
