@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tools | IQMindware</title>
-    <link rel="stylesheet" href="/assets/css/brand.css">
+  <link rel="stylesheet" href="/assets/css/brand.css">
   <link rel="stylesheet" href="/assets/css/templates.css">
   <link rel="stylesheet" href="/assets/css/pages/tools.css">
 </head>
-<body>
+<body class="tools">
   <header class="site-header">
     <a class="brand" href="/">IQMindware</a>
     <p class="tagline">Train general intelligence, then prove carryover.</p>
@@ -24,33 +24,346 @@
       <a class="nav-link" href="/login/"><span>Login</span></a>
     </nav>
   </header>
-  <main class="page">
-    <section class="hero">
-      <h1>Tools</h1>
-      <p>Suite overview with who-it-is-for, required time, outputs, and transfer checks.</p>
+
+  <main class="tools-page">
+    <section class="tools-hero">
+      <div class="tools-hero-inner">
+        <div>
+          <span class="tools-hero-eyebrow">IQMindware - Tools</span>
+          <h1 class="tools-hero-title">Choose your tool<br><em>for today.</em></h1>
+          <p class="tools-hero-desc">Four tools, one framework. Start with <strong>G Tracker</strong> to baseline, run <strong>Zone Coach</strong> to gate training, then use <strong>Capacity Gym</strong> for transfer-oriented practice.</p>
+          <div class="tools-hero-btns">
+            <a href="#tools-grid" class="btn btn-lime btn-sm">See all tools</a>
+            <a href="/start/" class="btn btn-ghost-dk btn-sm">New? Start here</a>
+            <a href="/pricing/" class="btn btn-ghost-dk btn-sm">Plans and pricing</a>
+          </div>
+        </div>
+        <div class="tools-hero-meta" aria-label="Quick route summary">
+          <div class="tools-meta-chip tools-meta-chip--cyan">
+            <div class="tools-meta-chip-label">Assess</div>
+            <div class="tools-meta-chip-value">G Tracker - about 5 min</div>
+          </div>
+          <div class="tools-meta-chip tools-meta-chip--lime">
+            <div class="tools-meta-chip-label">Regulate</div>
+            <div class="tools-meta-chip-value">Zone Coach - about 3 min</div>
+          </div>
+          <div class="tools-meta-chip tools-meta-chip--violet">
+            <div class="tools-meta-chip-label">Train</div>
+            <div class="tools-meta-chip-value">Capacity Gym - 10 to 20 min</div>
+          </div>
+        </div>
+      </div>
     </section>
-    <section class="proof-posture" aria-label="Design intent and proof posture">
-      <h2>Design Intent + Proof Posture</h2>
-      <ul>
-        <li><strong>Designed for far transfer:</strong> Designed to train general intelligence capacity and cognitive resilience, and to test whether gains carry over under changed conditions.</li>
-        <li><strong>How transfer is checked:</strong> Wrapper swaps, boundary/trap probes, and delayed re-checks.</li>
-        <li><strong>Transparency:</strong> Protocol + progression logic are public; users can export their training trail; we publish aggregated summaries of test results as the evidence base grows.</li>
-        <li><strong>Boundary:</strong> Skills training and self-regulation, not diagnosis or treatment. Outcomes vary.</li>
-      </ul>
-      <p class="proof-quicklinks"><a href="/proof#protocols">View open protocols</a><a href="/proof#data">View data summaries</a></p>
+
+    <div class="tools-routes" aria-label="Tool route shortcuts">
+      <div class="tools-routes-inner">
+        <span class="tools-routes-label">I want to:</span>
+        <button class="tools-route-chip tools-route-chip--assess active" data-route="assess" type="button"><span class="tools-route-dot"></span>Assess</button>
+        <button class="tools-route-chip tools-route-chip--regulate" data-route="regulate" type="button"><span class="tools-route-dot"></span>Regulate</button>
+        <button class="tools-route-chip tools-route-chip--train" data-route="train" type="button"><span class="tools-route-dot"></span>Train</button>
+        <button class="tools-route-chip tools-route-chip--bundle" data-route="bundle" type="button"><span class="tools-route-dot"></span>Bundle</button>
+      </div>
+    </div>
+
+    <section id="tools-grid" class="tools-grid-section">
+      <div class="tools-grid-section-inner">
+        <div class="tools-grid-hd">
+          <span class="tools-grid-eyebrow">All tools</span>
+          <h2 class="tools-grid-title">Four tools, one framework</h2>
+        </div>
+
+        <div class="tools-grid">
+          <article class="tool-card tool-card--gt" tabindex="0" data-route="assess">
+            <div class="tool-card-hd">
+              <div class="tool-card-hd-left">
+                <div class="tool-icon">&#128202;</div>
+                <div>
+                  <div class="tool-name">G Tracker</div>
+                  <div class="tool-purpose">Baseline and trend tracking for practical intelligence markers.</div>
+                </div>
+              </div>
+              <div class="tool-tags">
+                <span class="tool-tag tool-tag--live">Live</span>
+                <span class="tool-tag tool-tag--core">IQ Core</span>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Who it's for</div>
+                <div class="tool-meta-value">Anyone starting or re-baselining before a training block.</div>
+              </div>
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Time</div>
+                <div class="tool-meta-value"><strong>About 5 minutes</strong> per check.</div>
+              </div>
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Output</div>
+                <div class="tool-meta-value">Trend signal, battery marker profile, and practical next-step guidance.</div>
+              </div>
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Transfer check</div>
+                <div class="tool-meta-value">
+                  <div class="tool-check-chips">
+                    <span class="tool-check-chip">Boundary probe</span>
+                    <span class="tool-check-chip">Delayed re-check</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tool-card-ft">
+              <a href="/tools/g-tracker/" class="tool-cta-primary">Open tool</a>
+              <a href="/proof/g-tracker/" class="tool-cta-secondary">Learn more</a>
+            </div>
+          </article>
+
+          <article class="tool-card tool-card--zc" tabindex="0" data-route="regulate">
+            <div class="tool-card-hd">
+              <div class="tool-card-hd-left">
+                <div class="tool-icon">&#9889;</div>
+                <div>
+                  <div class="tool-name">Zone Coach</div>
+                  <div class="tool-purpose">Readiness check and fast re-entry support before training.</div>
+                </div>
+              </div>
+              <div class="tool-tags">
+                <span class="tool-tag tool-tag--live">Live</span>
+                <span class="tool-tag tool-tag--core">IQ Core</span>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Who it's for</div>
+                <div class="tool-meta-value">Users who want state-aware training decisions, not grind-by-default.</div>
+              </div>
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Time</div>
+                <div class="tool-meta-value"><strong>About 3 minutes</strong> before training.</div>
+              </div>
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Output</div>
+                <div class="tool-meta-value">Readiness state and routing recommendation for today.</div>
+              </div>
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Transfer check</div>
+                <div class="tool-meta-value">
+                  <div class="tool-check-chips">
+                    <span class="tool-check-chip">State gate</span>
+                    <span class="tool-check-chip">Re-entry log</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tool-card-ft">
+              <a href="/tools/zone-coach/" class="tool-cta-primary">Open tool</a>
+              <a href="/proof/protocols/zone-coach/" class="tool-cta-secondary">Learn more</a>
+            </div>
+          </article>
+
+          <article class="tool-card tool-card--cg" tabindex="0" data-route="train">
+            <div class="tool-card-hd">
+              <div class="tool-card-hd-left">
+                <div class="tool-icon">&#129504;</div>
+                <div>
+                  <div class="tool-name">Capacity Gym</div>
+                  <div class="tool-purpose">Adaptive capacity training with explicit transfer probes.</div>
+                </div>
+              </div>
+              <div class="tool-tags">
+                <span class="tool-tag tool-tag--live">Live</span>
+                <span class="tool-tag tool-tag--core">IQ Core</span>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Who it's for</div>
+                <div class="tool-meta-value">Users ready for structured training under progressive challenge.</div>
+              </div>
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Time</div>
+                <div class="tool-meta-value"><strong>10 to 20 minutes</strong> per session.</div>
+              </div>
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Output</div>
+                <div class="tool-meta-value">Progress trend, probe outcomes, and session trail.</div>
+              </div>
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Transfer check</div>
+                <div class="tool-meta-value">
+                  <div class="tool-check-chips">
+                    <span class="tool-check-chip">Wrapper swap</span>
+                    <span class="tool-check-chip">Boundary probe</span>
+                    <span class="tool-check-chip">Delayed re-check</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tool-card-ft">
+              <a href="/tools/capacity-gym/" class="tool-cta-primary">Open tool</a>
+              <a href="/proof/protocols/capacity-gym/" class="tool-cta-secondary">Learn more</a>
+            </div>
+          </article>
+
+          <article class="tool-card tool-card--mg tool-card--soon" tabindex="0" data-route="bundle" aria-label="Mindware Gym coming soon">
+            <div class="tool-card-hd">
+              <div class="tool-card-hd-left">
+                <div class="tool-icon">&#127776;</div>
+                <div>
+                  <div class="tool-name">Mindware Gym</div>
+                  <div class="tool-purpose">Integrated protocol layer for the next release phase.</div>
+                </div>
+              </div>
+              <div class="tool-tags">
+                <span class="tool-tag tool-tag--soon">Coming soon</span>
+              </div>
+            </div>
+            <div class="tool-meta">
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Who it's for</div>
+                <div class="tool-meta-value">Users who want one integrated daily flow across the stack.</div>
+              </div>
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Time</div>
+                <div class="tool-meta-value"><strong>15 to 30 minutes</strong> guided flow.</div>
+              </div>
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Output</div>
+                <div class="tool-meta-value">Unified training trail and integrated protocol dashboard.</div>
+              </div>
+              <div class="tool-meta-row">
+                <div class="tool-meta-label">Transfer check</div>
+                <div class="tool-meta-value">
+                  <div class="tool-check-chips">
+                    <span class="tool-check-chip">Integrated checks</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tool-card-ft">
+              <a href="/tools/mindware-gym/" class="tool-cta-primary" aria-disabled="true">Coming soon</a>
+              <a href="/tools/mindware-gym/" class="tool-cta-waitlist">Join waitlist</a>
+            </div>
+          </article>
+        </div>
+      </div>
     </section>
-    <section class="card">
-      <h2>What to do today</h2>
-      <p>Run Zone Coach, then Capacity Gym, then log outcomes in G Tracker.</p>
+
+    <section class="tools-today" aria-label="Recommended flow">
+      <div class="tools-today-inner">
+        <span class="tools-today-eyebrow">Recommended flow for new users</span>
+        <h2 class="tools-today-title">What to do today</h2>
+        <div class="tools-today-steps">
+          <div class="tools-today-step">
+            <div class="tools-step-num">1</div>
+            <div class="tools-step-tool">G Tracker</div>
+            <div class="tools-step-action">Run baseline check</div>
+            <div class="tools-step-time">~5 min</div>
+          </div>
+          <div class="tools-today-step">
+            <div class="tools-step-num">2</div>
+            <div class="tools-step-tool">Zone Coach</div>
+            <div class="tools-step-action">Check readiness state</div>
+            <div class="tools-step-time">~3 min</div>
+          </div>
+          <div class="tools-today-step">
+            <div class="tools-step-num">3</div>
+            <div class="tools-step-tool">Capacity Gym</div>
+            <div class="tools-step-action">Train if ready</div>
+            <div class="tools-step-time">10-20 min</div>
+          </div>
+          <div class="tools-today-step">
+            <div class="tools-step-num">4</div>
+            <div class="tools-step-tool">G Tracker</div>
+            <div class="tools-step-action">Run delayed re-check</div>
+            <div class="tools-step-time">~5 min</div>
+          </div>
+        </div>
+      </div>
     </section>
-    <section class="grid two">
-      <article class="card"><h2>G Tracker</h2><p>Assessment battery. Weekly 12-15 min.</p><p><a class="btn" href="/tools/g-tracker/">View</a></p></article>
-      <article class="card"><h2>Zone Coach</h2><p>Readiness and re-entry check. About 3 min.</p><p><a class="btn" href="/tools/zone-coach/">View</a></p></article>
-      <article class="card"><h2>Capacity Gym</h2><p>Transfer-oriented capacity training.</p><p><a class="btn" href="/tools/capacity-gym/">View</a></p></article>
-      <article class="card"><h2>Mindware Gym</h2><p>Inference Algebra protocol. Coming soon.</p><p><a class="btn" href="/tools/mindware-gym/">View</a></p></article>
+
+    <section class="tools-proof-posture" aria-label="Design intent and proof posture">
+      <div class="tools-proof-posture-inner">
+        <div class="tools-posture-lhs">
+          <span class="tools-posture-eyebrow">Design intent and proof posture</span>
+          <h2 class="tools-posture-title">Transfer designed in, not assumed.</h2>
+          <p class="tools-posture-sub"><a href="/proof#protocols">View open protocols</a> and <a href="/proof#data">view data summaries</a>.</p>
+        </div>
+        <div class="tools-posture-rhs">
+          <div class="tools-posture-item tools-posture-item--design">
+            <div class="tools-posture-item-label">Designed for far transfer</div>
+            <div class="tools-posture-item-text">Designed to train general intelligence capacity and cognitive resilience, and to test whether gains carry over under changed conditions.</div>
+          </div>
+          <div class="tools-posture-item tools-posture-item--check">
+            <div class="tools-posture-item-label">How transfer is checked</div>
+            <div class="tools-posture-item-text">Wrapper swaps, boundary/trap probes, and delayed re-checks.</div>
+          </div>
+          <div class="tools-posture-item tools-posture-item--transparency">
+            <div class="tools-posture-item-label">Transparency</div>
+            <div class="tools-posture-item-text">Protocol + progression logic are public; users can export their training trail; we publish aggregated summaries of test results as the evidence base grows.</div>
+          </div>
+          <div class="tools-posture-item tools-posture-item--boundary">
+            <div class="tools-posture-item-label">Boundary</div>
+            <div class="tools-posture-item-text">Skills training and self-regulation, not diagnosis or treatment. Outcomes vary.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tools-cta-band" aria-label="Tools CTA">
+      <div class="tools-cta-band-inner">
+        <span class="tools-cta-eyebrow">Ready to begin?</span>
+        <h2 class="tools-cta-title">Start with your state.<br><em>Train from there.</em></h2>
+        <p class="tools-cta-desc">Run a short baseline, then use readiness gating before training.</p>
+        <div class="tools-cta-btns">
+          <a href="/tools/g-tracker/" class="btn btn-lime">Open G Tracker</a>
+          <a href="/start/" class="btn btn-ghost-dk">New? Start here</a>
+          <a href="/pricing/" class="btn btn-ghost-dk">See plans</a>
+        </div>
+      </div>
     </section>
   </main>
-  <footer class="site-footer"><p>Skills training and self-regulation, not diagnosis or treatment.</p></footer>
+
+  <footer class="site-footer">
+    <p>Skills training and self-regulation, not diagnosis or treatment.</p>
+  </footer>
+
+  <script>
+    (function () {
+      const chips = Array.from(document.querySelectorAll(".tools-route-chip"));
+      const cards = Array.from(document.querySelectorAll(".tool-card"));
+
+      function filterTools(route) {
+        chips.forEach((chip) => chip.classList.toggle("active", chip.dataset.route === route));
+
+        cards.forEach((card) => {
+          if (route === "bundle") {
+            card.style.opacity = "1";
+            card.style.transform = "";
+            return;
+          }
+          const match = card.dataset.route === route;
+          card.style.opacity = match ? "1" : "0.38";
+          card.style.transform = match ? "" : "scale(0.98)";
+        });
+      }
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", function () {
+          filterTools(this.dataset.route);
+        });
+      });
+
+      cards.forEach((card) => {
+        card.addEventListener("keydown", function (event) {
+          if (event.key !== "Enter") return;
+          const primary = card.querySelector(".tool-cta-primary");
+          if (!primary || primary.getAttribute("aria-disabled") === "true") return;
+          primary.click();
+        });
+      });
+
+      filterTools("assess");
+    })();
+  </script>
   <script src="/assets/app.js" defer></script>
 </body>
 </html>
