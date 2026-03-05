@@ -1,0 +1,260 @@
+/* ============================================================
+   IQ MINDWARE — contact.css  v1.0
+   Scope: /contact — direct contact with Dr Mark Ashton Smith.
+   Requires: brand.css loaded first.
+   All rules scoped under .contact-page.
+   Design goal: clean, direct, one clear action above the fold.
+   ============================================================ */
+
+
+/* ============================================================
+   1. PAGE SHELL
+   ============================================================ */
+body.contact    { background: var(--pg-alt); }
+.contact-page   { padding-top: 64px; }
+
+
+/* ============================================================
+   2. HERO
+   ============================================================ */
+.ct-hero {
+  background:
+    radial-gradient(ellipse 700px 420px at 0% 70%, rgba(34,170,255,.09), transparent 55%),
+    radial-gradient(ellipse 500px 320px at 100% 20%, rgba(204,255,102,.06), transparent 50%),
+    var(--card-dark);
+  border-bottom: 2px solid rgba(255,255,255,.06);
+  padding: 100px var(--gutter) 56px;
+}
+.ct-hero-inner {
+  max-width: var(--max-w); margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 56px; align-items: center;
+}
+.ct-hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--cyan-lt); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.ct-hero-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 18px; height: 1.5px;
+  background: var(--cyan); flex-shrink: 0;
+}
+.ct-hero-title {
+  font-size: clamp(26px, 3.8vw, 46px);
+  font-weight: 800; letter-spacing: -.022em;
+  line-height: 1.07; color: var(--tc); margin-bottom: 14px;
+}
+.ct-hero-title em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--lime), #22AAFF);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.ct-hero-sub {
+  font-size: 15px; color: var(--tcm);
+  max-width: 52ch; line-height: 1.72; margin-bottom: 28px;
+}
+.ct-hero-sub strong { color: var(--tc); }
+.ct-hero-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* Hero right: identity card */
+.ct-identity-card {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: var(--r-xl);
+  padding: 28px 24px;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 4px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.ct-identity-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(34,170,255,.25), rgba(204,255,102,.15));
+  border: 2px solid rgba(255,255,255,.14);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+.ct-identity-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ct-identity-name {
+  font-size: 15px; font-weight: 800;
+  color: var(--tc); letter-spacing: -.012em; margin-bottom: 3px;
+}
+.ct-identity-role {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px; letter-spacing: .10em; text-transform: uppercase;
+  color: var(--tcf); margin-bottom: 16px;
+}
+.ct-identity-email {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 11.5px; font-weight: 500;
+  color: var(--cyan-lt); letter-spacing: .03em;
+  text-decoration: none;
+  padding: 7px 14px;
+  background: rgba(34,170,255,.07);
+  border: 1px solid rgba(34,170,255,.18);
+  border-radius: var(--r-md);
+  margin-bottom: 8px;
+  transition: background var(--t-fast), border-color var(--t-fast);
+  width: 100%;
+}
+.ct-identity-email:hover  { background: rgba(34,170,255,.13); border-color: rgba(34,170,255,.32); }
+.ct-identity-email:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+.ct-identity-linkedin {
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  font-size: 12px; font-weight: 700;
+  color: var(--tcm); text-decoration: none;
+  padding: 7px 14px;
+  background: rgba(10,102,194,.08);
+  border: 1px solid rgba(10,102,194,.22);
+  border-radius: var(--r-md);
+  width: 100%;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+.ct-identity-linkedin:hover { background: rgba(10,102,194,.14); border-color: rgba(10,102,194,.38); color: #5ba4ef; }
+.ct-identity-linkedin:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+.ct-identity-linkedin-icon { width: 14px; height: 14px; flex-shrink: 0; }
+
+
+/* ============================================================
+   3. CONTACT METHOD CARDS
+   ============================================================ */
+.ct-section {
+  padding: 60px var(--gutter) 64px;
+  border-bottom: 1px solid rgba(0,0,0,.09);
+}
+.ct-section--white { background: #ffffff; }
+.ct-section--light { background: #eceef2; }
+.ct-section-inner  { max-width: var(--max-w); margin: 0 auto; }
+
+.ct-section-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--blue-dp); display: block; margin-bottom: 8px;
+}
+.ct-section-title {
+  font-size: clamp(18px, 2.4vw, 26px);
+  font-weight: 800; letter-spacing: -.016em;
+  line-height: 1.14; color: var(--tl); margin-bottom: 28px;
+}
+
+.ct-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.ct-card {
+  background: #ffffff;
+  border: 1.5px solid rgba(0,0,0,.08);
+  border-radius: 14px;
+  padding: 26px 22px 22px;
+  display: flex; flex-direction: column;
+  transition: box-shadow var(--t-base), transform var(--t-base);
+}
+.ct-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.08); transform: translateY(-2px); }
+
+.ct-card:nth-child(1) { border-top: 3px solid var(--cyan); }
+.ct-card:nth-child(2) { border-top: 3px solid var(--lime); }
+.ct-card:nth-child(3) { border-top: 3px solid #0A66C2; }
+
+.ct-card-icon { font-size: 22px; margin-bottom: 12px; display: block; }
+.ct-card-title {
+  font-size: 15px; font-weight: 800;
+  color: var(--tl); letter-spacing: -.01em; margin-bottom: 8px;
+}
+.ct-card-text {
+  font-size: 13.5px; color: var(--tlm);
+  line-height: 1.60; flex: 1; margin-bottom: 18px;
+}
+.ct-card-cta {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px; border-radius: var(--r-md);
+  font-size: 12.5px; font-weight: 800;
+  text-decoration: none; border: none; cursor: pointer;
+  font-family: inherit; line-height: 1;
+  min-height: 44px;
+  transition: filter var(--t-fast), transform var(--t-fast);
+  width: fit-content; margin-top: auto;
+}
+.ct-card-cta:hover { filter: brightness(1.07); transform: translateY(-1px); }
+.ct-card-cta:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+
+.ct-card:nth-child(1) .ct-card-cta { background: rgba(34,170,255,.10);  border: 1px solid rgba(34,170,255,.25);  color: #1a6eb0; }
+.ct-card:nth-child(2) .ct-card-cta { background: rgba(126,207,0,.10);   border: 1px solid rgba(126,207,0,.25);   color: var(--step-regulate-text, #3d6600); }
+.ct-card:nth-child(3) .ct-card-cta { background: rgba(10,102,194,.08);  border: 1px solid rgba(10,102,194,.24);  color: #1a5fa8; }
+
+.ct-card:nth-child(1) .ct-card-cta:hover { background: rgba(34,170,255,.16); }
+.ct-card:nth-child(2) .ct-card-cta:hover { background: rgba(126,207,0,.16); }
+.ct-card:nth-child(3) .ct-card-cta:hover { background: rgba(10,102,194,.14); }
+
+/* LinkedIn icon inside card CTA */
+.ct-li-icon { width: 14px; height: 14px; flex-shrink: 0; }
+
+
+/* ============================================================
+   4. EXPECTATIONS BLOCK
+   ============================================================ */
+.ct-expectations {
+  max-width: 600px; margin: 0 auto;
+  background: #ffffff;
+  border: 1.5px solid rgba(0,0,0,.08);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+.ct-exp-row {
+  display: flex; align-items: flex-start; gap: 13px;
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+.ct-exp-row:last-child { border-bottom: none; }
+.ct-exp-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+.ct-exp-text {
+  font-size: 13.5px; color: var(--tlm); line-height: 1.65;
+}
+.ct-exp-text strong { color: var(--tl); }
+.ct-exp-text a {
+  color: var(--blue-dp); font-weight: 700; text-decoration: none;
+  border-bottom: 1px solid rgba(39,100,183,.22);
+}
+.ct-exp-text a:hover { border-bottom-color: var(--blue-dp); }
+
+/* Trust row — amber tint */
+.ct-exp-row--trust {
+  background: rgba(180,83,9,.04);
+  border-top: 1px solid rgba(180,83,9,.12);
+}
+.ct-exp-row--trust .ct-exp-icon { color: rgba(180,83,9,.70); }
+.ct-exp-row--trust .ct-exp-text { font-size: 13px; color: var(--tlm); }
+
+
+/* ============================================================
+   5. RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .ct-hero-inner   { grid-template-columns: 1fr; }
+  .ct-identity-card { max-width: 320px; }
+}
+@media (max-width: 700px) {
+  .ct-cards        { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .ct-hero         { padding: 92px var(--gutter) 44px; }
+  .ct-hero-btns    { flex-direction: column; }
+  .ct-hero-btns .btn { justify-content: center; }
+  .ct-identity-card { max-width: 100%; }
+}
