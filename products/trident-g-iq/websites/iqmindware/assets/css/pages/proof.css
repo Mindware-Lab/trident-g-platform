@@ -119,6 +119,63 @@ body.proof { background: var(--proof-surface); }
 
 
 /* ============================================================
+   5. STEWARDSHIP
+   ============================================================ */
+.proof-steward-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.proof-steward-card {
+  background: #fff;
+  border: 1.5px solid var(--proof-card-bdr);
+  border-top: 3px solid transparent;
+  border-radius: var(--r-xl);
+  padding: 22px 22px 18px;
+}
+.proof-steward-card:nth-child(1) { border-top-color: #22AAFF; }
+.proof-steward-card:nth-child(2) { border-top-color: #7ecf00; }
+.proof-steward-hd {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--blue-dp);
+  margin-bottom: 10px;
+}
+.proof-steward-text {
+  font-size: 13.5px;
+  line-height: 1.68;
+  color: var(--tlm);
+}
+.proof-steward-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.proof-steward-link {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--blue-dp);
+  text-decoration: none;
+  border-radius: var(--r-full);
+  border: 1px solid rgba(39,100,183,.20);
+  background: rgba(39,100,183,.06);
+  padding: 6px 11px;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.proof-steward-link:hover {
+  background: rgba(39,100,183,.10);
+  border-color: rgba(39,100,183,.34);
+}
+.proof-steward-link:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+
+/* ============================================================
    5. SECTION WRAPPERS - light / dark / light-alt
    ============================================================ */
 .proof-section {
@@ -340,6 +397,7 @@ body.proof { background: var(--proof-surface); }
   .proof-hero-inner    { grid-template-columns: 1fr; }
   .proof-hero-meta     { flex-direction: row; flex-wrap: wrap; }
   .proof-meta-chip     { min-width: 0; flex: 1 1 140px; }
+  .proof-steward-grid  { grid-template-columns: 1fr; }
   .claims-grid         { grid-template-columns: 1fr; }
   .data-grid           { grid-template-columns: 1fr; }
   .data-summary-body   { grid-template-columns: 1fr 1fr; }

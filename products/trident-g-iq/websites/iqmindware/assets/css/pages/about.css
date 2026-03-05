@@ -204,6 +204,69 @@ body.about   { background: var(--ab-surface); }
 
 
 /* ============================================================
+   5. FOUNDER PROFILE
+   ============================================================ */
+.ab-founder-grid {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.ab-founder-photo-wrap {
+  width: 180px;
+  height: 180px;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  border: 1.5px solid rgba(34,170,255,.20);
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+}
+.ab-founder-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ab-founder-card {
+  background: var(--ab-card-bg);
+  border: 1.5px solid var(--ab-card-bdr);
+  border-top: 3px solid var(--cyan);
+  border-radius: var(--r-xl);
+  padding: 24px 24px 20px;
+}
+.ab-founder-text {
+  font-size: 14px;
+  color: var(--tlm);
+  line-height: 1.72;
+}
+.ab-founder-text + .ab-founder-text { margin-top: 10px; }
+.ab-founder-links {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ab-founder-link {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--blue-dp);
+  text-decoration: none;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(39,100,183,.20);
+  background: rgba(39,100,183,.06);
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.ab-founder-link:hover {
+  background: rgba(39,100,183,.10);
+  border-color: rgba(39,100,183,.32);
+}
+.ab-founder-link:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+
+/* ============================================================
    5. WHO WE ARE - identity block
    ============================================================ */
 .ab-identity-grid {
@@ -692,6 +755,8 @@ body.about   { background: var(--ab-surface); }
 @media (max-width: 900px) {
   .ab-hero-inner       { grid-template-columns: 1fr; }
   .ab-hero-panel       { display: none; }
+  .ab-founder-grid     { grid-template-columns: 120px 1fr; }
+  .ab-founder-photo-wrap { width: 120px; height: 120px; }
   .ab-identity-grid    { grid-template-columns: 1fr; }
   .ab-compare-grid     { grid-template-columns: 1fr; }
   .ab-method-rail      { grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -700,6 +765,9 @@ body.about   { background: var(--ab-surface); }
 }
 @media (max-width: 600px) {
   .ab-hero             { padding: 96px var(--gutter) 44px; }
+  .ab-founder-grid     { grid-template-columns: 1fr; gap: 14px; }
+  .ab-founder-photo-wrap { width: 96px; height: 96px; border-radius: 50%; }
+  .ab-founder-card     { padding: 20px 18px 16px; }
   .ab-principles-grid  { grid-template-columns: 1fr; }
   .ab-method-rail      { grid-template-columns: 1fr; gap: 12px; }
   .ab-roadmap-grid     { grid-template-columns: 1fr; }

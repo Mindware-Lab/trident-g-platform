@@ -250,6 +250,87 @@ body.home  { background: var(--home-surface); }
 
 
 /* ============================================================
+   4. FOUNDER STRIP
+   ============================================================ */
+.home-founder-strip {
+  background: var(--pg);
+  border-bottom: 1px solid var(--home-rule);
+  padding: 42px var(--gutter);
+}
+.home-founder-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 26px;
+  align-items: center;
+}
+.home-founder-photo-wrap {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(34,170,255,.20);
+  box-shadow: 0 8px 20px rgba(0,0,0,.12);
+  flex-shrink: 0;
+}
+.home-founder-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.home-founder-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--blue-dp);
+  margin-bottom: 8px;
+  display: block;
+}
+.home-founder-title {
+  font-size: clamp(20px, 2.8vw, 30px);
+  font-weight: 800;
+  letter-spacing: -.018em;
+  color: var(--tl);
+  margin-bottom: 10px;
+}
+.home-founder-text {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--tlm);
+  margin-bottom: 8px;
+  max-width: 88ch;
+}
+.home-founder-links {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.home-founder-link {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--blue-dp);
+  text-decoration: none;
+  border: 1px solid rgba(39,100,183,.20);
+  background: rgba(39,100,183,.06);
+  border-radius: 999px;
+  padding: 6px 12px;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.home-founder-link:hover {
+  background: rgba(39,100,183,.10);
+  border-color: rgba(39,100,183,.34);
+}
+.home-founder-link:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+
+/* ============================================================
    4. ROUTE CARDS
    ============================================================ */
 .home-routes-section {
@@ -772,12 +853,17 @@ body.home  { background: var(--home-surface); }
 @media (max-width: 900px) {
   .home-hero-inner        { grid-template-columns: 1fr; }
   .home-hero-panel        { display: none; }
+  .home-founder-inner     { grid-template-columns: 88px 1fr; align-items: start; }
+  .home-founder-photo-wrap { width: 88px; height: 88px; }
   .home-routes-inner      { grid-template-columns: 1fr; gap: 12px; }
   .home-proof-inner       { grid-template-columns: 1fr; gap: 28px; }
   .home-proof-rhs         { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 600px) {
   .home-hero              { padding: 96px var(--gutter) 48px; }
+  .home-founder-strip     { padding: 34px var(--gutter); }
+  .home-founder-inner     { grid-template-columns: 1fr; gap: 16px; }
+  .home-founder-photo-wrap { width: 86px; height: 86px; }
   .home-diff-grid         { grid-template-columns: 1fr; }
   .home-tools-grid        { grid-template-columns: 1fr; }
   .home-plans-strip       { grid-template-columns: 1fr; }
