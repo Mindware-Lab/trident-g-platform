@@ -6,9 +6,9 @@
   <title>Start here | IQMindware</title>
   <link rel="stylesheet" href="/assets/css/brand.css">
   <link rel="stylesheet" href="/assets/css/templates.css">
-  <link rel="stylesheet" href="/assets/css/pages/tools.css">
+  <link rel="stylesheet" href="/assets/css/pages/start.css">
 </head>
-<body>
+<body class="start">
   <header class="site-header">
     <a class="brand" href="/">IQMindware</a>
     <p class="tagline">Train general intelligence, then prove carryover.</p>
@@ -25,106 +25,285 @@
     </nav>
   </header>
 
-  <main class="page">
-    <section class="hero">
-      <h1>Start here in about 10 minutes</h1>
-      <p>Pick your lane, run a short first workflow, and leave with a clear next step for today.</p>
-      <p><a class="btn" href="#first-flow">Start first workflow</a></p>
-    </section>
-
-    <section class="card" aria-label="Pick your lane">
-      <h2>Pick your lane</h2>
-      <p>Choose one lane for your first week. You can switch later once your baseline and readiness signals are stable.</p>
-      <div class="grid three">
-        <article class="card">
-          <h3>Performance</h3>
-          <p>Use this lane when your main goal is cleaner reasoning and better execution under real constraints.</p>
-          <p><strong>Start with:</strong> G Tracker baseline then Capacity Gym.</p>
-        </article>
-        <article class="card">
-          <h3>Resilience</h3>
-          <p>Use this lane when your main goal is steadier state, faster re-entry, and less drift on heavy days.</p>
-          <p><strong>Start with:</strong> Zone Coach then a short training block.</p>
-        </article>
-        <article class="card">
-          <h3>Student and exam</h3>
-          <p>Use this lane when your main goal is portable study scripts that still work under time pressure.</p>
-          <p><strong>Start with:</strong> G Tracker baseline then focused mission planning.</p>
-        </article>
+  <main class="start-page">
+    <section class="start-hero">
+      <div class="start-hero-inner">
+        <div>
+          <span class="start-hero-eyebrow">IQMindware - New here?</span>
+          <h1 class="start-hero-title">Start here in<br><em>10 minutes.</em></h1>
+          <p class="start-hero-desc">Three tools, one workflow. Begin with a short baseline, check readiness, then train if state allows. No account needed to start your first session.</p>
+          <div class="start-hero-btns">
+            <a href="/tools/g-tracker/" class="btn btn-lime">Run G Tracker baseline</a>
+            <a href="#lanes" class="btn btn-ghost-dk">Choose a lane first</a>
+          </div>
+        </div>
+        <div class="start-hero-meta">
+          <div class="start-meta-chip start-meta-chip--lime">
+            <div class="start-meta-chip-label">Step 1 - Assess</div>
+            <div class="start-meta-chip-value">G Tracker - about 5 min</div>
+          </div>
+          <div class="start-meta-chip start-meta-chip--cyan">
+            <div class="start-meta-chip-label">Step 2 - Regulate</div>
+            <div class="start-meta-chip-value">Zone Coach - about 3 min</div>
+          </div>
+          <div class="start-meta-chip start-meta-chip--violet">
+            <div class="start-meta-chip-label">Step 3 - Train</div>
+            <div class="start-meta-chip-value">Capacity Gym - 10 to 20 min</div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section id="first-flow" class="card" aria-label="First workflow">
-      <h2>First workflow (about 10 minutes)</h2>
-      <ol>
-        <li><strong>Assess:</strong> Run one G Tracker check to set your baseline marker.</li>
-        <li><strong>Regulate:</strong> Run Zone Coach to decide whether today is a train, stabilise, or reset day.</li>
-        <li><strong>Train:</strong> Complete one Capacity Gym block if readiness is acceptable.</li>
-      </ol>
-      <p><strong>Re-check timing:</strong> run a delayed re-check after 7 to 14 sessions.</p>
-    </section>
+    <section id="lanes" class="start-lanes-section">
+      <div class="start-lanes-inner">
+        <div class="start-lanes-hd">
+          <span class="start-lanes-eyebrow">Choose your lane</span>
+          <h2 class="start-lanes-title">Where are you starting from?</h2>
+          <p class="start-lanes-sub">Pick the lane that best matches your immediate goal. You can switch later after baseline and delayed re-check data are in place.</p>
+        </div>
+        <div class="start-lanes-grid">
+          <a href="#actions" class="lane-card lane-card--perf" tabindex="0" aria-label="Choose Performance lane">
+            <div class="lane-card-hd">
+              <div>
+                <div class="lane-icon">&#127919;</div>
+                <div class="lane-name">Performance</div>
+              </div>
+              <span class="lane-time-chip">about 18 min/day</span>
+            </div>
+            <div class="lane-body">
+              <p class="lane-desc">Focus on reasoning quality, tighter execution, and cleaner decisions under load.</p>
+              <div class="lane-choose-if">Choose this if... <strong>you need better performance on demanding work.</strong></div>
+            </div>
+            <div class="lane-card-ft">
+              <div class="lane-tool-chips">
+                <span class="lane-tool-chip">G Tracker</span>
+                <span class="lane-tool-chip">Zone Coach</span>
+                <span class="lane-tool-chip">Capacity Gym</span>
+              </div>
+              <span class="lane-cta">Start</span>
+            </div>
+          </a>
 
-    <section class="card" aria-label="What to do now">
-      <h2>What to do now</h2>
-      <div class="grid three">
-        <article class="card">
-          <h3>1. Run baseline</h3>
-          <p>Open G Tracker and complete a short battery check.</p>
-          <p><a class="btn" href="/tools/g-tracker/">Open G Tracker</a></p>
-        </article>
-        <article class="card">
-          <h3>2. Check readiness</h3>
-          <p>Use Zone Coach before every training session.</p>
-          <p><a class="btn" href="/tools/zone-coach/">Open Zone Coach</a></p>
-        </article>
-        <article class="card">
-          <h3>3. Train one block</h3>
-          <p>Run one Capacity Gym block matched to readiness.</p>
-          <p><a class="btn" href="/tools/capacity-gym/">Open Capacity Gym</a></p>
-        </article>
+          <a href="#actions" class="lane-card lane-card--res" tabindex="0" aria-label="Choose Resilience lane">
+            <div class="lane-card-hd">
+              <div>
+                <div class="lane-icon">&#129504;</div>
+                <div class="lane-name">Resilience</div>
+              </div>
+              <span class="lane-time-chip">about 12 min/day</span>
+            </div>
+            <div class="lane-body">
+              <p class="lane-desc">Focus on stability, faster re-entry, and less state drift across difficult days.</p>
+              <div class="lane-choose-if">Choose this if... <strong>your cognitive state is inconsistent.</strong></div>
+            </div>
+            <div class="lane-card-ft">
+              <div class="lane-tool-chips">
+                <span class="lane-tool-chip">Zone Coach</span>
+                <span class="lane-tool-chip">G Tracker</span>
+                <span class="lane-tool-chip">Capacity Gym</span>
+              </div>
+              <span class="lane-cta">Start</span>
+            </div>
+          </a>
+
+          <a href="#actions" class="lane-card lane-card--student" tabindex="0" aria-label="Choose Student lane">
+            <div class="lane-card-hd">
+              <div>
+                <div class="lane-icon">&#128218;</div>
+                <div class="lane-name">Student and exam</div>
+              </div>
+              <span class="lane-time-chip">about 15 min/day</span>
+            </div>
+            <div class="lane-body">
+              <p class="lane-desc">Focus on portable scripts for assessment and exam contexts with fixed time pressure.</p>
+              <div class="lane-choose-if">Choose this if... <strong>you are preparing for tests or high-stakes study blocks.</strong></div>
+            </div>
+            <div class="lane-card-ft">
+              <div class="lane-tool-chips">
+                <span class="lane-tool-chip">G Tracker</span>
+                <span class="lane-tool-chip">Capacity Gym</span>
+                <span class="lane-tool-chip">Zone Coach</span>
+              </div>
+              <span class="lane-cta">Start</span>
+            </div>
+          </a>
+        </div>
       </div>
     </section>
 
-    <section class="card" aria-label="Path options">
-      <h2>Choose your support level</h2>
-      <div class="grid two">
-        <article class="card">
-          <h3>Software only</h3>
-          <p>Use the apps directly with proof and protocol references available at any time.</p>
-          <p><a class="btn" href="/pricing/">See software plans</a></p>
-        </article>
-        <article class="card">
-          <h3>Software + coaching</h3>
-          <p>Add live support when you want pacing, review, and execution feedback on your active mission.</p>
-          <p><a class="btn" href="/coaching/">See coaching options</a></p>
-        </article>
+    <section class="start-steps-section" aria-label="First workflow timeline">
+      <div class="start-steps-inner">
+        <span class="start-steps-eyebrow">First-win flow</span>
+        <h2 class="start-steps-title">Your first session in three steps</h2>
+        <div class="start-steps-grid">
+          <article class="start-step start-step--assess">
+            <div class="start-step-num">1</div>
+            <div class="start-step-tool">G Tracker</div>
+            <div class="start-step-action">Assess your baseline</div>
+            <div class="start-step-time-chip">about 5 min</div>
+            <p class="start-step-desc">Run a short battery and store your first baseline marker locally.</p>
+            <a class="start-step-link" href="/tools/g-tracker/">Open G Tracker</a>
+          </article>
+          <article class="start-step start-step--regulate">
+            <div class="start-step-num">2</div>
+            <div class="start-step-tool">Zone Coach</div>
+            <div class="start-step-action">Check readiness state</div>
+            <div class="start-step-time-chip">about 3 min</div>
+            <p class="start-step-desc">Use state output to decide whether to train, stabilise, or reset first.</p>
+            <a class="start-step-link" href="/tools/zone-coach/">Open Zone Coach</a>
+          </article>
+          <article class="start-step start-step--train">
+            <div class="start-step-num">3</div>
+            <div class="start-step-tool">Capacity Gym</div>
+            <div class="start-step-action">Train one block</div>
+            <div class="start-step-time-chip">10 to 20 min</div>
+            <p class="start-step-desc">Run one adaptive block and log results for delayed transfer re-checks later.</p>
+            <a class="start-step-link" href="/tools/capacity-gym/">Open Capacity Gym</a>
+          </article>
+        </div>
       </div>
     </section>
 
-    <section class="proof-posture" aria-label="Design intent and proof posture">
-      <h2>Design Intent + Proof Posture</h2>
-      <ul>
-        <li><strong>Designed for far transfer:</strong> Designed to train general intelligence capacity and cognitive resilience, and to test whether gains carry over under changed conditions.</li>
-        <li><strong>How transfer is checked:</strong> Wrapper swaps, boundary/trap probes, and delayed re-checks.</li>
-        <li><strong>Transparency:</strong> Protocol + progression logic are public; users can export their training trail; we publish aggregated summaries of test results as the evidence base grows.</li>
-        <li><strong>Boundary:</strong> Skills training and self-regulation, not diagnosis or treatment. Outcomes vary.</li>
-      </ul>
-      <p class="proof-quicklinks"><a href="/proof#protocols">View open protocols</a><a href="/proof#data">View data summaries</a></p>
+    <section id="actions" class="start-actions-section">
+      <div class="start-actions-inner">
+        <div class="start-actions-hd">
+          <span class="start-actions-eyebrow">Do this now</span>
+          <h2 class="start-actions-title">Action cards for your first session</h2>
+        </div>
+        <div class="start-actions-grid">
+          <article class="action-card action-card--1">
+            <div class="action-card-hd"><span class="action-num">1</span><span class="action-icon">&#128202;</span><span class="action-name">Run G Tracker baseline</span><span class="action-tool-tag">G Tracker</span></div>
+            <div class="action-card-body">
+              <p class="action-desc">Run the baseline first so every future check has a reference point.</p>
+              <div class="action-output"><strong>You get:</strong> baseline marker and trend starting point.</div>
+            </div>
+            <div class="action-card-ft"><a class="action-cta" href="/tools/g-tracker/">Open</a><span class="action-time-chip">about 5 min</span></div>
+          </article>
+          <article class="action-card action-card--2">
+            <div class="action-card-hd"><span class="action-num">2</span><span class="action-icon">&#9889;</span><span class="action-name">Run Zone Coach check</span><span class="action-tool-tag">Zone Coach</span></div>
+            <div class="action-card-body">
+              <p class="action-desc">Use readiness gating to avoid training through poor conditions.</p>
+              <div class="action-output"><strong>You get:</strong> state output and routing suggestion.</div>
+            </div>
+            <div class="action-card-ft"><a class="action-cta" href="/tools/zone-coach/">Open</a><span class="action-time-chip">about 3 min</span></div>
+          </article>
+          <article class="action-card action-card--3">
+            <div class="action-card-hd"><span class="action-num">3</span><span class="action-icon">&#129504;</span><span class="action-name">Run Capacity Gym block</span><span class="action-tool-tag">Capacity Gym</span></div>
+            <div class="action-card-body">
+              <p class="action-desc">Train one block when readiness allows, then capture session outcome.</p>
+              <div class="action-output"><strong>You get:</strong> session outcome and progression signal.</div>
+            </div>
+            <div class="action-card-ft"><a class="action-cta" href="/tools/capacity-gym/">Open</a><span class="action-time-chip">10 to 20 min</span></div>
+          </article>
+        </div>
+
+        <div class="start-recheck-card">
+          <div class="start-recheck-icon">&#128337;</div>
+          <div class="start-recheck-body">
+            <div class="start-recheck-title">When to re-check</div>
+            <p class="start-recheck-desc">Run a delayed re-check after 7 to 14 sessions to assess carryover under changed conditions.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section class="card" aria-label="Support links">
-      <h2>Need help before you start?</h2>
-      <p>Use support if you want plan guidance, app access help, or billing clarification before checkout.</p>
-      <p>
-        <a class="btn" href="/support/">Support</a>
-        <a class="btn" href="/faq/">FAQ</a>
-      </p>
+    <section class="start-proof-section" aria-label="Design intent and proof posture">
+      <div class="start-proof-inner">
+        <div class="start-proof-lhs">
+          <span class="start-proof-eyebrow">Design intent and proof posture</span>
+          <h2 class="start-proof-title">Transfer is tested, not assumed.</h2>
+          <div class="start-proof-links">
+            <a class="start-proof-link" href="/proof#protocols">View open protocols</a>
+            <a class="start-proof-link" href="/proof#data">View data summaries</a>
+            <a class="start-proof-link" href="/proof/">Open full proof page</a>
+          </div>
+        </div>
+        <div class="start-proof-rhs">
+          <div class="start-proof-item start-proof-item--design">
+            <div class="start-proof-item-label">Designed for far transfer</div>
+            <div class="start-proof-item-text">Designed to train general intelligence capacity and cognitive resilience, and to test whether gains carry over under changed conditions.</div>
+          </div>
+          <div class="start-proof-item start-proof-item--check">
+            <div class="start-proof-item-label">How transfer is checked</div>
+            <div class="start-proof-item-text">Wrapper swaps, boundary/trap probes, and delayed re-checks.</div>
+          </div>
+          <div class="start-proof-item start-proof-item--transparency">
+            <div class="start-proof-item-label">Transparency</div>
+            <div class="start-proof-item-text">Protocol + progression logic are public; users can export their training trail; we publish aggregated summaries of test results as the evidence base grows.</div>
+          </div>
+          <div class="start-proof-item start-proof-item--boundary">
+            <div class="start-proof-item-label">Boundary</div>
+            <div class="start-proof-item-text">Skills training and self-regulation, not diagnosis or treatment. Outcomes vary.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="start-branch-section" aria-label="Path options and support">
+      <div class="start-branch-inner">
+        <article class="start-branch-card start-branch-card--solo">
+          <div class="start-branch-title">Go software-only</div>
+          <p class="start-branch-desc">Start directly with tools and move at your own pace.</p>
+          <div class="start-branch-links">
+            <a class="start-branch-link" href="/tools/">See tools</a>
+            <a class="start-branch-link start-branch-link--primary" href="/pricing/">See plans</a>
+          </div>
+        </article>
+        <article class="start-branch-card start-branch-card--coaching">
+          <div class="start-branch-title">Add live coaching</div>
+          <p class="start-branch-desc">Use coaching when you want guided pacing and implementation review.</p>
+          <div class="start-branch-links">
+            <a class="start-branch-link" href="/coaching/">About coaching</a>
+            <a class="start-branch-link start-branch-link--primary" href="/coaching/">See coaching</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="start-branch-inner" style="margin-top:0;">
+        <div style="grid-column:1/-1;">
+          <div class="start-support-strip">
+            <span class="start-support-label">Need help?</span>
+            <a class="start-support-link" href="/faq/">FAQ</a>
+            <a class="start-support-link" href="/support/">Support</a>
+            <a class="start-support-link" href="/pricing/">Pricing</a>
+            <a class="start-support-link" href="/proof/">Proof</a>
+            <a class="start-support-link" href="/contact/">Contact</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="start-cta-band" aria-label="Start CTA">
+      <div class="start-cta-inner">
+        <span class="start-cta-eyebrow">First session ready</span>
+        <h2 class="start-cta-title">Know your state.<br><em>Train from there.</em></h2>
+        <p class="start-cta-desc">Run a baseline now, then use readiness before training blocks.</p>
+        <div class="start-cta-btns">
+          <a href="/tools/g-tracker/" class="btn btn-lime">Run baseline</a>
+          <a href="/tools/" class="btn btn-ghost-dk">See all tools</a>
+          <a href="/pricing/" class="btn btn-ghost-dk">Plans and pricing</a>
+        </div>
+      </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <p>Skills training and self-regulation, not diagnosis or treatment.</p>
   </footer>
+
+  <script>
+    document.querySelectorAll('.lane-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        document.querySelectorAll('.lane-card').forEach(function (node) { node.classList.remove('selected'); });
+        card.classList.add('selected');
+      });
+      card.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+          card.click();
+        }
+      });
+    });
+  </script>
   <script src="/assets/app.js" defer></script>
 </body>
 </html>
