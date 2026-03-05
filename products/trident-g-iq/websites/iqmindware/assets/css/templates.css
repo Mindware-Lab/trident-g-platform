@@ -216,6 +216,19 @@ a {
   display: block;
 }
 
+.site-footer.site-footer-rich .footer-badge {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.16);
+  padding: 4px;
+}
+
+.site-footer.site-footer-rich .footer-badge-icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+  object-fit: contain;
+}
+
 .site-footer.site-footer-rich .social-btn[data-platform="substack"]:hover {
   color: #ff6719;
   border-color: rgba(255, 103, 25, 0.35);
