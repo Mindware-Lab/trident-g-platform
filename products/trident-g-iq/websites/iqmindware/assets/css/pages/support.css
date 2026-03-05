@@ -1,0 +1,284 @@
+/* ============================================================
+   IQ MINDWARE — support.css  v1.0
+   Scope: /support — quick self-serve + direct contact.
+   Requires: brand.css loaded first.
+   All rules scoped under .support-page.
+   Design goal: minimal friction, clear routing, no clutter.
+   ============================================================ */
+
+
+/* ============================================================
+   1. PAGE SHELL
+   ============================================================ */
+body.support    { background: var(--pg-alt); }
+.support-page   { padding-top: 64px; }
+
+
+/* ============================================================
+   2. HERO
+   ============================================================ */
+.sp-hero {
+  background:
+    radial-gradient(ellipse 700px 400px at 0% 70%, rgba(34,170,255,.09), transparent 55%),
+    radial-gradient(ellipse 500px 300px at 100% 20%, rgba(204,255,102,.06), transparent 50%),
+    var(--card-dark);
+  border-bottom: 2px solid rgba(255,255,255,.06);
+  padding: 96px var(--gutter) 52px;
+}
+.sp-hero-inner {
+  max-width: 680px; margin: 0 auto;
+  text-align: center;
+}
+.sp-hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--cyan-lt); margin-bottom: 14px; display: block;
+}
+.sp-hero-title {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 800; letter-spacing: -.022em;
+  line-height: 1.07; color: var(--tc); margin-bottom: 14px;
+}
+.sp-hero-sub {
+  font-size: 15px; color: var(--tcm);
+  line-height: 1.72; margin-bottom: 28px;
+}
+.sp-hero-sub a {
+  color: var(--cyan-lt); text-decoration: none;
+  border-bottom: 1px solid rgba(34,170,255,.30);
+  font-weight: 600;
+}
+.sp-hero-sub a:hover { border-bottom-color: var(--cyan-lt); }
+.sp-hero-btns {
+  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+}
+
+
+/* ============================================================
+   3. SECTION WRAPPER (shared)
+   ============================================================ */
+.sp-section {
+  padding: 60px var(--gutter) 64px;
+  border-bottom: 1px solid rgba(0,0,0,.09);
+}
+.sp-section--light { background: #eceef2; }
+.sp-section--white { background: #ffffff; }
+.sp-section-inner  { max-width: var(--max-w); margin: 0 auto; }
+
+.sp-section-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--blue-dp); display: block; margin-bottom: 8px;
+}
+.sp-section-title {
+  font-size: clamp(18px, 2.4vw, 26px);
+  font-weight: 800; letter-spacing: -.016em;
+  line-height: 1.14; color: var(--tl); margin-bottom: 6px;
+}
+.sp-section-sub {
+  font-size: 14px; color: var(--tlm);
+  line-height: 1.70; max-width: 58ch; margin-bottom: 32px;
+}
+
+
+/* ============================================================
+   4. QUICK ACTION CARDS
+   ============================================================ */
+.sp-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.sp-card {
+  background: #ffffff;
+  border: 1.5px solid rgba(0,0,0,.08);
+  border-radius: 14px;
+  padding: 24px 22px 20px;
+  display: flex; flex-direction: column; gap: 0;
+  border-top: 3px solid transparent;
+  transition: box-shadow var(--t-base), transform var(--t-base);
+}
+.sp-card:hover { box-shadow: 0 8px 22px rgba(0,0,0,.08); transform: translateY(-2px); }
+
+.sp-card:nth-child(1) { border-top-color: var(--cyan); }
+.sp-card:nth-child(2) { border-top-color: var(--lime); }
+.sp-card:nth-child(3) { border-top-color: #a78bfa; }
+
+.sp-card-icon {
+  font-size: 22px; margin-bottom: 12px; display: block;
+}
+.sp-card-title {
+  font-size: 15px; font-weight: 800;
+  color: var(--tl); letter-spacing: -.01em;
+  margin-bottom: 8px;
+}
+.sp-card-text {
+  font-size: 13.5px; color: var(--tlm);
+  line-height: 1.60; flex: 1; margin-bottom: 16px;
+}
+.sp-card-links {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-top: auto;
+}
+.sp-card-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 13px; font-weight: 700;
+  color: var(--blue-dp); text-decoration: none;
+  border-bottom: 1px solid rgba(39,100,183,.22);
+  width: fit-content;
+  transition: border-color var(--t-fast);
+}
+.sp-card-link::before { content: '->'; font-size: 11px; }
+.sp-card-link:hover { border-bottom-color: var(--blue-dp); }
+.sp-card-link:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 2px; }
+
+
+/* ============================================================
+   5. CONTACT BLOCK
+   ============================================================ */
+.sp-contact-box {
+  max-width: 560px; margin: 0 auto;
+  text-align: center;
+  background: #ffffff;
+  border: 1.5px solid rgba(0,0,0,.08);
+  border-radius: 16px;
+  padding: 40px 36px 36px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.06);
+}
+.sp-contact-icon { font-size: 28px; margin-bottom: 14px; display: block; }
+.sp-contact-title {
+  font-size: 20px; font-weight: 800;
+  color: var(--tl); letter-spacing: -.014em;
+  margin-bottom: 10px;
+}
+.sp-contact-text {
+  font-size: 14px; color: var(--tlm);
+  line-height: 1.70; margin-bottom: 20px;
+  max-width: 42ch; margin-left: auto; margin-right: auto;
+}
+.sp-contact-email {
+  display: inline-block;
+  font-family: 'DM Mono', monospace;
+  font-size: 15px; font-weight: 700;
+  color: var(--tl); letter-spacing: .02em;
+  background: rgba(34,170,255,.06);
+  border: 1px solid rgba(34,170,255,.20);
+  border-radius: 8px;
+  padding: 10px 20px;
+  margin-bottom: 20px;
+  text-decoration: none;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.sp-contact-email:hover { background: rgba(34,170,255,.11); border-color: rgba(34,170,255,.35); }
+.sp-contact-email:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+
+.sp-contact-cta {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 13px 28px; border-radius: var(--r-md);
+  min-height: 44px;
+  font-size: 14px; font-weight: 800;
+  background: var(--cyan); color: #fff;
+  text-decoration: none; border: none; cursor: pointer;
+  font-family: inherit; line-height: 1;
+  transition: filter var(--t-fast);
+}
+.sp-contact-cta:hover { filter: brightness(1.08); }
+.sp-contact-cta:focus-visible { outline: 3px solid var(--lime); outline-offset: 2px; }
+
+.sp-contact-note {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: .06em;
+  color: var(--tlf); margin-top: 14px; display: block;
+}
+
+
+/* ============================================================
+   6. MINI FAQ STRIP
+   ============================================================ */
+.sp-faq-list {
+  max-width: 680px; margin: 0 auto;
+  border: 1.5px solid rgba(0,0,0,.08);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #ffffff;
+  border-left: 3px solid var(--cyan);
+}
+.sp-faq-item { border-bottom: 1px solid rgba(0,0,0,.08); }
+.sp-faq-item:last-child { border-bottom: none; }
+
+.sp-faq-q {
+  width: 100%; display: flex;
+  align-items: center; justify-content: space-between;
+  gap: 12px; padding: 17px 22px;
+  min-height: 44px;
+  font-size: 14px; font-weight: 700;
+  color: var(--tl); background: none; border: none;
+  cursor: pointer; text-align: left;
+  font-family: inherit; line-height: 1.4;
+  transition: background var(--t-fast);
+}
+.sp-faq-q:hover { background: rgba(0,0,0,.025); }
+.sp-faq-q:focus-visible { outline: 3px solid var(--cyan); outline-offset: -3px; border-radius: 2px; }
+.sp-faq-item.open .sp-faq-q { background: rgba(34,170,255,.04); }
+
+.sp-faq-chevron {
+  width: 16px; height: 16px; flex-shrink: 0;
+  color: var(--tlf);
+  transition: transform 200ms ease;
+}
+.sp-faq-item.open .sp-faq-chevron { transform: rotate(180deg); }
+
+.sp-faq-a {
+  display: none;
+  padding: 0 22px 16px;
+  border-top: 1px solid rgba(0,0,0,.07);
+  font-size: 13.5px; color: var(--tlm); line-height: 1.70;
+}
+.sp-faq-item.open .sp-faq-a { display: block; padding-top: 13px; }
+.sp-faq-a a {
+  color: var(--blue-dp); font-weight: 700; text-decoration: none;
+  border-bottom: 1px solid rgba(39,100,183,.22);
+}
+.sp-faq-a a:hover { border-bottom-color: var(--blue-dp); }
+
+
+/* ============================================================
+   7. TRUST NOTE
+   ============================================================ */
+.sp-trust {
+  background: var(--pg-alt);
+  border-top: 1px solid rgba(0,0,0,.09);
+  padding: 28px var(--gutter);
+}
+.sp-trust-inner {
+  max-width: var(--max-w); margin: 0 auto;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.sp-trust-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; color: rgba(180,83,9,.65); }
+.sp-trust-text {
+  font-size: 13px; color: var(--tlm); line-height: 1.68;
+}
+.sp-trust-text strong { color: var(--tl); }
+.sp-trust-text a {
+  color: var(--blue-dp); font-weight: 700; text-decoration: none;
+  border-bottom: 1px solid rgba(39,100,183,.22);
+}
+.sp-trust-text a:hover { border-bottom-color: var(--blue-dp); }
+
+
+/* ============================================================
+   8. RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  .sp-cards { grid-template-columns: 1fr; }
+  .sp-contact-box { padding: 28px 20px 24px; }
+}
+@media (max-width: 600px) {
+  .sp-hero           { padding: 88px var(--gutter) 40px; }
+  .sp-hero-btns      { flex-direction: column; }
+  .sp-hero-btns .btn { width: 100%; text-align: center; justify-content: center; }
+  .sp-contact-cta    { width: 100%; justify-content: center; }
+  .sp-faq-q          { padding: 15px 16px; }
+  .sp-faq-a          { padding: 0 16px 14px; }
+  .sp-faq-item.open .sp-faq-a { padding-top: 12px; }
+}
