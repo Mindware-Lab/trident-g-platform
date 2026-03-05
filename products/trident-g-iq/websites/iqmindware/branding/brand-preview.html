@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Brand CSS Preview — IQ Mindware</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   IQ MINDWARE — brand.css
+   Version 1.0
+   Scope: design tokens, typography, resets, buttons, nav,
+          icons, cards-base, footer, animations, reveals.
+   Import this on every page before templates.css.
+   ============================================================ */
+
+/* ── Google Fonts (reference — load in <head> instead for perf)
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Mono:wght@300;400;500&display=swap');
+*/
+
+
+/* ============================================================
+   1. RESET
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+img, svg, video { display: block; max-width: 100%; }
+button { font-family: inherit; }
+
+
+/* ============================================================
+   2. DESIGN TOKENS
+   ============================================================
+   Primary:   Cyan #22AAFF · Lime #CCFF66 · Charcoal #333333 · White #FFFFFF
+   Secondary: Light grey #E0E0E0 · Deep blue #2764B7 · Mid grey #6D6D6D
+   ============================================================ */
+:root {
+
+  /* ── Brand primaries ───────────────── */
+  --cyan:       #22AAFF;
+  --lime:       #CCFF66;
+  --lime-dk:    #b7ff3a;       /* hover / darker lime */
+  --charcoal:   #333333;
+  --white:      #FFFFFF;
+
+  /* ── Brand secondaries ─────────────── */
+  --grey-lt:    #E0E0E0;
+  --blue-dp:    #2764B7;       /* deep blue — labels, step numbers, links */
+  --grey-mid:   #6D6D6D;       /* muted body text */
+
+  /* ── Heading accent ────────────────── */
+  --h-blue:     #6ec6ff;       /* heading accent on any background */
+
+  /* ── Tints / alphas ────────────────── */
+  --cyan-lt:    #8ed4ff;       /* light tint for text on dark */
+  --cyan-dim:   rgba(34,170,255,0.15);
+  --cyan-bdr:   rgba(34,170,255,0.30);
+  --lime-dim:   rgba(204,255,102,0.12);
+
+  /* ── Dark card surfaces ─────────────── */
+  --card-deep:  #14181f;       /* deepest layer */
+  --card-dark:  #1a1f2b;       /* standard dark card */
+  --card-mid:   #222938;       /* slightly lighter card */
+
+  /* ── Page (light) backgrounds ──────── */
+  --pg:         #e8eaee;       /* main page */
+  --pg-alt:     #dfe2e8;       /* alternate section */
+  --pg-dep:     #d5d9e2;       /* deepest light section */
+
+  /* ── Text on light backgrounds ─────── */
+  --tl:         #1a1f2b;       /* headings */
+  --tlm:        #444c5e;       /* body text */
+  --tlf:        #6D6D6D;       /* faint / meta */
+
+  /* ── Text on dark cards ─────────────── */
+  --tc:         #edf0f7;       /* primary on dark */
+  --tcm:        #b8c4d8;       /* secondary on dark */
+  --tcf:        #7888a4;       /* tertiary / muted on dark */
+
+  /* ── Spacing scale ──────────────────── */
+  --sp-xs:  4px;
+  --sp-sm:  8px;
+  --sp-md:  16px;
+  --sp-lg:  24px;
+  --sp-xl:  40px;
+  --sp-2xl: 60px;
+  --sp-3xl: 90px;
+
+  /* ── Radius scale ───────────────────── */
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   13px;
+  --r-xl:   20px;
+  --r-2xl:  26px;
+  --r-full: 999px;
+
+  /* ── Transitions ────────────────────── */
+  --t-fast:   120ms ease;
+  --t-base:   180ms ease;
+  --t-slow:   300ms ease;
+
+  /* ── Shadows ────────────────────────── */
+  --shadow-card:  0 8px 28px rgba(0,0,0,.20);
+  --shadow-hover: 0 16px 44px rgba(0,0,0,.28);
+  --shadow-deep:  0 20px 60px rgba(0,0,0,.32);
+
+  /* ── Z-index scale ──────────────────── */
+  --z-base:   1;
+  --z-nav:    100;
+  --z-modal:  200;
+
+  /* ── Page gutter ────────────────────── */
+  --gutter:   5vw;
+  --max-w:    1140px;
+
+  /* ── Fonts ──────────────────────────── */
+  font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+}
+
+
+/* ============================================================
+   3. BASE TYPOGRAPHY
+   ============================================================ */
+body {
+  background: var(--pg);
+  color: var(--tl);
+  overflow-x: hidden;
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Heading scale */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 800;
+  letter-spacing: -.015em;
+  line-height: 1.08;
+  color: var(--tl);
+}
+
+h1 { font-size: clamp(36px, 6vw, 80px); }
+h2 { font-size: clamp(27px, 4vw, 48px); }
+h3 { font-size: clamp(20px, 2.4vw, 28px); }
+h4 { font-size: clamp(16px, 1.8vw, 20px); }
+
+/* Accent headings (light bg) */
+.h-accent {
+  color: var(--h-blue);
+  text-shadow: 0 1px 0 rgba(0,0,0,.08);
+}
+
+/* Gradient text — brand lime → btn-cyan blue */
+.text-gradient {
+  background: linear-gradient(135deg, var(--lime) 0%, #1a90e0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Eyebrow / label (DM Mono, uppercase, spaced) */
+.eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--blue-dp);
+  margin-bottom: 12px;
+  display: block;
+}
+
+/* Body text helpers */
+.text-muted   { color: var(--tlm); }
+.text-faint   { color: var(--tlf); }
+.text-tc      { color: var(--tc); }
+.text-tcm     { color: var(--tcm); }
+.text-tcf     { color: var(--tcf); }
+.text-cyan    { color: var(--cyan); }
+.text-lime    { color: var(--lime); }
+.text-blue    { color: var(--blue-dp); }
+
+/* Mono utility */
+.mono {
+  font-family: 'DM Mono', monospace;
+  font-size: .88em;
+  letter-spacing: .04em;
+}
+
+
+/* ============================================================
+   4. BUTTONS
+   ============================================================ */
+
+/* Shared base */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 13px 26px;
+  border-radius: var(--r-lg);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -.01em;
+  line-height: 1;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: transform var(--t-fast), filter var(--t-fast), background var(--t-fast);
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-sm { padding: 9px 18px; font-size: 13px; border-radius: var(--r-md); }
+.btn-lg { padding: 16px 32px; font-size: 17px; border-radius: var(--r-xl); }
+
+/* Primary — lime (light or dark bg) */
+.btn-lime {
+  background: linear-gradient(180deg, var(--lime), var(--lime-dk));
+  color: var(--charcoal);
+  border: 1px solid rgba(204,255,102,.55);
+  box-shadow: 0 8px 28px rgba(0,0,0,.28), 0 0 28px rgba(204,255,102,.18);
+}
+.btn-lime:hover { filter: brightness(1.06); }
+
+/* Secondary — cyan */
+.btn-cyan {
+  background: linear-gradient(180deg, var(--cyan), #1a90e0);
+  color: #fff;
+  border: 1px solid rgba(34,170,255,.4);
+  box-shadow: 0 6px 22px rgba(0,0,0,.24);
+}
+.btn-cyan:hover { filter: brightness(1.06); }
+
+/* Ghost — dark bg */
+.btn-ghost-dk {
+  background: rgba(255,255,255,.07);
+  color: var(--tcm);
+  border: 1px solid rgba(255,255,255,.16);
+}
+.btn-ghost-dk:hover {
+  background: rgba(255,255,255,.12);
+  border-color: rgba(255,255,255,.24);
+}
+
+/* Ghost — light bg */
+.btn-ghost-lt {
+  background: rgba(0,0,0,.04);
+  color: var(--tlm);
+  border: 1px solid rgba(0,0,0,.12);
+}
+.btn-ghost-lt:hover {
+  background: rgba(0,0,0,.08);
+  border-color: rgba(0,0,0,.18);
+}
+
+/* Black (nav CTA) */
+.btn-black {
+  background: #000;
+  color: var(--lime);
+  border-radius: var(--r-sm);
+  font-size: 15px;
+  font-weight: 800;
+  padding: 10px 22px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background var(--t-fast), transform var(--t-fast);
+}
+.btn-black:hover { background: #1a1a1a; transform: translateY(-1px); }
+
+
+/* ============================================================
+   5. BADGES & PILLS
+   ============================================================ */
+
+/* Generic pill */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 5px 12px;
+  border-radius: var(--r-full);
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.pill-cyan {
+  background: rgba(34,170,255,.18);
+  border-color: rgba(34,170,255,.55);
+  color: #1a7fcf;
+}
+/* Dark background variant */
+.pill-cyan-dk {
+  background: rgba(34,170,255,.15);
+  border-color: rgba(34,170,255,.55);
+  color: var(--cyan-lt);
+}
+.pill-lime {
+  background: rgba(150,200,0,.15);
+  border-color: rgba(150,200,0,.50);
+  color: #5a7a00;
+}
+.pill-solid-cyan {
+  background: var(--cyan);
+  color: var(--card-deep);
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(34,170,255,.40);
+}
+
+/* Pulse dot (used in hero kicker) */
+.kdot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  animation: kdpulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes kdpulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .5; transform: scale(.75); }
+}
+
+/* Status dots (state cards) */
+.sdot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.sdot-cyan  { background: var(--cyan); box-shadow: 0 0 8px rgba(34,170,255,.60); }
+.sdot-lime  { background: var(--lime); box-shadow: 0 0 8px rgba(204,255,102,.60); }
+.sdot-red   { background: #ff6464;     box-shadow: 0 0 8px rgba(255,100,100,.60); }
+
+
+/* ============================================================
+   6. NAV
+   ============================================================ */
+
+/* ── Solid white nav (pricing, inner pages) */
+nav,
+.nav-solid {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: var(--z-nav);
+  padding: 0 var(--gutter);
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-bottom: 2px solid #000;
+}
+
+/* ── Frosted / translucent nav (splash / hero pages) */
+.nav-frosted {
+  background: rgba(232,234,238,0.88);
+  -webkit-backdrop-filter: blur(22px);
+  backdrop-filter: blur(22px);
+  border-bottom: 1px solid rgba(0,0,0,0.09);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+  height: auto;
+  padding: 14px var(--gutter);
+  animation: fadeDown .6s ease both;
+}
+
+/* Brand lockup */
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.nav-logo-placeholder {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: block;
+  flex-shrink: 0;
+}
+.nav-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--lime), var(--cyan));
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  border: 1px solid rgba(0,0,0,.10);
+  box-shadow: 0 3px 12px rgba(0,0,0,.16);
+}
+.nav-brand-text { display: flex; flex-direction: column; gap: 1px; }
+.nav-brand-name {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: #000;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.nav-brand-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: .12em;
+  color: var(--grey-mid);
+  text-transform: uppercase;
+}
+
+/* Nav links */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: #111;
+  text-decoration: none;
+  padding: 8px 16px;
+  position: relative;
+  transition: color var(--t-fast);
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  background: var(--lime);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 200ms ease;
+}
+.nav-links a:hover::after,
+.nav-links a.active::after { transform: scaleX(1); }
+
+/* Frosted nav links variant */
+.nav-frosted .nav-links a {
+  font-family: 'DM Mono', monospace;
+  font-size: 11.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--tlm);
+  padding: 0;
+}
+.nav-frosted .nav-links { gap: 26px; }
+.nav-frosted .nav-links a::after { display: none; }
+.nav-frosted .nav-links a:hover { color: var(--blue-dp); }
+
+/* Separator */
+.nav-sep {
+  width: 1px;
+  height: 24px;
+  background: rgba(0,0,0,.15);
+  margin: 0 10px;
+  flex-shrink: 0;
+}
+
+
+/* ============================================================
+   7. DARK CARD BASE
+   ============================================================ */
+.card-dark {
+  border-radius: var(--r-xl);
+  border: 1px solid rgba(255,255,255,.07);
+  background: linear-gradient(155deg, var(--card-mid) 0%, var(--card-deep) 100%);
+  padding: 28px 22px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: transform var(--t-base), box-shadow var(--t-base);
+}
+.card-dark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.04), transparent 50%);
+  pointer-events: none;
+}
+.card-dark:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Hero card variant — gradient border */
+.card-hero {
+  background:
+    linear-gradient(155deg, var(--card-mid), var(--card-deep)) padding-box,
+    linear-gradient(150deg, var(--lime), var(--cyan), var(--blue-dp)) border-box;
+  border: 2px solid transparent;
+  box-shadow: var(--shadow-deep), 0 0 50px rgba(34,170,255,.07);
+}
+.card-hero:hover {
+  transform: translateY(-7px);
+  box-shadow: 0 30px 72px rgba(0,0,0,.38), 0 0 60px rgba(204,255,102,.08);
+}
+
+/* Standalone dark CTA card */
+.cta-card {
+  max-width: 760px;
+  margin: 0 auto;
+  border-radius: var(--r-2xl);
+  border: 1px solid rgba(255,255,255,.09);
+  background:
+    radial-gradient(ellipse 600px 360px at 50% 0%,  rgba(34,170,255,.13), transparent 62%),
+    radial-gradient(ellipse 480px 320px at 80% 100%, rgba(204,255,102,.09), transparent 58%),
+    var(--card-dark);
+  padding: 60px 44px;
+  box-shadow: 0 32px 80px rgba(0,0,0,.24), 0 1px 0 rgba(255,255,255,.05) inset;
+  text-align: center;
+}
+
+
+/* ============================================================
+   8. FEATURE ICONS
+   ============================================================ */
+.feat-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--r-lg);
+  display: grid;
+  place-items: center;
+  font-size: 21px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255,255,255,.09);
+  flex-shrink: 0;
+}
+
+/* S1: Solid lime */
+.feat-icon.s1 {
+  background: var(--lime);
+  border-color: rgba(255,255,255,.15);
+  box-shadow: 0 4px 16px rgba(204,255,102,.30);
+  font-size: 22px;
+}
+/* S2: Cyan gradient circle */
+.feat-icon.s2 {
+  border-radius: var(--r-full);
+  background: linear-gradient(135deg, var(--cyan), var(--blue-dp));
+  border-color: rgba(34,170,255,.40);
+  box-shadow: 0 4px 18px rgba(34,170,255,.28);
+}
+/* S3: Cyan outline ring */
+.feat-icon.s3 {
+  background: transparent;
+  border: 2px solid var(--cyan);
+  box-shadow: 0 0 0 3px rgba(34,170,255,.12), 0 4px 14px rgba(34,170,255,.18);
+}
+/* S4: Amber glow */
+.feat-icon.s4 {
+  background: rgba(255,188,94,.18);
+  border-color: rgba(255,188,94,.45);
+  box-shadow: 0 4px 20px rgba(255,188,94,.24);
+}
+/* S5: Frosted glass */
+.feat-icon.s5 {
+  background: rgba(255,255,255,.14);
+  border-color: rgba(255,255,255,.30);
+  box-shadow: 0 2px 12px rgba(0,0,0,.20), 0 1px 0 rgba(255,255,255,.10) inset;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+/* S6: Lime-to-cyan gradient */
+.feat-icon.s6 {
+  background: linear-gradient(135deg, rgba(204,255,102,.28), rgba(34,170,255,.22));
+  border-color: rgba(110,198,255,.35);
+  box-shadow: 0 4px 18px rgba(110,198,255,.20);
+}
+
+/* Feature check icons (used in plan cards) */
+.fck {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--r-full);
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+  margin-top: 1px;
+  background: rgba(34,170,255,.13);
+  border: 1px solid rgba(34,170,255,.28);
+  color: var(--cyan);
+}
+.fck.plus {
+  background: rgba(204,255,102,.10);
+  border-color: rgba(204,255,102,.20);
+  color: #d8ff6a;
+}
+
+
+/* ============================================================
+   9. SECTION CHROME (shared across page types)
+   ============================================================ */
+.sec {
+  padding: var(--sp-3xl) var(--gutter);
+}
+.sec-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.sec-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--blue-dp);
+  margin-bottom: 14px;
+  display: block;
+}
+.sec-heading {
+  font-size: clamp(27px, 4vw, 48px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -.015em;
+  color: var(--h-blue);
+  text-shadow: 0 1px 0 rgba(0,0,0,.08);
+  margin-bottom: 56px;
+  max-width: 17ch;
+}
+
+/* Divider with centred label */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 40px 0 28px;
+}
+.section-divider-line {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan) 30%, var(--cyan) 70%, transparent);
+  opacity: .7;
+}
+.section-divider-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .20em;
+  text-transform: uppercase;
+  color: var(--card-deep);
+  white-space: nowrap;
+  padding: 7px 18px;
+  border-radius: var(--r-full);
+  background: var(--cyan);
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(34,170,255,.40);
+}
+
+/* Horizontal rule */
+.rule { height: 1px; background: rgba(0,0,0,.08); margin: 0; border: none; }
+.rule-dark { background: rgba(255,255,255,.07); }
+
+
+/* ============================================================
+   10. STATS BAR
+   ============================================================ */
+.stats-bar {
+  background: var(--card-dark);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  padding: 26px var(--gutter);
+  display: flex;
+  justify-content: center;
+  gap: clamp(22px, 6vw, 80px);
+  flex-wrap: wrap;
+}
+.stat { text-align: center; }
+.stat-val {
+  font-size: clamp(26px, 4vw, 44px);
+  font-weight: 900;
+  line-height: 1;
+  color: var(--tc);
+  margin-bottom: 3px;
+}
+.stat-val.lime { color: var(--lime); }
+.stat-val.cyan { color: var(--cyan); }
+.stat-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--tcf);
+}
+
+
+/* ============================================================
+   11. FOOTER
+   ============================================================ */
+footer {
+  background: var(--card-deep);
+  border-top: 1px solid rgba(255,255,255,.07);
+  padding: 52px var(--gutter) 32px;
+}
+
+.footer-top {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 40px;
+  padding-bottom: 44px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  margin-bottom: 28px;
+}
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.footer-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--lime), var(--cyan));
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  border: 1px solid rgba(255,255,255,.2);
+}
+.footer-brand-name { font-size: 14px; font-weight: 800; color: var(--tc); }
+.footer-brand-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--tcf);
+  letter-spacing: .07em;
+}
+.footer-brand-desc {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--tcf);
+  max-width: 28ch;
+  margin-bottom: 20px;
+}
+.footer-social { display: flex; gap: 8px; }
+.social-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.10);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  text-decoration: none;
+  color: var(--tcm);
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.social-btn:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.20); }
+.footer-col-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--tcm);
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer-col ul a { font-size: 13px; color: var(--tcf); text-decoration: none; transition: color var(--t-fast); }
+.footer-col ul a:hover { color: var(--tc); }
+
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.footer-copy {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  color: var(--tcf);
+  letter-spacing: .04em;
+}
+.footer-legal { display: flex; gap: 20px; flex-wrap: wrap; }
+.footer-legal a {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--tcf);
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
+.footer-legal a:hover { color: var(--tcm); }
+
+.footer-reg {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--tcf);
+  letter-spacing: .03em;
+  line-height: 1.6;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,.05);
+  margin-top: 4px;
+}
+
+
+/* ============================================================
+   12. ANIMATIONS & REVEALS
+   ============================================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(-26px) scale(1.04); }
+}
+@keyframes glowCycle {
+  0%,  100% { box-shadow: 0 20px 55px rgba(0,0,0,.5), 0 0 50px rgba(34,170,255,.18); }
+  45%        { box-shadow: 0 20px 55px rgba(0,0,0,.5), 0 0 50px rgba(204,255,102,.20); }
+  75%        { box-shadow: 0 20px 55px rgba(0,0,0,.5), 0 0 50px rgba(39,100,183,.16); }
+}
+@keyframes scrollBob {
+  0%, 100% { transform: scaleY(1); opacity: 1; }
+  50%       { transform: scaleY(.6); opacity: .5; }
+}
+
+/* Reveal on scroll */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ============================================================
+   13. RESPONSIVE — brand-level breakpoints
+   ============================================================ */
+@media (max-width: 900px) {
+  .footer-top { grid-template-columns: 1fr 1fr; }
+  .nav-links { display: none; }
+}
+@media (max-width: 600px) {
+  .footer-top { grid-template-columns: 1fr; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .cta-card { padding: 42px 26px; }
+}
+
+</style>
+
+<style>
+/* ── Page-specific layout only — no brand overrides ── */
+
+/* Demo section labels */
+.demo-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .22em; text-transform: uppercase;
+  color: rgba(255,255,255,.55); margin-bottom: 28px; display: block;
+  padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,.15);
+}
+.demo-label-lt {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .22em; text-transform: uppercase;
+  color: rgba(0,0,0,.45); margin-bottom: 28px; display: block;
+  padding-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,.15);
+}
+
+/* Row helpers */
+.row    { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; margin-bottom: 24px; }
+.col-2  { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.col-3  { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.col-4  { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+.mt-lg  { margin-top: 40px; }
+.mb-sm  { margin-bottom: 14px; }
+
+/* Hero orb decorations */
+.orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+.orb-a { width: 560px; height: 560px; background: rgba(34,170,255,.11);  top: -100px; left: -150px; animation: orbFloat 8s ease-in-out infinite; }
+.orb-b { width: 420px; height: 420px; background: rgba(204,255,102,.09); top: 40px;   right: -90px; animation: orbFloat 8s ease-in-out -3.5s infinite; }
+.orb-c { width: 280px; height: 280px; background: rgba(39,100,183,.08);  bottom: 90px;left: 32%;    animation: orbFloat 8s ease-in-out -6s infinite; }
+
+/* Hero layout */
+.hero-section {
+  position: relative; overflow: hidden;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 120px 5vw 100px;
+  background:
+    radial-gradient(ellipse 880px 480px at 12% 8%,  rgba(34,170,255,.16), transparent 60%),
+    radial-gradient(ellipse 700px 560px at 85% 55%,  rgba(204,255,102,.12), transparent 58%),
+    radial-gradient(ellipse 560px 380px at 50% 100%, rgba(39,100,183,.10),  transparent 55%),
+    var(--card-deep);
+}
+.hero-badge {
+  width: 88px; height: 88px; border-radius: 22px;
+  background: linear-gradient(135deg, var(--lime), var(--cyan));
+  border: 1px solid rgba(255,255,255,.28);
+  display: grid; place-items: center; font-size: 40px;
+  margin: 0 auto 28px;
+  animation: fadeUp .6s .05s ease both, glowCycle 16s linear infinite;
+}
+.hero-title {
+  font-size: clamp(52px,8vw,104px); font-weight: 800;
+  line-height: .96; letter-spacing: -.015em;
+  margin-bottom: 8px; animation: fadeUp .7s .2s ease both;
+}
+.word-zone {
+  display: block;
+  background: linear-gradient(135deg, #edf0f7 25%, #8898b8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.word-coach {
+  display: block;
+  background: linear-gradient(135deg, var(--lime) 0%, var(--cyan) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-desc {
+  max-width: 54ch; margin: 18px auto 38px;
+  font-size: clamp(16px,2vw,19px); line-height: 1.55; color: var(--tcm);
+  animation: fadeUp .7s .32s ease both;
+}
+.hero-desc strong { color: var(--tc); }
+.hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; animation: fadeUp .7s .44s ease both; }
+.scroll-hint {
+  position: absolute; bottom: 34px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  color: var(--tcf); font-family: 'DM Mono', monospace; font-size: 9.5px;
+  letter-spacing: .13em; text-transform: uppercase;
+  animation: fadeUp 1s 1.1s ease both;
+}
+.scroll-line { width: 1px; height: 38px; background: linear-gradient(to bottom,rgba(255,255,255,.28),transparent); animation: scrollBob 1.8s ease-in-out infinite; }
+
+/* Feature card internals */
+.feat-title { font-size: 19px; font-weight: 800; margin-bottom: 9px; letter-spacing: -.01em; color: var(--tc); }
+.feat-desc  { font-size: 14px; line-height: 1.62; color: var(--tcm); }
+
+/* Features grid */
+.features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.feat--wide { grid-column: span 2; }
+
+/* State card internals */
+.state-ind { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.state-num  { font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--tcf); }
+.state-name { font-size: 21px; font-weight: 800; margin-bottom: 9px; color: var(--tc); }
+.state-desc { font-size: 14px; line-height: 1.65; color: var(--tcm); }
+.state-tag  { display: inline-block; margin-top: 14px; padding: 5px 11px; border-radius: 999px; font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: .08em; }
+.state-card { border-radius: var(--r-xl); border: 1px solid rgba(255,255,255,.07); background: linear-gradient(155deg, var(--card-mid) 0%, var(--card-deep) 100%); padding: 28px 22px; box-shadow: var(--shadow-card); transition: transform var(--t-base), box-shadow var(--t-base); }
+.state-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+.state-card.flat { border-top: 2px solid rgba(34,170,255,.65); }
+.state-card.zone { border-top: 2px solid rgba(204,255,102,.70); }
+.state-card.spun { border-top: 2px solid rgba(255,100,100,.60); }
+.state-card.flat .state-tag { background: rgba(34,170,255,.11); color: var(--cyan-lt); border: 1px solid rgba(34,170,255,.25); }
+.state-card.zone .state-tag { background: rgba(204,255,102,.11); color: #d8ff6a; border: 1px solid rgba(204,255,102,.25); }
+.state-card.spun .state-tag { background: rgba(255,100,100,.11); color: #ffb3b3; border: 1px solid rgba(255,100,100,.25); }
+
+/* How it works steps */
+.steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; margin-top: 56px; }
+.step { padding: 0 22px; position: relative; }
+.step:not(:last-child)::after { content: ""; position: absolute; top: 20px; right: 0; width: 1px; height: 36px; background: linear-gradient(to bottom,rgba(0,0,0,.12),transparent); }
+.step-num   { font-family: 'DM Mono', monospace; font-size: 10.5px; letter-spacing: .14em; color: var(--blue-dp); margin-bottom: 14px; }
+.step-title { font-size: 18px; font-weight: 800; margin-bottom: 9px; letter-spacing: -.01em; color: var(--h-blue); text-shadow: 0 1px 0 rgba(0,0,0,.08); }
+.step-desc  { font-size: 13.5px; line-height: 1.65; color: var(--tlm); }
+
+/* CTA section */
+.cta-section { background: var(--pg-dep); border-top: 1px solid rgba(0,0,0,.06); padding: 80px 5vw 110px; text-align: center; }
+.cta-ico { width: 70px; height: 70px; border-radius: 19px; background: linear-gradient(135deg, var(--lime), var(--cyan)); display: grid; place-items: center; font-size: 32px; margin: 0 auto 26px; border: 1px solid rgba(255,255,255,.24); box-shadow: 0 14px 36px rgba(0,0,0,.38); }
+.cta-h { font-size: clamp(25px,3.4vw,42px); font-weight: 800; line-height: 1.1; letter-spacing: -.015em; margin-bottom: 14px; color: var(--tc); }
+.cta-h span { background: linear-gradient(135deg, var(--lime), var(--cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.cta-sub  { font-size: 15.5px; color: var(--tcm); line-height: 1.55; max-width: 43ch; margin: 0 auto 34px; }
+.cta-note { margin-top: 18px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .08em; color: var(--tcm); }
+
+/* Page header (pricing style) */
+.page-header {
+  padding: 110px 5vw 56px; text-align: center;
+  background:
+    radial-gradient(ellipse 700px 380px at 15% 0%,  rgba(34,170,255,.09), transparent 60%),
+    radial-gradient(ellipse 560px 320px at 85% 30%,  rgba(204,255,102,.07), transparent 58%),
+    var(--pg);
+}
+.ph-title { font-size: clamp(32px,5.5vw,64px); font-weight: 800; line-height: 1.0; letter-spacing: -.025em; color: var(--h-blue); text-shadow: 0 1px 0 rgba(0,0,0,.07); margin-bottom: 14px; }
+.ph-sub { font-size: clamp(14px,1.8vw,17px); line-height: 1.65; color: var(--tlm); max-width: 56ch; margin: 0 auto 12px; }
+.ph-sub strong { color: var(--tl); font-weight: 700; }
+
+@media(max-width:760px) {
+  .col-3, .col-4 { grid-template-columns: 1fr 1fr; }
+  .features-grid { grid-template-columns: 1fr 1fr; }
+  .feat--wide { grid-column: span 2; }
+  .steps { grid-template-columns: 1fr 1fr; gap: 34px; }
+  .step:not(:last-child)::after { display: none; }
+  .step { padding: 0; }
+}
+@media(max-width:540px) {
+  .col-2, .col-3, .col-4 { grid-template-columns: 1fr; }
+  .features-grid { grid-template-columns: 1fr; }
+  .feat--wide { grid-column: span 1; }
+  .steps { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     NAV — solid white (inner page variant)
+     ══════════════════════════════════════════════════════════ -->
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="nav-logo-placeholder">
+      <svg viewBox="0 0 46 46" fill="none" xmlns="http://www.w3.org/2000/svg" width="46" height="46">
+        <circle cx="23" cy="23" r="23" fill="#CCFF66"/>
+        <line x1="23" y1="10" x2="23" y2="38" stroke="#111" stroke-width="3" stroke-linecap="round"/>
+        <line x1="15" y1="19" x2="31" y2="19" stroke="#111" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M15 19 C14 15 12 13 11 15 C10 17 12 21 15 24" stroke="#111" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M31 19 C32 15 34 13 35 15 C36 17 34 21 31 24" stroke="#111" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M20 10 L23 6 L26 10" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <div class="nav-brand-text">
+      <span class="nav-brand-name">IQ Mindware</span>
+      <span class="nav-brand-sub">Zone Coach · Trident G</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#">About</a></li>
+    <li><a href="#" class="active">Tools</a></li>
+    <li><a href="#">Cases</a></li>
+    <li><a href="#">Science</a></li>
+    <li><a href="#">Blog</a></li>
+  </ul>
+  <div class="nav-sep"></div>
+  <a href="#" class="btn-black">Clients</a>
+</nav>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     HERO — dark, full bleed
+     ══════════════════════════════════════════════════════════ -->
+<section class="hero-section">
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
+
+  <div class="hero-badge">⚡</div>
+
+  <div class="pill pill-cyan-dk" style="margin-bottom:26px; animation: fadeUp .7s .1s ease both;">
+    <span class="kdot"></span>
+    Cognitive performance · Trident G Protocol
+  </div>
+
+  <h1 class="hero-title">
+    <span class="word-zone">Zone</span>
+    <span class="word-coach">Coach</span>
+  </h1>
+
+  <p class="hero-desc">
+    Know your <strong>cognitive state</strong> before every session.<br>
+    Route training intelligently. Build capacity that transfers.
+  </p>
+
+  <div class="hero-btns">
+    <a href="#" class="btn btn-lime">Get started free <span>→</span></a>
+    <a href="#" class="btn btn-ghost-dk">See how it works</a>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    Scroll
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     STATS BAR
+     ══════════════════════════════════════════════════════════ -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-val cyan">3</div>
+    <div class="stat-label">Cognitive states</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val lime">CCC</div>
+    <div class="stat-label">Validated output</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">Daily</div>
+    <div class="stat-label">Readiness check</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val cyan">Local</div>
+    <div class="stat-label">First · No account needed</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     FEATURES — dark cards on light bg
+     ══════════════════════════════════════════════════════════ -->
+<section class="sec" style="background: var(--pg);">
+  <div class="sec-inner">
+    <span class="demo-label-lt">§ Features — card-dark · icon variants S1–S6 · .feat--wide</span>
+
+    <span class="sec-label">What it does</span>
+    <h2 class="sec-heading h-accent">Built for<br>real readiness</h2>
+
+    <div class="features-grid reveal">
+
+      <div class="card-dark">
+        <div class="feat-icon s3">⚡</div>
+        <div class="feat-title">State Detection</div>
+        <div class="feat-desc">CCC readiness check identifies whether you're Flat, In the Zone, or Spun Out before you begin.</div>
+      </div>
+
+      <div class="card-dark feat--wide">
+        <div class="feat-icon s1">🧠</div>
+        <div class="feat-title">Trident G Routing</div>
+        <div class="feat-desc">The coaching layer reads your state and routes you to the right training load — not just harder or easier, but calibrated to what your working memory can absorb right now. Selection pressure against thin automation is built into every session.</div>
+      </div>
+
+      <div class="card-dark feat--wide">
+        <div class="feat-icon s6">📊</div>
+        <div class="feat-title">Bits Per Second</div>
+        <div class="feat-desc">Track your cognitive throughput over time. Not raw scores — meaningful signal. The dashboard shows trend, variance, and session quality so you can see real progress rather than game-specific patterning.</div>
+      </div>
+
+      <div class="card-dark">
+        <div class="feat-icon s2">🔒</div>
+        <div class="feat-title">Local First</div>
+        <div class="feat-desc">Your data stays on your device. No account required for core usage. Export as JSON whenever you want.</div>
+      </div>
+
+      <div class="card-dark">
+        <div class="feat-icon s4">🎯</div>
+        <div class="feat-title">Confidence Level</div>
+        <div class="feat-desc">Each session produces a confidence gauge — not a raw score, a validated readiness signal.</div>
+      </div>
+
+      <div class="card-dark">
+        <div class="feat-icon s5">⟡</div>
+        <div class="feat-title">Relational N-Back</div>
+        <div class="feat-desc">Transitive, graph, and propositional modes that train structure tracking across changing surface forms.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SECTION DIVIDER
+     ══════════════════════════════════════════════════════════ -->
+<div class="sec-inner" style="max-width:1140px; margin:0 auto; padding:0 5vw;">
+  <div class="section-divider reveal">
+    <div class="section-divider-line"></div>
+    <span class="section-divider-label">Three states</span>
+    <div class="section-divider-line"></div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     STATE CARDS — coloured top edge
+     ══════════════════════════════════════════════════════════ -->
+<section class="sec" style="background: var(--pg-alt); border-top: 1px solid rgba(0,0,0,.06); border-bottom: 1px solid rgba(0,0,0,.06);">
+  <div class="sec-inner">
+    <span class="demo-label-lt">§ State cards — coloured top border · sdot · state-tag</span>
+
+    <div class="col-3">
+
+      <div class="state-card flat reveal">
+        <div class="state-ind">
+          <div class="sdot sdot-cyan"></div>
+          <span class="state-num">State 01</span>
+        </div>
+        <div class="state-name">Flat / Dull</div>
+        <div class="state-desc">Low cognitive arousal. Working memory bandwidth is compressed. High-load training now will produce noise, not signal.</div>
+        <span class="state-tag">→ Recovery block</span>
+      </div>
+
+      <div class="state-card zone reveal">
+        <div class="state-ind">
+          <div class="sdot sdot-lime"></div>
+          <span class="state-num">State 02</span>
+        </div>
+        <div class="state-name">In the Zone</div>
+        <div class="state-desc">Optimal readiness. Attention control is high, interference is manageable. This is the window for hard relational work.</div>
+        <span class="state-tag">→ Challenge block</span>
+      </div>
+
+      <div class="state-card spun reveal">
+        <div class="state-ind">
+          <div class="sdot sdot-red"></div>
+          <span class="state-num">State 03</span>
+        </div>
+        <div class="state-name">Spun Out</div>
+        <div class="state-desc">Over-aroused or cognitively loaded. Performance will look fast but errors are high and consolidation is unlikely.</div>
+        <span class="state-tag">→ Stabilise first</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     HOW IT WORKS — steps
+     ══════════════════════════════════════════════════════════ -->
+<section class="sec" style="background: var(--pg);">
+  <div class="sec-inner">
+    <span class="demo-label-lt">§ Steps — 4-col · right-border dividers</span>
+
+    <span class="sec-label">How it works</span>
+    <h2 class="sec-heading h-accent">Four steps<br>to real readiness</h2>
+
+    <div class="steps reveal">
+      <div class="step">
+        <div class="step-num">01 — Check</div>
+        <div class="step-title">Measure your state</div>
+        <div class="step-desc">Run a 3-minute CCC readiness check. The app outputs your brain state clearly: Flat, Zone, or Spun Out.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02 — Route</div>
+        <div class="step-title">Get routed correctly</div>
+        <div class="step-desc">The coaching layer selects the right session type for your state. No guessing. No defaulting to the same routine.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03 — Train</div>
+        <div class="step-title">Work in the right zone</div>
+        <div class="step-desc">Adaptive n-back with controlled perturbation. The system tests whether your gains survive representation changes.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">04 — Track</div>
+        <div class="step-title">See real progress</div>
+        <div class="step-desc">Block-level history, variance trends, and CCC output over time. Evidence you can see and export.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     BUTTONS & TYPOGRAPHY SHOWCASE
+     ══════════════════════════════════════════════════════════ -->
+<section class="sec" style="background: var(--pg-dep); border-top: 1px solid rgba(0,0,0,.06);">
+  <div class="sec-inner">
+    <span class="demo-label-lt">§ Tokens showcase — buttons · pills · typography · eyebrows</span>
+
+    <!-- Buttons on light -->
+    <div class="mb-sm"><span class="eyebrow">Buttons — light context</span></div>
+    <div class="row">
+      <a href="#" class="btn btn-lime">Primary · btn-lime</a>
+      <a href="#" class="btn btn-cyan">Secondary · btn-cyan</a>
+      <a href="#" class="btn btn-ghost-lt">Ghost · btn-ghost-lt</a>
+      <a href="#" class="btn btn-black">Nav CTA · btn-black</a>
+    </div>
+    <div class="row">
+      <a href="#" class="btn btn-sm btn-lime">Small lime</a>
+      <a href="#" class="btn btn-sm btn-cyan">Small cyan</a>
+      <a href="#" class="btn btn-sm btn-ghost-lt">Small ghost</a>
+      <a href="#" class="btn btn-lg btn-lime">Large lime</a>
+    </div>
+
+    <!-- Pills -->
+    <div class="mt-lg mb-sm"><span class="eyebrow">Pills &amp; badges</span></div>
+    <div class="row">
+      <span class="pill pill-cyan"><span class="kdot"></span>pill-cyan · live</span>
+      <span class="pill pill-lime">pill-lime · new</span>
+      <span class="pill pill-solid-cyan">pill-solid-cyan</span>
+    </div>
+
+    <!-- Typography scale -->
+    <div class="mt-lg mb-sm"><span class="eyebrow">Typography scale</span></div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <h1 class="h-accent" style="font-size:clamp(32px,5vw,64px);">h1 · Zone Coach</h1>
+      <h2 class="h-accent">h2 · Cognitive readiness</h2>
+      <h3 class="h-accent">h3 · Three states</h3>
+      <h4 class="h-accent">h4 · CCC output</h4>
+      <p class="text-muted">Body · var(--tlm) — Adaptive working memory and relational attention training. Coach-guided sessions designed to reduce thin automation. Built to increase the probability of transfer beyond the training wrapper.</p>
+      <p class="text-faint mono">Mono faint · 10.5px · DM_MONO · LETTER_SPACING_.14em</p>
+      <p class="text-gradient" style="font-size:32px; font-weight:800;">Gradient text — lime → cyan</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     DARK SECTION — buttons on dark, card-hero demo
+     ══════════════════════════════════════════════════════════ -->
+<section class="sec" style="background: var(--card-dark);">
+  <div class="sec-inner">
+    <span class="demo-label">§ Dark context — btn-ghost-dk · card-hero · feat-icon variants</span>
+
+    <!-- Buttons on dark -->
+    <div class="mb-sm"><span class="eyebrow" style="color:var(--tcf);">Buttons — dark context</span></div>
+    <div class="row">
+      <a href="#" class="btn btn-lime">btn-lime</a>
+      <a href="#" class="btn btn-cyan">btn-cyan</a>
+      <a href="#" class="btn btn-ghost-dk">btn-ghost-dk</a>
+    </div>
+
+    <!-- card-hero vs card-dark -->
+    <div class="mt-lg mb-sm"><span class="eyebrow" style="color:var(--tcf);">card-hero vs card-dark</span></div>
+    <div class="col-3 reveal">
+
+      <div class="card-dark">
+        <div class="feat-icon s3">🔬</div>
+        <div class="feat-title">card-dark</div>
+        <div class="feat-desc">Standard dark card. Gradient from card-mid to card-deep. Subtle inner highlight via ::before.</div>
+      </div>
+
+      <div class="card-dark card-hero" style="margin-top:-12px; padding-bottom:36px;">
+        <div style="position:absolute; top:-2px; left:50%; transform:translateX(-50%); padding:5px 14px; border-radius:0 0 10px 10px; background:linear-gradient(90deg,var(--lime),var(--cyan)); font-family:'DM Mono',monospace; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--charcoal); font-weight:700; white-space:nowrap;">⟡ Hero card</div>
+        <div class="feat-icon s1" style="margin-top:16px;">⚡</div>
+        <div class="feat-title" style="color:var(--lime);">card-hero</div>
+        <div class="feat-desc">Gradient border via padding-box + border-box trick. Lime → cyan → deep blue. Elevated position with margin-top offset.</div>
+      </div>
+
+      <div class="card-dark">
+        <div class="feat-icon s2">🎯</div>
+        <div class="feat-title">card-dark</div>
+        <div class="feat-desc">Same base style. Different icon variant. Consistent hover lift across all three.</div>
+      </div>
+
+    </div>
+
+    <!-- Icon variants -->
+    <div class="mt-lg mb-sm"><span class="eyebrow" style="color:var(--tcf);">Feature icon variants S1–S6</span></div>
+    <div class="row">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div class="feat-icon s1">🌟</div>
+        <span class="mono text-tcf" style="font-size:9px;">S1 lime</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div class="feat-icon s2">⚡</div>
+        <span class="mono text-tcf" style="font-size:9px;">S2 cyan circle</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div class="feat-icon s3">🔬</div>
+        <span class="mono text-tcf" style="font-size:9px;">S3 outline</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div class="feat-icon s4">🎯</div>
+        <span class="mono text-tcf" style="font-size:9px;">S4 amber</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div class="feat-icon s5">⟡</div>
+        <span class="mono text-tcf" style="font-size:9px;">S5 frosted</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div class="feat-icon s6">🧠</div>
+        <span class="mono text-tcf" style="font-size:9px;">S6 gradient</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     PAGE HEADER (pricing-style light)
+     ══════════════════════════════════════════════════════════ -->
+<div class="page-header reveal">
+  <span class="eyebrow">Transparent, one-off pricing</span>
+  <h1 class="ph-title">Pay once. Access for life.</h1>
+  <p class="ph-sub">
+    No subscriptions. No renewals. <strong>One payment</strong> gives you access to your chosen product for as long as the service runs — including all updates shipped.
+  </p>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     CTA SECTION
+     ══════════════════════════════════════════════════════════ -->
+<section class="cta-section">
+  <div class="cta-card reveal">
+    <div class="cta-ico">⚡</div>
+    <h2 class="cta-h">Start training<br><span>with purpose</span></h2>
+    <p class="cta-sub">Know your state. Train in the right zone. Build capacity that actually transfers beyond the training wrapper.</p>
+    <div class="hero-btns">
+      <a href="#" class="btn btn-lime btn-lg">Get started · from $29.99</a>
+      <a href="#" class="btn btn-ghost-dk">View all plans</a>
+    </div>
+    <p class="cta-note">One-off payment · access while service runs · no recurring fees</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     FOOTER
+     ══════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div class="footer-logo">
+        <div class="footer-badge">⟡</div>
+        <div>
+          <div class="footer-brand-name">IQ Mindware</div>
+          <div class="footer-brand-sub">Zone Coach · Trident G</div>
+        </div>
+      </div>
+      <p class="footer-brand-desc">Validated cognitive performance intelligence. Know your state. Train accordingly.</p>
+      <div class="footer-social">
+        <a class="social-btn" href="#" aria-label="X">𝕏</a>
+        <a class="social-btn" href="#" aria-label="LinkedIn">in</a>
+        <a class="social-btn" href="#" aria-label="GitHub">⌥</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Products</div>
+      <ul>
+        <li><a href="#">G Tracker</a></li>
+        <li><a href="#">Zone Coach</a></li>
+        <li><a href="#">Capacity Gym</a></li>
+        <li><a href="#">Performance Bundle</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Company</div>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Science</a></li>
+        <li><a href="#">Cases</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <div class="footer-col-title">Support</div>
+      <ul>
+        <li><a href="#">Help centre</a></li>
+        <li><a href="#">Accessibility</a></li>
+        <li><a href="#">Security</a></li>
+        <li><a href="#">Cookie settings</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2025 Mindware Lab Ltd. All rights reserved.</span>
+    <nav class="footer-legal">
+      <a href="#">Terms</a>
+      <a href="#">Privacy</a>
+      <a href="#">Cookies</a>
+      <a href="#">GDPR</a>
+      <a href="#">Acceptable Use</a>
+    </nav>
+  </div>
+  <p class="footer-reg">
+    Mindware Lab Ltd · Registered in England &amp; Wales · Company No. 00000000 · VAT No. GB 000 0000 00<br>
+    Zone Coach, G Tracker and Trident G are trademarks of Mindware Lab Ltd.
+  </p>
+</footer>
+
+<script>
+/* Scroll reveals */
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 60);
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.07, rootMargin: '0px 0px -30px 0px' });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
