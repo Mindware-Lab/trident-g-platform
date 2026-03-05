@@ -1,15 +1,9 @@
 /* IQMindware Template Layer
-   Shared site structure and reusable components.
+   Shared shell styles used by all pages.
 */
 
 * {
   box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-  line-height: 1.5;
 }
 
 a {
@@ -17,53 +11,99 @@ a {
 }
 
 .site-header {
-  padding: 1rem 1.2rem;
-  background: #0f1f34;
-  color: #fff;
-  border-bottom: 4px solid #0f6abf;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 64px;
+  padding: 0.55rem max(1rem, 4vw);
+  background: #fff;
+  border-bottom: 2px solid #000;
 }
 
 .brand {
-  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #111;
   text-decoration: none;
-  font-size: 1.45rem;
+  font-size: 1rem;
   font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.brand::before {
+  content: "";
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid #111;
+  background-color: #ccff66;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v18'/%3E%3Cpath d='M8 7v4'/%3E%3Cpath d='M16 7v4'/%3E%3Cpath d='M8 7l4-3 4 3'/%3E%3Cpath d='M8 11l-2 2'/%3E%3Cpath d='M16 11l2 2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 18px 18px;
+  flex-shrink: 0;
 }
 
 .tagline {
-  margin: 0.2rem 0 0.8rem;
-  color: #c8d7ea;
+  display: none;
 }
 
 .site-nav {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.2rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
 }
 
 .nav-link {
-  background: #132b45;
-  color: #fff;
-  text-decoration: none;
-  border: 1px solid #284969;
-  padding: 0.45rem 0.6rem;
-  border-radius: 9px;
   display: inline-flex;
   flex-direction: column;
-  min-width: 92px;
+  gap: 0.05rem;
+  min-width: auto;
+  padding: 0.55rem 0.65rem 0.45rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #12253f;
+  text-decoration: none;
+  line-height: 1.15;
+}
+
+.nav-link span {
+  font-size: 0.95rem;
+  font-weight: 760;
+  color: #12253f;
 }
 
 .nav-link small {
-  color: #9dc4eb;
-  font-size: 0.67rem;
-  line-height: 1.2;
-  margin-top: 0.15rem;
+  color: #34608f;
+  font-size: 0.71rem;
+  line-height: 1.15;
+  margin-top: 0.1rem;
+}
+
+.nav-link:hover,
+.nav-link:focus-visible {
+  background: #eef3f9;
+  outline: none;
 }
 
 .page {
   max-width: 1040px;
   margin: 0 auto;
-  padding: 1rem 1rem 2rem;
+  padding: 5.5rem 1rem 2rem;
 }
 
 .hero {
@@ -93,15 +133,6 @@ a {
 
 .grid.three {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-}
-
-.btn {
-  display: inline-block;
-  background: var(--accent);
-  color: #fff;
-  text-decoration: none;
-  border-radius: 8px;
-  padding: 0.45rem 0.72rem;
 }
 
 .proof-posture {
@@ -142,9 +173,24 @@ a {
   text-align: center;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 880px) {
+  .site-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.45rem;
+  }
+
+  .site-nav {
+    width: 100%;
+  }
+
   .nav-link {
-    min-width: 0;
-    flex: 1 1 45%;
+    padding: 0.45rem 0.55rem 0.35rem;
+  }
+
+  .nav-link small {
+    display: none;
   }
 }
