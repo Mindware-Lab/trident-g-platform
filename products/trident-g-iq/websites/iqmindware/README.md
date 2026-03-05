@@ -21,7 +21,8 @@ This folder implements the "Far-Transfer + Transparency by Design" plan.
 - `assets/css/pages/proof.css`: proof and protocol publication templates
 - `assets/css/pages/pricing.css`: pricing matrix and currency switcher
 - `assets/css/pages/learn.css`: learn and cases templates
-- `assets/css/pages/utility-pages.css`: support/legal/about/faq/coaching style baseline
+- `assets/css/pages/faq.css`: FAQ page template
+- `assets/css/pages/utility-pages.css`: support/legal/about/contact/login baseline
 
 Pages now load CSS in this order:
 
