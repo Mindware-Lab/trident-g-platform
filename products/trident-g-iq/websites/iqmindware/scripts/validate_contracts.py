@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,7 +46,9 @@ all_html = list(ROOT.rglob("*.html"))
 for html in all_html:
     text = html.read_text(encoding="utf-8").lower()
     for word in forbidden:
-        if word.lower() in text:
+        escaped = re.escape(word.lower()).replace(r"\ ", r"\s+")
+        pattern = rf"\b{escaped}\b"
+        if re.search(pattern, text):
             errors.append(f"Forbidden phrase '{word}' found in {html.relative_to(ROOT)}")
 
 outcome_words = ["improves", "increases", "boosts"]
