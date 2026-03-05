@@ -48,7 +48,8 @@
 /* ============================================================
    2. PAGE SHELL
    ============================================================ */
-body.tools { background: var(--tools-surface); }`r`n.tools-page { padding-top: 0; }
+body.tools { background: var(--tools-surface); }
+.tools-page { padding-top: 0; }
 
 
 /* ============================================================
