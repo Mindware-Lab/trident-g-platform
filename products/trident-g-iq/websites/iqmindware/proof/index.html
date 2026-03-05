@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Proof | IQMindware</title>
-    <link rel="stylesheet" href="/assets/css/brand.css">
+  <link rel="stylesheet" href="/assets/css/brand.css">
   <link rel="stylesheet" href="/assets/css/templates.css">
   <link rel="stylesheet" href="/assets/css/pages/proof.css">
 </head>
-<body>
+<body class="proof">
   <header class="site-header">
     <a class="brand" href="/">IQMindware</a>
     <p class="tagline">Train general intelligence, then prove carryover.</p>
@@ -24,52 +24,283 @@
       <a class="nav-link" href="/login/"><span>Login</span></a>
     </nav>
   </header>
-  <main class="page">
-    <section class="hero">
-      <h1>Proof</h1>
-      <p>Inspect claims boundaries, open protocol publication, and aggregated evidence summaries.</p>
+
+  <main class="proof-page">
+    <section class="proof-hero">
+      <div class="proof-hero-inner">
+        <div>
+          <span class="proof-hero-eyebrow">Proof posture</span>
+          <h1 class="proof-hero-title">
+            <span class="proof-hero-title-solid">Transparent by design.</span>
+            <span class="proof-hero-title-gradient">Carryover tested under change.</span>
+          </h1>
+          <p class="proof-hero-desc">
+            IQMindware publishes a claims ladder, open protocol summaries, and aggregated evidence updates.
+            We test for transfer under changed conditions instead of promising outcomes.
+          </p>
+          <div class="proof-hero-btns">
+            <a class="btn btn-cyan" href="#claims">View claims boundaries</a>
+            <a class="btn btn-ghost-dk" href="/proof/g-tracker/">G Tracker validation</a>
+          </div>
+        </div>
+        <div class="proof-hero-meta" aria-label="Proof quick summary">
+          <div class="proof-meta-chip proof-meta-chip--cyan">
+            <div class="proof-meta-chip-label">Publication mode</div>
+            <div class="proof-meta-chip-value">Open protocols + data summaries</div>
+          </div>
+          <div class="proof-meta-chip proof-meta-chip--lime">
+            <div class="proof-meta-chip-label">Transfer checks</div>
+            <div class="proof-meta-chip-value">Swap, boundary, delayed re-check</div>
+          </div>
+          <div class="proof-meta-chip proof-meta-chip--neutral">
+            <div class="proof-meta-chip-label">Boundary</div>
+            <div class="proof-meta-chip-value">Skills training, not diagnosis or treatment</div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section id="claims" class="card">
-      <h2>Claims</h2>
-      <p>Allowed framing follows design-intent and measured-marker language only.</p>
-      <ul>
-        <li>Allowed verbs: designed to, aims to, we test, we track, we publish.</li>
-        <li>Site copy is governed by the machine-readable claims ladder contract.</li>
-        <li>Testimonials must not imply guaranteed or clinical outcomes.</li>
-      </ul>
-      <p><a href="/claims-ladder.json">Open claims ladder contract</a></p>
+    <nav class="proof-jumpnav" aria-label="Proof sections">
+      <div class="proof-jumpnav-inner">
+        <a href="#claims">Claims</a>
+        <span class="proof-jumpnav-sep">/</span>
+        <a href="#protocols">Protocols</a>
+        <span class="proof-jumpnav-sep">/</span>
+        <a href="#data">Data</a>
+        <span class="proof-jumpnav-meta">Protocols + data + transfer checks</span>
+      </div>
+    </nav>
+
+    <section id="claims" class="proof-section proof-section--light">
+      <div class="proof-section-inner">
+        <div class="proof-section-hd">
+          <div>
+            <span class="proof-section-number proof-section-number--lime">Section 01 - Claims</span>
+            <h2 class="proof-section-title">What we can and cannot claim</h2>
+            <p class="proof-section-lead">Copy is governed by a claims ladder contract and testimonial constraints. Allowed wording focuses on design intent, testing posture, and measured markers.</p>
+          </div>
+          <span class="proof-version"><span class="proof-version-dot"></span> claims-ladder.json</span>
+        </div>
+
+        <div class="claims-grid">
+          <div class="claim-panel claim-panel--ok">
+            <div class="claim-panel-hd">
+              <div class="claim-panel-icon">&#10003;</div>
+              <span class="claim-panel-title">Allowed language</span>
+            </div>
+            <ul class="claim-list">
+              <li><span class="claim-marker">&#10003;</span>Designed to train general intelligence capacity and cognitive resilience.</li>
+              <li><span class="claim-marker">&#10003;</span>We test transfer under wrapper swaps, boundary probes, and delayed re-checks.</li>
+              <li><span class="claim-marker">&#10003;</span>We track trends and publish aggregated summaries as evidence grows.</li>
+              <li><span class="claim-marker">&#10003;</span>Skills training and self-regulation, not diagnosis or treatment.</li>
+            </ul>
+          </div>
+          <div class="claim-panel claim-panel--no">
+            <div class="claim-panel-hd">
+              <div class="claim-panel-icon">&#10005;</div>
+              <span class="claim-panel-title">Not allowed</span>
+            </div>
+            <ul class="claim-list">
+              <li><span class="claim-marker">&#10005;</span>Guaranteed far transfer or guaranteed outcomes.</li>
+              <li><span class="claim-marker">&#10005;</span>Clinical-proof language without specific cited evidence.</li>
+              <li><span class="claim-marker">&#10005;</span>Diagnosis, treatment, or cure framing.</li>
+              <li><span class="claim-marker">&#10005;</span>Universal outcome claims from testimonials.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="proof-disclaimer">
+          <div class="proof-disclaimer-icon">&#9888;</div>
+          <div class="proof-disclaimer-body">
+            <strong>Boundary:</strong> IQMindware products are performance and self-regulation tools.
+            They are not medical devices and not intended for diagnosis or treatment.
+            Outcomes vary.
+          </div>
+        </div>
+
+        <p class="proof-footnote">
+          Source contract: <a href="/claims-ladder.json">claims-ladder.json</a>
+        </p>
+      </div>
     </section>
 
-    <section id="protocols" class="card">
-      <h2>Protocols</h2>
-      <p>Open protocol index with versioned publication:</p>
-      <ul>
-        <li><a href="/proof/protocols/zone-coach/">Zone Coach protocol publication</a></li>
-        <li><a href="/proof/protocols/capacity-gym/">Capacity Gym protocol publication</a></li>
-      </ul>
-      <p><a href="/protocols.json">Open protocols registry</a></p>
+    <section id="protocols" class="proof-section proof-section--dark">
+      <div class="proof-section-inner">
+        <div class="proof-section-hd">
+          <div>
+            <span class="proof-section-number proof-section-number--cyan">Section 02 - Protocols</span>
+            <h2 class="proof-section-title">Published protocols</h2>
+            <p class="proof-section-lead">Each protocol page includes version/date, checks used, logged data, export instructions, limits, and changelog links.</p>
+          </div>
+          <span class="proof-version"><span class="proof-version-dot"></span> protocols.json</span>
+        </div>
+
+        <div class="protocol-list">
+          <div class="protocol-card">
+            <div class="protocol-card-hd">
+              <div class="protocol-card-hd-left">
+                <div class="protocol-icon">&#9889;</div>
+                <div>
+                  <div class="protocol-name">Zone Coach protocol</div>
+                  <div class="protocol-tagline">State gating + recovery re-entry</div>
+                </div>
+              </div>
+              <div class="protocol-badges">
+                <a class="protocol-badge protocol-badge--link" href="/proof/protocols/zone-coach/">Open protocol page</a>
+              </div>
+            </div>
+            <div class="protocol-card-body">
+              <div class="protocol-row">
+                <div class="protocol-row-label">What it trains</div>
+                <div class="protocol-row-value">Workable state detection and fast re-entry so cognitive work stays stable-but-flexible.</div>
+              </div>
+              <div class="protocol-row">
+                <div class="protocol-row-label">Checks used</div>
+                <div class="protocol-row-value">State gating checks, transfer probes, and post-disruption re-entry logging.</div>
+              </div>
+              <div class="protocol-row">
+                <div class="protocol-row-label">Data logged</div>
+                <div class="protocol-row-value">Session markers, state outputs, and transfer-check outcomes with user-controlled export.</div>
+              </div>
+              <div class="protocol-row protocol-row--limits">
+                <div class="protocol-row-label">Limits</div>
+                <div class="protocol-row-value">Indicator signals are practical training markers, not clinical diagnosis.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="protocol-card">
+            <div class="protocol-card-hd">
+              <div class="protocol-card-hd-left">
+                <div class="protocol-icon">&#129504;</div>
+                <div>
+                  <div class="protocol-name">Capacity Gym protocol</div>
+                  <div class="protocol-tagline">Adaptive capacity blocks + transfer probes</div>
+                </div>
+              </div>
+              <div class="protocol-badges">
+                <a class="protocol-badge protocol-badge--link" href="/proof/protocols/capacity-gym/">Open protocol page</a>
+              </div>
+            </div>
+            <div class="protocol-card-body">
+              <div class="protocol-row">
+                <div class="protocol-row-label">What it trains</div>
+                <div class="protocol-row-value">Working capacity, control range, and reuse of scripts under novelty.</div>
+              </div>
+              <div class="protocol-row">
+                <div class="protocol-row-label">Checks used</div>
+                <div class="protocol-row-value">Wrapper swaps, boundary/trap probes, and delayed re-checks.</div>
+              </div>
+              <div class="protocol-row">
+                <div class="protocol-row-label">Data logged</div>
+                <div class="protocol-row-value">Block performance trends, probe outcomes, and progression markers with local-first export.</div>
+              </div>
+              <div class="protocol-row protocol-row--limits">
+                <div class="protocol-row-label">Limits</div>
+                <div class="protocol-row-value">Far transfer is tested and tracked, not guaranteed.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="proof-footnote">
+          Source registry: <a href="/protocols.json">protocols.json</a>
+        </p>
+      </div>
     </section>
 
-    <section id="data" class="card">
-      <h2>Data</h2>
-      <p>Published summaries are aggregated and caveated. No personal raw logs are published.</p>
-      <p><a href="/proof-registry.json">Open proof registry</a></p>
+    <section id="data" class="proof-section proof-section--light-alt">
+      <div class="proof-section-inner">
+        <div class="proof-section-hd">
+          <div>
+            <span class="proof-section-number proof-section-number--blue">Section 03 - Data</span>
+            <h2 class="proof-section-title">Published summaries and privacy</h2>
+            <p class="proof-section-lead">Data publication is aggregated and caveated. Personal raw logs are not published.</p>
+          </div>
+          <span class="proof-version"><span class="proof-version-dot"></span> proof-registry.json</span>
+        </div>
 
-      <section class="mini-policy" aria-label="Data publication policy">
-        <h3>Data publication policy</h3>
-        <ul>
-          <li><strong>What is published:</strong> Aggregated metrics and summary tables, not raw personal logs.</li>
-          <li><strong>Privacy stance:</strong> No personal data exposure in published evidence summaries.</li>
-          <li><strong>Update cadence:</strong> Schedules are loaded from <code>proof-cadence.json</code> below.</li>
-          <li><strong>How to export personal trail:</strong> User-controlled export from local-first app controls.</li>
-        </ul>
-      </section>
+        <div class="data-grid">
+          <div class="data-policy-panel">
+            <div class="data-policy-hd">
+              <span class="data-policy-hd-icon">&#128274;</span>
+              <span class="data-policy-hd-title">Data publication policy</span>
+            </div>
+            <div class="data-policy-rows">
+              <div class="data-policy-row">
+                <div class="data-policy-row-label">What is published</div>
+                <div class="data-policy-row-value">Aggregated metrics and summary tables only. No raw personal logs.</div>
+              </div>
+              <div class="data-policy-row">
+                <div class="data-policy-row-label">Privacy stance</div>
+                <div class="data-policy-row-value">No personal data exposure in published evidence summaries.</div>
+              </div>
+              <div class="data-policy-row">
+                <div class="data-policy-row-label">Update cadence</div>
+                <div class="data-policy-row-value">Cadence and owner are published from <span class="proof-code">proof-cadence.json</span>.</div>
+              </div>
+              <div class="data-policy-row">
+                <div class="data-policy-row-label">Personal export</div>
+                <div class="data-policy-row-value">User-controlled export via app controls (local-first trail export).</div>
+              </div>
+            </div>
+          </div>
 
-      <div id="cadenceList" class="cadence"></div>
+          <div class="data-cadence-panel">
+            <div class="data-cadence-hd">
+              <span class="data-cadence-hd-icon">&#128197;</span>
+              <span class="data-cadence-hd-title">Publication cadence</span>
+            </div>
+            <div id="cadenceList" class="cadence"></div>
+          </div>
+        </div>
+
+        <section class="card" aria-label="Measure registry">
+          <h3>Measure registry</h3>
+          <p>Measure definitions, status, and caveats are published in the proof registry.</p>
+          <p><a href="/proof-registry.json">Open proof-registry.json</a></p>
+        </section>
+
+        <p class="proof-footnote">
+          Also see <a href="/proof/g-tracker/">/proof/g-tracker</a> for intent-specific validation detail.
+        </p>
+      </div>
     </section>
   </main>
-  <footer class="site-footer"><p>Skills training and self-regulation, not diagnosis or treatment.</p></footer>
+
+  <footer class="site-footer">
+    <p>Skills training and self-regulation, not diagnosis or treatment.</p>
+  </footer>
+
   <script src="/assets/app.js" defer></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const links = Array.from(document.querySelectorAll(".proof-jumpnav a"));
+      const sections = ["claims", "protocols", "data"]
+        .map((id) => document.getElementById(id))
+        .filter(Boolean);
+
+      if (!links.length || !sections.length || !("IntersectionObserver" in window)) {
+        return;
+      }
+
+      const linkById = new Map(links.map((link) => [link.getAttribute("href").replace("#", ""), link]));
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            links.forEach((link) => link.classList.remove("active"));
+            const active = linkById.get(entry.target.id);
+            if (active) active.classList.add("active");
+          });
+        },
+        { rootMargin: "-30% 0px -55% 0px", threshold: 0.1 }
+      );
+
+      sections.forEach((section) => observer.observe(section));
+    });
+  </script>
 </body>
 </html>
+
