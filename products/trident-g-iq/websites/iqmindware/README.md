@@ -30,6 +30,14 @@ Pages now load CSS in this order:
 2. `templates.css`
 3. one page-specific file from `assets/css/pages/*`
 
+## Shared rich footer
+
+- All public pages use a shared `site-footer site-footer-rich` block.
+- Footer layout and tokens come from `branding/IQ-Mindware-brand.css`.
+- `assets/css/templates.css` contains the `site-footer-rich` override that preserves complex footer layout.
+- Social links are currently placeholders to platform roots and can be swapped later:
+  - YouTube, Instagram, X, LinkedIn, Discord, GitHub, TikTok, Bluesky.
+
 ## Contracts
 
 - `site-map.json`

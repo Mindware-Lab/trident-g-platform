@@ -195,6 +195,21 @@ a {
   text-align: center;
 }
 
+.site-footer.site-footer-rich {
+  border-top: 0;
+  padding: 52px max(1rem, 5vw) 32px;
+  text-align: left;
+  color: inherit;
+}
+
+.site-footer.site-footer-rich .footer-top,
+.site-footer.site-footer-rich .footer-bottom,
+.site-footer.site-footer-rich .footer-reg {
+  max-width: var(--max-w);
+  margin-left: auto;
+  margin-right: auto;
+}
+
 @media (max-width: 880px) {
   .site-header {
     align-items: flex-start;
