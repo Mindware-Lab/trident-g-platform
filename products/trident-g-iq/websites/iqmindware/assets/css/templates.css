@@ -210,6 +210,61 @@ a {
   margin-right: auto;
 }
 
+.site-footer.site-footer-rich .social-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.site-footer.site-footer-rich .social-btn[data-platform="substack"]:hover {
+  color: #ff6719;
+  border-color: rgba(255, 103, 25, 0.35);
+  background: rgba(255, 103, 25, 0.08);
+}
+
+.site-footer.site-footer-rich .social-btn[data-platform="linkedin"]:hover {
+  color: #0a66c2;
+  border-color: rgba(10, 102, 194, 0.35);
+  background: rgba(10, 102, 194, 0.09);
+}
+
+.site-footer.site-footer-rich .social-btn[data-platform="instagram"]:hover {
+  color: #e1306c;
+  border-color: rgba(225, 48, 108, 0.35);
+  background: rgba(225, 48, 108, 0.08);
+}
+
+.site-footer.site-footer-rich .social-btn[data-platform="youtube"]:hover {
+  color: #ff0000;
+  border-color: rgba(255, 0, 0, 0.3);
+  background: rgba(255, 0, 0, 0.08);
+}
+
+.site-footer.site-footer-rich .social-btn[data-platform="bluesky"]:hover {
+  color: #0085ff;
+  border-color: rgba(0, 133, 255, 0.35);
+  background: rgba(0, 133, 255, 0.09);
+}
+
+.site-footer.site-footer-rich .social-btn[data-platform="x"]:hover,
+.site-footer.site-footer-rich .social-btn[data-platform="github"]:hover {
+  color: #e8eaf0;
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.site-footer.site-footer-rich .social-btn[data-platform="tiktok"]:hover {
+  color: #69c9d0;
+  border-color: rgba(105, 201, 208, 0.35);
+  background: rgba(105, 201, 208, 0.08);
+}
+
+.site-footer.site-footer-rich .social-btn[data-platform="discord"]:hover {
+  color: #5865f2;
+  border-color: rgba(88, 101, 242, 0.35);
+  background: rgba(88, 101, 242, 0.09);
+}
+
 @media (max-width: 880px) {
   .site-header {
     align-items: flex-start;
