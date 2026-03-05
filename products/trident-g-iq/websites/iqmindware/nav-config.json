@@ -1,0 +1,50 @@
+{
+  "top_nav": [
+    {
+      "label": "Start here",
+      "href": "/start/",
+      "microcopy": ""
+    },
+    {
+      "label": "Tools",
+      "href": "/tools/",
+      "microcopy": "Use today. Export your trail."
+    },
+    {
+      "label": "Proof",
+      "href": "/proof/",
+      "microcopy": "Protocols + data + transfer checks"
+    },
+    {
+      "label": "Plans",
+      "href": "/pricing/",
+      "microcopy": ""
+    },
+    {
+      "label": "Coaching",
+      "href": "/coaching/",
+      "microcopy": ""
+    },
+    {
+      "label": "Learn",
+      "href": "/learn/",
+      "microcopy": ""
+    },
+    {
+      "label": "About",
+      "href": "/about/",
+      "microcopy": ""
+    },
+    {
+      "label": "Support",
+      "href": "/support/",
+      "microcopy": ""
+    },
+    {
+      "label": "Login",
+      "href": "/login/",
+      "microcopy": ""
+    }
+  ],
+  "login_is_separate_from_marketing": true
+}

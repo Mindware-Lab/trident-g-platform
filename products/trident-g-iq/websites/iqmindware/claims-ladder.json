@@ -1,0 +1,87 @@
+{
+  "banned_verbs_sitewide": [
+    "proves",
+    "guarantees",
+    "clinically proven",
+    "increases IQ"
+  ],
+  "allowed_verbs_default": [
+    "designed to",
+    "aims to",
+    "we test",
+    "we track",
+    "we publish"
+  ],
+  "testimonial_constraints": {
+    "forbidden_implications": [
+      "guaranteed outcomes",
+      "diagnosis or treatment effect",
+      "universal transfer certainty"
+    ],
+    "required_disclaimer": "Individual results vary; examples are not guarantees."
+  },
+  "claims": [
+    {
+      "id": "design_far_transfer",
+      "claim_text": "Designed to train general intelligence capacity and cognitive resilience, and to test carryover under changed conditions.",
+      "claim_type": "design_intent",
+      "evidence_required": "none",
+      "required_link_target": "/proof#claims",
+      "allowed_verbs": [
+        "designed to",
+        "aims to"
+      ],
+      "banned_verbs": [
+        "proves",
+        "guarantees"
+      ],
+      "disclaimer_required": true
+    },
+    {
+      "id": "transfer_checks",
+      "claim_text": "We test carryover with wrapper swaps, boundary/trap probes, and delayed re-checks.",
+      "claim_type": "feature",
+      "evidence_required": "internal_summary_link",
+      "required_link_target": "/proof#protocols",
+      "allowed_verbs": [
+        "we test",
+        "we track"
+      ],
+      "banned_verbs": [
+        "clinically proven",
+        "guarantees"
+      ],
+      "disclaimer_required": true
+    },
+    {
+      "id": "published_aggregates",
+      "claim_text": "We publish aggregated evidence summaries and caveats.",
+      "claim_type": "published_summary",
+      "evidence_required": "internal_summary_link",
+      "required_link_target": "/proof#data",
+      "allowed_verbs": [
+        "we publish"
+      ],
+      "banned_verbs": [
+        "proves",
+        "increases IQ"
+      ],
+      "disclaimer_required": true
+    },
+    {
+      "id": "measured_markers",
+      "claim_text": "We track applied, resilience, and reasoning markers over time.",
+      "claim_type": "measured_marker",
+      "evidence_required": "internal_summary_link",
+      "required_link_target": "/proof#data",
+      "allowed_verbs": [
+        "we track"
+      ],
+      "banned_verbs": [
+        "guarantees",
+        "clinically proven"
+      ],
+      "disclaimer_required": true
+    }
+  ]
+}

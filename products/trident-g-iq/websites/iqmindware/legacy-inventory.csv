@@ -1,0 +1,8 @@
+url,intent,recommended_action,target,notes
+https://www.iqmindware.com/,commercial_home,keep_update,https://www.iqmindware.com/,Primary route refresh
+https://www.iqmindware.com/app,legacy_commercial,301,https://www.iqmindware.com/tools/,Obsolete app listing route
+https://www.iqmindware.com/membership,legacy_pricing,301,https://www.iqmindware.com/pricing/,Pricing consolidated
+https://www.iqmindware.com/refund-policy,policy,301,https://www.iqmindware.com/refunds/,Policy route normalization
+https://www.iqmindware.com/about,about,keep_update,https://www.iqmindware.com/about/,Keep intent with updated boundaries
+https://www.iqmindware.com/insights,educational,keep_update,https://www.iqmindware.com/learn/blog/,Preserve learn intent
+https://www.iqmindware.com/g-tracker-validation,validation_intent,301,https://www.iqmindware.com/proof/g-tracker/,Dedicated mapping

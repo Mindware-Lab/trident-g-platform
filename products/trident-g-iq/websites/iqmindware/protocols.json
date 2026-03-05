@@ -1,0 +1,50 @@
+{
+  "updated_at": "2026-03-04",
+  "protocols": [
+    {
+      "name": "Psi Corridor Protocol",
+      "app": "Zone Coach",
+      "version": "v1.0",
+      "date": "2026-03-04",
+      "what_it_trains": "Readiness routing and re-entry decisions.",
+      "checks_used": [
+        "validity gate",
+        "state signature comparison",
+        "baseline-relative adjustments"
+      ],
+      "data_logged": [
+        "ccc_bits_per_second",
+        "state_label",
+        "confidence",
+        "trend_rows"
+      ],
+      "export_path": "app-level local export controls",
+      "limits": "Coaching/readiness only, not diagnosis.",
+      "changelog_link": "/proof/protocols/zone-coach/",
+      "source_link": "https://github.com/Mindware-Lab/trident-g-platform/blob/main/products/trident-g-iq/apps/zone-coach/COGNITIVE-STATE-PROTOCOL.md"
+    },
+    {
+      "name": "Transfer Invariance Protocol",
+      "app": "Capacity Gym",
+      "version": "v1.0",
+      "date": "2026-03-04",
+      "what_it_trains": "Wrapper-resilient control policies.",
+      "checks_used": [
+        "plateau detector",
+        "perturbation pulses",
+        "swap probes",
+        "consolidation blocks"
+      ],
+      "data_logged": [
+        "block_outcome_band",
+        "probe_outcome",
+        "coach_state",
+        "session_summary"
+      ],
+      "export_path": "app-level local export controls",
+      "limits": "Designed to increase probability of carryover, not guarantee.",
+      "changelog_link": "/proof/protocols/capacity-gym/",
+      "source_link": "https://github.com/Mindware-Lab/trident-g-platform/blob/main/products/trident-g-iq/apps/capacity-gym/MARKET.md"
+    }
+  ]
+}

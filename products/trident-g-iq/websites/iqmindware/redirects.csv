@@ -1,0 +1,6 @@
+old_url,target_url,status_code,intent_match_note
+/app,/tools/,301,legacy app overview to modern tools hub
+/membership,/pricing/,301,pricing intent preserved
+/refund-policy,/refunds/,301,policy intent preserved
+/g-tracker-validation,/proof/g-tracker/,301,validation intent preserved
+/insights,/learn/blog/,301,educational intent preserved

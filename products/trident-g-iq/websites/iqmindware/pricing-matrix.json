@@ -1,0 +1,150 @@
+{
+  "default_currency": "GBP",
+  "supported_currencies": [
+    "GBP",
+    "USD"
+  ],
+  "upgrade_credit_rule": "Upgrading replaces your plan; overlap is credited.",
+  "plans": [
+    {
+      "id": "g_tracker",
+      "label": "G Tracker",
+      "billing": "Launch pass (90 days)",
+      "price_gbp": 24.0,
+      "price_usd": 29.99,
+      "choose_if": "You want evidence tracking without training app access.",
+      "includes": [
+        "G Tracker battery",
+        "local export controls",
+        "proof summaries"
+      ],
+      "discounts": {
+        "Early Bird": {
+          "gbp": 19.2,
+          "usd": 23.99
+        },
+        "Student": {
+          "gbp": 12.0,
+          "usd": 14.99
+        },
+        "Existing": {
+          "gbp": 8.0,
+          "usd": 9.99
+        }
+      }
+    },
+    {
+      "id": "zone_coach",
+      "label": "Zone Coach",
+      "billing": "Launch pass (90 days)",
+      "price_gbp": 32.0,
+      "price_usd": 39.99,
+      "choose_if": "You want readiness gating and re-entry support.",
+      "includes": [
+        "Zone Coach app",
+        "state trend",
+        "local-first history"
+      ],
+      "discounts": {
+        "Early Bird": {
+          "gbp": 25.6,
+          "usd": 31.99
+        },
+        "Student": {
+          "gbp": 16.0,
+          "usd": 19.99
+        },
+        "Existing": {
+          "gbp": 10.66,
+          "usd": 13.33
+        }
+      }
+    },
+    {
+      "id": "capacity_gym",
+      "label": "Capacity Gym",
+      "billing": "Launch pass (90 days)",
+      "price_gbp": 40.0,
+      "price_usd": 49.99,
+      "choose_if": "You want structured transfer-oriented capacity training.",
+      "includes": [
+        "Capacity Gym",
+        "coach routing",
+        "probe logic"
+      ],
+      "discounts": {
+        "Early Bird": {
+          "gbp": 32.0,
+          "usd": 39.99
+        },
+        "Student": {
+          "gbp": 20.0,
+          "usd": 24.99
+        },
+        "Existing": {
+          "gbp": 13.33,
+          "usd": 16.66
+        }
+      }
+    },
+    {
+      "id": "iq_core",
+      "label": "IQ Core",
+      "billing": "Launch pass (90 days)",
+      "price_gbp": 72.0,
+      "price_usd": 89.99,
+      "choose_if": "You want the full software stack and Substack inclusion.",
+      "includes": [
+        "G Tracker",
+        "Zone Coach",
+        "Capacity Gym",
+        "Substack add-on inclusion"
+      ],
+      "discounts": {
+        "Early Bird": {
+          "gbp": 57.6,
+          "usd": 71.99
+        },
+        "Student": {
+          "gbp": 36.0,
+          "usd": 44.99
+        },
+        "Existing": {
+          "gbp": 24.0,
+          "usd": 29.99
+        }
+      }
+    },
+    {
+      "id": "live_cohort",
+      "label": "Live Cohort",
+      "billing": "4 x 1h weekly",
+      "price_gbp": 240.0,
+      "price_usd": 299.0,
+      "choose_if": "You want structured guided implementation.",
+      "includes": [
+        "IQ Core",
+        "Cohort sessions",
+        "Substack inclusion"
+      ]
+    },
+    {
+      "id": "premium_1to1",
+      "label": "1:1 Premium",
+      "billing": "3 x 1h flexible",
+      "price_gbp": 560.0,
+      "price_usd": 699.0,
+      "choose_if": "You want private implementation support.",
+      "includes": [
+        "IQ Core",
+        "Private coaching",
+        "Substack inclusion"
+      ]
+    }
+  ],
+  "refund_and_cancel": {
+    "software": "14-day software guarantee.",
+    "coaching": "Full refund up to 48h before first session; then remainder excluding delivered session.",
+    "migration": "Launch pass converts to account credit when subscriptions go live."
+  }
+}

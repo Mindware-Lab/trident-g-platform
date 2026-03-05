@@ -1,0 +1,56 @@
+{
+  "default": {
+    "title_suffix": "| IQMindware",
+    "description": "Train general intelligence with transparent protocols and transfer checks.",
+    "schema": [
+      "Organization",
+      "WebSite"
+    ]
+  },
+  "pages": {
+    "/": {
+      "title": "Train intelligence that transfers",
+      "canonical": "https://www.iqmindware.com/",
+      "schema": [
+        "WebPage"
+      ]
+    },
+    "/tools/": {
+      "title": "Tools",
+      "canonical": "https://www.iqmindware.com/tools/",
+      "schema": [
+        "CollectionPage"
+      ]
+    },
+    "/proof/": {
+      "title": "Proof",
+      "canonical": "https://www.iqmindware.com/proof/",
+      "schema": [
+        "WebPage",
+        "FAQPage"
+      ]
+    },
+    "/proof/g-tracker/": {
+      "title": "G Tracker validation",
+      "canonical": "https://www.iqmindware.com/proof/g-tracker/",
+      "schema": [
+        "WebPage"
+      ]
+    },
+    "/pricing/": {
+      "title": "Plans",
+      "canonical": "https://www.iqmindware.com/pricing/",
+      "schema": [
+        "Product",
+        "Offer"
+      ]
+    },
+    "/learn/": {
+      "title": "Learn",
+      "canonical": "https://www.iqmindware.com/learn/",
+      "schema": [
+        "CollectionPage"
+      ]
+    }
+  }
+}

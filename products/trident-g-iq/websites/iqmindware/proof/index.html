@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Proof | IQMindware</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">IQMindware</a>
+    <p class="tagline">Train general intelligence, then prove carryover.</p>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a class="nav-link" href="/start/"><span>Start here</span></a>
+      <a class="nav-link" href="/tools/"><span>Tools</span><small>Use today. Export your trail.</small></a>
+      <a class="nav-link" href="/proof/"><span>Proof</span><small>Protocols + data + transfer checks</small></a>
+      <a class="nav-link" href="/pricing/"><span>Plans</span></a>
+      <a class="nav-link" href="/coaching/"><span>Coaching</span></a>
+      <a class="nav-link" href="/learn/"><span>Learn</span></a>
+      <a class="nav-link" href="/about/"><span>About</span></a>
+      <a class="nav-link" href="/support/"><span>Support</span></a>
+      <a class="nav-link" href="/login/"><span>Login</span></a>
+    </nav>
+  </header>
+  <main class="page">
+    <section class="hero">
+      <h1>Proof</h1>
+      <p>Inspect claims boundaries, open protocol publication, and aggregated evidence summaries.</p>
+    </section>
+
+    <section id="claims" class="card">
+      <h2>Claims</h2>
+      <p>Allowed framing follows design-intent and measured-marker language only.</p>
+      <ul>
+        <li>Allowed verbs: designed to, aims to, we test, we track, we publish.</li>
+        <li>Site copy is governed by the machine-readable claims ladder contract.</li>
+        <li>Testimonials must not imply guaranteed or clinical outcomes.</li>
+      </ul>
+      <p><a href="/claims-ladder.json">Open claims ladder contract</a></p>
+    </section>
+
+    <section id="protocols" class="card">
+      <h2>Protocols</h2>
+      <p>Open protocol index with versioned publication:</p>
+      <ul>
+        <li><a href="/proof/protocols/zone-coach/">Zone Coach protocol publication</a></li>
+        <li><a href="/proof/protocols/capacity-gym/">Capacity Gym protocol publication</a></li>
+      </ul>
+      <p><a href="/protocols.json">Open protocols registry</a></p>
+    </section>
+
+    <section id="data" class="card">
+      <h2>Data</h2>
+      <p>Published summaries are aggregated and caveated. No personal raw logs are published.</p>
+      <p><a href="/proof-registry.json">Open proof registry</a></p>
+
+      <section class="mini-policy" aria-label="Data publication policy">
+        <h3>Data publication policy</h3>
+        <ul>
+          <li><strong>What is published:</strong> Aggregated metrics and summary tables, not raw personal logs.</li>
+          <li><strong>Privacy stance:</strong> No personal data exposure in published evidence summaries.</li>
+          <li><strong>Update cadence:</strong> Schedules are loaded from <code>proof-cadence.json</code> below.</li>
+          <li><strong>How to export personal trail:</strong> User-controlled export from local-first app controls.</li>
+        </ul>
+      </section>
+
+      <div id="cadenceList" class="cadence"></div>
+    </section>
+  </main>
+  <footer class="site-footer"><p>Skills training and self-regulation, not diagnosis or treatment.</p></footer>
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>

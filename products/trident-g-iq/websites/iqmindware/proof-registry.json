@@ -1,0 +1,45 @@
+{
+  "as_of": "2026-03-04",
+  "items": [
+    {
+      "measure_name": "SgS-12 A/B",
+      "construct_label": "Brief fluid reasoning snapshot",
+      "what_it_is": "A short baseline/post reasoning check for practical trend interpretation.",
+      "how_it_is_measured": "12-item structured forms with A/B versioning.",
+      "status": "published_summary",
+      "link_to_summary": "/proof/g-tracker/",
+      "caveats": "Brief form for tracking, not high-stakes diagnostic use.",
+      "last_updated": "2026-03-04"
+    },
+    {
+      "measure_name": "Psi-CBS",
+      "construct_label": "Applied cognitive bandwidth",
+      "what_it_is": "Self-report marker for applied cognition patterns in daily contexts.",
+      "how_it_is_measured": "Repeatable scale responses with trend interpretation.",
+      "status": "in_testing",
+      "link_to_summary": "",
+      "caveats": "Validation remains in testing; interpret as practical tracking signal.",
+      "last_updated": "2026-03-04"
+    },
+    {
+      "measure_name": "CRS-10",
+      "construct_label": "Cognitive resilience under pressure",
+      "what_it_is": "Repeatable self-report signal for cognitive functioning under stress.",
+      "how_it_is_measured": "10-item scale with periodic repeats.",
+      "status": "published_summary",
+      "link_to_summary": "/proof/g-tracker/",
+      "caveats": "Self-report context effects are expected; not clinical diagnosis.",
+      "last_updated": "2026-03-04"
+    },
+    {
+      "measure_name": "EDHS",
+      "construct_label": "Everyday decision habits",
+      "what_it_is": "Behaviour-oriented decision habit snapshot for baseline/post comparison.",
+      "how_it_is_measured": "Scenario-based form A/B self-report.",
+      "status": "in_testing",
+      "link_to_summary": "",
+      "caveats": "Use as practical habit-trend indicator.",
+      "last_updated": "2026-03-04"
+    }
+  ]
+}

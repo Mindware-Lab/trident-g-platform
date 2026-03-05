@@ -1,0 +1,171 @@
+{
+  "generated_at": "2026-03-04",
+  "routes": [
+    {
+      "route": "/",
+      "intent": "positioning_and_routing",
+      "primary_cta": "Start here",
+      "required_template_blocks": [
+        "design_intent_proof_posture"
+      ]
+    },
+    {
+      "route": "/start/",
+      "intent": "onboarding",
+      "primary_cta": "Open tools",
+      "required_template_blocks": [
+        "design_intent_proof_posture"
+      ]
+    },
+    {
+      "route": "/tools/",
+      "intent": "suite_selection",
+      "primary_cta": "View tool",
+      "required_template_blocks": [
+        "design_intent_proof_posture"
+      ]
+    },
+    {
+      "route": "/tools/g-tracker/",
+      "intent": "product_detail",
+      "primary_cta": "Read validation detail",
+      "required_template_blocks": [
+        "design_intent_proof_posture"
+      ]
+    },
+    {
+      "route": "/tools/zone-coach/",
+      "intent": "product_detail",
+      "primary_cta": "Inspect protocol publication",
+      "required_template_blocks": [
+        "design_intent_proof_posture"
+      ]
+    },
+    {
+      "route": "/tools/capacity-gym/",
+      "intent": "product_detail",
+      "primary_cta": "Inspect protocol publication",
+      "required_template_blocks": [
+        "design_intent_proof_posture"
+      ]
+    },
+    {
+      "route": "/tools/mindware-gym/",
+      "intent": "coming_soon_capture",
+      "primary_cta": "Join waitlist",
+      "required_template_blocks": [
+        "design_intent_proof_posture"
+      ]
+    },
+    {
+      "route": "/how-it-works/",
+      "intent": "method_explainer",
+      "primary_cta": "Inspect proof posture",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/proof/",
+      "intent": "evidence_and_boundaries",
+      "primary_cta": "Inspect claims and data",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/proof/g-tracker/",
+      "intent": "validation_intent",
+      "primary_cta": "Back to G Tracker",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/g-tracker-validation/",
+      "intent": "legacy_validation_redirect",
+      "primary_cta": "Redirect to proof route",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/pricing/",
+      "intent": "commercial_decision",
+      "primary_cta": "Choose your plan",
+      "required_template_blocks": [
+        "design_intent_proof_posture_collapsed"
+      ]
+    },
+    {
+      "route": "/coaching/",
+      "intent": "coaching_offers",
+      "primary_cta": "Select coaching option",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/cases/",
+      "intent": "case_context",
+      "primary_cta": "Read case context",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/faq/",
+      "intent": "objection_handling",
+      "primary_cta": "Find answer",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/learn/",
+      "intent": "education_hub",
+      "primary_cta": "Open blog or wiki",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/learn/blog/",
+      "intent": "education_blog",
+      "primary_cta": "Read blog content",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/learn/wiki/",
+      "intent": "education_wiki",
+      "primary_cta": "Read wiki content",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/about/",
+      "intent": "credibility",
+      "primary_cta": "Read positioning",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/support/",
+      "intent": "support_routing",
+      "primary_cta": "Get help",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/contact/",
+      "intent": "contact_entry",
+      "primary_cta": "Send contact request",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/privacy/",
+      "intent": "policy_privacy",
+      "primary_cta": "Review privacy terms",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/terms/",
+      "intent": "policy_terms",
+      "primary_cta": "Review terms",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/refunds/",
+      "intent": "policy_refunds",
+      "primary_cta": "Review refund policy",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/login/",
+      "intent": "client_access",
+      "primary_cta": "Open login flow",
+      "required_template_blocks": []
+    }
+  ]
+}
