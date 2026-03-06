@@ -53,7 +53,8 @@
 /* ============================================================
    2. PAGE SHELL
    ============================================================ */
-body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding-top: 0; }
+body.pricing  { background: var(--pricing-surface); }
+.pricing-page { padding-top: 0; }
 
 
 /* ============================================================
@@ -132,7 +133,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
   margin-bottom: 3px;
 }
 .pricing-meta-chip-value {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--tc);
 }
@@ -212,7 +213,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
 }
 .pricing-currency-note {
   font-family: 'DM Mono', monospace;
-  font-size: 9.5px;
+  font-size: 11px;
   letter-spacing: .06em;
   color: var(--tcf);
   margin-left: auto;
@@ -261,7 +262,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
 .pricing-section--dark      .pricing-section-title { color: var(--tc); }
 
 .pricing-section-sub {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.65;
   max-width: 62ch;
 }
@@ -339,7 +340,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
   margin-bottom: 4px;
 }
 .plan-tagline {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--tlm);
   line-height: 1.45;
 }
@@ -371,17 +372,26 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
 }
 .plan-period {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: .06em;
   color: var(--tlf);
 }
 .plan-price-label {
   font-family: 'DM Mono', monospace;
-  font-size: 9px;
+  font-size: 10.5px;
   letter-spacing: .12em;
   text-transform: uppercase;
   color: var(--tlf);
   margin-bottom: 10px;
+}
+.plan-standard-price {
+  font-size: 13.5px;
+  color: var(--tlf);
+  margin-bottom: 8px;
+}
+.plan-standard-value {
+  text-decoration: line-through;
+  opacity: .82;
 }
 
 /* Discount rows */
@@ -410,7 +420,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
 .plan-discount-badge--exist   { background: var(--disc-exist-bg);   border-color: var(--disc-exist-bdr);   color: var(--disc-exist); }
 .plan-discount-price {
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--tlm);
   white-space: nowrap;
@@ -440,7 +450,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
   display: flex;
   align-items: flex-start;
   gap: 7px;
-  font-size: 12.5px;
+  font-size: 14px;
   color: var(--tlm);
   line-height: 1.4;
 }
@@ -503,12 +513,22 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
 /* Upgrade note under grid */
 .plan-upgrade-note {
   font-family: 'DM Mono', monospace;
-  font-size: 10.5px;
+  font-size: 12.5px;
   letter-spacing: .04em;
   color: var(--tlf);
   padding: 12px 0 0;
   border-top: 1px solid var(--pricing-rule);
   margin-top: 4px;
+}
+.plan-earlybird-note {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--tlm);
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+.plan-earlybird-note strong {
+  color: var(--tl);
 }
 .plan-upgrade-note a { color: var(--blue-dp); text-decoration: none; border-bottom: 1px solid rgba(39,100,183,.25); }
 
@@ -540,7 +560,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
 }
 .discount-table td {
   padding: 12px 20px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--tlm);
   border-bottom: 1px solid var(--pricing-rule);
   vertical-align: middle;
@@ -548,7 +568,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
 .discount-table tr:last-child td { border-bottom: none; }
 .discount-table td:first-child { font-weight: 700; color: var(--tl); }
 .discount-constraint {
-  font-size: 11.5px;
+  font-size: 14px;
   font-family: 'DM Mono', monospace;
   color: var(--tlf);
   padding: 12px 20px;
@@ -596,7 +616,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
   font-size: 16px; font-weight: 800;
   color: var(--tc); letter-spacing: -.01em; margin-bottom: 2px;
 }
-.coaching-tagline { font-size: 12px; color: var(--tcf); font-family: 'DM Mono', monospace; letter-spacing: .04em; }
+.coaching-tagline { font-size: 13px; color: var(--tcf); font-family: 'DM Mono', monospace; letter-spacing: .04em; }
 .coaching-price-chip {
   display: flex;
   flex-direction: column;
@@ -629,7 +649,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
 }
 .coaching-row-value {
   padding: 13px 24px 13px 16px;
-  font-size: 13px; color: var(--tcm); line-height: 1.6;
+  font-size: 14px; color: var(--tcm); line-height: 1.6;
 }
 .coaching-row-value strong { color: var(--tc); }
 .coaching-card-ft {
@@ -664,7 +684,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
 .coaching-cta-secondary:hover { background: rgba(255,255,255,.07); color: var(--tc); }
 .coaching-refund-note {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .04em;
+  font-size: 13px; letter-spacing: .02em;
   color: var(--tcf); line-height: 1.6;
   padding: 12px 0 0;
   border-top: 1px solid rgba(255,255,255,.07);
@@ -697,20 +717,20 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
 .sub-preview-table th:not(:first-child) { text-align: right; }
 .sub-preview-table td {
   padding: 12px 20px;
-  font-size: 13px; color: var(--tlm);
+  font-size: 14px; color: var(--tlm);
   border-bottom: 1px solid var(--pricing-rule);
   vertical-align: middle;
 }
 .sub-preview-table td:not(:first-child) {
   text-align: right;
   font-family: 'DM Mono', monospace;
-  font-size: 12px;
+  font-size: 13.5px;
 }
 .sub-preview-table tr:last-child td { border-bottom: none; }
 .sub-preview-table td:first-child { font-weight: 700; color: var(--tl); }
 .sub-preview-note {
   font-family: 'DM Mono', monospace;
-  font-size: 10.5px; letter-spacing: .04em;
+  font-size: 13px; letter-spacing: .03em;
   color: var(--tlf); line-height: 1.6;
   padding: 12px 0 0;
 }
@@ -747,11 +767,11 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
 .guarantee-item--amber  { border-left-color: var(--plan-core); }
 .guarantee-icon { font-size: 18px; margin-bottom: 8px; display: block; }
 .guarantee-title {
-  font-size: 13.5px; font-weight: 800;
+  font-size: 14px; font-weight: 800;
   color: var(--tl); margin-bottom: 5px; letter-spacing: -.01em;
 }
 .guarantee-text {
-  font-size: 12.5px; color: var(--tlm); line-height: 1.6;
+  font-size: 14px; color: var(--tlm); line-height: 1.6;
 }
 .guarantee-text strong { color: var(--tl); }
 
@@ -825,7 +845,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
   font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
   color: var(--tlf); margin-bottom: 5px;
 }
-.proof-posture-item-text { font-size: 12.5px; color: var(--tlm); line-height: 1.6; }
+.proof-posture-item-text { font-size: 14px; color: var(--tlm); line-height: 1.6; }
 .proof-posture-item-text strong { color: var(--tl); }
 
 
@@ -847,7 +867,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
   width: 100%; display: flex;
   align-items: center; justify-content: space-between;
   gap: 12px; padding: 16px 22px;
-  font-size: 13.5px; font-weight: 700;
+  font-size: 14px; font-weight: 700;
   color: var(--tl); background: none; border: none;
   cursor: pointer; text-align: left; font-family: inherit;
   transition: background var(--t-fast);
@@ -863,7 +883,7 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
 .faq-answer {
   display: none;
   padding: 0 22px 16px;
-  font-size: 13px; color: var(--tlm); line-height: 1.7;
+  font-size: 14px; color: var(--tlm); line-height: 1.7;
   border-top: 1px solid var(--pricing-rule);
 }
 .faq-item.open .faq-answer { display: block; padding-top: 14px; }
@@ -902,6 +922,23 @@ body.pricing  { background: var(--pricing-surface); }`r`n.pricing-page { padding
 }
 .pricing-cta-btns {
   display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.pricing-cta-links {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  color: var(--tcf);
+}
+.pricing-cta-links a {
+  color: var(--cyan-lt);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(142,212,255,.30);
+}
+.pricing-cta-links a:hover {
+  border-bottom-color: var(--cyan-lt);
 }
 
 
