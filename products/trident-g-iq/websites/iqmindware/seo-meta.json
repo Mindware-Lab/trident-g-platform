@@ -15,6 +15,34 @@
         "WebPage"
       ]
     },
+    "/start/": {
+      "title": "Start here",
+      "canonical": "https://www.iqmindware.com/start/",
+      "schema": [
+        "WebPage"
+      ]
+    },
+    "/start/performance/": {
+      "title": "Performance lane",
+      "canonical": "https://www.iqmindware.com/start/performance/",
+      "schema": [
+        "WebPage"
+      ]
+    },
+    "/start/resilience/": {
+      "title": "Resilience lane",
+      "canonical": "https://www.iqmindware.com/start/resilience/",
+      "schema": [
+        "WebPage"
+      ]
+    },
+    "/start/student/": {
+      "title": "Student and exam lane",
+      "canonical": "https://www.iqmindware.com/start/student/",
+      "schema": [
+        "WebPage"
+      ]
+    },
     "/tools/": {
       "title": "Apps",
       "canonical": "https://www.iqmindware.com/tools/",

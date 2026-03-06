@@ -18,6 +18,30 @@
       ]
     },
     {
+      "route": "/start/performance/",
+      "intent": "onboarding_lane_performance",
+      "primary_cta": "Open G Tracker",
+      "required_template_blocks": [
+        "design_intent_proof_posture"
+      ]
+    },
+    {
+      "route": "/start/resilience/",
+      "intent": "onboarding_lane_resilience",
+      "primary_cta": "Open Zone Coach",
+      "required_template_blocks": [
+        "design_intent_proof_posture"
+      ]
+    },
+    {
+      "route": "/start/student/",
+      "intent": "onboarding_lane_student",
+      "primary_cta": "Open G Tracker",
+      "required_template_blocks": [
+        "design_intent_proof_posture"
+      ]
+    },
+    {
       "route": "/tools/",
       "intent": "suite_selection",
       "primary_cta": "View app",

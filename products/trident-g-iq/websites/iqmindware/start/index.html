@@ -62,7 +62,7 @@
           <p class="start-lanes-sub">Pick the lane that best matches your immediate goal. You can switch later after baseline and delayed re-check data are in place.</p>
         </div>
         <div class="start-lanes-grid">
-          <a href="#actions-performance" class="lane-card lane-card--perf" tabindex="0" aria-label="Choose Performance lane">
+          <a href="/start/performance/" class="lane-card lane-card--perf" tabindex="0" aria-label="Open Performance lane plan page">
             <div class="lane-card-hd">
               <div>
                 <div class="lane-icon">&#127919;</div>
@@ -80,11 +80,11 @@
                 <span class="lane-tool-chip">Zone Coach</span>
                 <span class="lane-tool-chip">Capacity Gym</span>
               </div>
-              <span class="lane-cta">Start</span>
+              <span class="lane-cta">Open lane plan</span>
             </div>
           </a>
 
-          <a href="#actions-resilience" class="lane-card lane-card--res" tabindex="0" aria-label="Choose Resilience lane">
+          <a href="/start/resilience/" class="lane-card lane-card--res" tabindex="0" aria-label="Open Resilience lane plan page">
             <div class="lane-card-hd">
               <div>
                 <div class="lane-icon">&#129504;</div>
@@ -102,11 +102,11 @@
                 <span class="lane-tool-chip">G Tracker</span>
                 <span class="lane-tool-chip">Capacity Gym</span>
               </div>
-              <span class="lane-cta">Start</span>
+              <span class="lane-cta">Open lane plan</span>
             </div>
           </a>
 
-          <a href="#actions-student" class="lane-card lane-card--student" tabindex="0" aria-label="Choose Student lane">
+          <a href="/start/student/" class="lane-card lane-card--student" tabindex="0" aria-label="Open Student and exam lane plan page">
             <div class="lane-card-hd">
               <div>
                 <div class="lane-icon">&#128218;</div>
@@ -124,7 +124,7 @@
                 <span class="lane-tool-chip">Capacity Gym</span>
                 <span class="lane-tool-chip">Zone Coach</span>
               </div>
-              <span class="lane-cta">Start</span>
+              <span class="lane-cta">Open lane plan</span>
             </div>
           </a>
         </div>
@@ -519,31 +519,6 @@
   <p class="footer-reg">Skills training and self-regulation, not diagnosis or treatment. Outcomes vary.</p>
 </footer>
 
-  <script>
-    var laneCards = document.querySelectorAll('.lane-card');
-    function selectLaneByHash() {
-      var hash = window.location.hash;
-      if (!hash) return;
-      laneCards.forEach(function (card) {
-        card.classList.toggle('selected', card.getAttribute('href') === hash);
-      });
-    }
-
-    laneCards.forEach(function (card) {
-      card.addEventListener('click', function () {
-        laneCards.forEach(function (node) { node.classList.remove('selected'); });
-        card.classList.add('selected');
-      });
-      card.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter') {
-          card.click();
-        }
-      });
-    });
-
-    window.addEventListener('hashchange', selectLaneByHash);
-    selectLaneByHash();
-  </script>
   <script src="/assets/app.js" defer></script>
 </body>
 </html>
