@@ -759,6 +759,13 @@ body.tool-detail { background: var(--tools-surface); }
     var(--card-dark);
 }
 
+.tool-hero--zc {
+  background:
+    radial-gradient(900px 500px at 0% 100%, rgba(204,255,102,.12), transparent 55%),
+    radial-gradient(800px 450px at 100% 0%, rgba(34,170,255,.10), transparent 58%),
+    var(--card-dark);
+}
+
 .tool-hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(0, .8fr);
@@ -807,6 +814,13 @@ body.tool-detail { background: var(--tools-surface); }
   background: rgba(167,139,250,.14);
   color: #b8a1ff;
   box-shadow: 0 0 0 2px rgba(167,139,250,.10) inset;
+}
+
+.tool-detail--zone-coach .tool-hero-icon {
+  border-color: rgba(204,255,102,.42);
+  background: rgba(204,255,102,.14);
+  color: #d8ff6a;
+  box-shadow: 0 0 0 2px rgba(204,255,102,.10) inset;
 }
 
 .tool-hero-lead {
