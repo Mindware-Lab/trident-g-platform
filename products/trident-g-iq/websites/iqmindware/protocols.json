@@ -44,7 +44,7 @@
       "export_path": "app-level local export controls",
       "limits": "Designed to increase probability of carryover, not guarantee.",
       "changelog_link": "/proof/protocols/capacity-gym/",
-      "source_link": "https://github.com/Mindware-Lab/trident-g-platform/blob/main/products/trident-g-iq/apps/capacity-gym/MARKET.md"
+      "source_link": "https://github.com/Mindware-Lab/trident-g-platform/blob/main/products/trident-g-iq/apps/capacity-gym/ground-truth/PROTOCOL.md"
     }
   ]
 }
