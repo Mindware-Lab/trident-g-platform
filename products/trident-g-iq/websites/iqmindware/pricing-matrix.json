@@ -1,8 +1,8 @@
 {
-  "default_currency": "GBP",
+  "default_currency": "USD",
   "supported_currencies": [
-    "GBP",
-    "USD"
+    "USD",
+    "GBP"
   ],
   "upgrade_credit_rule": "Upgrading replaces your plan; overlap is credited.",
   "plans": [

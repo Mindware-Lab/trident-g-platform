@@ -14,7 +14,7 @@ async function renderPricing() {
     return;
   }
 
-  let currency = "GBP";
+  let currency = "USD";
   const buttons = Array.from(document.querySelectorAll("[data-currency]"));
 
   function render() {
