@@ -39,3 +39,14 @@ Recommended records:
 2. `Escalate` for money/legal/high-claim actions.
 3. `Auto-run` only for low-risk, reversible operations.
 
+## SEO Agent Module
+
+SEO automation for IQMindware now lives in:
+
+- `products/trident-g-wellness/integration/kastel-stack/seo-agent/`
+
+This module is review-gated and designed for:
+
+1. weekly search/performance snapshot collection
+2. keyword opportunity scoring by page intent
+3. AI-assisted recommendations written to PR artifacts

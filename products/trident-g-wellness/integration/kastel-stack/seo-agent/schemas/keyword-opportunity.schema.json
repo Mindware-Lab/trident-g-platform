@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/keyword-opportunity.schema.json",
+  "title": "KeywordOpportunity",
+  "type": "object",
+  "required": [
+    "page_url",
+    "target_keyword",
+    "source_query",
+    "impressions",
+    "clicks",
+    "ctr",
+    "avg_position",
+    "intent_fit_score",
+    "business_priority",
+    "opportunity_score",
+    "recommended_action"
+  ],
+  "properties": {
+    "page_url": { "type": "string", "format": "uri" },
+    "target_keyword": { "type": "string", "minLength": 2 },
+    "source_query": { "type": "string", "minLength": 2 },
+    "impressions": { "type": "number", "minimum": 0 },
+    "clicks": { "type": "number", "minimum": 0 },
+    "ctr": { "type": "number", "minimum": 0, "maximum": 1 },
+    "avg_position": { "type": "number", "minimum": 0 },
+    "intent_fit_score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "business_priority": { "type": "number", "minimum": 0, "maximum": 100 },
+    "opportunity_score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "risk_flags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "recommended_action": { "type": "string", "minLength": 3 }
+  },
+  "additionalProperties": false
+}

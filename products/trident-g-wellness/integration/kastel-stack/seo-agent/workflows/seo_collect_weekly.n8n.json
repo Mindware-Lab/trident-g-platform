@@ -1,0 +1,56 @@
+{
+  "name": "seo_collect_weekly",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8,
+              "field": "weeks",
+              "weeksInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "n1",
+      "name": "Weekly Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [260, 280]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\"todo\":\"Fetch Search Console query/page rows and PageSpeed metrics, then write reports/seo_snapshot_YYYY-MM-DD.json\"}"
+      },
+      "id": "n2",
+      "name": "Collector Notes",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [520, 280]
+    }
+  ],
+  "connections": {
+    "Weekly Trigger": {
+      "main": [
+        [
+          {
+            "node": "Collector Notes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "1"
+}

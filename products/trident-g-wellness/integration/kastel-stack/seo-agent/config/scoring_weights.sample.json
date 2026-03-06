@@ -1,0 +1,25 @@
+{
+  "weights": {
+    "impressions": 0.25,
+    "ctr_gap": 0.25,
+    "position_gap": 0.20,
+    "intent_fit": 0.20,
+    "business_priority": 0.10
+  },
+  "thresholds": {
+    "min_impressions": 100,
+    "max_position_for_win": 8,
+    "target_ctr_by_position": {
+      "1": 0.28,
+      "2": 0.18,
+      "3": 0.11,
+      "4": 0.08,
+      "5": 0.06,
+      "6": 0.05,
+      "7": 0.04,
+      "8": 0.03,
+      "9": 0.02,
+      "10": 0.02
+    }
+  }
+}

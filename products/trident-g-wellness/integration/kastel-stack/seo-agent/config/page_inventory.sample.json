@@ -1,0 +1,46 @@
+{
+  "pages": [
+    {
+      "url": "https://iqmindware.com/",
+      "intent": "commercial",
+      "cluster": "brand-home",
+      "priority": 100,
+      "target_state": "conversion"
+    },
+    {
+      "url": "https://iqmindware.com/tools/g-tracker/",
+      "intent": "commercial",
+      "cluster": "app-detail",
+      "priority": 95,
+      "target_state": "app-access"
+    },
+    {
+      "url": "https://iqmindware.com/tools/zone-coach/",
+      "intent": "commercial",
+      "cluster": "app-detail",
+      "priority": 90,
+      "target_state": "app-access"
+    },
+    {
+      "url": "https://iqmindware.com/tools/capacity-gym/",
+      "intent": "commercial",
+      "cluster": "app-detail",
+      "priority": 90,
+      "target_state": "app-access"
+    },
+    {
+      "url": "https://iqmindware.com/proof/",
+      "intent": "informational",
+      "cluster": "proof-trust",
+      "priority": 85,
+      "target_state": "trust"
+    },
+    {
+      "url": "https://iqmindware.com/pricing/",
+      "intent": "transactional",
+      "cluster": "plans",
+      "priority": 100,
+      "target_state": "checkout"
+    }
+  ]
+}
