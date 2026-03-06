@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Learn: Wiki | IQMindware</title>
-    <link rel="stylesheet" href="/assets/css/brand.css">
+  <title>Wiki - Protocol Glossary and Structured References | IQMindware</title>
+  <meta name="description" content="Protocol glossary and structured references for concepts, measures, and operators used across IQMindware.">
+  <link rel="stylesheet" href="/assets/css/brand.css">
   <link rel="stylesheet" href="/assets/css/templates.css">
-  <link rel="stylesheet" href="/assets/css/pages/learn.css">
+  <link rel="stylesheet" href="/assets/css/pages/wiki.css">
 </head>
-<body>
+<body class="wiki">
   <header class="site-header">
     <a class="brand" href="/">IQMindware</a>
     <p class="tagline">Train general intelligence, then prove carryover.</p>
@@ -25,8 +26,133 @@
       <a class="nav-link" href="/login/"><span>Login</span></a>
     </nav>
   </header>
-  <main class="page">
-    <section class="hero"><h1>Learn: Wiki</h1><p>Mapped legacy and future wiki pages appear here.</p></section>
+  <main class="wiki-page">
+    <section class="wk-hero">
+      <div class="wk-hero-inner">
+        <span class="wk-hero-eyebrow">Learn > Wiki</span>
+        <h1 class="wk-hero-title">Wiki</h1>
+        <p class="wk-hero-sub">Protocol glossary and structured references for concepts, measures, and operators in plain language first.</p>
+      </div>
+    </section>
+
+    <nav class="wk-controls" aria-label="Filter wiki entries">
+      <div class="wk-controls-inner">
+        <div class="wk-controls-row">
+          <div class="wk-search-wrap">
+            <svg class="wk-search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="14" y2="14"/></svg>
+            <input class="wk-search" type="search" placeholder="Search terms..." aria-label="Search wiki terms">
+          </div>
+          <div class="wk-cats" role="list">
+            <span class="wk-cat active" role="listitem">All</span>
+            <span class="wk-cat" role="listitem">Concept</span>
+            <span class="wk-cat" role="listitem">Protocol</span>
+            <span class="wk-cat" role="listitem">Measure</span>
+            <span class="wk-cat" role="listitem">Operator</span>
+          </div>
+        </div>
+        <div class="wk-az" aria-label="Jump by first letter">
+          <a class="wk-az-link active" href="#letter-a">A</a>
+          <a class="wk-az-link" href="#letter-c">C</a>
+          <a class="wk-az-link" href="#letter-f">F</a>
+          <a class="wk-az-link" href="#letter-g">G</a>
+          <a class="wk-az-link" href="#letter-p">P</a>
+          <a class="wk-az-link" href="#letter-r">R</a>
+          <a class="wk-az-link" href="#letter-s">S</a>
+          <a class="wk-az-link" href="#letter-w">W</a>
+          <span class="wk-az-link wk-az-link--inactive">Z</span>
+        </div>
+      </div>
+    </nav>
+
+    <section class="wk-index">
+      <div class="wk-letter-group" id="letter-a">
+        <span class="wk-letter-label">A</span>
+        <article class="wk-row">
+          <div class="wk-row-term">Adaptive range</div>
+          <div class="wk-row-def">Ability to switch between exploration and commitment without losing task control.</div>
+          <div class="wk-row-cat"><span class="wk-cat-badge wk-cat-badge--concept">Concept</span></div>
+          <div class="wk-row-date">2026-02-14</div>
+          <div class="wk-row-cta"><a class="wk-row-link" href="/learn/wiki/entry/">Entry</a></div>
+        </article>
+      </div>
+
+      <div class="wk-letter-group" id="letter-c">
+        <span class="wk-letter-label">C</span>
+        <article class="wk-row">
+          <div class="wk-row-term">Carryover check</div>
+          <div class="wk-row-def">Transfer probe sequence using game swaps, boundary probes, and delayed re-checks.</div>
+          <div class="wk-row-cat"><span class="wk-cat-badge wk-cat-badge--protocol">Protocol</span></div>
+          <div class="wk-row-date">2026-02-18</div>
+          <div class="wk-row-cta"><a class="wk-row-link" href="/learn/wiki/entry/">Entry</a></div>
+        </article>
+      </div>
+
+      <div class="wk-letter-group" id="letter-f">
+        <span class="wk-letter-label">F</span>
+        <article class="wk-row">
+          <div class="wk-row-term">Far transfer</div>
+          <div class="wk-row-def">Improvement that remains visible when conditions, format, or context are changed.</div>
+          <div class="wk-row-cat"><span class="wk-cat-badge wk-cat-badge--concept">Concept</span></div>
+          <div class="wk-row-date">2026-02-20</div>
+          <div class="wk-row-cta"><a class="wk-row-link" href="/learn/wiki/entry/">Entry</a></div>
+        </article>
+      </div>
+
+      <div class="wk-letter-group" id="letter-g">
+        <span class="wk-letter-label">G</span>
+        <article class="wk-row">
+          <div class="wk-row-term">G Tracker</div>
+          <div class="wk-row-def">Short matrix-style battery used to track trend direction under repeatable conditions.</div>
+          <div class="wk-row-cat"><span class="wk-cat-badge wk-cat-badge--measure">Measure</span></div>
+          <div class="wk-row-date">2026-02-22</div>
+          <div class="wk-row-cta"><a class="wk-row-link" href="/tools/g-tracker/">Tool</a></div>
+        </article>
+      </div>
+
+      <div class="wk-letter-group" id="letter-p">
+        <span class="wk-letter-label">P</span>
+        <article class="wk-row">
+          <div class="wk-row-term">Psi corridor</div>
+          <div class="wk-row-def">Workable state range where clarity and control can be sustained under realistic load.</div>
+          <div class="wk-row-cat"><span class="wk-cat-badge wk-cat-badge--concept">Concept</span></div>
+          <div class="wk-row-date">2026-02-24</div>
+          <div class="wk-row-cta"><a class="wk-row-link" href="/learn/wiki/entry/">Entry</a></div>
+        </article>
+      </div>
+
+      <div class="wk-letter-group" id="letter-r">
+        <span class="wk-letter-label">R</span>
+        <article class="wk-row">
+          <div class="wk-row-term">Re-entry protocol</div>
+          <div class="wk-row-def">Structured return sequence after disruption to reduce drift and restore stable execution.</div>
+          <div class="wk-row-cat"><span class="wk-cat-badge wk-cat-badge--protocol">Protocol</span></div>
+          <div class="wk-row-date">2026-02-25</div>
+          <div class="wk-row-cta"><a class="wk-row-link" href="/learn/wiki/entry/">Entry</a></div>
+        </article>
+      </div>
+
+      <div class="wk-letter-group" id="letter-s">
+        <span class="wk-letter-label">S</span>
+        <article class="wk-row">
+          <div class="wk-row-term">Stop/flip rule</div>
+          <div class="wk-row-def">Predefined rule to terminate low-return grinding and switch to a better route.</div>
+          <div class="wk-row-cat"><span class="wk-cat-badge wk-cat-badge--operator">Operator</span></div>
+          <div class="wk-row-date">2026-02-26</div>
+          <div class="wk-row-cta"><a class="wk-row-link" href="/learn/wiki/entry/">Entry</a></div>
+        </article>
+      </div>
+
+      <div class="wk-letter-group" id="letter-w">
+        <span class="wk-letter-label">W</span>
+        <article class="wk-row">
+          <div class="wk-row-term">Workable state</div>
+          <div class="wk-row-def">Operationally stable state where a user can execute protocol steps with low drift.</div>
+          <div class="wk-row-cat"><span class="wk-cat-badge wk-cat-badge--measure">Measure</span></div>
+          <div class="wk-row-date">2026-02-28</div>
+          <div class="wk-row-cta"><a class="wk-row-link" href="/learn/wiki/entry/">Entry</a></div>
+        </article>
+      </div>
+    </section>
   </main>
   <footer class="site-footer site-footer-rich">
   <div class="footer-top">
@@ -143,6 +269,7 @@
 
   <p class="footer-reg">Skills training and self-regulation, not diagnosis or treatment. Outcomes vary.</p>
 </footer>
+  <script src="/assets/app.js" defer></script>
 </body>
 </html>
 

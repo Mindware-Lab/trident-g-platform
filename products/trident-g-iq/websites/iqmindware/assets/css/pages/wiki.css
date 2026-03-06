@@ -1,0 +1,357 @@
+/* ============================================================
+   IQ MINDWARE — wiki.css  v1.0
+   Scope: /learn/wiki/ — structured reference library.
+   Requires: brand.css loaded first.
+   All rules scoped under .wiki-page.
+   Design goal: clean reference surface, scannable, authoritative.
+   ============================================================ */
+
+
+/* ============================================================
+   1. PAGE SHELL
+   ============================================================ */
+body.wiki    { background: var(--pg-alt); }
+.wiki-page   { padding-top: 64px; }
+
+
+/* ============================================================
+   2. WIKI INDEX HERO
+   ============================================================ */
+.wk-hero {
+  background: var(--card-dark);
+  border-bottom: 2px solid rgba(255,255,255,.06);
+  padding: 80px var(--gutter) 44px;
+}
+.wk-hero-inner { max-width: var(--max-w); margin: 0 auto; }
+.wk-hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--cyan-lt); margin-bottom: 10px; display: block;
+}
+.wk-hero-title {
+  font-size: clamp(24px, 3.5vw, 44px);
+  font-weight: 800; letter-spacing: -.022em;
+  line-height: 1.07; color: var(--tc); margin-bottom: 10px;
+}
+.wk-hero-sub {
+  font-size: 15px; color: var(--tcm); max-width: 54ch; line-height: 1.70;
+}
+
+
+/* ============================================================
+   3. CONTROLS BAR (search + A-Z + category)
+   ============================================================ */
+.wk-controls {
+  background: var(--pg-alt);
+  border-bottom: 1px solid rgba(0,0,0,.09);
+  padding: 14px var(--gutter);
+  position: sticky; top: 64px; z-index: 40;
+}
+.wk-controls-inner {
+  max-width: var(--max-w); margin: 0 auto;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+/* Row 1: search + sort */
+.wk-controls-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+
+/* Search */
+.wk-search-wrap { position: relative; flex-shrink: 0; }
+.wk-search {
+  padding: 8px 14px 8px 36px;
+  border-radius: var(--r-full);
+  border: 1.5px solid rgba(0,0,0,.12);
+  background: #fff;
+  font-size: 13px; color: var(--tl); font-family: inherit;
+  width: 220px; outline: none;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.wk-search:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,170,255,.14); }
+.wk-search::placeholder { color: var(--tlf); }
+.wk-search-icon {
+  position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+  width: 15px; height: 15px; color: var(--tlf); pointer-events: none;
+}
+
+/* Category filter chips */
+.wk-cats { display: flex; gap: 6px; flex-wrap: wrap; }
+.wk-cat {
+  display: inline-flex; align-items: center;
+  padding: 6px 12px; border-radius: var(--r-full);
+  font-size: 12px; font-weight: 700;
+  background: #fff; border: 1.5px solid rgba(0,0,0,.10);
+  color: var(--tlm); cursor: pointer;
+  min-height: 44px; text-decoration: none;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+.wk-cat:hover  { background: rgba(126,207,0,.07); border-color: rgba(126,207,0,.28); color: var(--tl); }
+.wk-cat.active { background: #3d6600; border-color: #3d6600; color: #fff; }
+.wk-cat:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+
+/* A–Z jump bar */
+.wk-az {
+  display: flex; gap: 3px; flex-wrap: wrap;
+}
+.wk-az-link {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  color: var(--tlf); text-decoration: none;
+  border: 1px solid transparent;
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+}
+.wk-az-link:hover  { background: rgba(0,0,0,.06); color: var(--tl); border-color: rgba(0,0,0,.10); }
+.wk-az-link.active { background: var(--lime); color: #1a2000; border-color: var(--lime); }
+.wk-az-link:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.wk-az-link--inactive { opacity: .30; pointer-events: none; }
+
+
+/* ============================================================
+   4. WIKI INDEX TABLE / ROWS
+   ============================================================ */
+.wk-index {
+  max-width: var(--max-w); margin: 0 auto;
+  padding: 36px var(--gutter) 72px;
+}
+
+/* Letter group anchor */
+.wk-letter-group { margin-bottom: 36px; scroll-margin-top: 140px; }
+.wk-letter-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px; font-weight: 700; letter-spacing: .08em;
+  color: var(--tlf); padding: 6px 0 8px;
+  border-bottom: 2px solid rgba(0,0,0,.09);
+  margin-bottom: 10px; display: block;
+}
+
+.wk-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 110px 100px 96px;
+  align-items: center; gap: 0;
+  background: #fff;
+  border: 1.5px solid rgba(0,0,0,.08);
+  border-radius: var(--r-lg);
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: box-shadow var(--t-base), transform var(--t-base);
+}
+.wk-row:hover { box-shadow: 0 4px 14px rgba(0,0,0,.08); transform: translateY(-1px); }
+
+.wk-row-term {
+  padding: 14px 16px;
+  font-size: 14px; font-weight: 800;
+  color: var(--tl); letter-spacing: -.01em;
+  border-right: 1px solid rgba(0,0,0,.07);
+  background: rgba(0,0,0,.015);
+}
+.wk-row-def {
+  padding: 14px 16px;
+  font-size: 13px; color: var(--tlm); line-height: 1.55;
+}
+.wk-row-cat {
+  padding: 14px 12px;
+  border-left: 1px solid rgba(0,0,0,.07);
+}
+.wk-cat-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 8.5px; letter-spacing: .09em; text-transform: uppercase;
+  padding: 3px 7px; border-radius: 3px; font-weight: 700;
+  white-space: nowrap;
+}
+.wk-cat-badge--concept  { background: rgba(34,170,255,.08);  border: 1px solid rgba(34,170,255,.20);  color: #1a6eb0; }
+.wk-cat-badge--protocol { background: rgba(126,207,0,.08);   border: 1px solid rgba(126,207,0,.22);   color: #3d6600; }
+.wk-cat-badge--measure  { background: rgba(167,139,250,.09); border: 1px solid rgba(167,139,250,.22); color: #5b21b6; }
+.wk-cat-badge--operator { background: rgba(245,158,11,.08);  border: 1px solid rgba(245,158,11,.20);  color: #92400e; }
+
+.wk-row-date {
+  padding: 14px 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px; letter-spacing: .04em; color: var(--tlf);
+  border-left: 1px solid rgba(0,0,0,.07); white-space: nowrap;
+}
+.wk-row-cta {
+  padding: 10px 14px;
+  border-left: 1px solid rgba(0,0,0,.07);
+  display: flex; align-items: center; justify-content: center;
+}
+.wk-row-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 7px 12px; border-radius: var(--r-md); min-height: 36px;
+  font-size: 12px; font-weight: 800;
+  background: rgba(126,207,0,.09); border: 1px solid rgba(126,207,0,.22); color: #3d6600;
+  text-decoration: none;
+  transition: background var(--t-fast);
+  white-space: nowrap;
+}
+.wk-row-link::after { content: '→'; font-size: 11px; }
+.wk-row-link:hover { background: rgba(126,207,0,.16); }
+.wk-row-link:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 3px; }
+
+
+/* ============================================================
+   5. WIKI ENTRY TEMPLATE
+   ============================================================ */
+.wk-entry-wrap {
+  max-width: var(--max-w); margin: 0 auto;
+  padding: 48px var(--gutter) 72px;
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 52px; align-items: start;
+}
+
+/* Entry body */
+.wk-entry-body { min-width: 0; }
+
+.wk-entry-back {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12.5px; font-weight: 700; color: var(--tlm);
+  text-decoration: none; margin-bottom: 20px;
+}
+.wk-entry-back::before { content: '←'; }
+.wk-entry-back:hover { color: var(--tl); }
+
+.wk-entry-hd { margin-bottom: 28px; }
+.wk-entry-cats { display: flex; gap: 6px; margin-bottom: 12px; }
+.wk-entry-term {
+  font-size: clamp(36px, 5.5vw, 64px);
+  font-weight: 800; letter-spacing: -.030em;
+  line-height: 1.03; color: var(--tl); margin-bottom: 16px;
+}
+.wk-entry-def {
+  font-size: 16px; color: var(--tlm); line-height: 1.68;
+  max-width: 60ch;
+  padding-bottom: 20px;
+  border-bottom: 2px solid rgba(0,0,0,.09);
+}
+.wk-entry-def strong { color: var(--tl); }
+
+/* Entry meta */
+.wk-entry-meta {
+  display: flex; gap: 18px; flex-wrap: wrap;
+  padding: 10px 0 24px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+.wk-entry-meta-item {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px; letter-spacing: .07em; color: var(--tlf);
+}
+.wk-entry-meta-label { color: var(--tlf); }
+.wk-entry-meta-val   { color: var(--tlm); font-weight: 500; }
+
+/* Section blocks */
+.wk-entry-section { margin-bottom: 32px; }
+.wk-entry-section-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--blue-dp); margin-bottom: 10px; display: block;
+}
+.wk-entry-section-body {
+  font-size: 15px; color: var(--tlm); line-height: 1.78;
+}
+.wk-entry-section-body p { margin-bottom: 14px; }
+.wk-entry-section-body p:last-child { margin-bottom: 0; }
+.wk-entry-section-body strong { color: var(--tl); }
+.wk-entry-section-body a { color: var(--blue-dp); font-weight: 700; text-decoration: none; border-bottom: 1px solid rgba(39,100,183,.22); }
+.wk-entry-section-body a:hover { border-bottom-color: var(--blue-dp); }
+.wk-entry-section-body ul { padding-left: 20px; margin-bottom: 14px; }
+.wk-entry-section-body li { margin-bottom: 6px; }
+
+/* Related terms */
+.wk-related-list { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.wk-related-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 12px; border-radius: var(--r-md); min-height: 36px;
+  font-size: 12.5px; font-weight: 700;
+  background: rgba(34,170,255,.07); border: 1px solid rgba(34,170,255,.18); color: #1a6eb0;
+  text-decoration: none;
+  transition: background var(--t-fast);
+}
+.wk-related-link:hover { background: rgba(34,170,255,.14); }
+.wk-related-link:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 3px; }
+
+/* Sources */
+.wk-sources-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.wk-source-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 13px; color: var(--tlm); line-height: 1.55;
+}
+.wk-source-item::before { content: '→'; color: var(--tlf); font-size: 11px; flex-shrink: 0; margin-top: 2px; }
+.wk-source-item a { color: var(--blue-dp); font-weight: 700; text-decoration: none; border-bottom: 1px solid rgba(39,100,183,.22); }
+.wk-source-item a:hover { border-bottom-color: var(--blue-dp); }
+
+
+/* ============================================================
+   6. WIKI ENTRY SIDEBAR
+   ============================================================ */
+.wk-entry-sidebar { position: sticky; top: 120px; display: flex; flex-direction: column; gap: 14px; }
+
+.wk-sidebar-card {
+  background: #fff; border: 1.5px solid rgba(0,0,0,.08);
+  border-radius: var(--r-lg); overflow: hidden;
+}
+.wk-sidebar-hd {
+  padding: 11px 16px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--tlf);
+  background: rgba(0,0,0,.02);
+}
+.wk-sidebar-links { padding: 10px 0 6px; }
+.wk-sidebar-link {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 16px;
+  font-size: 13px; font-weight: 700; color: var(--blue-dp);
+  text-decoration: none;
+  transition: background var(--t-fast);
+}
+.wk-sidebar-link:hover { background: rgba(0,0,0,.03); }
+.wk-sidebar-link:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.wk-sidebar-link::before { content: '→'; font-size: 11px; color: var(--tlf); }
+
+.wk-sidebar-note {
+  padding: 10px 16px;
+  font-size: 11.5px; color: var(--tlf); line-height: 1.65;
+  border-top: 1px solid rgba(0,0,0,.07);
+}
+
+/* Entry sections TOC */
+.wk-toc-list { list-style: none; padding: 8px 0; }
+.wk-toc-link {
+  display: block; padding: 7px 16px;
+  font-size: 12.5px; color: var(--tlm); text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: color var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+}
+.wk-toc-link:hover { color: var(--tl); background: rgba(0,0,0,.025); border-left-color: var(--lime); }
+.wk-toc-link.active { color: #3d6600; border-left-color: var(--lime); font-weight: 700; }
+.wk-toc-link:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+
+
+/* ============================================================
+   7. RESPONSIVE
+   ============================================================ */
+@media (max-width: 1100px) {
+  .wk-row { grid-template-columns: 160px 1fr 100px 90px 86px; }
+}
+@media (max-width: 900px) {
+  .wk-row {
+    grid-template-columns: 1fr;
+    border-radius: var(--r-lg);
+  }
+  .wk-row-term  { border-right: none; border-bottom: 1px solid rgba(0,0,0,.07); }
+  .wk-row-cat, .wk-row-date, .wk-row-cta { border-left: none; border-top: 1px solid rgba(0,0,0,.07); }
+  .wk-row-cta   { justify-content: flex-start; }
+  .wk-entry-wrap { grid-template-columns: 1fr; }
+  .wk-entry-sidebar { display: none; }
+}
+@media (max-width: 600px) {
+  .wk-hero      { padding: 80px var(--gutter) 36px; }
+  .wk-az        { gap: 2px; }
+  .wk-az-link   { width: 24px; height: 24px; font-size: 10px; }
+  .wk-controls-inner { gap: 8px; }
+  .wk-search    { width: 100%; }
+}
