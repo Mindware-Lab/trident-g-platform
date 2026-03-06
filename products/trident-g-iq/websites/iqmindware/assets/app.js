@@ -98,7 +98,6 @@ function primaryNavPath(pathname) {
   if (path.startsWith("/learn/")) return "/learn/";
   if (path.startsWith("/about/")) return "/about/";
   if (path.startsWith("/faq/")) return "/faq/";
-  if (path.startsWith("/login/")) return "/login/";
   if (path.startsWith("/support/")) return "/support/";
   if (path.startsWith("/contact/")) return "/support/";
   if (path.startsWith("/privacy/")) return "/support/";

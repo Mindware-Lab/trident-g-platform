@@ -11,7 +11,7 @@
       "microcopy": ""
     },
     {
-      "label": "Tools",
+      "label": "Apps",
       "href": "/tools/",
       "microcopy": "Use today. Export your trail."
     },
@@ -44,12 +44,7 @@
       "label": "Support",
       "href": "/support/",
       "microcopy": ""
-    },
-    {
-      "label": "Login",
-      "href": "/login/",
-      "microcopy": ""
     }
   ],
-  "login_is_separate_from_marketing": true
+  "login_is_separate_from_marketing": false
 }
