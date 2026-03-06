@@ -228,6 +228,27 @@ body.wiki    { background: var(--pg-alt); }
 }
 .wk-entry-def strong { color: var(--tl); }
 
+/* Entry lead media */
+.wk-entry-lead {
+  margin: 12px 0 20px;
+}
+.wk-entry-lead-img {
+  width: 100%;
+  max-height: 460px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: var(--r-lg);
+  border: 1px solid rgba(0,0,0,.08);
+  padding: 10px;
+}
+.wk-entry-lead-cap {
+  margin-top: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .06em;
+  color: var(--tlf);
+}
+
 /* Entry meta */
 .wk-entry-meta {
   display: flex; gap: 18px; flex-wrap: wrap;
