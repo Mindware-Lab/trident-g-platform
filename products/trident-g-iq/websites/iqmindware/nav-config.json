@@ -1,6 +1,11 @@
 {
   "top_nav": [
     {
+      "label": "About",
+      "href": "/about/",
+      "microcopy": ""
+    },
+    {
       "label": "Start here",
       "href": "/start/",
       "microcopy": ""
@@ -28,11 +33,6 @@
     {
       "label": "Learn",
       "href": "/learn/",
-      "microcopy": ""
-    },
-    {
-      "label": "About",
-      "href": "/about/",
       "microcopy": ""
     },
     {
