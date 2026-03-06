@@ -457,9 +457,10 @@ body.coaching          { background: var(--co-surface); }
 .co-pkg-price-col {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   flex-shrink: 0;
-  padding: 14px 28px 10px 16px;
+  text-align: center;
+  padding: 14px 0 10px;
 }
 .co-pkg-amount {
   display: flex; align-items: baseline; gap: 3px;
@@ -469,6 +470,10 @@ body.coaching          { background: var(--co-surface); }
   font-size: 14px; font-weight: 700; color: var(--tlm); margin-top: 4px;
 }
 .co-pkg-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   font-size: 32px; font-weight: 800;
   letter-spacing: -.03em; color: var(--tl); line-height: 1;
 }
