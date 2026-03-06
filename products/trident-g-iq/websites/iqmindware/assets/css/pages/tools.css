@@ -997,6 +997,20 @@ body.tool-detail { background: var(--tools-surface); }
   transform-origin: 50% 72%;
 }
 
+/* Full-window screenshot treatment (used on Capacity Gym gallery) */
+.tool-shot--fullframe {
+  background: #0d1220;
+  border-color: rgba(255,255,255,.16);
+}
+
+.tool-shot--fullframe img {
+  height: 340px;
+  object-fit: contain;
+  object-position: top center;
+  background: #080c16;
+  padding: 8px;
+}
+
 .tool-validation-list {
   margin: 12px 0 0;
   padding-left: 1.1rem;
@@ -1040,6 +1054,13 @@ body.tool-detail { background: var(--tools-surface); }
   .tool-shot--task-focus img {
     transform: scale(1.08);
     transform-origin: 50% 70%;
+    background: #080c16;
+  }
+
+  .tool-shot--fullframe img {
+    height: auto;
+    max-height: 360px;
+    padding: 6px;
     background: #080c16;
   }
 }
