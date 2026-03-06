@@ -432,6 +432,26 @@ body.coaching          { background: var(--co-surface); }
   color: var(--tl); letter-spacing: -.012em; margin-bottom: 4px;
 }
 .co-pkg-tagline { font-size: 13.5px; color: var(--tlm); line-height: 1.45; }
+.co-pkg-coach {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  padding: 4px 9px 4px 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tl);
+  background: rgba(34,170,255,.08);
+  border: 1px solid rgba(34,170,255,.22);
+}
+.co-pkg-coach img {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(0,0,0,.15);
+}
 
 /* Price block */
 .co-pkg-price-col {
@@ -546,10 +566,17 @@ body.coaching          { background: var(--co-surface); }
 /* Discount note row */
 .co-discount-note {
   font-family: inherit;
-  font-size: 14px; letter-spacing: .01em;
-  color: var(--tlf); line-height: 1.65;
-  padding: 12px 0 0;
-  border-top: 1px solid var(--co-rule);
+  font-size: 14px;
+  letter-spacing: .01em;
+  font-weight: 700;
+  color: var(--tl);
+  line-height: 1.65;
+  padding: 12px 14px;
+  border: 1px solid rgba(124,201,0,.30);
+  border-left: 3px solid var(--lime);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, rgba(124,201,0,.10), rgba(34,170,255,.08));
+  margin-top: 8px;
 }
 .co-discount-note a { color: var(--blue-dp); text-decoration: none; border-bottom: 1px solid rgba(39,100,183,.25); }
 
