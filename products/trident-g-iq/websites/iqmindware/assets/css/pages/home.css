@@ -262,13 +262,13 @@ body.home  { background: var(--home-surface); }
 }
 .home-panel-step-sub {
   font-family: 'DM Mono', monospace;
-  font-size: 9.5px; letter-spacing: .06em;
-  color: var(--tcf);
+  font-size: 10px; letter-spacing: .06em;
+  color: rgba(228,236,248,.88);
 }
 .home-panel-step-time {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .06em;
-  color: var(--tcf); flex-shrink: 0;
+  font-size: 10.5px; letter-spacing: .06em;
+  color: rgba(230,238,250,.9); flex-shrink: 0;
 }
 .home-panel-recheck {
   display: flex;
