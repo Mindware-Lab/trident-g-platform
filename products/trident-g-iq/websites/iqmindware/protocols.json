@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-03-04",
+  "updated_at": "2026-03-06",
   "protocols": [
     {
       "name": "Psi Corridor Protocol",
       "app": "Zone Coach",
-      "version": "v1.0",
+      "version": "v1.1",
       "date": "2026-03-06",
       "what_it_trains": "Readiness routing and re-entry decisions.",
       "checks_used": [

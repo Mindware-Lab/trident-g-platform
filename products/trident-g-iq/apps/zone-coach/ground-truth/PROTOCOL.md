@@ -1,123 +1,240 @@
 # Zone Coach Psi Corridor Protocol
 
-Version: v1.0 (public protocol)
+Version: v1.1 (public protocol)
 Date: 2026-03-06
 Owner: Mindware Lab (Trident G IQ)
 
 ## 1) Purpose and scope
 
-Zone Coach is a short readiness and re-entry protocol that estimates whether current cognitive state is suitable for high-quality training or demanding work.
+Zone Coach is a short readiness and re-entry intervention that estimates whether current control state is suitable for high-quality cognitive training or demanding work.
 
 It is a non-clinical coaching and self-regulation tool. It is not diagnosis, treatment, or medical advice.
 
-## 2) What this protocol trains
+## 2) Intervention targets (construct level)
 
 The protocol targets:
 
-- state-aware training and work routing
-- fast, practical re-entry after drift or overload
-- disciplined upshift/downshift decisions
-- cleaner session quality before higher-load blocks
+- state-aware timing of high-load cognitive work
+- rapid re-entry after overload or underpowered states
+- cleaner go-light-go decisions before training
+- reduction of low-quality training exposure that can drive thin automation
 
-The goal is better timing and state hygiene for downstream cognitive work, not a medical state label.
+The objective is better state hygiene for downstream cognitive performance, not a medical state label.
 
-## 3) Scientific rationale (public summary)
+## 3) Measurement paradigm: MFT-M for CCC
 
-Performance quality varies with control state. Poorly timed high-load practice can increase noise and promote thin automation.
+### 3.1 Probe task
 
-Zone Coach addresses this through:
+Zone Coach uses a short masked majority-direction behavioural probe (MFT-M) to estimate Cognitive Control Capacity (CCC).
 
-- brief behavioural probing
-- validity-first gating
-- state signature routing
-- confidence-aware recommendations
+### 3.2 Primary measurement outputs
 
-This creates a practical "check first, then choose intensity" loop.
+The probe yields:
 
-## 4) Core intervention model
+- CCC throughput estimate (bits/second)
+- behavioural control markers from speed, variability, lapses, and error structure
+- quality signals needed for validity and confidence gating
 
-The protocol runs as a short cycle:
+### 3.3 Probe quality design
 
-1. Run a brief behavioural probe
-2. Validate run quality before classification
-3. Estimate likely state signature
-4. Assign confidence based on evidence strength
-5. Route next action (proceed, light, reset, or re-check)
+The measurement design includes:
 
-Where enough local history exists, current performance is interpreted against baseline trend rather than in isolation.
+- short-duration, repeatable runs
+- explicit invalid-run handling
+- optional quick re-check mode after intervention
+- local trend accumulation for baseline-relative interpretation
 
-## 5) Probe and state routing
+## 4) Classification architecture (public logic)
 
-The app uses a masked majority-direction behavioural probe and computes a compact feature set from timing, errors, lapses, variability, and trend shape.
+### 4.1 Validity gate first
 
-User-facing states are:
+State classification proceeds only if run quality is acceptable. Interrupted or poor-quality probes are routed to `Session not valid` with low confidence and a re-check recommendation.
 
-- In the Zone
-- Flat
-- Locked In
-- Spun Out
-- Session not valid
+### 4.2 Feature families used
 
-Internal signatures are used to route these labels and recommendations. The "In the Zone" label is intentionally conservative and requires quality and plausibility checks.
+The classifier uses feature families rather than a single score:
 
-## 6) Checks used
+- throughput and core performance quality
+- lapse and timeout structure
+- response-time dispersion and tail behaviour
+- fast-error and burstiness patterns
+- drift over time within run
+- catch-trial quality signals
+- post-error control signatures
 
-The protocol uses multiple checks:
+### 4.3 Competing state signatures
 
-- validity gate for interrupted/low-quality runs
-- competing state signature comparison
-- confidence assignment using separation and support depth
-- baseline-relative adjustments when local history is sufficient
-- throughput plausibility checks for "In the Zone" assignment
+For valid runs, the system evaluates competing out-of-zone signatures and a conservative in-zone gate:
 
-These checks are designed to reduce false certainty and overconfident routing.
+- underpowered/lapse-heavy signature (`Flat`)
+- rigid over-control signature (`Locked In`)
+- unstable/noisy high-arousal signature (`Spun Out`)
+- conservative high-quality control signature (`In the Zone`)
 
-## 7) Data and export posture
+### 4.4 Baseline-relative moderation
+
+When sufficient local history exists, the classifier interprets current signals relative to rolling personal baseline before final assignment.
+
+### 4.5 Confidence assignment
+
+Confidence is estimated from signal separation and data sufficiency, then surfaced as low/medium/high.
+
+## 5) State taxonomy and recommendation routing
+
+### 5.1 User-facing states
+
+- `In the Zone`
+- `Flat`
+- `Locked In`
+- `Spun Out`
+- `Session not valid`
+
+### 5.2 Recommendation gate
+
+State and confidence are mapped to an action gate for the next block of work, for example:
+
+- proceed with higher-load work
+- run light/stabilisation work
+- reset and re-check
+- repeat probe when invalid or low-confidence
+
+The recommendation layer is separate from raw state assignment and is intentionally conservative under uncertainty.
+
+## 6) Re-check and longitudinal protocol
+
+Zone Coach is designed for repeated use, not one-off classification.
+
+### 6.1 Re-check principle
+
+After an intervention (for example brief regulation/reset step), users can run a quick re-check to test whether state improved in the intended direction.
+
+### 6.2 Baseline trend principle
+
+Valid sessions build local personal baseline and trend context. Assignment and guidance become more individualized as valid history accumulates.
+
+### 6.3 Durability and handoff principle
+
+State guidance is used to support downstream training/work timing and can optionally feed readiness context into adjacent protocol layers.
+
+## 7) Observables and logging categories
+
+The protocol publishes schema categories for auditability without exposing private constants.
+
+### 7.1 Session-level categories
+
+- timestamped CCC throughput outputs
+- assigned state label and confidence label
+- validity outcome and re-check markers
+
+### 7.2 Feature-family categories
+
+- central performance and variability markers
+- lapse/error/burst markers
+- catch-trial quality markers
+- baseline-relative delta markers
+
+### 7.3 Longitudinal categories
+
+- rolling trend rows
+- in-zone band estimation support rows
+- run-quality history for confidence calibration
+
+## 8) Data and export posture
 
 Default posture is local-first storage. Session summaries and trend rows are stored locally for personal tracking and recommendation quality.
 
-Public publication uses aggregated summaries only. Personal raw logs are not publicly exposed.
+Public publication uses aggregated summaries only. Raw personal logs are not publicly exposed.
 
-Users retain control of their trail through app-level export/reset controls.
+Users retain control through app-level export/reset controls.
 
-## 8) Open methods, protected execution
+## 9) Open methods, protected execution (expanded)
 
-Published openly:
+### 9.1 Published openly
 
-- protocol purpose and boundaries
-- state families and routing logic
-- check families and confidence posture
-- data categories and privacy stance
+The following are intentionally public for scientific accountability:
 
-Protected for integrity:
+- intervention purpose and non-clinical boundaries
+- MFT-M measurement role and CCC construct framing
+- validity-first classifier architecture
+- state families and recommendation-gate logic
+- confidence and baseline-relative interpretation families
+- logging schema categories and local-first privacy posture
 
-- exact thresholds and weighted score constants
-- anti-gaming and anti-noise heuristics
-- proprietary classifier tuning details
+### 9.2 Protected for integrity
 
-This balances accountability with protocol robustness.
+The following remain non-public to preserve protocol integrity:
 
-## 9) Claims boundaries
+- exact thresholds and weighted score coefficients
+- anti-gaming and anti-noise guardrail details
+- proprietary classifier tuning and calibration constants
+- implementation-level decision tables not required for conceptual replication
+
+This boundary is "open methods, protected execution": enough detail for conceptual replication, without exposing exploit paths.
+
+## 10) Conceptual replication guidance (scientist-facing)
+
+This section defines the minimum design for conceptual replication studies.
+
+### 10.1 Minimal protocol recipe
+
+A conceptual replication should include:
+
+1. a short masked behavioural control probe with repeated runs,
+2. a validity gate before state assignment,
+3. multiple competing state signatures rather than single-threshold classification,
+4. confidence assignment and uncertainty-aware routing,
+5. baseline-relative interpretation after sufficient prior valid runs.
+
+### 10.2 Minimum fidelity checklist
+
+To claim conceptual alignment, studies should preserve:
+
+- explicit invalid-run handling,
+- separate classification and recommendation layers,
+- conservative in-zone assignment logic,
+- repeated-use trend accumulation,
+- re-check after intervention pathway.
+
+### 10.3 Suggested dependent variables
+
+Replications should capture both measurement and routing quality:
+
+- classification stability across repeated valid runs,
+- confidence calibration versus signal separation,
+- intervention-response change in quick re-checks,
+- reduction in low-quality high-load training starts,
+- downstream timing alignment with recommended intensity gates.
+
+### 10.4 Falsification patterns
+
+Findings that would challenge protocol assumptions include:
+
+- no benefit of validity gating versus ungated assignment,
+- no improvement in calibration from baseline-relative interpretation,
+- recommendation routing performing no better than non-state-aware timing.
+
+## 11) Claims boundaries
 
 Allowed posture:
 
-- designed to support readiness routing and re-entry
-- we test state signatures and confidence before recommendation
-- we track and publish aggregated summaries as evidence matures
+- designed to support readiness routing and re-entry,
+- we evaluate state signatures and confidence before recommendation,
+- we track and publish aggregated summaries as evidence matures.
 
 Not allowed:
 
-- diagnosis or treatment claims
-- guaranteed performance outcomes
-- guaranteed transfer outcomes
+- diagnosis or treatment claims,
+- guaranteed performance outcomes,
+- guaranteed transfer outcomes.
 
-Outputs vary with run quality, baseline depth, context, and user adherence.
+Outputs vary with run quality, baseline depth, context, and adherence.
 
-## 10) Changelog
+## 12) Changelog
 
-- 2026-03-06: Initial canonical public protocol publication.
+- 2026-03-06: v1.0 initial canonical public protocol publication.
+- 2026-03-06: v1.1 expanded public methods detail for conceptual replication.
 
-## 11) Related documents
+## 13) Related documents
 
 - `readme-zc.md` (product overview)
 - `protocol-zc.md` (expanded technical logic reference)
