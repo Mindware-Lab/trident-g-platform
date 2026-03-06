@@ -51,6 +51,55 @@
       "schema": [
         "CollectionPage"
       ]
+    },
+    "/learn/blog/the-bell-curve-cognitive-elites/": {
+      "title": "The Bell Curve and Cognitive Elites",
+      "canonical": "https://www.iqmindware.com/learn/blog/the-bell-curve-cognitive-elites/",
+      "schema": [
+        "Article"
+      ]
+    },
+    "/learn/blog/how-to-do-a-raven-matrices-test/": {
+      "title": "How To Do A Raven Matrices Test",
+      "canonical": "https://www.iqmindware.com/learn/blog/how-to-do-a-raven-matrices-test/",
+      "schema": [
+        "Article"
+      ]
+    },
+    "/learn/blog/dual-n-back-training-strategies/": {
+      "title": "Dual N-back Training Strategies",
+      "canonical": "https://www.iqmindware.com/learn/blog/dual-n-back-training-strategies/",
+      "schema": [
+        "Article"
+      ]
+    },
+    "/learn/blog/123-sigma-rule/": {
+      "title": "The 123 Sigma Rule",
+      "canonical": "https://www.iqmindware.com/learn/blog/123-sigma-rule/",
+      "schema": [
+        "Article"
+      ]
+    },
+    "/learn/blog/emotional-dual-n-back-science/": {
+      "title": "The Science Behind the Emotional Dual N-back",
+      "canonical": "https://www.iqmindware.com/learn/blog/emotional-dual-n-back-science/",
+      "schema": [
+        "Article"
+      ]
+    },
+    "/learn/blog/jordan-peterson-iq/": {
+      "title": "Jordan Peterson on IQ",
+      "canonical": "https://www.iqmindware.com/learn/blog/jordan-peterson-iq/",
+      "schema": [
+        "Article"
+      ]
+    },
+    "/learn/wiki/what-does-my-iq-score-mean/": {
+      "title": "What Does My IQ Score Mean?",
+      "canonical": "https://www.iqmindware.com/learn/wiki/what-does-my-iq-score-mean/",
+      "schema": [
+        "WebPage"
+      ]
     }
   }
 }

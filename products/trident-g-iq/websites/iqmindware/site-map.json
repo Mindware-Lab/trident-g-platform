@@ -120,9 +120,51 @@
       "required_template_blocks": []
     },
     {
+      "route": "/learn/blog/the-bell-curve-cognitive-elites/",
+      "intent": "education_article",
+      "primary_cta": "Read article content",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/learn/blog/how-to-do-a-raven-matrices-test/",
+      "intent": "education_article",
+      "primary_cta": "Read article content",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/learn/blog/dual-n-back-training-strategies/",
+      "intent": "education_article",
+      "primary_cta": "Read article content",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/learn/blog/123-sigma-rule/",
+      "intent": "education_article",
+      "primary_cta": "Read article content",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/learn/blog/emotional-dual-n-back-science/",
+      "intent": "education_article",
+      "primary_cta": "Read article content",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/learn/blog/jordan-peterson-iq/",
+      "intent": "education_article",
+      "primary_cta": "Read article content",
+      "required_template_blocks": []
+    },
+    {
       "route": "/learn/wiki/",
       "intent": "education_wiki",
       "primary_cta": "Read wiki content",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/learn/wiki/what-does-my-iq-score-mean/",
+      "intent": "education_wiki_entry",
+      "primary_cta": "Read wiki entry",
       "required_template_blocks": []
     },
     {

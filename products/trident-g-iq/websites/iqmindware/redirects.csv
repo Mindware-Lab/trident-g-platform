@@ -4,3 +4,13 @@ old_url,target_url,status_code,intent_match_note
 /refund-policy,/refunds/,301,policy intent preserved
 /g-tracker-validation,/proof/g-tracker/,301,validation intent preserved
 /insights,/learn/blog/,301,educational intent preserved
+/trident-brain-training/intelligence-research/the-bell-curve-cognitive-elites/,/learn/blog/the-bell-curve-cognitive-elites/,301,legacy article mapped to equivalent article
+/intelligence-trackers/iq-tests/how-to-do-a-raven-matrices-test/,/learn/blog/how-to-do-a-raven-matrices-test/,301,legacy article mapped to equivalent article
+/improve-executive-control/capacity-training/training-strategies/,/learn/blog/dual-n-back-training-strategies/,301,legacy article mapped to equivalent article
+/wiki/what-is-an-iq-score-what-does-my-iq-score-mean/,/learn/wiki/what-does-my-iq-score-mean/,301,legacy wiki mapped to equivalent wiki entry
+/123-sigma-rule/,/learn/blog/123-sigma-rule/,301,legacy article mapped to equivalent article
+/increase-cognitive-resilience/emotional-dual-n-back-science/,/learn/blog/emotional-dual-n-back-science/,301,legacy article mapped to equivalent article
+/trident-brain-training/intelligence-research/jordan-peterson-iq/,/learn/blog/jordan-peterson-iq/,301,legacy article mapped to equivalent article
+/brain-training-plan/,/pricing/,301,legacy pricing mapped to current pricing page
+/mark-ashton-smith-ph-d/,/about/,301,legacy profile mapped to about page
+/iq-mindware-about/,/about/,301,legacy about mapped to current about page
