@@ -233,6 +233,11 @@ body.blog    { background: var(--pg-alt); }
   border-radius: var(--r-lg);
   border: 1px solid rgba(0,0,0,.08);
 }
+.bl-article-lead-img--contain {
+  object-fit: contain;
+  background: #fff;
+  padding: 10px;
+}
 .bl-article-lead-cap {
   margin-top: 8px;
   font-family: 'DM Mono', monospace;
