@@ -1033,6 +1033,12 @@ body.tool-detail { background: var(--tools-surface); }
   flex-wrap: wrap;
 }
 
+.tool-other-apps {
+  margin: 0 0 26px;
+  display: flex;
+  justify-content: center;
+}
+
 @media (max-width: 900px) {
   .tool-detail-page {
     max-width: 100%;
