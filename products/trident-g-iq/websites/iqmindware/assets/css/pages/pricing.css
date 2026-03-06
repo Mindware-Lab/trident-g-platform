@@ -214,9 +214,14 @@ body.pricing  { background: var(--pricing-surface); }
 .pricing-currency-note {
   font-family: 'DM Mono', monospace;
   font-size: 11px;
-  letter-spacing: .06em;
-  color: var(--tcf);
+  letter-spacing: .05em;
+  color: #e8f5ff;
   margin-left: auto;
+  padding: 6px 10px;
+  border-radius: var(--r-full);
+  border: 1px solid rgba(142,212,255,.35);
+  background: rgba(34,170,255,.12);
+  font-weight: 700;
 }
 
 
@@ -683,12 +688,18 @@ body.pricing  { background: var(--pricing-surface); }
 }
 .coaching-cta-secondary:hover { background: rgba(255,255,255,.07); color: var(--tc); }
 .coaching-refund-note {
-  font-family: 'DM Mono', monospace;
-  font-size: 13px; letter-spacing: .02em;
-  color: var(--tcf); line-height: 1.6;
-  padding: 12px 0 0;
-  border-top: 1px solid rgba(255,255,255,.07);
-  margin-top: 4px;
+  font-family: inherit;
+  font-size: 14px;
+  letter-spacing: .005em;
+  font-weight: 600;
+  color: var(--tc);
+  line-height: 1.65;
+  padding: 13px 16px;
+  border: 1px solid rgba(142,212,255,.30);
+  border-left: 3px solid var(--cyan);
+  border-radius: var(--r-md);
+  background: rgba(34,170,255,.10);
+  margin-top: 6px;
 }
 
 
