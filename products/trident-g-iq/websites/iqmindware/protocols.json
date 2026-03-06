@@ -5,7 +5,7 @@
       "name": "Psi Corridor Protocol",
       "app": "Zone Coach",
       "version": "v1.0",
-      "date": "2026-03-04",
+      "date": "2026-03-06",
       "what_it_trains": "Readiness routing and re-entry decisions.",
       "checks_used": [
         "validity gate",
@@ -21,7 +21,7 @@
       "export_path": "app-level local export controls",
       "limits": "Coaching/readiness only, not diagnosis.",
       "changelog_link": "/proof/protocols/zone-coach/",
-      "source_link": "https://github.com/Mindware-Lab/trident-g-platform/blob/main/products/trident-g-iq/apps/zone-coach/COGNITIVE-STATE-PROTOCOL.md"
+      "source_link": "https://github.com/Mindware-Lab/trident-g-platform/blob/main/products/trident-g-iq/apps/zone-coach/ground-truth/PROTOCOL.md"
     },
     {
       "name": "Transfer Invariance Protocol",
