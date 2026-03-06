@@ -20,7 +20,7 @@
     {
       "route": "/start/performance/",
       "intent": "onboarding_lane_performance",
-      "primary_cta": "Open G Tracker",
+      "primary_cta": "Access G Tracker",
       "required_template_blocks": [
         "design_intent_proof_posture"
       ]
@@ -28,7 +28,7 @@
     {
       "route": "/start/resilience/",
       "intent": "onboarding_lane_resilience",
-      "primary_cta": "Open Zone Coach",
+      "primary_cta": "Access Zone Coach",
       "required_template_blocks": [
         "design_intent_proof_posture"
       ]
@@ -36,7 +36,7 @@
     {
       "route": "/start/student/",
       "intent": "onboarding_lane_student",
-      "primary_cta": "Open G Tracker",
+      "primary_cta": "Access G Tracker",
       "required_template_blocks": [
         "design_intent_proof_posture"
       ]
@@ -235,3 +235,4 @@
     }
   ]
 }
+
