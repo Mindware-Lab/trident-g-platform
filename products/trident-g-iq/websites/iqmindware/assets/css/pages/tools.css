@@ -983,6 +983,20 @@ body.tool-detail { background: var(--tools-surface); }
   line-height: 1.45;
 }
 
+/* Zone Coach stimulus-focused screenshot treatment */
+.tool-shot--task-focus {
+  background: #0d1220;
+  border-color: rgba(255,255,255,.16);
+}
+
+.tool-shot--task-focus img {
+  background: #080c16;
+  object-fit: contain;
+  object-position: center;
+  transform: scale(1.16);
+  transform-origin: 50% 72%;
+}
+
 .tool-validation-list {
   margin: 12px 0 0;
   padding-left: 1.1rem;
@@ -1021,6 +1035,12 @@ body.tool-detail { background: var(--tools-surface); }
     max-height: 360px;
     object-fit: contain;
     background: #f2f5fa;
+  }
+
+  .tool-shot--task-focus img {
+    transform: scale(1.08);
+    transform-origin: 50% 70%;
+    background: #080c16;
   }
 }
 
