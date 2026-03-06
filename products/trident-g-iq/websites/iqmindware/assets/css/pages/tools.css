@@ -731,3 +731,224 @@ body.tools { background: var(--tools-surface); }
   .tool-meta-label          { border-right: none; border-bottom: 1px solid var(--tools-rule); padding: 10px 16px; }
 }
 
+/* ============================================================
+   12. TOOL DETAIL PAGE (e.g. /tools/g-tracker/)
+   ============================================================ */
+body.tool-detail { background: var(--tools-surface); }
+
+.tool-detail-page {
+  max-width: 1120px;
+  padding-top: 5.6rem;
+  padding-bottom: 2.6rem;
+}
+
+.tool-hero {
+  background:
+    radial-gradient(900px 500px at 0% 100%, rgba(204,255,102,.10), transparent 55%),
+    radial-gradient(800px 450px at 100% 0%, rgba(34,170,255,.12), transparent 58%),
+    var(--card-dark);
+  border: 1px solid rgba(255,255,255,.10);
+  color: var(--tc);
+  overflow: hidden;
+}
+
+.tool-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, .8fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.tool-hero-eyebrow {
+  display: inline-block;
+  margin-bottom: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+
+.tool-hero h1 {
+  margin: 0 0 12px;
+  font-size: clamp(30px, 5vw, 58px);
+  line-height: 1.02;
+  letter-spacing: -.024em;
+}
+
+.tool-hero-lead {
+  margin: 0 0 9px;
+  max-width: 50ch;
+  color: var(--tc);
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 700;
+}
+
+.tool-hero-sub {
+  margin: 0;
+  max-width: 58ch;
+  color: var(--tcm);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.tool-hero-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+
+.tool-hero-metrics {
+  display: grid;
+  gap: 10px;
+}
+
+.tool-hero-metric {
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 12px;
+  background: rgba(255,255,255,.05);
+  padding: 11px 12px;
+}
+
+.tool-hero-metric-label {
+  margin-bottom: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--tcf);
+}
+
+.tool-hero-metric-value {
+  color: var(--tc);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.tool-proof-posture .proof-quicklinks a {
+  font-weight: 700;
+}
+
+.tool-pillars > p,
+.tool-gallery > p,
+.tool-cycle-note {
+  color: var(--tlm);
+  line-height: 1.7;
+}
+
+.tool-pillars-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tool-pillar {
+  padding: 14px;
+  border: 1px solid var(--tools-card-bdr);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.tool-pillar h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  letter-spacing: -.01em;
+  color: var(--tl);
+}
+
+.tool-pillar p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--tlm);
+  line-height: 1.6;
+}
+
+.tool-cycle-list {
+  margin: 14px 0 10px;
+  padding-left: 1.15rem;
+}
+
+.tool-cycle-list li {
+  margin-bottom: 8px;
+  color: var(--tlm);
+  line-height: 1.62;
+}
+
+.tool-cycle-list strong {
+  color: var(--tl);
+}
+
+.tool-gallery-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tool-shot {
+  margin: 0;
+  border: 1px solid var(--tools-card-bdr);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.tool-shot img {
+  display: block;
+  width: 100%;
+  height: 270px;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.tool-shot figcaption {
+  padding: 10px 12px 11px;
+  font-size: 12.5px;
+  color: var(--tlm);
+  line-height: 1.45;
+}
+
+.tool-validation-list {
+  margin: 12px 0 0;
+  padding-left: 1.1rem;
+}
+
+.tool-validation-list li {
+  margin-bottom: 8px;
+  color: var(--tlm);
+  line-height: 1.65;
+}
+
+.tool-validation-list strong {
+  color: var(--tl);
+}
+
+.tool-validation-links {
+  margin: 16px 0 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .tool-detail-page {
+    max-width: 100%;
+  }
+
+  .tool-hero-grid,
+  .tool-pillars-grid,
+  .tool-gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tool-shot img {
+    height: auto;
+    max-height: 360px;
+    object-fit: contain;
+    background: #f2f5fa;
+  }
+}
+
