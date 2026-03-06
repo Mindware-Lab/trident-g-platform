@@ -26,26 +26,61 @@
   </header>
   <main class="page">
     <section class="hero">
-      <h1>Zone Coach protocol publication</h1>
-      <p>Public protocol publication for Zone Coach (versioned and inspectable).</p>
+      <h1>Zone Coach protocol in plain language</h1>
+      <p>Zone Coach is a short readiness check you run before demanding work or training, so you can choose the right intensity for today instead of guessing.</p>
     </section>
+
+    <section class="proof-posture">
+      <h2>What Zone Coach is for</h2>
+      <ul>
+        <li><strong>Main job:</strong> help you decide whether to train hard, go lighter, or re-check first.</li>
+        <li><strong>Typical length:</strong> about 3 minutes, with an optional fast re-check.</li>
+        <li><strong>Output:</strong> a readiness state plus confidence level and next-step recommendation.</li>
+        <li><strong>Boundary:</strong> self-regulation coaching support, not diagnosis or treatment.</li>
+      </ul>
+    </section>
+
     <section class="card">
-      <p><strong>Version:</strong> v1.1 public publication</p>
-      <p><strong>Date:</strong> 2026-03-06</p>
-      <h2>What it trains</h2>
-      <p>Readiness routing and fast re-entry decisions for high-quality cognitive work.</p>
-      <h2>What checks are used</h2>
-      <p>Validity gate, competing state signatures, confidence assignment, and baseline-relative penalties.</p>
-      <h2>What data is logged + export instructions</h2>
-      <p>Local-first session summaries and trend history; export is user-controlled in app-level controls.</p>
-      <h2>Limits and variability notes</h2>
-      <p>Coaching classifier only, not diagnosis. Output quality depends on valid runs and baseline depth.</p>
-      <h2>Change log</h2>
-      <p>Expanded publication with scientist-facing conceptual replication detail.</p>
-      <p><a href="/proof#data">See data summary registry</a></p>
-      <p><a href="https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/protocols/iq/zone-coach-v1.1.md">Source protocol doc</a></p>
-      <p><a href="https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/governance/CLAIMS_AND_SAFETY.md">Public claims and safety doc</a></p>
-      <p><a href="https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/governance/ETHICS_AND_ALGORITHMIC_TRANSPARENCY.md">Public ethics and algorithmic transparency doc</a></p>
+      <h2>Protocol summary: how it works</h2>
+      <div class="proof-steward-grid">
+        <article class="proof-steward-card">
+          <div class="proof-steward-hd">1) Check quality first</div>
+          <p class="proof-steward-text">If a run is low-quality or interrupted, Zone Coach marks it invalid and asks for a re-check instead of forcing a state label.</p>
+        </article>
+        <article class="proof-steward-card">
+          <div class="proof-steward-hd">2) Classify current state</div>
+          <p class="proof-steward-text">Zone Coach evaluates competing state signatures (for example underpowered, rigid, unstable, or in-zone) and assigns confidence.</p>
+        </article>
+        <article class="proof-steward-card">
+          <div class="proof-steward-hd">3) Route your next action</div>
+          <p class="proof-steward-text">You get a practical recommendation for today: proceed, go lighter, reset, or re-check after a short intervention.</p>
+        </article>
+        <article class="proof-steward-card">
+          <div class="proof-steward-hd">4) Build personal baseline</div>
+          <p class="proof-steward-text">Repeated valid runs improve personalization because current output is interpreted against your own local trend history.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Data and limits</h2>
+      <ul>
+        <li>Session summaries are local-first and user-exportable.</li>
+        <li>Public reporting is aggregate-only (no raw personal logs).</li>
+        <li>Zone Coach improves timing decisions for cognitive work; it does not provide clinical diagnosis.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Protocol and policy links</h2>
+      <div class="proof-steward-links">
+        <a class="proof-steward-link" href="https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/protocols/iq/zone-coach-v1.1.md" target="_blank" rel="noopener noreferrer">Zone Coach protocol source</a>
+        <a class="proof-steward-link" href="https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/governance/CLAIMS_AND_SAFETY.md" target="_blank" rel="noopener noreferrer">Claims and safety</a>
+        <a class="proof-steward-link" href="https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/governance/ETHICS_AND_ALGORITHMIC_TRANSPARENCY.md" target="_blank" rel="noopener noreferrer">Ethics and transparency</a>
+        <a class="proof-steward-link" href="/proof#data">Proof data summaries</a>
+        <a class="proof-steward-link" href="/tools/zone-coach/">Back to Zone Coach app</a>
+      </div>
+      <p><strong>Next step:</strong> access Zone Coach and run a quick readiness check before your next work or training block.</p>
     </section>
   </main>
   <footer class="site-footer site-footer-rich">
