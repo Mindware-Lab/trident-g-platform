@@ -12,7 +12,7 @@
     {
       "route": "/start/",
       "intent": "onboarding",
-      "primary_cta": "Open tools",
+      "primary_cta": "Open apps",
       "required_template_blocks": [
         "design_intent_proof_posture"
       ]
@@ -20,7 +20,7 @@
     {
       "route": "/tools/",
       "intent": "suite_selection",
-      "primary_cta": "View tool",
+      "primary_cta": "View app",
       "required_template_blocks": [
         "design_intent_proof_posture"
       ]
