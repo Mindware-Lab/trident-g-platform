@@ -1,0 +1,4 @@
+tool,module,metric_id,metric_name,definition,period_start,period_end,cohort_n,value,unit,status,suppressed,notes
+zone_coach,core,ccc_bps_mean,Mean CCC throughput,Mean bits per second for valid sessions in period,2026-01-01,2026-01-31,42,1.87,bits_per_second,published,false,monthly aggregate
+capacity_gym,hub,n_back_level_mean,Mean completed n-back level,Mean end-of-block n across valid blocks,2026-01-01,2026-01-31,18,,level,suppressed,true,suppressed due to n<20
+g_tracker,sgs12,sgs12_delta_mean,Mean SgS-12 baseline-post delta,Average baseline to follow-up score delta,2026-01-01,2026-03-31,56,1.2,score_points,published,false,quarterly aggregate

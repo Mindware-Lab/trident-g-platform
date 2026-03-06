@@ -1,0 +1,21 @@
+{
+  "dataset_id": "iq_public_aggregates_q1_2026",
+  "version": "v1.0",
+  "release_date": "2026-04-15",
+  "schema_version": "2026-03-06",
+  "minimum_cell_n": 20,
+  "suppression_rules": [
+    "suppress_cells_below_n",
+    "complementary_suppression",
+    "no_differencing_adjacent_periods",
+    "no_rare_intersections"
+  ],
+  "bins_version": "v1_fixed_bins",
+  "period_coverage": {
+    "start": "2026-01-01",
+    "end": "2026-03-31"
+  },
+  "owner": "Mindware Lab Research Ops",
+  "approver": "Designated Data Approver",
+  "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+}

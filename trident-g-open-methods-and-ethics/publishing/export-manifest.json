@@ -1,0 +1,30 @@
+{
+  "repo_scope": "public_methods_ethics_schemas_aggregates_only",
+  "source_allowlist": [
+    "README.md",
+    "LICENSES.md",
+    "TRADEMARKS.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "protocols/iq/**",
+    "governance/**",
+    "schemas/**",
+    "data/aggregates/**",
+    "data/templates/**",
+    "changelog/**",
+    "publishing/export-manifest.json",
+    ".github/workflows/validate-public-repo.yml"
+  ],
+  "forbidden_patterns": [
+    "**/*.html",
+    "**/*.js",
+    "**/dist/**",
+    "**/build/**",
+    "**/node_modules/**",
+    "**/assets/**",
+    "**/products/trident-g-iq/apps/**",
+    "**/internal/**"
+  ],
+  "requires_manual_release_approval": true,
+  "notes": "One-way publication only from allowlisted content."
+}

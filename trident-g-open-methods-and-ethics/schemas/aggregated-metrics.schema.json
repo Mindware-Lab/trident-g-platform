@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.org/schemas/aggregated-metrics.schema.json",
+  "title": "Aggregated Metrics",
+  "type": "object",
+  "required": [
+    "tool",
+    "module",
+    "metric_id",
+    "metric_name",
+    "definition",
+    "period_start",
+    "period_end",
+    "cohort_n",
+    "value",
+    "unit",
+    "status",
+    "suppressed",
+    "notes"
+  ],
+  "properties": {
+    "tool": {"type": "string", "minLength": 1},
+    "module": {"type": "string", "minLength": 1},
+    "metric_id": {"type": "string", "pattern": "^[a-z0-9_\\-]+$"},
+    "metric_name": {"type": "string", "minLength": 1},
+    "definition": {"type": "string", "minLength": 1},
+    "period_start": {"type": "string", "format": "date"},
+    "period_end": {"type": "string", "format": "date"},
+    "cohort_n": {"type": "integer", "minimum": 0},
+    "value": {"type": ["number", "null"]},
+    "unit": {"type": "string", "minLength": 1},
+    "status": {
+      "type": "string",
+      "enum": ["published", "suppressed", "withheld", "in_testing"]
+    },
+    "suppressed": {"type": "boolean"},
+    "notes": {"type": "string"}
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {"properties": {"suppressed": {"const": true}}},
+      "then": {
+        "properties": {
+          "status": {"enum": ["suppressed", "withheld"]},
+          "value": {"type": "null"}
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+name: validate-public-repo
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+    tags:
+      - 'release-*'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Block forbidden files and paths
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          forbidden_ext='\.(html|js)$'
+          forbidden_paths='(^|/)(dist|build|node_modules|assets)/|/products/trident-g-iq/apps/|/internal/'
+
+          mapfile -t files < <(git ls-files)
+          bad=0
+          for f in "${files[@]}"; do
+            if [[ "$f" =~ $forbidden_ext ]]; then
+              echo "FORBIDDEN EXTENSION: $f"
+              bad=1
+            fi
+            if [[ "$f" =~ $forbidden_paths ]]; then
+              echo "FORBIDDEN PATH: $f"
+              bad=1
+            fi
+          done
+
+          if [[ $bad -ne 0 ]]; then
+            echo "Exposure check failed."
+            exit 1
+          fi
+
+      - name: Validate JSON schemas and template manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import csv
+          import json
+          import pathlib
+
+          root = pathlib.Path('.')
+          agg_schema = root / 'schemas' / 'aggregated-metrics.schema.json'
+          manifest_schema = root / 'schemas' / 'publication-manifest.schema.json'
+          manifest_template = root / 'data' / 'templates' / 'manifest-template.json'
+          agg_template = root / 'data' / 'templates' / 'aggregate-template.csv'
+
+          for p in [agg_schema, manifest_schema, manifest_template, agg_template]:
+              if not p.exists():
+                  raise SystemExit(f"Missing required file: {p}")
+
+          # Basic required-key validation for manifest template
+          m = json.loads(manifest_template.read_text(encoding='utf-8'))
+          required_manifest = [
+              'dataset_id','version','release_date','schema_version','minimum_cell_n',
+              'suppression_rules','bins_version','period_coverage','owner','approver','sha256'
+          ]
+          for k in required_manifest:
+              if k not in m:
+                  raise SystemExit(f"Manifest template missing key: {k}")
+
+          # Basic required-column validation for aggregate template
+          required_cols = [
+              'tool','module','metric_id','metric_name','definition','period_start','period_end',
+              'cohort_n','value','unit','status','suppressed','notes'
+          ]
+          with agg_template.open('r', encoding='utf-8', newline='') as fh:
+              reader = csv.DictReader(fh)
+              cols = reader.fieldnames or []
+              missing = [c for c in required_cols if c not in cols]
+              if missing:
+                  raise SystemExit(f"Aggregate template missing columns: {missing}")
+
+          print('Schema/template checks passed.')
+          PY
+
+      - name: Validate export allowlist manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          p = Path('publishing/export-manifest.json')
+          if not p.exists():
+              raise SystemExit('Missing publishing/export-manifest.json')
+
+          d = json.loads(p.read_text(encoding='utf-8'))
+          required = ['repo_scope', 'source_allowlist', 'forbidden_patterns', 'requires_manual_release_approval']
+          for k in required:
+              if k not in d:
+                  raise SystemExit(f'Missing export-manifest key: {k}')
+
+          if d['requires_manual_release_approval'] is not True:
+              raise SystemExit('requires_manual_release_approval must be true')
+
+          if not d['source_allowlist'] or not d['forbidden_patterns']:
+              raise SystemExit('source_allowlist and forbidden_patterns must be non-empty')
+
+          print('Export manifest checks passed.')
+          PY
+
+  release_gate:
+    if: startsWith(github.ref, 'refs/tags/release-')
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: public-release
+    steps:
+      - name: Manual approval gate note
+        run: |
+          echo "Configure required reviewers on environment 'public-release' to enforce manual approval before release tags complete."
+
+      - name: Enforce manifest hash record for release tags
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, re
+          from pathlib import Path
+
+          manifest = Path('data/templates/manifest-template.json')
+          if not manifest.exists():
+              raise SystemExit('Missing manifest-template.json for release gate')
+
+          m = json.loads(manifest.read_text(encoding='utf-8'))
+          if m.get('minimum_cell_n', 0) < 20:
+              raise SystemExit('minimum_cell_n must be >= 20')
+
+          sha = m.get('sha256', '')
+          if not re.fullmatch(r'[a-fA-F0-9]{64}', sha):
+              raise SystemExit('sha256 must be a 64-char hex hash')
+
+          if sha.lower() == ('0' * 64):
+              raise SystemExit('sha256 cannot be all zeros for release tags')
+
+          print('Release hash record checks passed.')
+          PY

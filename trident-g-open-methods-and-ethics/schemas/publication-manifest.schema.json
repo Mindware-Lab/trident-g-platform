@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.org/schemas/publication-manifest.schema.json",
+  "title": "Publication Manifest",
+  "type": "object",
+  "required": [
+    "dataset_id",
+    "version",
+    "release_date",
+    "schema_version",
+    "minimum_cell_n",
+    "suppression_rules",
+    "bins_version",
+    "period_coverage",
+    "owner",
+    "approver",
+    "sha256"
+  ],
+  "properties": {
+    "dataset_id": {"type": "string", "pattern": "^[a-z0-9_\\-]+$"},
+    "version": {"type": "string", "pattern": "^v[0-9]+(\\.[0-9]+){0,2}$"},
+    "release_date": {"type": "string", "format": "date"},
+    "schema_version": {"type": "string", "minLength": 1},
+    "minimum_cell_n": {"type": "integer", "minimum": 1},
+    "suppression_rules": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1
+    },
+    "bins_version": {"type": "string", "minLength": 1},
+    "period_coverage": {
+      "type": "object",
+      "required": ["start", "end"],
+      "properties": {
+        "start": {"type": "string", "format": "date"},
+        "end": {"type": "string", "format": "date"}
+      },
+      "additionalProperties": false
+    },
+    "owner": {"type": "string", "minLength": 1},
+    "approver": {"type": "string", "minLength": 1},
+    "sha256": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$"}
+  },
+  "additionalProperties": false
+}

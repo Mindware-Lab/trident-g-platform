@@ -21,7 +21,7 @@
       "export_path": "app-level local export controls",
       "limits": "Coaching/readiness only, not diagnosis.",
       "changelog_link": "/proof/protocols/zone-coach/",
-      "source_link": "https://github.com/Mindware-Lab/trident-g-platform/blob/main/products/trident-g-iq/apps/zone-coach/ground-truth/PROTOCOL.md"
+      "source_link": "https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/protocols/iq/zone-coach-v1.1.md"
     },
     {
       "name": "Transfer Invariance Protocol",
@@ -44,7 +44,30 @@
       "export_path": "app-level local export controls",
       "limits": "Designed to increase probability of carryover, not guarantee.",
       "changelog_link": "/proof/protocols/capacity-gym/",
-      "source_link": "https://github.com/Mindware-Lab/trident-g-platform/blob/main/products/trident-g-iq/apps/capacity-gym/ground-truth/PROTOCOL.md"
+      "source_link": "https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/protocols/iq/capacity-gym-v1.1.md"
+    },
+    {
+      "name": "G Tracker Evidence Battery Protocol",
+      "app": "G Tracker",
+      "version": "v1.0",
+      "date": "2026-03-06",
+      "what_it_trains": "Repeated cognitive outcome tracking across reasoning, applied cognition, and resilience markers.",
+      "checks_used": [
+        "baseline/post form pairing",
+        "repeatable cadence checks",
+        "module-level validation status registry",
+        "trend interpretation with caveats"
+      ],
+      "data_logged": [
+        "baseline_post_delta",
+        "tracker_trend_rows",
+        "module_status_labels",
+        "aggregate_publication_manifest"
+      ],
+      "export_path": "app-level local export controls",
+      "limits": "Assessment battery only; module validation is explicit and non-clinical.",
+      "changelog_link": "/proof/g-tracker/",
+      "source_link": "https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/protocols/iq/g-tracker-battery-v1.0.md"
     }
   ]
 }
