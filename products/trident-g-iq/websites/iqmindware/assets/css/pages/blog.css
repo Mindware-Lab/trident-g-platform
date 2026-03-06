@@ -222,6 +222,25 @@ body.blog    { background: var(--pg-alt); }
   font-size: 10px; letter-spacing: .06em; color: var(--tlf); margin-left: auto;
 }
 
+/* Lead media */
+.bl-article-lead {
+  margin: 22px 0 8px;
+}
+.bl-article-lead-img {
+  width: 100%;
+  max-height: 520px;
+  object-fit: cover;
+  border-radius: var(--r-lg);
+  border: 1px solid rgba(0,0,0,.08);
+}
+.bl-article-lead-cap {
+  margin-top: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .06em;
+  color: var(--tlf);
+}
+
 /* Article prose */
 .bl-article-prose {
   font-size: 16px; color: var(--tlm); line-height: 1.80;
