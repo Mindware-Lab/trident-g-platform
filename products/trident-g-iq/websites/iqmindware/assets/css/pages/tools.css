@@ -800,6 +800,24 @@ body.tool-detail { background: var(--tools-surface); }
   margin-top: 22px;
 }
 
+.tool-hero-note {
+  margin: 10px 0 0;
+  max-width: 58ch;
+  color: var(--tcm);
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+.tool-hero-note a {
+  color: var(--tc);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,.35);
+}
+
+.tool-hero-note a:hover {
+  border-bottom-color: rgba(255,255,255,.65);
+}
+
 .tool-hero-metrics {
   display: grid;
   gap: 10px;
