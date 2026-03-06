@@ -21,7 +21,7 @@ Every public page should be:
 A page should pass only if:
 
 - all **Critical checks** pass
-- at least **12 of 16** standard checks pass
+- at least **16 of 21** standard checks pass
 - there are **no red-flag failures**
 
 ---
@@ -34,6 +34,7 @@ These must all pass.
 - [ ] **The page has one main purpose**
 - [ ] **The page does not make exaggerated, guaranteed, or medical-style claims**
 - [ ] **The page has one clear next step**
+- [ ] **Core text is legible at a glance on desktop and mobile**
 
 ---
 
@@ -55,6 +56,7 @@ These must all pass.
 - [ ] Jargon, acronyms, and internal model language are avoided or briefly explained
 - [ ] Technical detail is kept light on public sales or landing pages
 - [ ] Deeper science, protocol, or theory is linked out rather than crammed into the page
+- [ ] An explanatory diagram is included when it would substantially improve clarity of process, flow, or model logic
 
 ### 4) Trust and credibility
 - [ ] The tone is calm, factual, and non-hyped
@@ -65,6 +67,17 @@ These must all pass.
 ### 5) Action and flow
 - [ ] The page ends with one obvious next action
 - [ ] Buttons and links are specific, for example `See pricing`, `View protocol`, or `Book a call`
+
+### 6) Legibility and hierarchy
+Legibility baseline guidance for public pages:
+- body copy should generally sit around 15-18px
+- core card/table text should generally be at least 14px
+- very small text should be limited to minor labels, not key information
+
+- [ ] Font sizes are readable across desktop and mobile, including cards and metadata-heavy sections
+- [ ] Visual hierarchy is clear: headline, section title, body text, and metadata are easy to distinguish
+- [ ] Important information is highlighted with clear headings and selective bold text, not buried in plain paragraphs
+- [ ] Bold styling is used intentionally for emphasis, not overused to the point of visual noise
 
 ---
 
@@ -79,6 +92,8 @@ If any of these are present, the page fails.
 - [ ] The page implies diagnosis, treatment, cure, or guaranteed outcomes
 - [ ] The page has no clear call to action
 - [ ] The page contains large walls of text with little structure
+- [ ] The page uses undersized text for core information (especially cards, labels, or action areas)
+- [ ] A complex process is presented as dense text only, where a simple explanatory diagram would make understanding materially easier
 
 ---
 
@@ -91,6 +106,9 @@ If any of these are present, the page fails.
 - [ ] Use a calm and credible tone
 - [ ] Make the next step obvious
 - [ ] Add safety or scope wording where needed
+- [ ] Keep key content comfortably legible with a clear headline-to-body type hierarchy
+- [ ] Use bold text to signal key actions, limits, and outcomes where useful
+- [ ] Add a simple explanatory diagram on pages with process-heavy or model-heavy content where it materially improves first-pass understanding
 
 ### Must avoid
 - [ ] Long theoretical explanations on homepage, pricing, or sales pages
@@ -98,15 +116,16 @@ If any of these are present, the page fails.
 - [ ] Over-claiming what the apps or coaching can do
 - [ ] Language that sounds medical unless intentionally and properly framed
 - [ ] Vague links such as repeated `Learn more` with no clear distinction
+- [ ] Very small text for key claims, instructions, card metadata, or CTA labels
 
 ---
 
 ## Simple score
 Use this if you want a quick decision.
 
-- **Pass** = all Critical checks pass, no red flags, and 12-16 standard checks pass
-- **Borderline** = all Critical checks pass, no red flags, and 9-11 standard checks pass
-- **Fail** = any Critical check fails, any red flag appears, or fewer than 9 standard checks pass
+- **Pass** = all Critical checks pass, no red flags, and 16-21 standard checks pass
+- **Borderline** = all Critical checks pass, no red flags, and 12-15 standard checks pass
+- **Fail** = any Critical check fails, any red flag appears, or fewer than 12 standard checks pass
 
 ---
 
@@ -119,6 +138,7 @@ Use these when auditing a page.
 4. Is there too much theory for the page type?
 5. Does anything sound exaggerated or unsafe?
 6. Is the next step obvious?
+7. Is the text size and heading hierarchy readable without zooming or effort?
 
 ---
 
