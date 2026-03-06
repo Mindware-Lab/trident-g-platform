@@ -450,6 +450,13 @@ body.coaching          { background: var(--co-surface); }
   font-family: 'DM Mono', monospace;
   font-size: 9.5px; letter-spacing: .06em; color: var(--tlf);
 }
+.co-pkg-alt-price {
+  margin-top: 4px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .06em;
+  color: var(--tlf);
+}
 
 /* Rows */
 .co-pkg-rows { flex: 1; }

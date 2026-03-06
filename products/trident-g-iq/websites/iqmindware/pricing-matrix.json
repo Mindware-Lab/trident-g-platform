@@ -118,13 +118,14 @@
     {
       "id": "live_cohort",
       "label": "Live Cohort",
-      "billing": "4 x 1h weekly",
-      "price_gbp": 240.0,
-      "price_usd": 299.0,
+      "billing": "4 x 1h weekly (up to 6 seats)",
+      "price_gbp": 160.0,
+      "price_usd": 199.0,
       "choose_if": "You want structured guided implementation.",
       "includes": [
         "IQ Core",
         "Cohort sessions",
+        "Implementation review",
         "Substack inclusion"
       ]
     },
@@ -132,12 +133,13 @@
       "id": "premium_1to1",
       "label": "1:1 Premium",
       "billing": "3 x 1h flexible",
-      "price_gbp": 560.0,
-      "price_usd": 699.0,
+      "price_gbp": 400.0,
+      "price_usd": 499.0,
       "choose_if": "You want private implementation support.",
       "includes": [
         "IQ Core",
         "Private coaching",
+        "Implementation review",
         "Substack inclusion"
       ]
     }
