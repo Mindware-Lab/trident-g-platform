@@ -434,7 +434,13 @@ body.coaching          { background: var(--co-surface); }
 .co-pkg-tagline { font-size: 13.5px; color: var(--tlm); line-height: 1.45; }
 
 /* Price block */
-.co-pkg-price-col { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+.co-pkg-price-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  padding: 14px 28px 10px 16px;
+}
 .co-pkg-amount {
   display: flex; align-items: baseline; gap: 3px;
 }
