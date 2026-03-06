@@ -774,6 +774,25 @@ body.tool-detail { background: var(--tools-surface); }
   font-size: clamp(30px, 5vw, 58px);
   line-height: 1.02;
   letter-spacing: -.024em;
+  color: var(--tc);
+}
+
+.tool-hero-icon {
+  width: 50px;
+  height: 50px;
+  margin: 4px 0 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(34,170,255,.34);
+  background: rgba(34,170,255,.13);
+  display: grid;
+  place-items: center;
+  color: var(--cyan);
+  box-shadow: 0 0 0 2px rgba(34,170,255,.08) inset;
+}
+
+.tool-hero-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
 .tool-hero-lead {
@@ -854,6 +873,13 @@ body.tool-detail { background: var(--tools-surface); }
 .tool-cycle-note {
   color: var(--tlm);
   line-height: 1.7;
+}
+
+.tool-detail-page .card h2 {
+  margin: 0 0 10px;
+  font-size: clamp(20px, 2.5vw, 28px);
+  line-height: 1.14;
+  letter-spacing: -.016em;
 }
 
 .tool-pillars-grid {
