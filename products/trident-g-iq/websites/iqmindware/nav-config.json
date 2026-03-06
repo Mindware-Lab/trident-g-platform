@@ -39,11 +39,6 @@
       "label": "FAQ",
       "href": "/faq/",
       "microcopy": ""
-    },
-    {
-      "label": "Support",
-      "href": "/support/",
-      "microcopy": ""
     }
   ],
   "login_is_separate_from_marketing": false
