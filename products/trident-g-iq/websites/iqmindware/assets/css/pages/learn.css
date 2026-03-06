@@ -163,7 +163,79 @@ body.learn    { background: var(--pg-alt); }
 
 
 /* ============================================================
-   4. RESPONSIVE
+   4. CTA BAND
+   ============================================================ */
+.lh-cta-band {
+  background: var(--card-deep);
+  padding: 68px var(--gutter);
+  border-top: 1px solid rgba(255,255,255,.06);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.lh-cta-band::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 600px 320px at 20% 50%, rgba(34,170,255,.07),  transparent 55%),
+    radial-gradient(ellipse 500px 280px at 80% 50%, rgba(204,255,102,.06), transparent 55%);
+  pointer-events: none;
+}
+.lh-cta-inner { max-width: 580px; margin: 0 auto; position: relative; z-index: 1; }
+.lh-cta-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--tcf);
+  margin-bottom: 12px;
+  display: block;
+}
+.lh-cta-title {
+  font-size: clamp(22px, 3.5vw, 38px);
+  font-weight: 800;
+  letter-spacing: -.022em;
+  line-height: 1.08;
+  margin-bottom: 14px;
+  color: var(--tc);
+}
+.lh-cta-title em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--lime), #22AAFF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.lh-cta-desc {
+  font-size: 14.5px;
+  color: var(--tcm);
+  line-height: 1.72;
+  margin-bottom: 28px;
+  max-width: 48ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+.lh-cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.lh-cta-links {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--tcf);
+}
+.lh-cta-links a {
+  color: var(--cyan-lt);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(142,212,255,.30);
+}
+.lh-cta-links a:hover { border-bottom-color: var(--cyan-lt); }
+
+
+/* ============================================================
+   5. RESPONSIVE
    ============================================================ */
 @media (max-width: 900px) {
   .lh-hero-inner { grid-template-columns: 1fr; }
@@ -174,4 +246,5 @@ body.learn    { background: var(--pg-alt); }
   .lh-hero        { padding: 88px var(--gutter) 40px; }
   .lh-hero-meta   { display: none; }
   .lh-hub-grid    { grid-template-columns: 1fr; }
+  .lh-cta-links   { flex-wrap: wrap; gap: 8px; }
 }
