@@ -881,6 +881,7 @@ body.tool-detail { background: var(--tools-surface); }
 .tool-hero-metrics {
   display: grid;
   gap: 10px;
+  align-self: center;
 }
 
 .tool-hero-metric {
