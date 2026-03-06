@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/assets/css/templates.css">
   <link rel="stylesheet" href="/assets/css/pages/tools.css">
 </head>
-<body>
+<body class="tool-detail tool-detail--capacity-gym">
   <header class="site-header">
     <a class="brand" href="/">IQMindware</a>
     <p class="tagline">Train general intelligence, then prove carryover.</p>
@@ -25,29 +25,132 @@
       <a class="nav-link" href="/login/"><span>Login</span></a>
     </nav>
   </header>
-  <main class="page">
-    <section class="hero">
-      <h1>Capacity Gym</h1>
-      <p>Transfer Invariance protocol for working memory, control stability, and wrapper-resilient performance.</p>
+  <main class="page tool-detail-page">
+    <section class="hero tool-hero tool-hero--cg" aria-label="Capacity Gym overview">
+      <div class="tool-hero-grid">
+        <div>
+          <span class="tool-hero-eyebrow">Training tool</span>
+          <div class="tool-hero-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 9h2v6H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1Z"/>
+              <path d="M20 9h-2v6h2a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1Z"/>
+              <rect x="6" y="8" width="2" height="8" rx="1"/>
+              <rect x="16" y="8" width="2" height="8" rx="1"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+          </div>
+          <h1>Capacity Gym</h1>
+          <p class="tool-hero-lead">Train working memory and attention control in a way designed to carry beyond one game format.</p>
+          <p class="tool-hero-sub">Capacity Gym combines adaptive n-back training, relational challenge modes, and coach-guided progression to reduce thin automation (getting good at one exact wrapper only).</p>
+          <div class="tool-hero-actions">
+            <a class="btn btn-lime btn-sm" href="/proof/protocols/capacity-gym/">View protocol detail</a>
+          </div>
+          <p class="tool-hero-note">Want the full method spec? <a href="https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/protocols/iq/capacity-gym-v1.1.md" target="_blank" rel="noopener noreferrer">Read the public protocol.</a></p>
+        </div>
+        <div class="tool-hero-metrics" aria-label="Quick facts">
+          <div class="tool-hero-metric">
+            <div class="tool-hero-metric-label">Typical session</div>
+            <div class="tool-hero-metric-value">10 to 20 minutes</div>
+          </div>
+          <div class="tool-hero-metric">
+            <div class="tool-hero-metric-label">Session format</div>
+            <div class="tool-hero-metric-value">Guided 10-block flow</div>
+          </div>
+          <div class="tool-hero-metric">
+            <div class="tool-hero-metric-label">Data model</div>
+            <div class="tool-hero-metric-value">Local-first + exportable</div>
+          </div>
+        </div>
+      </div>
     </section>
-    <section class="proof-posture" aria-label="Design intent and proof posture">
+
+    <section class="proof-posture tool-proof-posture" aria-label="Design intent and proof posture">
       <h2>Design Intent + Proof Posture</h2>
       <ul>
         <li><strong>Designed for far transfer:</strong> Designed to train general intelligence capacity and cognitive resilience, and to test whether gains carry over under changed conditions.</li>
-        <li><strong>How transfer is checked:</strong> Wrapper swaps, boundary/trap probes, and delayed re-checks.</li>
+        <li><strong>How transfer is checked:</strong> Game swaps (same skill in a different task format), boundary/trap probes (checks that look for failure points), and delayed re-checks (does the gain still hold later).</li>
         <li><strong>Transparency:</strong> Protocol + progression logic are public; users can export their training trail; we publish aggregated summaries of test results as the evidence base grows.</li>
-        <li><strong>Boundary:</strong> Skills training and self-regulation, not diagnosis or treatment. Outcomes vary.</li>
+        <li><strong>Scope boundary:</strong> Skills training and self-regulation, not diagnosis or treatment. Outcomes vary.</li>
       </ul>
-      <p class="proof-quicklinks"><a href="/proof#protocols">View open protocols</a><a href="/proof#data">View data summaries</a></p>
+      <p class="proof-quicklinks">
+        <a href="/proof#protocols">View open protocols</a>
+        <a href="/proof#data">View data summaries</a>
+        <a href="https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/protocols/iq/capacity-gym-v1.1.md" target="_blank" rel="noopener noreferrer">Protocol source</a>
+      </p>
     </section>
-    <section class="card">
-      <h2>What it trains</h2>
-      <p>Adaptive control policies across hub and relational wrappers.</p>
-      <h2>Checks used</h2>
-      <p>Plateau handling, perturbation probes, wrapper swaps, and consolidation logic.</p>
-      <h2>Logged data</h2>
-      <p>Block-level outcomes, probe outcomes, and progression state.</p>
-      <p><a class="btn" href="/proof/protocols/capacity-gym/">Inspect protocol publication</a></p>
+
+    <section class="card tool-pillars" aria-label="What Capacity Gym trains">
+      <h2>What Capacity Gym helps you train</h2>
+      <p>This is not just score chasing in one task. Capacity Gym is designed to build stronger control policies that hold up when conditions change.</p>
+      <div class="tool-pillars-grid">
+        <article class="tool-pillar">
+          <h3>Working-memory control</h3>
+          <p>Adaptive n-back blocks train update-and-hold ability under time pressure.</p>
+        </article>
+        <article class="tool-pillar">
+          <h3>Attention stability</h3>
+          <p>Coach-guided routing helps reduce overload spirals and noisy performance blocks.</p>
+        </article>
+        <article class="tool-pillar">
+          <h3>Relational processing</h3>
+          <p>Relational modes train structure tracking, not only surface-level stimulus habits.</p>
+        </article>
+        <article class="tool-pillar">
+          <h3>Transfer checks inside training</h3>
+          <p>Game swaps and controlled perturbations test whether gains survive representation changes.</p>
+        </article>
+        <article class="tool-pillar">
+          <h3>Consolidation discipline</h3>
+          <p>After strong blocks, the app stabilises gains instead of forcing random disruption.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="card tool-cycle" aria-label="How a Capacity Gym cycle works">
+      <h2>Session logic: stabilise, challenge, test, consolidate</h2>
+      <ol class="tool-cycle-list">
+        <li><strong>Stabilise signal quality.</strong> If a block is noisy, route to recovery before increasing challenge.</li>
+        <li><strong>Increase challenge in steps.</strong> Adjust one training dial at a time where possible.</li>
+        <li><strong>Run game swaps.</strong> Test whether progress holds when the wrapper changes.</li>
+        <li><strong>Consolidate gains.</strong> When performance is strong, protect it before pushing again.</li>
+      </ol>
+      <p class="tool-cycle-note">This cycle is designed to increase the probability of real carryover, not just in-game spikes.</p>
+    </section>
+
+    <section class="card tool-gallery" aria-label="Capacity Gym screenshots">
+      <h2>Inside the app</h2>
+      <p>These screens show the guided flow, adaptive challenge control, and transfer-oriented training structure.</p>
+      <div class="tool-gallery-grid">
+        <figure class="tool-shot">
+          <img src="/assets/img/tools/capacity-gym/capacity-gym-1.png" alt="Capacity Gym home screen showing session routing and training recommendations" loading="lazy" decoding="async">
+          <figcaption>Home recommendation panel for session style and next action.</figcaption>
+        </figure>
+        <figure class="tool-shot">
+          <img src="/assets/img/tools/capacity-gym/capacity-gym-2.jpg" alt="Capacity Gym guided block training view with active n-back task wrapper" loading="lazy" decoding="async">
+          <figcaption>Guided block training with active wrapper and response loop.</figcaption>
+        </figure>
+        <figure class="tool-shot">
+          <img src="/assets/img/tools/capacity-gym/capacity-gym-3.jpg" alt="Capacity Gym progression and probe panel showing challenge adjustments" loading="lazy" decoding="async">
+          <figcaption>Progression, challenge adjustments, and probe outcomes.</figcaption>
+        </figure>
+        <figure class="tool-shot">
+          <img src="/assets/img/tools/capacity-gym/capacity-gym-4.jpg" alt="Capacity Gym summary view with session metrics and next-step suggestions" loading="lazy" decoding="async">
+          <figcaption>End-of-session summary with next-step recommendations.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="card tool-validation" aria-label="Validation and scope limits">
+      <h2>Validation and scope limits</h2>
+      <ul class="tool-validation-list">
+        <li><strong>Evidence stance:</strong> Working-memory training evidence in the wider literature is mixed, so transfer is treated as something to test, not assume.</li>
+        <li><strong>Design goal:</strong> Increase the probability of portable gains through explicit game swaps, perturbation checks, and consolidation logic.</li>
+        <li><strong>Scope limit:</strong> Capacity Gym supports skills and performance training, not diagnosis or treatment.</li>
+      </ul>
+      <p class="tool-validation-links">
+        <a class="btn btn-lime btn-sm" href="/proof/protocols/capacity-gym/">View protocol detail</a>
+      </p>
+      <p class="tool-cycle-note">For technical inspection, use the <a href="https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/protocols/iq/capacity-gym-v1.1.md" target="_blank" rel="noopener noreferrer">public protocol source</a>.</p>
     </section>
   </main>
   <footer class="site-footer site-footer-rich">
