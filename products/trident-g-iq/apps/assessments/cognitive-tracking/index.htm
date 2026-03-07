@@ -165,6 +165,14 @@
       margin-bottom: 2px;
     }
 
+    .panelModeLeft{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
     .panelModeLabel{
       margin: 0;
       font-size: 12px;
@@ -179,6 +187,15 @@
       align-items: center;
       gap: 6px;
       flex-wrap: wrap;
+    }
+
+    .panelModeButtonsFocus{
+      justify-content: flex-start;
+    }
+
+    .panelModeButtonsMode{
+      margin-left: auto;
+      justify-content: flex-end;
     }
 
     .panelMiniBtns{
@@ -1485,6 +1502,18 @@
         font-size: 11px;
       }
 
+      .panelModeRow{
+        gap: 6px;
+      }
+
+      .panelModeLeft{
+        gap: 6px;
+      }
+
+      .panelModeButtonsMode{
+        margin-left: 0;
+      }
+
       .compactCard{
         padding: 8px;
         gap: 6px;
@@ -2674,18 +2703,20 @@
                 <>
                   <div className="card" style={{ padding: "10px" }}>
                     <div className="panelModeRow">
-                      <p className="panelModeLabel">Tests view</p>
-                      <div className="panelModeButtons">
+                      <div className="panelModeLeft">
+                        <p className="panelModeLabel">Tests view</p>
+                        {testsViewMode === "guided" && (
+                          <div className="panelModeButtons panelModeButtonsFocus">
+                            <button className={`btn ${testsFocus === "outcome" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsFocus("outcome")}>Pre/Post tests</button>
+                            <button className={`btn ${testsFocus === "repeatable" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsFocus("repeatable")}>Repeatables</button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="panelModeButtons panelModeButtonsMode">
                         <button className={`btn ${testsViewMode === "guided" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsViewMode("guided")}>Guided (1 card)</button>
                         <button className={`btn ${testsViewMode === "all" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsViewMode("all")}>Show both</button>
                       </div>
                     </div>
-                    {testsViewMode === "guided" && (
-                      <div className="panelModeButtons">
-                        <button className={`btn ${testsFocus === "outcome" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsFocus("outcome")}>Pre/Post tests</button>
-                        <button className={`btn ${testsFocus === "repeatable" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsFocus("repeatable")}>Repeatables</button>
-                      </div>
-                    )}
                   </div>
 
                   {activeRepeatCard && (testsViewMode === "all" || testsFocus === "repeatable") && (
