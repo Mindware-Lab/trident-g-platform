@@ -262,11 +262,6 @@
       overflow: hidden;
     }
 
-    .compactCardExpanded{
-      height: 100%;
-      align-content: start;
-    }
-
     .compactTitle{
       margin: 0;
       font-size: 18px;
@@ -1508,8 +1503,7 @@
       }
 
       .panelHint{
-        padding: 0;
-        font-size: 11px;
+        display: none;
       }
 
       .panelModeRow{
@@ -2736,7 +2730,7 @@
                   </div>
 
                   {activeRepeatCard && (testsViewMode === "all" || testsFocus === "repeatable") && (
-                    <div className={`compactCard${testsViewMode === "guided" ? " compactCardExpanded" : ""}`}>
+                    <div className="compactCard">
                       <div className="deckHeader">
                         <p className="deckLabel">Repeatable Tracker</p>
                         <div className="deckControls">
@@ -2778,7 +2772,7 @@
                   )}
 
                   {activeOutcomeCard && (testsViewMode === "all" || testsFocus === "outcome") && (
-                    <div className={`compactCard${testsViewMode === "guided" ? " compactCardExpanded" : ""}`}>
+                    <div className="compactCard">
                       <div className="deckHeader">
                         <p className="deckLabel">Pre/Post Outcome</p>
                         <div className="deckControls">
