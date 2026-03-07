@@ -20,18 +20,128 @@
       "name": "Weekly Trigger",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [260, 280]
+      "position": [220, 260]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "name": "runDate",
+              "value": "={{$now.toISODate()}}",
+              "type": "string"
+            },
+            {
+              "name": "startDate",
+              "value": "={{$now.minus({ days: 28 }).toISODate()}}",
+              "type": "string"
+            },
+            {
+              "name": "endDate",
+              "value": "={{$now.minus({ days: 1 }).toISODate()}}",
+              "type": "string"
+            },
+            {
+              "name": "gscSiteUrlEncoded",
+              "value": "={{encodeURIComponent($env.GSC_SITE_URL || 'sc-domain:iqmindware.com')}}",
+              "type": "string"
+            },
+            {
+              "name": "auditUrl",
+              "value": "={{$env.SEO_AUDIT_URL || 'https://iqmindware.com/'}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n2",
+      "name": "Build Runtime Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 260]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://searchconsole.googleapis.com/webmasters/v3/sites/{{$json.gscSiteUrlEncoded}}/searchAnalytics/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"startDate\": $json.startDate,\n  \"endDate\": $json.endDate,\n  \"dimensions\": [\"page\",\"query\"],\n  \"rowLimit\": 2500\n}",
+        "options": {}
+      },
+      "id": "n3",
+      "name": "GSC Search Analytics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 160]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.googleapis.com/pagespeedonline/v5/runPagespeed",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{$json.auditUrl}}"
+            },
+            {
+              "name": "category",
+              "value": "performance"
+            },
+            {
+              "name": "strategy",
+              "value": "mobile"
+            },
+            {
+              "name": "key",
+              "value": "={{$env.PAGESPEED_API_KEY}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n4",
+      "name": "PageSpeed Mobile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 360]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $json.rows || [];\nconst top = rows.slice(0, 20).map((r) => ({\n  page: r.keys?.[0] || '',\n  query: r.keys?.[1] || '',\n  clicks: r.clicks || 0,\n  impressions: r.impressions || 0,\n  ctr: r.ctr || 0,\n  position: r.position || 0\n}));\nreturn [{ json: {\n  report_type: 'gsc_snapshot',\n  generated_at: $now.toISO(),\n  window_days: 28,\n  row_count: rows.length,\n  top_rows: top\n}}];"
+      },
+      "id": "n5",
+      "name": "Normalize GSC Snapshot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1060, 160]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $json || {};\nconst categories = result.lighthouseResult?.categories || {};\nreturn [{ json: {\n  report_type: 'pagespeed_snapshot',\n  generated_at: $now.toISO(),\n  audited_url: result.id || '',\n  strategy: 'mobile',\n  performance_score: categories.performance?.score ?? null,\n  seo_score: categories.seo?.score ?? null,\n  accessibility_score: categories.accessibility?.score ?? null,\n  best_practices_score: categories['best-practices']?.score ?? null\n}}];"
+      },
+      "id": "n6",
+      "name": "Normalize PageSpeed Snapshot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1060, 360]
     },
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "={\"todo\":\"Fetch Search Console query/page rows and PageSpeed metrics, then write reports/seo_snapshot_YYYY-MM-DD.json\"}"
+        "jsonOutput": "={\"note\":\"Review output from both normalization nodes. Next workflow can combine and write report files.\",\"next\":\"Run seo_keyword_expand after validating this snapshot.\"}"
       },
-      "id": "n2",
-      "name": "Collector Notes",
+      "id": "n7",
+      "name": "Review Gate",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [520, 280]
+      "position": [1300, 260]
     }
   ],
   "connections": {
@@ -39,7 +149,69 @@
       "main": [
         [
           {
-            "node": "Collector Notes",
+            "node": "Build Runtime Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Runtime Config": {
+      "main": [
+        [
+          {
+            "node": "GSC Search Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PageSpeed Mobile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSC Search Analytics": {
+      "main": [
+        [
+          {
+            "node": "Normalize GSC Snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PageSpeed Mobile": {
+      "main": [
+        [
+          {
+            "node": "Normalize PageSpeed Snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize GSC Snapshot": {
+      "main": [
+        [
+          {
+            "node": "Review Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize PageSpeed Snapshot": {
+      "main": [
+        [
+          {
+            "node": "Review Gate",
             "type": "main",
             "index": 0
           }
@@ -52,5 +224,5 @@
     "executionOrder": "v1"
   },
   "pinData": {},
-  "versionId": "1"
+  "versionId": "2"
 }

@@ -29,6 +29,14 @@ It is designed for:
 5. Run `seo_collect_weekly` manually first, then enable schedule.
 6. Review generated markdown/JSON output in PR before merge.
 
+## VS Code extensions
+
+You do not need a VS Code extension to run n8n.
+
+1. n8n runs in its own web UI (cloud or self-hosted).
+2. VS Code extensions in marketplace are optional helpers, mostly third-party.
+3. Start without extensions; add one later only if you want JSON authoring helpers.
+
 ## Guardrails
 
 - No direct publishing.
@@ -39,6 +47,8 @@ It is designed for:
 ## Required environment variables
 
 - `GSC_SITE_URL` (example: `sc-domain:iqmindware.com`)
+- `PAGESPEED_API_KEY`
+- `SEO_AUDIT_URL` (example: `https://iqmindware.com/`)
 - `OPENAI_MODEL` (example: `gpt-5-mini`)
 - `GITHUB_OWNER`
 - `GITHUB_REPO`
