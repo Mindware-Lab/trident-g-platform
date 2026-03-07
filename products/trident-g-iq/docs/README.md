@@ -7,3 +7,6 @@ Typical contents:
 - copy deck / wording
 - safety and claims notes (where relevant)
 - build/run/deploy notes
+
+Related standards:
+- `../UI_SIZE_CONTRACT.md`

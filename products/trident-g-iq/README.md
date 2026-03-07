@@ -10,3 +10,6 @@ This product contains the IQ track of the Trident-G platform.
 - `docs/` product notes, flows, and copy
 - `analytics/` event schemas, metrics dictionary, export formats (no raw data)
 - `research/` analysis scripts/notebooks (code only, no sensitive datasets)
+
+## UI Standards
+- `UI_SIZE_CONTRACT.md` - baseline shell dimensions and no-scroll rules for desktop/mobile app UX

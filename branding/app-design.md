@@ -33,6 +33,32 @@ An app flow should pass only if:
 
 ---
 
+## Spatial dimensions contract (mandatory)
+
+Use this with the UX checklist above.
+
+Canonical reference:
+- `products/trident-g-iq/UI_SIZE_CONTRACT.md`
+
+Required shell dimensions:
+- Desktop/laptop breakpoint: `@media (min-width: 960px)`
+- Desktop shell width: `min(900px, calc(100% - 24px))`
+- Desktop shell height: `calc(100vh - 36px)`
+- Mobile breakpoint: `@media (max-width: 520px)`
+- Mobile shell width: `100%`
+- Mobile shell height: `100dvh`
+- Mobile shell edge style: `border-radius: 0; border: none`
+- No page scroll: `html, body { height: 100%; overflow: hidden; }`
+
+Dimension QA checks:
+- [ ] Shell dimensions match the contract on desktop and mobile
+- [ ] Core tasks are completable without vertical scrolling
+- [ ] Bottom navigation does not overlap critical controls
+- [ ] Primary action remains visible in active task state
+- [ ] Help, pause, exit, and recovery controls remain reachable at all times
+
+---
+
 ## Critical checks
 
 These must all pass.
@@ -52,7 +78,7 @@ These must all pass.
 
 ### 1) First-run clarity and onboarding
 
-- [ ] The opening screen explains the app’s job in simple terms
+- [ ] The opening screen explains the app's job in simple terms
 - [ ] The first useful action is obvious
 - [ ] Onboarding is short, skippable, or easy to revisit
 - [ ] The app teaches by doing, not by dumping long instructions up front
@@ -131,7 +157,7 @@ If any of these are present, the app flow fails.
 - [ ] The app opens with a dense instructional wall before the user can do anything
 - [ ] The user has to remember task rules from a previous screen
 - [ ] The current state of the system is unclear
-- [ ] Important temporary information appears outside the user’s main eye-line
+- [ ] Important temporary information appears outside the user's main eye-line
 - [ ] Key actions are icon-only, ambiguous, or visually hidden
 - [ ] Core signals rely on colour alone
 - [ ] Text contrast is weak or controls are too small to tap reliably
@@ -166,7 +192,7 @@ If any of these are present, the app flow fails.
 - [ ] Dense theory text inside the active training flow
 - [ ] Requiring users to remember scoring rules, icons, or state meanings
 - [ ] Overstimulating feedback that competes with the task itself
-- [ ] Treating “engagement” as pressure rather than usable, meaningful participation
+- [ ] Treating "engagement" as pressure rather than usable, meaningful participation
 - [ ] Medical-sounding claims for non-medical features
 - [ ] Tiny metadata, weak contrast, or cramped cards in high-load screens
 
@@ -176,8 +202,8 @@ If any of these are present, the app flow fails.
 
 Use this if you want a quick decision.
 
-- **Pass** = all Critical checks pass, no red flags, and 18–24 standard checks pass
-- **Borderline** = all Critical checks pass, no red flags, and 14–17 standard checks pass
+- **Pass** = all Critical checks pass, no red flags, and 18-24 standard checks pass
+- **Borderline** = all Critical checks pass, no red flags, and 14-17 standard checks pass
 - **Fail** = any Critical check fails, any red flag appears, or fewer than 14 standard checks pass
 
 ---
@@ -224,4 +250,5 @@ Suggested workflow:
 
 ## One-line reminder
 
-**Intervention apps should feel easy to enter, easy to follow, and easy to trust — even when the task itself is demanding.**
+**Intervention apps should feel easy to enter, easy to follow, and easy to trust - even when the task itself is demanding.**
+
