@@ -1,0 +1,387 @@
+/* ============================================================
+   IQ MINDWARE - refunds.css  v1.0
+   Scope: /refunds/ - Refund and Cancellation Policy.
+   Requires: brand.css loaded first.
+   Mirrors terms.css / privacy.css layout.
+   Adds: at-a-glance 4-card grid, timeline component,
+         non-refundable list, how-to steps.
+   ============================================================ */
+
+
+/* ============================================================
+   1. PAGE TOKENS
+   ============================================================ */
+:root {
+  --rf-surface:       #eceef2;
+  --rf-card:          #ffffff;
+  --rf-card-bdr:      rgba(0,0,0,.08);
+  --rf-rule:          rgba(0,0,0,.09);
+
+  /* Glance card accents */
+  --rf-g1:            #22AAFF;   /* 14-day software */
+  --rf-g2:            #2e7d32;   /* 48h coaching full */
+  --rf-g3:            #b45309;   /* after first session */
+  --rf-g4:            #a78bfa;   /* upgrade credit */
+
+  /* Shared callout tokens (same as terms/privacy) */
+  --rf-amber-bg:      rgba(180,83,9,.05);
+  --rf-amber-bdr:     rgba(180,83,9,.18);
+  --rf-amber-text:    #92400e;
+  --rf-green-bg:      rgba(46,125,50,.05);
+  --rf-green-bdr:     rgba(46,125,50,.20);
+  --rf-green-text:    #2e7d32;
+  --rf-blue-bg:       rgba(34,170,255,.06);
+  --rf-blue-bdr:      rgba(34,170,255,.20);
+  --rf-blue-text:     #1a6eb0;
+}
+
+
+/* ============================================================
+   2. PAGE SHELL
+   ============================================================ */
+body.refunds  { background: var(--rf-surface); }
+.refunds-page { padding-top: 64px; }
+
+
+/* ============================================================
+   3. HERO
+   ============================================================ */
+.rf-hero {
+  background:
+    radial-gradient(ellipse 700px 420px at 0% 70%, rgba(34,170,255,.08), transparent 55%),
+    radial-gradient(ellipse 500px 300px at 100% 20%, rgba(204,255,102,.05), transparent 50%),
+    var(--card-dark);
+  border-bottom: 2px solid rgba(255,255,255,.06);
+  padding: 80px var(--gutter) 48px;
+}
+.rf-hero-inner { max-width: var(--max-w); margin: 0 auto; }
+.rf-hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--cyan-lt); display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.rf-hero-eyebrow::before {
+  content: ''; display: inline-block; width: 18px; height: 1.5px;
+  background: var(--cyan); flex-shrink: 0;
+}
+.rf-hero-title {
+  font-size: clamp(26px, 4vw, 48px);
+  font-weight: 800; letter-spacing: -.024em; line-height: 1.07;
+  color: var(--tc); margin-bottom: 14px;
+}
+.rf-hero-title em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--lime), #22AAFF);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.rf-hero-meta {
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.rf-hero-meta-item {
+  display: flex; align-items: center; gap: 7px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px; letter-spacing: .08em; color: var(--tcf);
+}
+.rf-hero-meta-item strong { color: var(--tcm); font-weight: 500; }
+.rf-hero-meta-dot {
+  width: 3px; height: 3px; border-radius: 50%;
+  background: rgba(255,255,255,.20); flex-shrink: 0;
+}
+.rf-hero-sub {
+  font-size: 14px; color: var(--tcm); max-width: 60ch; line-height: 1.74;
+}
+.rf-hero-sub strong { color: var(--tc); }
+
+
+/* ============================================================
+   4. AT-A-GLANCE CARDS
+   ============================================================ */
+.rf-glance {
+  background: var(--rf-surface);
+  border-bottom: 1px solid var(--rf-rule);
+  padding: 44px var(--gutter) 48px;
+}
+.rf-glance-inner { max-width: var(--max-w); margin: 0 auto; }
+.rf-glance-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--blue-dp); display: block; margin-bottom: 16px;
+}
+.rf-glance-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.rf-glance-card {
+  background: var(--rf-card);
+  border: 1.5px solid var(--rf-card-bdr);
+  border-radius: 14px;
+  padding: 20px 18px 18px;
+  border-top: 3px solid var(--gc-accent, #22AAFF);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.rf-glance-icon  { font-size: 20px; }
+.rf-glance-rule  {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  color: var(--gc-accent, #22AAFF); margin-bottom: 2px;
+}
+.rf-glance-title { font-size: 13px; font-weight: 800; color: var(--tl); line-height: 1.25; }
+.rf-glance-text  { font-size: 12px; color: var(--tlm); line-height: 1.62; }
+
+
+/* ============================================================
+   5. MAIN LAYOUT
+   ============================================================ */
+.rf-layout {
+  max-width: var(--max-w); margin: 0 auto;
+  padding: 48px var(--gutter) 80px;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 52px; align-items: start;
+}
+
+
+/* ============================================================
+   6. SIDEBAR TOC
+   ============================================================ */
+.rf-sidebar { position: sticky; top: 92px; }
+.rf-toc {
+  background: var(--rf-card);
+  border: 1.5px solid var(--rf-card-bdr);
+  border-radius: 12px; overflow: hidden;
+}
+.rf-toc-hd {
+  padding: 11px 16px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--tlf);
+  background: rgba(0,0,0,.02);
+}
+.rf-toc-list { list-style: none; padding: 8px 0; }
+.rf-toc-link {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 6px 16px;
+  font-size: 12px; color: var(--tlm); text-decoration: none;
+  border-left: 2px solid transparent; line-height: 1.4;
+  transition: color var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+}
+.rf-toc-link:hover  { color: var(--tl); background: rgba(0,0,0,.025); border-left-color: rgba(34,170,255,.40); }
+.rf-toc-link.active { color: var(--blue-dp); border-left-color: var(--cyan); font-weight: 700; background: rgba(34,170,255,.04); }
+.rf-toc-link:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }
+.rf-toc-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; color: var(--tlf); flex-shrink: 0; margin-top: 2px; min-width: 14px;
+}
+.rf-toc-footer {
+  padding: 10px 16px;
+  border-top: 1px solid rgba(0,0,0,.08);
+  font-size: 11px; color: var(--tlf); line-height: 1.60;
+}
+.rf-toc-footer a {
+  color: var(--blue-dp); font-weight: 700; text-decoration: none;
+  border-bottom: 1px solid rgba(39,100,183,.20);
+}
+.rf-toc-footer a:hover { border-bottom-color: var(--blue-dp); }
+
+
+/* ============================================================
+   7. DOCUMENT BODY
+   ============================================================ */
+.rf-doc { min-width: 0; }
+
+.rf-section { margin-bottom: 44px; scroll-margin-top: 100px; }
+.rf-section-hd {
+  display: flex; align-items: baseline; gap: 12px;
+  margin-bottom: 14px; padding-bottom: 10px;
+  border-bottom: 2px solid rgba(0,0,0,.09);
+}
+.rf-section-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; font-weight: 700; letter-spacing: .06em; color: var(--tlf); flex-shrink: 0;
+}
+.rf-section-title {
+  font-size: 18px; font-weight: 800;
+  color: var(--tl); letter-spacing: -.014em; line-height: 1.2;
+}
+
+/* Prose */
+.rf-prose {
+  font-size: 14.5px; color: var(--tlm); line-height: 1.80;
+}
+.rf-prose p { margin-bottom: 13px; }
+.rf-prose p:last-child { margin-bottom: 0; }
+.rf-prose strong { color: var(--tl); }
+.rf-prose a {
+  color: var(--blue-dp); font-weight: 700; text-decoration: none;
+  border-bottom: 1px solid rgba(39,100,183,.22);
+}
+.rf-prose a:hover { border-bottom-color: var(--blue-dp); }
+.rf-prose ul { padding-left: 20px; margin-bottom: 13px; margin-top: 4px; }
+.rf-prose li { margin-bottom: 6px; }
+
+/* Callouts */
+.rf-callout {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 16px; border-radius: 10px; margin: 16px 0;
+}
+.rf-callout--amber  { background: var(--rf-amber-bg);  border: 1px solid var(--rf-amber-bdr);  }
+.rf-callout--green  { background: var(--rf-green-bg);  border: 1px solid var(--rf-green-bdr);  }
+.rf-callout--blue   { background: var(--rf-blue-bg);   border: 1px solid var(--rf-blue-bdr);   }
+.rf-callout-icon { font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+.rf-callout-text { font-size: 13.5px; line-height: 1.65; }
+.rf-callout--amber .rf-callout-text { color: var(--rf-amber-text); }
+.rf-callout--green .rf-callout-text { color: var(--rf-green-text); }
+.rf-callout--blue  .rf-callout-text { color: var(--rf-blue-text);  }
+.rf-callout-text strong { color: inherit; }
+.rf-callout-text a {
+  color: inherit; font-weight: 700; text-decoration: none;
+  border-bottom: 1px solid currentColor; opacity: .7;
+}
+.rf-callout-text a:hover { opacity: 1; }
+
+/* Definition rows */
+.rf-defs { margin: 12px 0 16px; display: flex; flex-direction: column; }
+.rf-def-row {
+  display: grid; grid-template-columns: 180px 1fr;
+  padding: 9px 0; border-bottom: 1px solid rgba(0,0,0,.07);
+  gap: 16px; align-items: baseline;
+}
+.rf-def-row:first-child { border-top: 1px solid rgba(0,0,0,.07); }
+.rf-def-key {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px; letter-spacing: .07em; color: var(--tlf);
+  text-transform: uppercase; font-weight: 500;
+}
+.rf-def-val { font-size: 14px; color: var(--tlm); line-height: 1.55; }
+.rf-def-val a { color: var(--blue-dp); font-weight: 700; text-decoration: none; border-bottom: 1px solid rgba(39,100,183,.22); }
+.rf-def-val a:hover { border-bottom-color: var(--blue-dp); }
+.rf-def-val strong { color: var(--tl); }
+
+/* Coaching refund timeline */
+.rf-timeline { display: flex; flex-direction: column; gap: 0; margin: 16px 0; }
+.rf-timeline-row {
+  display: flex; gap: 16px; align-items: stretch;
+}
+.rf-timeline-spine {
+  display: flex; flex-direction: column; align-items: center;
+  flex-shrink: 0; width: 32px;
+}
+.rf-timeline-dot {
+  width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
+  border: 2px solid transparent; margin-top: 16px;
+}
+.rf-timeline-line {
+  width: 2px; flex: 1; min-height: 12px; margin-bottom: -2px;
+}
+.rf-timeline-row:last-child .rf-timeline-line { display: none; }
+
+.rf-timeline-card {
+  flex: 1; background: var(--rf-card);
+  border: 1.5px solid var(--rf-card-bdr);
+  border-radius: 12px; padding: 14px 18px; margin-bottom: 10px;
+  border-left: 3px solid transparent;
+}
+.rf-timeline-row--green .rf-timeline-dot  { background: var(--rf-green-text); border-color: var(--rf-green-text); }
+.rf-timeline-row--green .rf-timeline-line { background: rgba(46,125,50,.20); }
+.rf-timeline-row--green .rf-timeline-card { border-left-color: var(--rf-green-text); }
+.rf-timeline-row--amber .rf-timeline-dot  { background: var(--rf-amber-text); border-color: var(--rf-amber-text); }
+.rf-timeline-row--amber .rf-timeline-line { background: rgba(180,83,9,.20); }
+.rf-timeline-row--amber .rf-timeline-card { border-left-color: var(--rf-amber-text); }
+.rf-timeline-row--red   .rf-timeline-dot  { background: #dc2626; border-color: #dc2626; }
+.rf-timeline-row--red   .rf-timeline-line { background: rgba(220,38,38,.20); }
+.rf-timeline-row--red   .rf-timeline-card { border-left-color: #dc2626; }
+
+.rf-timeline-when {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--tlf); margin-bottom: 4px; display: block;
+}
+.rf-timeline-rule { font-size: 14px; font-weight: 800; color: var(--tl); margin-bottom: 4px; }
+.rf-timeline-desc { font-size: 13px; color: var(--tlm); line-height: 1.60; }
+
+/* How-to request steps */
+.rf-steps { display: flex; flex-direction: column; gap: 10px; }
+.rf-step {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: var(--rf-card);
+  border: 1.5px solid var(--rf-card-bdr);
+  border-radius: 12px; padding: 16px 20px;
+}
+.rf-step-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--rf-blue-bg); border: 1.5px solid var(--rf-blue-bdr);
+  display: grid; place-items: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; font-weight: 700; color: var(--rf-blue-text);
+  flex-shrink: 0;
+}
+.rf-step-label { font-size: 13.5px; font-weight: 800; color: var(--tl); margin-bottom: 3px; }
+.rf-step-text  { font-size: 13px; color: var(--tlm); line-height: 1.60; }
+.rf-step-text a { color: var(--blue-dp); font-weight: 700; text-decoration: none; border-bottom: 1px solid rgba(39,100,183,.22); }
+.rf-step-text a:hover { border-bottom-color: var(--blue-dp); }
+.rf-step-text code {
+  font-family: 'DM Mono', monospace;
+  font-size: 11.5px; padding: 1px 6px; border-radius: 4px;
+  background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.09); color: var(--tl);
+}
+
+/* Non-refundable list */
+.rf-nonrefund-list { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+.rf-nonrefund-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 11px 14px;
+  background: rgba(220,38,38,.04);
+  border: 1.5px solid rgba(220,38,38,.14);
+  border-radius: 8px;
+}
+.rf-nonrefund-icon { font-size: 13px; flex-shrink: 0; color: #b91c1c; margin-top: 2px; }
+.rf-nonrefund-text { font-size: 13.5px; color: var(--tlm); line-height: 1.60; }
+.rf-nonrefund-text strong { color: var(--tl); }
+
+/* Policy links */
+.rf-policy-links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.rf-policy-link {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 8px; min-height: 40px;
+  font-size: 12.5px; font-weight: 800;
+  background: var(--rf-card); border: 1.5px solid var(--rf-card-bdr);
+  color: var(--blue-dp); text-decoration: none;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.rf-policy-link:hover { background: var(--rf-blue-bg); border-color: var(--rf-blue-bdr); }
+.rf-policy-link:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+.rf-policy-link::before { content: '->'; font-size: 11px; color: var(--tlf); }
+
+/* Divider + updated stamp */
+.rf-divider { border: none; border-top: 1px solid rgba(0,0,0,.08); margin: 0 0 44px; }
+.rf-updated {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 12px; border-radius: 6px;
+  background: rgba(0,0,0,.04); border: 1px solid rgba(0,0,0,.08);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: .07em; color: var(--tlf);
+  margin-bottom: 32px;
+}
+.rf-updated-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); flex-shrink: 0; }
+
+
+/* ============================================================
+   8. RESPONSIVE
+   ============================================================ */
+@media (max-width: 1050px) {
+  .rf-glance-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 1000px) {
+  .rf-layout { grid-template-columns: 190px 1fr; gap: 36px; }
+}
+@media (max-width: 800px) {
+  .rf-layout  { grid-template-columns: 1fr; }
+  .rf-sidebar { display: none; }
+}
+@media (max-width: 600px) {
+  .rf-hero         { padding: 80px var(--gutter) 36px; }
+  .rf-glance-grid  { grid-template-columns: 1fr; }
+  .rf-def-row      { grid-template-columns: 130px 1fr; }
+  .rf-step         { flex-direction: column; gap: 10px; }
+}
