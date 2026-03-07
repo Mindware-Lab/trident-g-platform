@@ -2379,6 +2379,7 @@
       const [showSplash, setShowSplash] = useState(true);
       const [draftByKey, setDraftByKey] = useState({});
       const [showAdminHelp, setShowAdminHelp] = useState(false);
+      const [showUsageHelp, setShowUsageHelp] = useState(false);
       const [activePanel, setActivePanel] = useState("tests");
       const [repeatDeckIndex, setRepeatDeckIndex] = useState(0);
       const [outcomeDeckIndex, setOutcomeDeckIndex] = useState(0);
@@ -2405,6 +2406,15 @@
         return () => window.removeEventListener("keydown", onKeyDown);
       }, [showAdminHelp]);
 
+      useEffect(() => {
+        if(!showUsageHelp) return;
+        const onKeyDown = (event) => {
+          if(event.key === "Escape") setShowUsageHelp(false);
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+      }, [showUsageHelp]);
+
       const outcomeCards = useMemo(() => OUTCOME_CARD_DEFS.map((def) => buildOutcomeCardState(def, state)), [state]);
       const repeatableCards = useMemo(() => REPEATABLE_CARD_DEFS.map((def) => buildRepeatableCardState(def, state)), [state]);
       const outcomeCompleted = outcomeCards.filter((card) => card.complete).length;
@@ -2412,19 +2422,19 @@
       const requiredOutcomeCards = outcomeCards.filter((card) => card.id !== "outcome_mensa");
       const requiredBaselineDone = requiredOutcomeCards.filter((card) => card.baseline.hasCompletedScore).length;
       const requiredPostDone = requiredOutcomeCards.filter((card) => card.post.hasCompletedScore).length;
-      let nextActionText = "Do this now: complete your baseline programme tests (SgS-12 A and EDHS baseline).";
+      let nextActionText = "Next step: run your baseline tests now (SgS-12 A and EDHS), then return and save scores.";
       if(requiredBaselineDone >= requiredOutcomeCards.length){
-        nextActionText = "Do this now: keep weekly repeatables current (Psi-CBS and CRS-10) while training.";
+        nextActionText = "Next step: keep weekly trackers current (Psi-CBS and CRS-10) during training.";
       }
       if(trackersDue === 0 && requiredBaselineDone >= requiredOutcomeCards.length && requiredPostDone < requiredOutcomeCards.length){
-        nextActionText = "Do this now: when your programme block is complete, run post-tests (SgS-12 B and EDHS post).";
+        nextActionText = "Next step: at programme end, run post-tests (SgS-12 B and EDHS post), then save results.";
       }
       if(requiredPostDone >= requiredOutcomeCards.length){
-        nextActionText = "Do this now: core pre/post outcomes are complete. Maintain repeatables and export your progress trail.";
+        nextActionText = "Core pre/post tests are complete. Maintain repeatables and export your progress trail.";
       }
 
       const panelHelpText = activePanel === "tests"
-        ? "Run the test, enter score, then press Save entry. Keep conditions stable for fair comparison."
+        ? "Open test in a new tab, complete it, return here, enter score, then press Save entry."
         : activePanel === "results"
           ? "Use trend and pre/post deltas for practical progress only; these are non-clinical tracking outputs."
           : activePanel === "validation"
@@ -2670,15 +2680,12 @@
                   <h1 className="panelAppTitle">G Tracker Test Battery</h1>
                 </div>
               </div>
-              <p className="p">Track outcomes before and after training, plus repeatable weekly trackers.</p>
+              <p className="p">Use 3 steps: Baseline (once) -> Weekly trackers -> Post-tests (once).</p>
+                <div className="btnRow" style={{ marginTop: "6px" }}>
+                  <button className="btn btnSecondary panelMiniBtns" onClick={() => setShowUsageHelp(true)}>How to use (30s)</button>
+                </div>
                 <div className="progressStrip">
                   Core baseline: {requiredBaselineDone}/{requiredOutcomeCards.length}  -  Core post: {requiredPostDone}/{requiredOutcomeCards.length}  -  Weekly due: {trackersDue}
-                </div>
-                <div className="howCard howCardOptional">
-                  <p className="howTitle">How G Tracker works</p>
-                  <p className="howLine"><strong>Programme tests (before/after):</strong> SgS-12 A/B + EDHS (Mensa pair optional).</p>
-                  <p className="howLine"><strong>Repeatable tests:</strong> Psi-CBS + CRS-10 weekly during training.</p>
-                  <p className="howLine"><strong>Conditions:</strong> quiet space, no interruptions, same setup where possible.</p>
                 </div>
                 <p className="nextAction">{nextActionText}</p>
                 <p className="sectionSub sectionSubOptional" style={{ marginTop: "8px" }}>
@@ -2979,6 +2986,38 @@
                       Permanently clears all saved tracker entries, notes, cadence settings, and programme settings for this tracker in local storage.
                       This cannot be undone, so export first if you may need your data later.
                     </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showUsageHelp && (
+              <div className="adminHelpOverlay" role="dialog" aria-modal="true" aria-labelledby="usageHelpTitle" onClick={() => setShowUsageHelp(false)}>
+                <div className="adminHelpModal" onClick={(event) => event.stopPropagation()}>
+                  <div className="adminHelpTop">
+                    <h3 id="usageHelpTitle" className="adminHelpTitle">How to use G Tracker</h3>
+                    <button className="btn btnSecondary" onClick={() => setShowUsageHelp(false)}>Close</button>
+                  </div>
+                  <p className="adminHelpLead">Fast setup: what to do, in order.</p>
+                  <div className="adminHelpBlock">
+                    <p className="adminHelpLabel">1) Baseline (before training)</p>
+                    <p className="adminHelpText">Complete SgS-12 A and EDHS baseline once.</p>
+                  </div>
+                  <div className="adminHelpBlock">
+                    <p className="adminHelpLabel">2) Weekly while training</p>
+                    <p className="adminHelpText">Complete Psi-CBS and CRS-10 on your set cadence.</p>
+                  </div>
+                  <div className="adminHelpBlock">
+                    <p className="adminHelpLabel">3) Post-tests (programme end)</p>
+                    <p className="adminHelpText">Complete SgS-12 B and EDHS post once.</p>
+                  </div>
+                  <div className="adminHelpBlock">
+                    <p className="adminHelpLabel">Save flow (every time)</p>
+                    <p className="adminHelpText">Open test in a new tab, complete it, return here, enter score, then press Save entry.</p>
+                  </div>
+                  <div className="adminHelpBlock adminHelpWarn">
+                    <p className="adminHelpLabel">Scope and validation</p>
+                    <p className="adminHelpText">G Tracker supports non-clinical progress tracking. Open the Validation tab for evidence context and source links.</p>
                   </div>
                 </div>
               </div>

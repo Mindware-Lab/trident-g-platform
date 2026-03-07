@@ -44,6 +44,7 @@ Required shell dimensions:
 - Desktop/laptop breakpoint: `@media (min-width: 960px)`
 - Desktop shell width: `min(900px, calc(100% - 24px))`
 - Desktop shell height: `calc(100vh - 36px)`
+- Desktop compact-height mode: `@media (max-height: 940px)` with shell height `calc(100vh - 18px)` and reduced vertical spacing
 - Mobile breakpoint: `@media (max-width: 520px)`
 - Mobile shell width: `100%`
 - Mobile shell height: `100dvh`
@@ -251,4 +252,3 @@ Suggested workflow:
 ## One-line reminder
 
 **Intervention apps should feel easy to enter, easy to follow, and easy to trust - even when the task itself is demanding.**
-
