@@ -248,6 +248,106 @@
       gap: 8px;
     }
 
+    .howCard{
+      margin-top: 8px;
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.014));
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .howTitle{
+      margin: 0;
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--brand-text);
+      letter-spacing: .01em;
+      text-transform: uppercase;
+    }
+
+    .howLine{
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--brand-text-muted);
+    }
+
+    .nextAction{
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(204,255,102,.30);
+      background: rgba(204,255,102,.12);
+      color: var(--brand-text);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .validationGrid{
+      display: grid;
+      gap: 8px;
+    }
+
+    .validationRow{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.012));
+      padding: 8px 10px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .validationHead{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .validationTitle{
+      margin: 0;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--brand-text);
+    }
+
+    .validationBadge{
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+    }
+
+    .validationBadge.strong{
+      color: #d7ff97;
+      background: rgba(204,255,102,.14);
+      border-color: rgba(204,255,102,.30);
+    }
+
+    .validationBadge.moderate{
+      color: #9ed7ff;
+      background: rgba(110,198,255,.13);
+      border-color: rgba(110,198,255,.30);
+    }
+
+    .validationBadge.context{
+      color: #ffd49c;
+      background: rgba(255,196,120,.12);
+      border-color: rgba(255,196,120,.30);
+    }
+
+    .validationText{
+      margin: 0;
+      font-size: 12px;
+      color: var(--brand-text-muted);
+      line-height: 1.35;
+    }
+
     .gt-brand-row{
       display: flex;
       align-items: center;
@@ -324,7 +424,7 @@
       right: 0;
       bottom: 0;
       display: grid;
-      grid-template-columns: repeat(5, minmax(0,1fr));
+      grid-template-columns: repeat(4, minmax(0,1fr));
       gap: 2px;
       padding: 8px 8px 12px;
       border-top: 1px solid rgba(255,255,255,.08);
@@ -1268,7 +1368,7 @@
         </span>
         <span>Results</span>
       </button>
-      <a class="gt-tab" href="https://www.iqmindware.com/g-tracker-validation" target="_blank" rel="noopener noreferrer" aria-label="Open validation page in a new tab">
+      <button class="gt-tab" type="button" data-gt-nav="validation" aria-label="Open validation panel">
         <span class="gt-tab-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
             <path d="M12 3 4.8 6v5.2c0 4.2 2.8 8 7.2 9.8 4.4-1.8 7.2-5.6 7.2-9.8V6z"></path>
@@ -1276,18 +1376,7 @@
           </svg>
         </span>
         <span>Validation</span>
-      </a>
-      <a class="gt-tab" href="https://www.iqmindware.com" target="_blank" rel="noopener noreferrer" aria-label="Open IQ Mindware website in a new tab">
-        <span class="gt-tab-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24">
-            <rect x="4" y="4" width="6.5" height="6.5" rx="1.4"></rect>
-            <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.4"></rect>
-            <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.4"></rect>
-            <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.4"></rect>
-          </svg>
-        </span>
-        <span>G Apps</span>
-      </a>
+      </button>
       <button class="gt-tab" type="button" data-gt-nav="settings" aria-label="Open settings panel">
         <span class="gt-tab-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24">
@@ -1340,6 +1429,43 @@
       "Keep sleep and caffeine conditions similar.",
       "Avoid testing right after heavy exercise or alcohol.",
       "If you are ill, very sleep deprived, or unusually stressed, log it in notes."
+    ];
+    const TEST_CONDITIONS = [
+      "Quiet room, minimal interruptions, stable internet.",
+      "Use the same device and time-of-day where possible.",
+      "Use glasses/contacts if you normally do for screen tasks.",
+      "Avoid heavy fatigue, alcohol, or immediately post-exercise testing.",
+      "Do not use assistance during test completion."
+    ];
+    const VALIDATION_SUMMARY = [
+      {
+        id: "v-sgs",
+        test: "SgS-12 (A/B)",
+        status: "moderate",
+        label: "Internal benchmark",
+        note: "ICAR-style reasoning item set used for before/after tracking. Treat as programme outcome indicator, not a clinical diagnosis."
+      },
+      {
+        id: "v-crs",
+        test: "CRS-10",
+        status: "strong",
+        label: "Published support",
+        note: "Tracks resilience under cognitive pressure. Suitable for repeated in-program monitoring."
+      },
+      {
+        id: "v-psi",
+        test: "Psi-CBS",
+        status: "moderate",
+        label: "Operational tracker",
+        note: "Self-report bandwidth metric designed for repeatable applied-cognition logging."
+      },
+      {
+        id: "v-mensa",
+        test: "Mensa Online forms",
+        status: "context",
+        label: "External context only",
+        note: "Optional benchmark only. Use long retest spacing to reduce practice effects."
+      }
     ];
 
     const TIMEPOINT_LABELS = {
@@ -2030,6 +2156,19 @@
       const repeatableCards = useMemo(() => REPEATABLE_CARD_DEFS.map((def) => buildRepeatableCardState(def, state)), [state]);
       const outcomeCompleted = outcomeCards.filter((card) => card.complete).length;
       const trackersDue = repeatableCards.filter((card) => card.due.isDue).length;
+      const requiredOutcomeCards = outcomeCards.filter((card) => card.id !== "outcome_mensa");
+      const requiredBaselineDone = requiredOutcomeCards.filter((card) => card.baseline.hasCompletedScore).length;
+      const requiredPostDone = requiredOutcomeCards.filter((card) => card.post.hasCompletedScore).length;
+      let nextActionText = "Do this now: complete your baseline programme tests (SgS-12 A and EDHS baseline).";
+      if(requiredBaselineDone >= requiredOutcomeCards.length){
+        nextActionText = "Do this now: keep weekly repeatables current (Psi-CBS and CRS-10) while training.";
+      }
+      if(trackersDue === 0 && requiredBaselineDone >= requiredOutcomeCards.length && requiredPostDone < requiredOutcomeCards.length){
+        nextActionText = "Do this now: when your programme block is complete, run post-tests (SgS-12 B and EDHS post).";
+      }
+      if(requiredPostDone >= requiredOutcomeCards.length){
+        nextActionText = "Do this now: core pre/post outcomes are complete. Maintain repeatables and export your progress trail.";
+      }
 
       useEffect(() => {
         const navButtons = Array.from(document.querySelectorAll(".gt-tab[data-gt-nav]"));
@@ -2247,10 +2386,17 @@
               </div>
               <p className="p">Track outcomes before and after training, plus repeatable weekly trackers.</p>
                 <div className="progressStrip">
-                  Outcome tests: {outcomeCompleted}/{OUTCOME_CARD_DEFS.length} complete  -  Trackers: {trackersDue} due
+                  Core baseline: {requiredBaselineDone}/{requiredOutcomeCards.length}  -  Core post: {requiredPostDone}/{requiredOutcomeCards.length}  -  Weekly due: {trackersDue}
                 </div>
+                <div className="howCard">
+                  <p className="howTitle">How G Tracker works</p>
+                  <p className="howLine"><strong>Programme tests (before/after):</strong> SgS-12 A/B + EDHS (Mensa pair optional).</p>
+                  <p className="howLine"><strong>Repeatable tests:</strong> Psi-CBS + CRS-10 weekly during training.</p>
+                  <p className="howLine"><strong>Conditions:</strong> quiet space, no interruptions, same setup where possible.</p>
+                </div>
+                <p className="nextAction">{nextActionText}</p>
                 <p className="sectionSub" style={{ marginTop: "8px" }}>
-                  {activePanel === "tests" ? "Tests panel active" : activePanel === "results" ? "Results panel active" : "Settings panel active"}
+                  {activePanel === "tests" ? "Tests panel active" : activePanel === "results" ? "Results panel active" : activePanel === "validation" ? "Validation panel active" : "Settings panel active"}
                 </p>
 
                 {toast && (
@@ -2410,6 +2556,28 @@
                 </>
               )}
 
+              {activePanel === "validation" && (
+                <div className="card">
+                  <h2 className="sectionHeader">Validation status</h2>
+                  <p className="sectionSub">Summary labels for practical interpretation. Open full references for detail.</p>
+                  <div className="validationGrid" style={{ marginTop: "10px" }}>
+                    {VALIDATION_SUMMARY.map((item) => (
+                      <div className="validationRow" key={item.id}>
+                        <div className="validationHead">
+                          <p className="validationTitle">{item.test}</p>
+                          <span className={`validationBadge ${item.status}`}>{item.label}</span>
+                        </div>
+                        <p className="validationText">{item.note}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="btnRow" style={{ marginTop: "10px" }}>
+                    <a className="btn btnSecondary" href="https://www.iqmindware.com/g-tracker-validation" target="_blank" rel="noopener noreferrer">Open full validation page</a>
+                    <button className="btn btnSecondary" onClick={() => setActivePanel("tests")}>Back to tests</button>
+                  </div>
+                </div>
+              )}
+
               {activePanel === "settings" && (
                 <div className="card adminCard">
                   <div className="adminHeaderRow">
@@ -2456,6 +2624,16 @@
                     <button className="btn btnSecondary" onClick={exportJSON}>Export JSON</button>
                     <button className="btn btnSecondary" onClick={importJSON}>Import JSON</button>
                     <button className="btn btnSecondary" onClick={resetAll}>Reset hub data</button>
+                  </div>
+                  <div className="howCard">
+                    <p className="howTitle">Test conditions checklist</p>
+                    {TEST_CONDITIONS.map((line, idx) => (
+                      <p className="howLine" key={`cond-${idx}`}>- {line}</p>
+                    ))}
+                  </div>
+                  <div className="btnRow" style={{ marginTop: "10px" }}>
+                    <a className="btn btnSecondary" href="https://www.iqmindware.com" target="_blank" rel="noopener noreferrer">Open IQMindware apps</a>
+                    <a className="btn btnSecondary" href="https://www.iqmindware.com/g-tracker-validation" target="_blank" rel="noopener noreferrer">Validation references</a>
                   </div>
                 </div>
               )}
