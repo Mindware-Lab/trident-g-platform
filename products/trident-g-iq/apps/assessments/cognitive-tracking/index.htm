@@ -137,6 +137,58 @@
       overflow: hidden;
     }
 
+    .panelHint{
+      margin: 0;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--brand-border-soft);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      color: var(--brand-text-muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .scopeLine{
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.35;
+      color: var(--brand-text-muted);
+      font-weight: 700;
+    }
+
+    .panelModeRow{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 2px;
+    }
+
+    .panelModeLabel{
+      margin: 0;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+      color: var(--brand-text-label);
+      font-weight: 800;
+    }
+
+    .panelModeButtons{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .panelMiniBtns{
+      min-height: 30px;
+      padding: 5px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
     .deckHeader{
       display: flex;
       align-items: center;
@@ -2132,6 +2184,9 @@
       const [activePanel, setActivePanel] = useState("tests");
       const [repeatDeckIndex, setRepeatDeckIndex] = useState(0);
       const [outcomeDeckIndex, setOutcomeDeckIndex] = useState(0);
+      const [testsViewMode, setTestsViewMode] = useState("guided");
+      const [testsFocus, setTestsFocus] = useState("outcome");
+      const [undoSnapshot, setUndoSnapshot] = useState(null);
 
       useEffect(() => {
         saveState(state);
@@ -2169,6 +2224,14 @@
       if(requiredPostDone >= requiredOutcomeCards.length){
         nextActionText = "Do this now: core pre/post outcomes are complete. Maintain repeatables and export your progress trail.";
       }
+
+      const panelHelpText = activePanel === "tests"
+        ? "Run the test, enter score, then press Save entry. Keep conditions stable for fair comparison."
+        : activePanel === "results"
+          ? "Use trend and pre/post deltas for practical progress only; these are non-clinical tracking outputs."
+          : activePanel === "validation"
+            ? "Validation labels summarise evidence strength for use context. Open full references for details."
+            : "Settings are local to this browser. Export regularly if you want a backup trail.";
 
       useEffect(() => {
         const navButtons = Array.from(document.querySelectorAll(".gt-tab[data-gt-nav]"));
@@ -2218,6 +2281,27 @@
         window.open(test.url, "_blank", "noopener,noreferrer");
       };
 
+      const saveWithUndo = (saveBuilder, undoLabel) => {
+        setState((prev) => {
+          const next = saveBuilder(prev);
+          if(next !== prev){
+            setUndoSnapshot({
+              state: deepClone(prev),
+              label: undoLabel,
+              at: nowISO()
+            });
+          }
+          return next;
+        });
+      };
+
+      const undoLastSave = () => {
+        if(!undoSnapshot?.state) return;
+        setState(normalizeState(undoSnapshot.state));
+        setUndoSnapshot(null);
+        setToast("Reverted last saved entry");
+      };
+
       const saveOutcomeDraft = (card) => {
         const key = `outcome_${card.id}`;
         const draft = getDraft(key);
@@ -2227,13 +2311,15 @@
           setToast("Enter a score or note first");
           return;
         }
-        setState((prev) => saveEntryToState(prev, {
-          testId: card.targetSlot.testId,
-          timepoint: card.targetSlot.timepoint,
-          score: draft.score,
-          notes: draft.notes,
-          mode: "single"
-        }));
+        saveWithUndo((prev) => saveEntryToState(prev, {
+            testId: card.targetSlot.testId,
+            timepoint: card.targetSlot.timepoint,
+            score: draft.score,
+            notes: draft.notes,
+            mode: "single"
+          }),
+          `${card.title} (${card.targetSlot.timepoint})`
+        );
         clearDraft(key);
         setToast(score ? "Saved and marked complete" : "Draft saved");
       };
@@ -2248,13 +2334,15 @@
           return;
         }
         const timepoint = resolveRepeatableTimepoint(card, state);
-        setState((prev) => saveEntryToState(prev, {
-          testId: card.testId,
-          timepoint,
-          score: draft.score,
-          notes: draft.notes,
-          mode: "repeatable"
-        }));
+        saveWithUndo((prev) => saveEntryToState(prev, {
+            testId: card.testId,
+            timepoint,
+            score: draft.score,
+            notes: draft.notes,
+            mode: "repeatable"
+          }),
+          `${card.title} (${timepoint})`
+        );
         clearDraft(key);
         setToast(score ? "Saved and marked complete" : "Draft saved");
       };
@@ -2395,9 +2483,17 @@
                   <p className="howLine"><strong>Conditions:</strong> quiet space, no interruptions, same setup where possible.</p>
                 </div>
                 <p className="nextAction">{nextActionText}</p>
+                <p className="scopeLine">Tracking and skills feedback only. This app does not provide medical or clinical diagnosis.</p>
                 <p className="sectionSub" style={{ marginTop: "8px" }}>
                   {activePanel === "tests" ? "Tests panel active" : activePanel === "results" ? "Results panel active" : activePanel === "validation" ? "Validation panel active" : "Settings panel active"}
                 </p>
+
+                {undoSnapshot?.state && (
+                  <div className="btnRow" style={{ marginTop: "8px" }}>
+                    <button className="btn btnSecondary" onClick={undoLastSave}>Undo last save</button>
+                    <span className="sectionSub" style={{ margin: 0 }}>Last save: {undoSnapshot.label}</span>
+                  </div>
+                )}
 
                 {toast && (
                   <div style={{
@@ -2414,9 +2510,26 @@
             </div>
 
             <div className="gt-panel-viewport">
+              <p className="panelHint">{panelHelpText}</p>
               {activePanel === "tests" && (
                 <>
-                  {activeRepeatCard && (
+                  <div className="card" style={{ padding: "10px" }}>
+                    <div className="panelModeRow">
+                      <p className="panelModeLabel">Tests view</p>
+                      <div className="panelModeButtons">
+                        <button className={`btn ${testsViewMode === "guided" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsViewMode("guided")}>Guided (1 card)</button>
+                        <button className={`btn ${testsViewMode === "all" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsViewMode("all")}>Show both</button>
+                      </div>
+                    </div>
+                    {testsViewMode === "guided" && (
+                      <div className="panelModeButtons">
+                        <button className={`btn ${testsFocus === "outcome" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsFocus("outcome")}>Pre/Post tests</button>
+                        <button className={`btn ${testsFocus === "repeatable" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsFocus("repeatable")}>Repeatables</button>
+                      </div>
+                    )}
+                  </div>
+
+                  {activeRepeatCard && (testsViewMode === "all" || testsFocus === "repeatable") && (
                     <div className="compactCard">
                       <div className="deckHeader">
                         <p className="deckLabel">Repeatable Tracker</p>
@@ -2458,7 +2571,7 @@
                     </div>
                   )}
 
-                  {activeOutcomeCard && (
+                  {activeOutcomeCard && (testsViewMode === "all" || testsFocus === "outcome") && (
                     <div className="compactCard">
                       <div className="deckHeader">
                         <p className="deckLabel">Pre/Post Outcome</p>
