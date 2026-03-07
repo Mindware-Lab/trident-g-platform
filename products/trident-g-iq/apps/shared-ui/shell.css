@@ -128,3 +128,9 @@ body {
   }
 }
 
+@media (min-width: 960px) {
+  /* Zone Coach keeps inline shell width; force desktop expansion without touching app-local inline CSS. */
+  body.zc-rebrand .zoneAppShell {
+    width: min(900px, calc(100% - 24px)) !important;
+  }
+}

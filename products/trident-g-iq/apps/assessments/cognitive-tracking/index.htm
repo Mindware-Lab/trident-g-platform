@@ -18,8 +18,13 @@
 
   <style>
     /* Hub-specific helpers (keeps brand.css clean) */
+    html, body{
+      height: 100%;
+      overflow: hidden;
+    }
+
     body.gt-rebrand{
-      min-height: 100vh;
+      height: 100vh;
       background:
         radial-gradient(920px 460px at 50% -24%, rgba(110,198,255,.24), transparent 58%),
         linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%) !important;
@@ -30,11 +35,12 @@
       font-family: var(--iq-font);
       color: var(--iq-text);
       margin: 0;
+      overflow: hidden;
     }
 
     .gt-shell{
       width: min(470px, calc(100% - 12px));
-      min-height: calc(100vh - 36px);
+      height: calc(100vh - 36px);
       border-radius: 42px;
       border: 1.5px solid rgba(255,255,255,.45);
       overflow: hidden;
@@ -43,6 +49,12 @@
         linear-gradient(180deg, #081326 0%, #050e1f 45%, #031029 100%);
       box-shadow: 0 22px 44px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08);
       position: relative;
+    }
+
+    @media (min-width: 960px){
+      .gt-shell{
+        width: min(900px, calc(100% - 24px));
+      }
     }
 
     .gt-shell::before{
@@ -77,13 +89,163 @@
     }
 
     .ui-screen{
-      min-height: auto;
+      height: 100%;
+      min-height: 0;
       padding-top: 0;
+      display: flex;
+      flex-direction: column;
     }
 
     .ui-content{
       width: 100%;
       padding: 16px 12px 94px;
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #root{
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+    }
+
+    #root > .screen{
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      width: 100%;
+    }
+
+    #root > .screen > .content{
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .gt-panel-viewport{
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .deckHeader{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .deckLabel{
+      margin: 0;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--brand-text-label);
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+
+    .deckControls{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .deckCount{
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--brand-text-muted);
+      min-width: 42px;
+      text-align: center;
+    }
+
+    .deckBtn{
+      min-height: 32px;
+      min-width: 36px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .compactCard{
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border-radius: var(--iq-radius-md, 16px);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border: 1px solid var(--brand-border-soft);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+      overflow: hidden;
+    }
+
+    .compactTitle{
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.15;
+      font-weight: 900;
+      color: var(--z-blue-400);
+    }
+
+    .compactMeta{
+      margin: 0;
+      font-size: 13px;
+      color: var(--brand-text-muted);
+      line-height: 1.35;
+    }
+
+    .compactRow{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .compactMetric{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 10px;
+      padding: 8px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.012));
+    }
+
+    .compactMetricLabel{
+      margin: 0;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--brand-text-label);
+      letter-spacing: .02em;
+    }
+
+    .compactMetricValue{
+      margin: 4px 0 0 0;
+      font-size: 18px;
+      line-height: 1.1;
+      font-weight: 900;
+      color: var(--brand-text);
+      overflow-wrap: anywhere;
+    }
+
+    .compactHistory{
+      margin: 0;
+      font-size: 12px;
+      color: var(--brand-text-muted);
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .compactActions{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .gt-brand-row{
@@ -144,7 +306,7 @@
     }
 
     .screen{
-      min-height: auto;
+      min-height: 0;
     }
 
     .grid { display: grid; gap: 12px; }
@@ -1051,10 +1213,11 @@
     @media (max-width: 520px){
       body.gt-rebrand{
         padding: 0;
+        height: 100dvh;
       }
       .gt-shell{
         width: 100%;
-        min-height: 100vh;
+        height: 100dvh;
         border-radius: 0;
         border: none;
       }
@@ -1135,16 +1298,6 @@
         <span>Settings</span>
       </button>
     </nav>
-    <div id="gtNavOverlay" class="gtNavOverlay" hidden>
-      <div class="gtNavModal" role="dialog" aria-modal="true" aria-labelledby="gtNavTitle">
-        <div class="gtNavTop">
-          <h3 id="gtNavTitle" class="gtNavTitle">Panel</h3>
-          <button type="button" id="gtNavCloseBtn" class="btn btnSecondary">Close</button>
-        </div>
-        <p id="gtNavLead" class="gtNavLead"></p>
-        <div id="gtNavActions" class="gtNavActions"></div>
-      </div>
-    </div>
   </div>
   <script src="../../shared-ui/entitlements-client.js"></script>
   <script src="../../shared-ui/activation-gate.js"></script>
@@ -1168,102 +1321,6 @@
         suiteUrl.hash = window.location.hash || "";
       }
       link.href = suiteUrl.toString();
-    })();
-
-    (() => {
-      const overlay = document.getElementById("gtNavOverlay");
-      const closeBtn = document.getElementById("gtNavCloseBtn");
-      const titleEl = document.getElementById("gtNavTitle");
-      const leadEl = document.getElementById("gtNavLead");
-      const actionsEl = document.getElementById("gtNavActions");
-      const navButtons = Array.from(document.querySelectorAll(".gt-tab[data-gt-nav]"));
-      if(!overlay || !closeBtn || !titleEl || !leadEl || !actionsEl || navButtons.length === 0){
-        return;
-      }
-
-      const PANEL_CONFIG = {
-        tests: {
-          title: "Tests",
-          lead: "Open the test sections quickly from here.",
-          actions: [
-            { label: "Go to Repeatable Trackers", targetId: "repeatableTrackersSection" },
-            { label: "Go to Pre/Post Tests", targetId: "prePostTestsSection" }
-          ]
-        },
-        results: {
-          title: "Results",
-          lead: "Jump to saved scores, trend cards, and comparisons.",
-          actions: [
-            { label: "View Repeatable Tracker Results", targetId: "repeatableTrackersSection" },
-            { label: "View Pre/Post Comparisons", targetId: "prePostTestsSection" }
-          ]
-        },
-        settings: {
-          title: "Settings",
-          lead: "Open tracker controls for export, import, and reset.",
-          actions: [
-            { label: "Open G Tracker Settings", targetId: "gTrackerSettingsSection" }
-          ]
-        }
-      };
-
-      function setActiveTab(tabName){
-        navButtons.forEach((button) => {
-          if(button.dataset.gtNav === tabName){
-            button.classList.add("gt-tab-active");
-          }else{
-            button.classList.remove("gt-tab-active");
-          }
-        });
-      }
-
-      function closeOverlay(){
-        overlay.hidden = true;
-        actionsEl.innerHTML = "";
-      }
-
-      function scrollToSection(targetId){
-        if(!targetId) return;
-        const node = document.getElementById(targetId);
-        if(!node) return;
-        node.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-
-      function openOverlay(panelName){
-        const panel = PANEL_CONFIG[panelName];
-        if(!panel) return;
-        titleEl.textContent = panel.title;
-        leadEl.textContent = panel.lead;
-        actionsEl.innerHTML = "";
-        panel.actions.forEach((action) => {
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "btn btnSecondary gtNavActionBtn";
-          btn.textContent = action.label;
-          btn.addEventListener("click", () => {
-            closeOverlay();
-            setTimeout(() => scrollToSection(action.targetId), 20);
-          });
-          actionsEl.appendChild(btn);
-        });
-        overlay.hidden = false;
-      }
-
-      navButtons.forEach((button) => {
-        button.addEventListener("click", (event) => {
-          event.preventDefault();
-          const panelName = button.dataset.gtNav;
-          setActiveTab(panelName);
-          openOverlay(panelName);
-        });
-      });
-
-      closeBtn.addEventListener("click", closeOverlay);
-      overlay.addEventListener("click", (event) => {
-        if(event.target === overlay){
-          closeOverlay();
-        }
-      });
     })();
 
     const { useEffect, useMemo, useState } = React;
@@ -1945,8 +2002,10 @@
       const [toast, setToast] = useState("");
       const [showSplash, setShowSplash] = useState(true);
       const [draftByKey, setDraftByKey] = useState({});
-      const [openPanels, setOpenPanels] = useState({});
       const [showAdminHelp, setShowAdminHelp] = useState(false);
+      const [activePanel, setActivePanel] = useState("tests");
+      const [repeatDeckIndex, setRepeatDeckIndex] = useState(0);
+      const [outcomeDeckIndex, setOutcomeDeckIndex] = useState(0);
 
       useEffect(() => {
         saveState(state);
@@ -1972,6 +2031,29 @@
       const outcomeCompleted = outcomeCards.filter((card) => card.complete).length;
       const trackersDue = repeatableCards.filter((card) => card.due.isDue).length;
 
+      useEffect(() => {
+        const navButtons = Array.from(document.querySelectorAll(".gt-tab[data-gt-nav]"));
+        if(navButtons.length === 0) return undefined;
+        const onNavClick = (event) => {
+          event.preventDefault();
+          const panelName = event.currentTarget?.dataset?.gtNav;
+          if(panelName){
+            setActivePanel(panelName);
+          }
+        };
+        navButtons.forEach((button) => button.addEventListener("click", onNavClick));
+        return () => {
+          navButtons.forEach((button) => button.removeEventListener("click", onNavClick));
+        };
+      }, []);
+
+      useEffect(() => {
+        const navButtons = Array.from(document.querySelectorAll(".gt-tab[data-gt-nav]"));
+        navButtons.forEach((button) => {
+          button.classList.toggle("gt-tab-active", button.dataset.gtNav === activePanel);
+        });
+      }, [activePanel]);
+
       const getDraft = (key) => draftByKey[key] || { score: "", notes: "" };
       const setDraftField = (key, field, value) => {
         setDraftByKey((prev) => ({
@@ -1989,10 +2071,6 @@
           delete next[key];
           return next;
         });
-      };
-
-      const togglePanel = (panelKey) => {
-        setOpenPanels((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
       };
 
       const openTest = (testId) => {
@@ -2107,6 +2185,34 @@
         setToast("Reset");
       };
 
+      const safeDeckIndex = (index, total) => {
+        if(!total) return 0;
+        return ((index % total) + total) % total;
+      };
+      const repeatIndex = safeDeckIndex(repeatDeckIndex, repeatableCards.length);
+      const outcomeIndex = safeDeckIndex(outcomeDeckIndex, outcomeCards.length);
+      const activeRepeatCard = repeatableCards[repeatIndex] || null;
+      const activeOutcomeCard = outcomeCards[outcomeIndex] || null;
+
+      useEffect(() => {
+        setRepeatDeckIndex((prev) => safeDeckIndex(prev, repeatableCards.length));
+      }, [repeatableCards.length]);
+
+      useEffect(() => {
+        setOutcomeDeckIndex((prev) => safeDeckIndex(prev, outcomeCards.length));
+      }, [outcomeCards.length]);
+
+      const stepDeck = (setter, delta, total) => {
+        if(!total) return;
+        setter((prev) => safeDeckIndex(prev + delta, total));
+      };
+      const activeRepeatDraftKey = activeRepeatCard ? `repeat_${activeRepeatCard.id}` : "";
+      const activeOutcomeDraftKey = activeOutcomeCard ? `outcome_${activeOutcomeCard.id}` : "";
+      const activeRepeatDraft = activeRepeatDraftKey ? getDraft(activeRepeatDraftKey) : { score: "", notes: "" };
+      const activeOutcomeDraft = activeOutcomeDraftKey ? getDraft(activeOutcomeDraftKey) : { score: "", notes: "" };
+      const activeRepeatHistory = activeRepeatCard ? getRepeatableHistory(activeRepeatCard.testId, state).slice(0, 4) : [];
+      const activeOutcomeHistory = activeOutcomeCard ? getOutcomeHistory(activeOutcomeCard, state).slice(0, 4) : [];
+
       if(showSplash){
         return (
           <div className="screen">
@@ -2140,48 +2246,15 @@
                 </div>
               </div>
               <p className="p">Track outcomes before and after training, plus repeatable weekly trackers.</p>
-              <div className="progressStrip">
-                Outcome tests: {outcomeCompleted}/{OUTCOME_CARD_DEFS.length} complete  -  Trackers: {trackersDue} due
-              </div>
-
-              <div className="programSetup">
-                <div className="programGrid">
-                  <label className="programField">
-                    <span className="programLabel">Programme start date (optional)</span>
-                    <input
-                      className="input"
-                      type="date"
-                      value={state.program.startDate || ""}
-                      onChange={(e) => setProgramField("startDate", e.target.value)}
-                    />
-                  </label>
-                  <label className="programField">
-                    <span className="programLabel">Duration (days)</span>
-                    <input
-                      className="input"
-                      type="number"
-                      min={7}
-                      max={365}
-                      value={state.program.durationDays}
-                      onChange={(e) => setProgramField("durationDays", e.target.value)}
-                    />
-                  </label>
-                  <label className="programField">
-                    <span className="programLabel">Milestone mode</span>
-                    <span className="programToggle">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(state.program.useMilestones)}
-                        onChange={(e) => setProgramField("useMilestones", e.target.checked)}
-                      />
-                      Use milestones (Baseline/Midpoint/Post)
-                    </span>
-                  </label>
+                <div className="progressStrip">
+                  Outcome tests: {outcomeCompleted}/{OUTCOME_CARD_DEFS.length} complete  -  Trackers: {trackersDue} due
                 </div>
-              </div>
+                <p className="sectionSub" style={{ marginTop: "8px" }}>
+                  {activePanel === "tests" ? "Tests panel active" : activePanel === "results" ? "Results panel active" : "Settings panel active"}
+                </p>
 
-              {toast && (
-                <div style={{
+                {toast && (
+                  <div style={{
                   marginTop: "10px",
                   padding: "10px 12px",
                   borderRadius: "14px",
@@ -2194,182 +2267,198 @@
               )}
             </div>
 
-            <div id="repeatableTrackersSection" className="card">
-              <h2 className="sectionHeader">Repeatable Trackers</h2>
-              <p className="sectionSub">Latest score + trend + due status in one place.</p>
-              <div className="grid" style={{ marginTop: "10px" }}>
-                {repeatableCards.map((card) => {
-                  const historyKey = `history_${card.id}`;
-                  const detailsKey = `details_${card.id}`;
-                  const draftKey = `repeat_${card.id}`;
-                  const draft = getDraft(draftKey);
-                  const historyRows = getRepeatableHistory(card.testId, state);
-                  const testDef = TEST_BY_ID[card.testId];
-                  const targetTimepoint = resolveRepeatableTimepoint(card, state);
-
-                  return (
-                    <div className="trackerCard" key={card.id}>
+            <div className="gt-panel-viewport">
+              {activePanel === "tests" && (
+                <>
+                  {activeRepeatCard && (
+                    <div className="compactCard">
+                      <div className="deckHeader">
+                        <p className="deckLabel">Repeatable Tracker</p>
+                        <div className="deckControls">
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setRepeatDeckIndex, -1, repeatableCards.length)}>Prev</button>
+                          <span className="deckCount">{repeatIndex + 1}/{repeatableCards.length}</span>
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setRepeatDeckIndex, 1, repeatableCards.length)}>Next</button>
+                        </div>
+                      </div>
                       <div className="cardActions">
-                        <StatusPill status={card.status} />
+                        <StatusPill status={activeRepeatCard.status} />
                         <label className="programToggle" style={{ marginLeft: "auto" }}>
                           Cadence
-                          <select className="input" style={{ minWidth: "140px" }} value={card.cadenceValue} onChange={(e) => setCadence(card.cadenceKey, e.target.value)}>
+                          <select className="input" style={{ minWidth: "130px" }} value={activeRepeatCard.cadenceValue} onChange={(e) => setCadence(activeRepeatCard.cadenceKey, e.target.value)}>
                             {CADENCE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                           </select>
                         </label>
                       </div>
-                      <p className="trackerTitle">{card.title}</p>
-                      <p className="trackerPurpose">{card.purpose}</p>
-                      <div className="metricRow">
-                        <div className="latestBox">
-                          <p className="latestLabel">Latest score</p>
-                          <p className="latestValue">{card.latestScore || "-"}</p>
-                          <p className="latestDate">{card.latestDate ? `Last taken ${formatDate(card.latestDate)}` : "No completed entries yet"}</p>
+                      <p className="compactTitle">{activeRepeatCard.title}</p>
+                      <p className="compactMeta">{activeRepeatCard.purpose}</p>
+                      <div className="compactRow">
+                        <div className="compactMetric">
+                          <p className="compactMetricLabel">Latest score</p>
+                          <p className="compactMetricValue">{activeRepeatCard.latestScore || "-"}</p>
                         </div>
-                        <div className="sparkBox">
-                          <p className="sparkTitle">Recent trend</p>
-                          <Sparkline values={card.numericValues} />
+                        <div className="compactMetric">
+                          <p className="compactMetricLabel">Due status</p>
+                          <p className="compactMetricValue">{activeRepeatCard.due.text}</p>
                         </div>
                       </div>
-                      <p className="dueLine">{card.due.text}</p>
-                      <p className="logHint">Log entry for: {TIMEPOINT_LABELS[targetTimepoint] || targetTimepoint}</p>
                       <div className="twoCol">
-                        <input className="input inputScoreReady" placeholder="Score" value={draft.score} onChange={(e) => setDraftField(draftKey, "score", e.target.value)} />
-                        <input className="input" placeholder="Notes (optional)" value={draft.notes} onChange={(e) => setDraftField(draftKey, "notes", e.target.value)} />
+                        <input className="input inputScoreReady" placeholder="Score" value={activeRepeatDraft.score} onChange={(e) => setDraftField(activeRepeatDraftKey, "score", e.target.value)} />
+                        <input className="input" placeholder="Notes (optional)" value={activeRepeatDraft.notes} onChange={(e) => setDraftField(activeRepeatDraftKey, "notes", e.target.value)} />
                       </div>
-                      <div className="cardActions">
-                        <button className="btn btnPrimary" onClick={() => openTest(card.testId)}>Log now</button>
-                        <button className="btn btnSecondary" onClick={() => saveRepeatableDraft(card)}>Save</button>
-                        <button className="linkBtn" onClick={() => togglePanel(historyKey)} aria-expanded={Boolean(openPanels[historyKey])}>History</button>
-                        <span className="inlineDivider"> - </span>
-                        <button className="linkBtn" onClick={() => togglePanel(detailsKey)} aria-expanded={Boolean(openPanels[detailsKey])}>Details</button>
+                      <div className="compactActions">
+                        <button className="btn btnPrimary" onClick={() => openTest(activeRepeatCard.testId)}>Open test</button>
+                        <button className="btn btnSecondary" onClick={() => saveRepeatableDraft(activeRepeatCard)}>Save entry</button>
                       </div>
-                      {openPanels[historyKey] && (
-                        <div className="historyBlock">
-                          {historyRows.length === 0 ? <p className="historyLine">No saved entries yet.</p> : historyRows.map((row) => (
-                            <p className="historyLine" key={row.key}><strong>{row.timepoint}:</strong> {row.score}  -  {row.date}{row.notes ? `  -  ${row.notes}` : ""}</p>
-                          ))}
-                        </div>
-                      )}
-                      {openPanels[detailsKey] && (
-                        <div className="historyBlock">
-                          <p className="historyLine"><strong>{testDef.name}</strong> ({testDef.timing})</p>
-                          <p className="historyLine">{testDef.whatText}</p>
-                          <p className="historyLine"><strong>When:</strong> {testDef.whenText}</p>
-                          <p className="historyLine"><strong>Credentials:</strong> {testDef.credentialsText}</p>
-                        </div>
-                      )}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                  )}
 
-            <div id="prePostTestsSection" className="card">
-              <h2 className="sectionHeader">Pre- and Post-Training Only Tests</h2>
-              <p className="sectionSub">Each card answers: what is this, where am I, and what do I do next.</p>
-              <div className="grid" style={{ marginTop: "10px" }}>
-                {outcomeCards.map((card) => {
-                  const historyKey = `history_${card.id}`;
-                  const detailsKey = `details_${card.id}`;
-                  const draftKey = `outcome_${card.id}`;
-                  const draft = getDraft(draftKey);
-                  const historyRows = getOutcomeHistory(card, state);
-                  const detailTestIds = Array.from(new Set([card.baseline.testId, card.post.testId]));
-                  const detailTests = detailTestIds.map((id) => TEST_BY_ID[id]).filter(Boolean);
-
-                  return (
-                    <div className="trackerCard" key={card.id}>
+                  {activeOutcomeCard && (
+                    <div className="compactCard">
+                      <div className="deckHeader">
+                        <p className="deckLabel">Pre/Post Outcome</p>
+                        <div className="deckControls">
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setOutcomeDeckIndex, -1, outcomeCards.length)}>Prev</button>
+                          <span className="deckCount">{outcomeIndex + 1}/{outcomeCards.length}</span>
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setOutcomeDeckIndex, 1, outcomeCards.length)}>Next</button>
+                        </div>
+                      </div>
                       <div className="cardActions">
-                        <StatusPill status={card.status} />
+                        <StatusPill status={activeOutcomeCard.status} />
                       </div>
-                      <p className="trackerTitle">{card.title}</p>
-                      <p className="trackerPurpose">{card.purpose}</p>
-                      <div className="slotGrid">
-                        <div className="slotCard">
-                          <p className="slotLabel">{card.baseline.label}</p>
-                          <StatusPill status={card.baseline.status} />
-                          <p className="slotMetric">{card.baseline.score || "-"}</p>
-                          <p className="slotDate">{card.baseline.date ? formatDate(card.baseline.date) : "No entry yet"}</p>
+                      <p className="compactTitle">{activeOutcomeCard.title}</p>
+                      <p className="compactMeta">{activeOutcomeCard.purpose}</p>
+                      <div className="compactRow">
+                        <div className="compactMetric">
+                          <p className="compactMetricLabel">{activeOutcomeCard.baseline.label}</p>
+                          <p className="compactMetricValue">{activeOutcomeCard.baseline.score || "-"}</p>
                         </div>
-                        <div className="slotCard">
-                          <p className="slotLabel">{card.post.label}</p>
-                          <StatusPill status={card.post.status} />
-                          <p className="slotMetric">{card.post.score || "-"}</p>
-                          <p className="slotDate">{card.post.date ? formatDate(card.post.date) : "No entry yet"}</p>
+                        <div className="compactMetric">
+                          <p className="compactMetricLabel">{activeOutcomeCard.post.label}</p>
+                          <p className="compactMetricValue">{activeOutcomeCard.post.score || "-"}</p>
                         </div>
                       </div>
-                      <div className="deltaBox">
-                        {card.comparison.line && <p className="deltaLine">{card.comparison.line}</p>}
-                        {card.comparison.bars && card.comparison.bars.map((bar) => (
-                          <div className="deltaBarRow" key={`${card.id}-${bar.label}`}>
-                            <span className="deltaBarLabel">{bar.label}</span>
-                            <span className="deltaBarTrack">
-                              <span className="deltaBarFill" style={{ width: `${Math.max(4, bar.width)}%` }} />
-                            </span>
-                            <span className="deltaValue">{bar.value}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <p className="logHint">Log entry for: {card.targetSlot.label}</p>
+                      <p className="compactMeta">{activeOutcomeCard.comparison.line || "No comparison yet."}</p>
                       <div className="twoCol">
-                        <input className="input inputScoreReady" placeholder="Score" value={draft.score} onChange={(e) => setDraftField(draftKey, "score", e.target.value)} />
-                        <input className="input" placeholder="Notes (optional)" value={draft.notes} onChange={(e) => setDraftField(draftKey, "notes", e.target.value)} />
+                        <input className="input inputScoreReady" placeholder="Score" value={activeOutcomeDraft.score} onChange={(e) => setDraftField(activeOutcomeDraftKey, "score", e.target.value)} />
+                        <input className="input" placeholder="Notes (optional)" value={activeOutcomeDraft.notes} onChange={(e) => setDraftField(activeOutcomeDraftKey, "notes", e.target.value)} />
                       </div>
-                      <div className="cardActions">
+                      <div className="compactActions">
                         <button className="btn btnPrimary" onClick={() => {
-                          if(card.ctaType === "view"){
-                            togglePanel(historyKey);
+                          if(activeOutcomeCard.ctaType === "view"){
+                            setActivePanel("results");
                             return;
                           }
-                          openTest(card.ctaTestId);
-                        }}>{card.ctaLabel}</button>
-                        <button className="btn btnSecondary" onClick={() => saveOutcomeDraft(card)}>Save</button>
-                        <button className="linkBtn" onClick={() => togglePanel(historyKey)} aria-expanded={Boolean(openPanels[historyKey])}>History</button>
-                        <span className="inlineDivider"> - </span>
-                        <button className="linkBtn" onClick={() => togglePanel(detailsKey)} aria-expanded={Boolean(openPanels[detailsKey])}>Details</button>
+                          openTest(activeOutcomeCard.ctaTestId);
+                        }}>{activeOutcomeCard.ctaLabel}</button>
+                        <button className="btn btnSecondary" onClick={() => saveOutcomeDraft(activeOutcomeCard)}>Save entry</button>
                       </div>
-                      {openPanels[historyKey] && (
-                        <div className="historyBlock">
-                          {historyRows.length === 0 ? <p className="historyLine">No saved entries yet.</p> : historyRows.map((row) => (
-                            <p className="historyLine" key={row.key}><strong>{row.label}:</strong> {row.score}  -  {row.date}{row.notes ? `  -  ${row.notes}` : ""}</p>
-                          ))}
-                        </div>
-                      )}
-                      {openPanels[detailsKey] && (
-                        <div className="historyBlock">
-                          {detailTests.map((test) => (
-                            <div key={`${card.id}-${test.id}`}>
-                              <p className="historyLine"><strong>{test.name}</strong> ({test.timing})</p>
-                              <p className="historyLine">{test.whatText}</p>
-                              <p className="historyLine"><strong>When:</strong> {test.whenText}</p>
-                              <p className="historyLine"><strong>Credentials:</strong> {test.credentialsText}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                  )}
+                </>
+              )}
 
-            <div id="gTrackerSettingsSection" className="card adminCard">
-              <div className="adminHeaderRow">
-                <h2 className="sectionHeader">Admin</h2>
-                <button className="btn btnInfo adminHelpBtn" onClick={() => setShowAdminHelp(true)}>Help</button>
-              </div>
-              <p className="sectionSub">Export/import/reset controls for this tracker only.</p>
-              <div className="btnRow">
-                <button className="btn btnSecondary" onClick={exportJSON}>Export JSON</button>
-                <button className="btn btnSecondary" onClick={importJSON}>Import JSON</button>
-                <button className="btn btnSecondary" onClick={resetAll}>Reset hub data</button>
-              </div>
-              <div className="danger" style={{ marginTop: "10px" }}>
-                <p className="muted">
-                  Tip: local tracker data is device/browser specific. Export JSON if you plan to switch device or clear browser storage.
-                </p>
-              </div>
+              {activePanel === "results" && (
+                <>
+                  {activeRepeatCard && (
+                    <div className="compactCard">
+                      <div className="deckHeader">
+                        <p className="deckLabel">Repeatable Results</p>
+                        <div className="deckControls">
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setRepeatDeckIndex, -1, repeatableCards.length)}>Prev</button>
+                          <span className="deckCount">{repeatIndex + 1}/{repeatableCards.length}</span>
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setRepeatDeckIndex, 1, repeatableCards.length)}>Next</button>
+                        </div>
+                      </div>
+                      <p className="compactTitle">{activeRepeatCard.title}</p>
+                      <div className="compactRow">
+                        <div className="compactMetric">
+                          <p className="compactMetricLabel">Latest score</p>
+                          <p className="compactMetricValue">{activeRepeatCard.latestScore || "-"}</p>
+                        </div>
+                        <div className="compactMetric">
+                          <p className="compactMetricLabel">Trend</p>
+                          <Sparkline values={activeRepeatCard.numericValues} />
+                        </div>
+                      </div>
+                      {activeRepeatHistory.length === 0 ? (
+                        <p className="compactHistory">No saved entries yet.</p>
+                      ) : activeRepeatHistory.map((row) => (
+                        <p className="compactHistory" key={row.key}><strong>{row.timepoint}:</strong> {row.score}  -  {row.date}</p>
+                      ))}
+                    </div>
+                  )}
+
+                  {activeOutcomeCard && (
+                    <div className="compactCard">
+                      <div className="deckHeader">
+                        <p className="deckLabel">Outcome Results</p>
+                        <div className="deckControls">
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setOutcomeDeckIndex, -1, outcomeCards.length)}>Prev</button>
+                          <span className="deckCount">{outcomeIndex + 1}/{outcomeCards.length}</span>
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setOutcomeDeckIndex, 1, outcomeCards.length)}>Next</button>
+                        </div>
+                      </div>
+                      <p className="compactTitle">{activeOutcomeCard.title}</p>
+                      <p className="compactMeta">{activeOutcomeCard.comparison.line || "No comparison yet."}</p>
+                      {activeOutcomeHistory.length === 0 ? (
+                        <p className="compactHistory">No saved entries yet.</p>
+                      ) : activeOutcomeHistory.map((row) => (
+                        <p className="compactHistory" key={row.key}><strong>{row.label}:</strong> {row.score}  -  {row.date}</p>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {activePanel === "settings" && (
+                <div className="card adminCard">
+                  <div className="adminHeaderRow">
+                    <h2 className="sectionHeader">Settings</h2>
+                    <button className="btn btnInfo adminHelpBtn" onClick={() => setShowAdminHelp(true)}>Help</button>
+                  </div>
+                  <p className="sectionSub">Programme setup and local data controls.</p>
+                  <div className="programSetup">
+                    <div className="programGrid">
+                      <label className="programField">
+                        <span className="programLabel">Programme start date (optional)</span>
+                        <input
+                          className="input"
+                          type="date"
+                          value={state.program.startDate || ""}
+                          onChange={(e) => setProgramField("startDate", e.target.value)}
+                        />
+                      </label>
+                      <label className="programField">
+                        <span className="programLabel">Duration (days)</span>
+                        <input
+                          className="input"
+                          type="number"
+                          min={7}
+                          max={365}
+                          value={state.program.durationDays}
+                          onChange={(e) => setProgramField("durationDays", e.target.value)}
+                        />
+                      </label>
+                      <label className="programField">
+                        <span className="programLabel">Milestone mode</span>
+                        <span className="programToggle">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(state.program.useMilestones)}
+                            onChange={(e) => setProgramField("useMilestones", e.target.checked)}
+                          />
+                          Use milestones
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                  <div className="btnRow">
+                    <button className="btn btnSecondary" onClick={exportJSON}>Export JSON</button>
+                    <button className="btn btnSecondary" onClick={importJSON}>Import JSON</button>
+                    <button className="btn btnSecondary" onClick={resetAll}>Reset hub data</button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {showAdminHelp && (
@@ -2405,7 +2494,6 @@
               </div>
             )}
           </div>
-
         </div>
       );
     }
