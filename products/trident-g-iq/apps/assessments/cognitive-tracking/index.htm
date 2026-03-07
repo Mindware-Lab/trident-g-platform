@@ -139,12 +139,11 @@
 
     .panelHint{
       margin: 0;
-      padding: 8px 10px;
-      border-radius: 10px;
-      border: 1px solid var(--brand-border-soft);
-      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      padding: 2px 2px 0;
+      border: 0;
+      background: transparent;
       color: var(--brand-text-muted);
-      font-size: 12px;
+      font-size: 11px;
       line-height: 1.35;
     }
 
@@ -163,6 +162,12 @@
       gap: 8px;
       flex-wrap: wrap;
       margin-bottom: 2px;
+    }
+
+    .panelModeShell{
+      border: 0;
+      background: transparent;
+      padding: 0;
     }
 
     .panelModeLeft{
@@ -1498,7 +1503,7 @@
       }
 
       .panelHint{
-        padding: 6px 8px;
+        padding: 0;
         font-size: 11px;
       }
 
@@ -2671,7 +2676,6 @@
                   <p className="howLine"><strong>Conditions:</strong> quiet space, no interruptions, same setup where possible.</p>
                 </div>
                 <p className="nextAction">{nextActionText}</p>
-                <p className="scopeLine">Tracking and skills feedback only. This app does not provide medical or clinical diagnosis.</p>
                 <p className="sectionSub sectionSubOptional" style={{ marginTop: "8px" }}>
                   {activePanel === "tests" ? "Tests panel active" : activePanel === "results" ? "Results panel active" : activePanel === "validation" ? "Validation panel active" : "Settings panel active"}
                 </p>
@@ -2701,7 +2705,7 @@
               <p className="panelHint">{panelHelpText}</p>
               {activePanel === "tests" && (
                 <>
-                  <div className="card" style={{ padding: "10px" }}>
+                  <div className="panelModeShell">
                     <div className="panelModeRow">
                       <div className="panelModeLeft">
                         <p className="panelModeLabel">Tests view</p>
