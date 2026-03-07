@@ -98,7 +98,7 @@
 
     .ui-content{
       width: 100%;
-      padding: 16px 12px 94px;
+      padding: 16px 12px 88px;
       height: 100%;
       min-height: 0;
       display: flex;
@@ -478,7 +478,7 @@
       display: grid;
       grid-template-columns: repeat(4, minmax(0,1fr));
       gap: 2px;
-      padding: 8px 8px 12px;
+      padding: 7px 8px 9px;
       border-top: 1px solid rgba(255,255,255,.08);
       background: linear-gradient(180deg, rgba(16,22,35,.94), rgba(9,14,24,.97));
       z-index: 5;
@@ -493,7 +493,7 @@
       color: #9fb4d0;
       text-decoration: none;
       font: 700 11px/1.1 var(--iq-font);
-      min-height: 60px;
+      min-height: 56px;
       padding: 6px 2px;
       border-radius: 10px;
     }
@@ -1378,6 +1378,165 @@
       }
       .gt-shell::after{
         display: none;
+      }
+    }
+
+    @media (max-height: 940px){
+      body.gt-rebrand{
+        padding: 8px 10px 10px;
+      }
+
+      .gt-shell{
+        height: calc(100vh - 18px);
+      }
+
+      .ui-content{
+        padding: 10px 10px 84px;
+      }
+
+      #root > .screen > .content{
+        gap: 8px;
+      }
+
+      .gt-brand-row{
+        margin-bottom: 4px;
+        padding: 2px 1px 0;
+      }
+
+      .gt-brand-icon{
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+      }
+
+      .gt-brand-icon img{
+        width: 28px;
+        height: 28px;
+      }
+
+      .gt-brand-pill{
+        padding: 8px 12px;
+        font-size: 11px;
+      }
+
+      .card{
+        padding: 10px !important;
+      }
+
+      .panelAppBrand{
+        gap: 10px;
+      }
+
+      .panelAppIcon{
+        width: 42px;
+        height: 42px;
+        border-width: 3px;
+      }
+
+      .panelAppIcon img{
+        width: 26px;
+        height: 26px;
+      }
+
+      .panelAppKicker{
+        font-size: 10px;
+      }
+
+      .panelAppTitle{
+        font-size: 20px;
+      }
+
+      .p{
+        font-size: 13px;
+        line-height: 1.3;
+      }
+
+      .progressStrip{
+        margin-top: 6px;
+        padding: 7px 10px;
+        font-size: 13px;
+      }
+
+      .howCardOptional{
+        display: none;
+      }
+
+      .nextAction{
+        margin-top: 6px;
+        padding: 7px 10px;
+        font-size: 12px;
+      }
+
+      .scopeLine{
+        font-size: 11px;
+        line-height: 1.3;
+      }
+
+      .sectionSubOptional{
+        display: none;
+      }
+
+      .gt-panel-viewport{
+        gap: 8px;
+      }
+
+      .panelHint{
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+
+      .compactCard{
+        padding: 8px;
+        gap: 6px;
+      }
+
+      .compactTitle{
+        font-size: 16px;
+      }
+
+      .compactMeta,
+      .compactHistory{
+        font-size: 12px;
+        line-height: 1.3;
+      }
+
+      .compactMetricValue{
+        font-size: 16px;
+      }
+
+      .input{
+        padding: 7px 9px;
+        font-size: 13px;
+      }
+
+      .btn,
+      .btnPrimary,
+      .btnSecondary,
+      .btnInfo{
+        min-height: 38px;
+      }
+
+      .gt-bottom-nav{
+        padding: 6px 8px 8px;
+      }
+
+      .gt-tab{
+        min-height: 52px;
+      }
+
+      .gt-tab-icon{
+        width: 24px;
+        height: 24px;
+      }
+
+      .gt-tab-icon svg,
+      .gt-tab-icon img{
+        width: 24px;
+        height: 24px;
+      }
+
+      .gt-tab span:last-child{
+        font-size: .68rem;
       }
     }
   </style>
@@ -2476,7 +2635,7 @@
                 <div className="progressStrip">
                   Core baseline: {requiredBaselineDone}/{requiredOutcomeCards.length}  -  Core post: {requiredPostDone}/{requiredOutcomeCards.length}  -  Weekly due: {trackersDue}
                 </div>
-                <div className="howCard">
+                <div className="howCard howCardOptional">
                   <p className="howTitle">How G Tracker works</p>
                   <p className="howLine"><strong>Programme tests (before/after):</strong> SgS-12 A/B + EDHS (Mensa pair optional).</p>
                   <p className="howLine"><strong>Repeatable tests:</strong> Psi-CBS + CRS-10 weekly during training.</p>
@@ -2484,7 +2643,7 @@
                 </div>
                 <p className="nextAction">{nextActionText}</p>
                 <p className="scopeLine">Tracking and skills feedback only. This app does not provide medical or clinical diagnosis.</p>
-                <p className="sectionSub" style={{ marginTop: "8px" }}>
+                <p className="sectionSub sectionSubOptional" style={{ marginTop: "8px" }}>
                   {activePanel === "tests" ? "Tests panel active" : activePanel === "results" ? "Results panel active" : activePanel === "validation" ? "Validation panel active" : "Settings panel active"}
                 </p>
 
