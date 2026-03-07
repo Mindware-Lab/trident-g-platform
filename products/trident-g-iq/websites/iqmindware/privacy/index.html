@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Privacy | IQMindware</title>
-    <link rel="stylesheet" href="/assets/css/brand.css">
+  <link rel="stylesheet" href="/assets/css/brand.css">
   <link rel="stylesheet" href="/assets/css/templates.css">
-  <link rel="stylesheet" href="/assets/css/pages/utility-pages.css">
+  <link rel="stylesheet" href="/assets/css/pages/privacy.css">
 </head>
-<body>
+<body class="privacy">
   <header class="site-header">
     <a class="brand" href="/">IQMindware</a>
     <p class="tagline">Train general intelligence, then prove carryover.</p>
@@ -24,8 +24,304 @@
       
     </nav>
   </header>
-  <main class="page">
-    <section class="hero"><h1>Privacy</h1><p>Local-first logging, user-controlled export, and aggregated publication only.</p></section>
+  <main class="privacy-page">
+    <section class="pv-hero">
+      <div class="pv-hero-inner">
+        <span class="pv-hero-eyebrow">Privacy Policy</span>
+        <h1 class="pv-hero-title">Privacy by <em>design</em></h1>
+        <div class="pv-hero-meta">
+          <span class="pv-hero-meta-item">Controller: <strong>HRP Lab Ltd</strong></span>
+          <span class="pv-hero-meta-dot" aria-hidden="true"></span>
+          <span class="pv-hero-meta-item">Last updated: <strong>7 March 2026</strong></span>
+          <span class="pv-hero-meta-dot" aria-hidden="true"></span>
+          <span class="pv-hero-meta-item">Contact: <strong>admin@iqmindware.com</strong></span>
+        </div>
+        <p class="pv-hero-sub">
+          IQMindware is local-first where possible, publishes aggregate evidence only, and follows an open-methods, protected-execution model.
+          This policy explains how data is handled across local and hosted phases.
+        </p>
+      </div>
+    </section>
+
+    <section class="pv-glance" aria-label="Privacy at a glance">
+      <div class="pv-glance-inner">
+        <span class="pv-glance-label">Privacy at a glance</span>
+        <div class="pv-glance-grid">
+          <article class="pv-glance-card" style="--card-accent:var(--pv-local-col)">
+            <div class="pv-glance-card-icon">&#128187;</div>
+            <h2 class="pv-glance-card-title">Local-first by default</h2>
+            <p class="pv-glance-card-text">Core training flows can run without mandatory cloud upload in local mode.</p>
+          </article>
+          <article class="pv-glance-card" style="--card-accent:var(--pv-export-col)">
+            <div class="pv-glance-card-icon">&#128190;</div>
+            <h2 class="pv-glance-card-title">User-controlled export</h2>
+            <p class="pv-glance-card-text">Users control export/import of their own trail where app controls are available.</p>
+          </article>
+          <article class="pv-glance-card" style="--card-accent:var(--pv-agg-col)">
+            <div class="pv-glance-card-icon">&#128202;</div>
+            <h2 class="pv-glance-card-title">Aggregate publication only</h2>
+            <p class="pv-glance-card-text">Published evidence uses aggregate summaries. Personal raw logs are not published.</p>
+          </article>
+          <article class="pv-glance-card" style="--card-accent:var(--pv-open-col)">
+            <div class="pv-glance-card-icon">&#128064;</div>
+            <h2 class="pv-glance-card-title">Open methods, protected execution</h2>
+            <p class="pv-glance-card-text">Protocol logic and governance are inspectable; runtime code and anti-gaming logic are protected.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <div class="pv-layout">
+      <aside class="pv-sidebar" aria-label="Privacy navigation">
+        <nav class="pv-toc">
+          <div class="pv-toc-hd">Contents</div>
+          <ul class="pv-toc-list">
+            <li><a href="#p1" class="pv-toc-link"><span class="pv-toc-num">1.</span>Who we are</a></li>
+            <li><a href="#p2" class="pv-toc-link"><span class="pv-toc-num">2.</span>Data we collect</a></li>
+            <li><a href="#p3" class="pv-toc-link"><span class="pv-toc-num">3.</span>How we use data</a></li>
+            <li><a href="#p4" class="pv-toc-link"><span class="pv-toc-num">4.</span>Phase A: local-first</a></li>
+            <li><a href="#p5" class="pv-toc-link"><span class="pv-toc-num">5.</span>Phase B: hosted stack</a></li>
+            <li><a href="#p6" class="pv-toc-link"><span class="pv-toc-num">6.</span>Kastel Stack transparency</a></li>
+            <li><a href="#p7" class="pv-toc-link"><span class="pv-toc-num">7.</span>Lawful bases</a></li>
+            <li><a href="#p8" class="pv-toc-link"><span class="pv-toc-num">8.</span>Sharing and processors</a></li>
+            <li><a href="#p9" class="pv-toc-link"><span class="pv-toc-num">9.</span>International transfers</a></li>
+            <li><a href="#p10" class="pv-toc-link"><span class="pv-toc-num">10.</span>Retention</a></li>
+            <li><a href="#p11" class="pv-toc-link"><span class="pv-toc-num">11.</span>Security measures</a></li>
+            <li><a href="#p12" class="pv-toc-link"><span class="pv-toc-num">12.</span>Your rights</a></li>
+            <li><a href="#p13" class="pv-toc-link"><span class="pv-toc-num">13.</span>Cookies and tracking</a></li>
+            <li><a href="#p14" class="pv-toc-link"><span class="pv-toc-num">14.</span>Contact</a></li>
+            <li><a href="#p15" class="pv-toc-link"><span class="pv-toc-num">15.</span>Policy updates</a></li>
+          </ul>
+          <div class="pv-toc-footer">
+            Also see: <a href="/proof/#data">Proof data</a> |
+            <a href="/terms/">Terms</a> |
+            <a href="/refunds/">Refunds</a>
+          </div>
+        </nav>
+      </aside>
+
+      <div class="pv-doc">
+        <span class="pv-updated"><span class="pv-updated-dot"></span>Last updated: 7 March 2026</span>
+
+        <section class="pv-section" id="p1">
+          <div class="pv-section-hd"><span class="pv-section-num">1.</span><h2 class="pv-section-title">Who we are</h2></div>
+          <div class="pv-prose">
+            <p>IQMindware is operated by <strong>HRP Lab Ltd</strong> (controller for this site and services).</p>
+            <div class="pv-defs">
+              <div class="pv-def-row"><span class="pv-def-key">Controller</span><span class="pv-def-val">HRP Lab Ltd (IQMindware)</span></div>
+              <div class="pv-def-row"><span class="pv-def-key">General privacy contact</span><span class="pv-def-val"><a href="mailto:admin@iqmindware.com">admin@iqmindware.com</a></span></div>
+              <div class="pv-def-row"><span class="pv-def-key">Direct contact</span><span class="pv-def-val"><a href="mailto:mark@iqmindware.com">mark@iqmindware.com</a></span></div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p2">
+          <div class="pv-section-hd"><span class="pv-section-num">2.</span><h2 class="pv-section-title">Data we collect</h2></div>
+          <div class="pv-prose">
+            <p>Depending on your use path, we may process the following categories:</p>
+            <ul>
+              <li>Contact and account data (email, purchase and access records).</li>
+              <li>Usage markers (session timestamps, app outputs, completion states).</li>
+              <li>Technical and security logs (request metadata, error logs, abuse-prevention signals).</li>
+              <li>Support and coaching admin data (messages, booking metadata, order references).</li>
+            </ul>
+            <div class="pv-callout pv-callout--amber"><span class="pv-callout-icon">&#9888;</span><div class="pv-callout-text">We do <strong>not</strong> publish personal raw logs in public evidence outputs.</div></div>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p3">
+          <div class="pv-section-hd"><span class="pv-section-num">3.</span><h2 class="pv-section-title">How we use data</h2></div>
+          <div class="pv-prose">
+            <ul>
+              <li>Deliver purchased plans, apps, and coaching access.</li>
+              <li>Provide support, account recovery, and service communications.</li>
+              <li>Maintain reliability, security, and abuse protection.</li>
+              <li>Produce aggregate evidence summaries and transparency reporting.</li>
+              <li>Meet legal and accounting obligations.</li>
+            </ul>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p4">
+          <div class="pv-section-hd"><span class="pv-section-num">4.</span><h2 class="pv-section-title">Phase A: local-first app mode</h2></div>
+          <div class="pv-prose">
+            <div class="pv-phase-card">
+              <div class="pv-phase-hd">
+                <span class="pv-phase-badge pv-phase-badge--a">Phase A</span>
+                <span class="pv-phase-title">Local-first operation</span>
+              </div>
+              <div class="pv-phase-body">
+                <div class="pv-stack-row">
+                  <div class="pv-stack-name"><span class="pv-stack-dot" style="background:var(--pv-local-col)"></span>Local storage</div>
+                  <div class="pv-stack-text">Core training data can be stored in your browser/device storage without mandatory cloud upload.</div>
+                </div>
+                <div class="pv-stack-row">
+                  <div class="pv-stack-name"><span class="pv-stack-dot" style="background:var(--pv-export-col)"></span>User export control</div>
+                  <div class="pv-stack-text">Where app controls exist, users can export their own trail and keep local copies.</div>
+                </div>
+                <div class="pv-stack-row">
+                  <div class="pv-stack-name"><span class="pv-stack-dot" style="background:var(--pv-amber-text)"></span>Important</div>
+                  <div class="pv-stack-text">Clearing browser/app storage can remove locally stored records from that device.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p5">
+          <div class="pv-section-hd"><span class="pv-section-num">5.</span><h2 class="pv-section-title">Phase B: hosted mode (Vite, Vercel, Supabase)</h2></div>
+          <div class="pv-prose">
+            <div class="pv-phase-card">
+              <div class="pv-phase-hd">
+                <span class="pv-phase-badge pv-phase-badge--b">Phase B</span>
+                <span class="pv-phase-title">Hosted platform controls</span>
+              </div>
+              <div class="pv-phase-body">
+                <div class="pv-stack-row">
+                  <div class="pv-stack-name"><span class="pv-stack-dot" style="background:var(--pv-local-col)"></span>Vite</div>
+                  <div class="pv-stack-text">Used as development/build tooling. It does not itself create a user-tracking data layer by default.</div>
+                </div>
+                <div class="pv-stack-row">
+                  <div class="pv-stack-name"><span class="pv-stack-dot" style="background:var(--pv-open-col)"></span>Vercel</div>
+                  <div class="pv-stack-text">Processes standard request/runtime logs needed to host and secure services. Optional analytics features must be configured with privacy-safe settings.</div>
+                </div>
+                <div class="pv-stack-row">
+                  <div class="pv-stack-name"><span class="pv-stack-dot" style="background:var(--pv-agg-col)"></span>Supabase</div>
+                  <div class="pv-stack-text">
+                    Backend services may include auth/database/storage with access controls such as Row Level Security.
+                    Transport security (HTTPS/TLS) and platform encryption controls are used where supported.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p6">
+          <div class="pv-section-hd"><span class="pv-section-num">6.</span><h2 class="pv-section-title">Kastel Stack data use and transparency</h2></div>
+          <div class="pv-prose">
+            <p>Kastel Stack workflows support operations and transparency reporting under review gates.</p>
+            <div class="pv-controls-list">
+              <div class="pv-control-row"><div class="pv-control-icon">&#10003;</div><div class="pv-control-text"><strong>Aggregate publication only:</strong> no user-level public tables.</div></div>
+              <div class="pv-control-row"><div class="pv-control-icon">&#10003;</div><div class="pv-control-text"><strong>Suppression rules:</strong> low-count and complementary suppression applied before publication.</div></div>
+              <div class="pv-control-row"><div class="pv-control-icon">&#10003;</div><div class="pv-control-text"><strong>No free-text identifiers:</strong> personal content is excluded from published outputs.</div></div>
+              <div class="pv-control-row"><div class="pv-control-icon">&#10003;</div><div class="pv-control-text"><strong>Human approval gate:</strong> publication is reviewed before release.</div></div>
+            </div>
+            <div class="pv-policy-links">
+              <a href="/proof/#data" class="pv-policy-link">Proof data summaries</a>
+              <a href="https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics" class="pv-policy-link" target="_blank" rel="noopener noreferrer">Open methods repository</a>
+            </div>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p7">
+          <div class="pv-section-hd"><span class="pv-section-num">7.</span><h2 class="pv-section-title">Lawful bases</h2></div>
+          <div class="pv-prose">
+            <p>Depending on context, we rely on contract, legitimate interests, consent (where required), and legal obligation.</p>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p8">
+          <div class="pv-section-hd"><span class="pv-section-num">8.</span><h2 class="pv-section-title">Sharing and processors</h2></div>
+          <div class="pv-prose">
+            <p>Data is shared only with service providers needed to deliver hosting, payments, scheduling, communications, and support workflows.</p>
+            <p>We do not sell personal data.</p>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p9">
+          <div class="pv-section-hd"><span class="pv-section-num">9.</span><h2 class="pv-section-title">International transfers</h2></div>
+          <div class="pv-prose">
+            <p>If transfers occur outside your jurisdiction, we use processor safeguards and contractual controls appropriate to applicable law.</p>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p10">
+          <div class="pv-section-hd"><span class="pv-section-num">10.</span><h2 class="pv-section-title">Retention</h2></div>
+          <div class="pv-prose">
+            <p>Personal data is retained only as long as necessary for delivery, support, security, and legal/accounting duties.</p>
+            <p>Published proof outputs are retained in non-identifying aggregate form.</p>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p11">
+          <div class="pv-section-hd"><span class="pv-section-num">11.</span><h2 class="pv-section-title">Security measures</h2></div>
+          <div class="pv-prose">
+            <ul>
+              <li>Least-privilege access controls and secret management.</li>
+              <li>HTTPS/TLS transport protection.</li>
+              <li>Logging and review for abuse and reliability events.</li>
+              <li>Publication controls for transparency datasets.</li>
+            </ul>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p12">
+          <div class="pv-section-hd"><span class="pv-section-num">12.</span><h2 class="pv-section-title">Your rights</h2></div>
+          <div class="pv-prose">
+            <p>Where applicable, you can request access, correction, deletion, restriction, objection, portability, and consent withdrawal.</p>
+            <div class="pv-rights-grid">
+              <div class="pv-right-chip"><span class="pv-right-chip-icon">&#128270;</span><span class="pv-right-chip-label">Access and copy</span></div>
+              <div class="pv-right-chip"><span class="pv-right-chip-icon">&#9998;</span><span class="pv-right-chip-label">Correction</span></div>
+              <div class="pv-right-chip"><span class="pv-right-chip-icon">&#128465;</span><span class="pv-right-chip-label">Deletion</span></div>
+              <div class="pv-right-chip"><span class="pv-right-chip-icon">&#128230;</span><span class="pv-right-chip-label">Portability</span></div>
+              <div class="pv-right-chip"><span class="pv-right-chip-icon">&#10060;</span><span class="pv-right-chip-label">Objection / restriction</span></div>
+              <div class="pv-right-chip"><span class="pv-right-chip-icon">&#9993;</span><span class="pv-right-chip-label">Contact controller</span></div>
+            </div>
+            <p>Send requests to <a href="mailto:admin@iqmindware.com">admin@iqmindware.com</a>.</p>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p13">
+          <div class="pv-section-hd"><span class="pv-section-num">13.</span><h2 class="pv-section-title">Cookies and tracking</h2></div>
+          <div class="pv-prose">
+            <p>Essential technical cookies may be used for security/session operation. Non-essential analytics should only run with appropriate disclosure and controls.</p>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p14">
+          <div class="pv-section-hd"><span class="pv-section-num">14.</span><h2 class="pv-section-title">Contact</h2></div>
+          <div class="pv-prose">
+            <div class="pv-defs">
+              <div class="pv-def-row"><span class="pv-def-key">Privacy requests</span><span class="pv-def-val"><a href="mailto:admin@iqmindware.com">admin@iqmindware.com</a></span></div>
+              <div class="pv-def-row"><span class="pv-def-key">General contact</span><span class="pv-def-val"><a href="mailto:mark@iqmindware.com">mark@iqmindware.com</a></span></div>
+            </div>
+          </div>
+        </section>
+
+        <hr class="pv-divider">
+        <section class="pv-section" id="p15">
+          <div class="pv-section-hd"><span class="pv-section-num">15.</span><h2 class="pv-section-title">Policy updates</h2></div>
+          <div class="pv-prose">
+            <p>We may update this policy as services evolve. Material changes are reflected by updating the date at the top of this page.</p>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="pv-footer-strip" aria-label="Boundary reminder">
+      <div class="pv-footer-strip-inner">
+        <div class="pv-footer-strip-icon">&#8505;</div>
+        <p class="pv-footer-strip-text"><strong>Boundary reminder:</strong> IQMindware is skills training and self-regulation support, not diagnosis or treatment. Outcomes vary. See <a href="/proof/#claims">claims policy</a> and <a href="/proof/#data">data publication notes</a>.</p>
+        <div class="pv-footer-strip-links">
+          <a class="pv-footer-strip-link" href="/proof/#data">Proof data</a>
+          <a class="pv-footer-strip-link" href="https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics" target="_blank" rel="noopener noreferrer">Open methods repo</a>
+        </div>
+      </div>
+    </section>
   </main>
   <footer class="site-footer site-footer-rich">
   <div class="footer-top">
@@ -142,6 +438,29 @@
 
   <p class="footer-reg">Skills training and self-regulation, not diagnosis or treatment. Outcomes vary.</p>
 </footer>
+  <script src="/assets/app.js" defer></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const sections = Array.from(document.querySelectorAll(".pv-section[id]"));
+      const links = Array.from(document.querySelectorAll(".pv-toc-link"));
+      if (!sections.length || !links.length || !("IntersectionObserver" in window)) return;
+
+      const linkMap = new Map(links.map((l) => [l.getAttribute("href"), l]));
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            links.forEach((l) => l.classList.remove("active"));
+            const active = linkMap.get("#" + entry.target.id);
+            if (active) active.classList.add("active");
+          });
+        },
+        { rootMargin: "-90px 0px -62% 0px", threshold: [0.01, 0.3, 0.6] }
+      );
+
+      sections.forEach((s) => observer.observe(s));
+    });
+  </script>
 </body>
 </html>
 
