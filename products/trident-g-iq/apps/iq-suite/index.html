@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>IQ Suite Launcher</title>
+  <title>IQ Core Hub</title>
   <link rel="stylesheet" href="../shared-ui/tokens.css">
   <link rel="stylesheet" href="../shared-ui/shell.css">
   <link rel="stylesheet" href="../shared-ui/components.css">
@@ -69,7 +69,8 @@
       margin-top: 10px;
     }
     body.suite-rebrand {
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
       background:
         radial-gradient(920px 460px at 50% -24%, rgba(110,198,255,.24), transparent 58%),
         linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%);
@@ -80,7 +81,7 @@
     }
     body.suite-rebrand .suite-shell {
       width: min(470px, calc(100% - 12px));
-      min-height: calc(100vh - 36px);
+      height: calc(100vh - 36px);
       border-radius: 42px;
       border: 1.5px solid rgba(255,255,255,.45);
       overflow: hidden;
@@ -93,6 +94,11 @@
     @media (min-width: 960px) {
       body.suite-rebrand .suite-shell {
         width: min(900px, calc(100% - 24px));
+      }
+    }
+    @media (max-height: 940px) {
+      body.suite-rebrand .suite-shell {
+        height: calc(100vh - 18px);
       }
     }
     body.suite-rebrand .suite-shell::before {
@@ -127,12 +133,20 @@
       display: none;
     }
     body.suite-rebrand .ui-screen {
-      min-height: auto;
+      min-height: 0;
+      height: 100%;
       padding-top: 0;
+      display: flex;
+      flex-direction: column;
     }
     body.suite-rebrand .ui-content {
       width: 100%;
       padding: 16px 12px 94px;
+      min-height: 0;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
     body.suite-rebrand .suite-brand-row {
       display: flex;
@@ -189,9 +203,84 @@
     body.suite-rebrand .suite-subtitle {
       font-size: 0.98rem;
     }
+    body.suite-rebrand .suite-controls {
+      margin-top: 10px;
+      gap: 8px;
+    }
+    body.suite-rebrand .suite-main-stack {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: hidden;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+    body.suite-rebrand .suite-dev-details {
+      border: 1px solid var(--iq-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.012));
+      padding: 8px;
+    }
+    body.suite-rebrand .suite-dev-details > summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: 800;
+      color: var(--iq-text);
+      font-size: 0.95rem;
+    }
+    body.suite-rebrand .suite-dev-details > summary::-webkit-details-marker {
+      display: none;
+    }
+    body.suite-rebrand .suite-dev-inner {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+    body.suite-rebrand .suite-help-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(8,11,16,.76);
+    }
+    body.suite-rebrand .suite-help-overlay[hidden] {
+      display: none;
+    }
+    body.suite-rebrand .suite-help-card {
+      width: min(560px, calc(100% - 12px));
+      border: 1px solid var(--iq-border-crisp);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.012)), rgba(15,18,26,.96);
+      box-shadow: 0 12px 28px rgba(0,0,0,.34);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+    body.suite-rebrand .suite-help-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 900;
+    }
+    body.suite-rebrand .suite-help-list {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 6px;
+      color: var(--iq-text-muted);
+      line-height: 1.4;
+      font-size: 0.92rem;
+    }
     body.suite-rebrand .suite-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
+    }
+    @media (min-width: 1120px) {
+      body.suite-rebrand .suite-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
     }
     body.suite-rebrand .suite-app {
       min-height: 148px;
@@ -207,7 +296,7 @@
       right: 0;
       bottom: 0;
       display: grid;
-      grid-template-columns: repeat(5, minmax(0,1fr));
+      grid-template-columns: repeat(4, minmax(0,1fr));
       gap: 2px;
       padding: 8px 8px 12px;
       border-top: 1px solid rgba(255,255,255,.08);
@@ -226,6 +315,8 @@
       min-height: 60px;
       padding: 6px 2px;
       border-radius: 10px;
+      appearance: none;
+      cursor: pointer;
     }
     body.suite-rebrand .suite-tab-icon {
       width: 28px;
@@ -242,6 +333,13 @@
       opacity: 1;
       filter: var(--suite-lime-filter) var(--suite-lime-glow);
     }
+    body.suite-rebrand .suite-tab-icon svg {
+      width: 28px;
+      height: 28px;
+      display: block;
+      color: #ccff66;
+      filter: drop-shadow(0 0 7px rgba(204,255,102,.4));
+    }
     body.suite-rebrand .suite-tab span:last-child {
       font-size: .72rem;
       font-weight: 700;
@@ -256,6 +354,9 @@
       opacity: 1;
       filter: var(--suite-lime-filter) drop-shadow(0 0 9px rgba(204,255,102,.56));
     }
+    body.suite-rebrand .suite-tab-active .suite-tab-icon svg {
+      filter: drop-shadow(0 0 9px rgba(204,255,102,.56));
+    }
     @media (max-width: 820px) {
       .suite-grid {
         grid-template-columns: 1fr;
@@ -267,18 +368,35 @@
     @media (max-width: 520px) {
       body.suite-rebrand {
         padding: 0;
+        height: 100dvh;
+        overflow: hidden;
       }
       body.suite-rebrand .suite-shell {
         width: 100%;
-        min-height: 100vh;
+        height: 100dvh;
         border-radius: 0;
         border: none;
       }
       body.suite-rebrand .ui-content {
-        padding: 10px 10px 92px;
+        padding: 10px 10px calc(112px + env(safe-area-inset-bottom));
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
       }
       body.suite-rebrand .suite-shell::after {
         display: none;
+      }
+      body.suite-rebrand .suite-bottom-nav {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 50;
+        padding: 8px 8px calc(12px + env(safe-area-inset-bottom));
+      }
+      body.suite-rebrand .suite-main-stack {
+        overflow: visible;
       }
     }
   </style>
@@ -300,43 +418,80 @@
           <span class="suite-brand-icon"><img src="../../../../branding/Trident-G-Icon.svg" alt=""></span>
           <span class="suite-brand-pill">Trident G - IQ</span>
         </div>
-        <article class="ui-card">
-          <h1 class="suite-title">IQ Suite Launcher</h1>
-          <p class="suite-subtitle">Canonical launcher route: <code>apps/iq-suite/index.html</code>. This page passes context to apps using query params and preserves return context.</p>
+        <div class="suite-main-stack">
+        <article id="suiteHomeCard" class="ui-card">
+          <h1 class="suite-title">IQ Core Hub</h1>
+          <p class="suite-subtitle">Open your three core apps from one place: Zone Coach, Capacity Gym, and G Tracker.</p>
+          <div class="ui-notice" style="margin-top:10px;">Next step: open one app below. If an app is locked, activate your plan code on this device.</div>
           <div id="bundleContext" class="ui-notice" style="margin-top:12px; display:none;"></div>
           <div id="activationContext" class="ui-notice" style="margin-top:12px; display:none;"></div>
-          <div class="ui-row" style="margin-top:10px;">
+          <div class="ui-row suite-controls">
+            <button id="openHelpBtn" class="ui-btn ui-btn-info" type="button">How IQ Core works</button>
             <button id="resetActivationBtn" class="ui-btn ui-btn-ghost" type="button">Reset activation on this device</button>
           </div>
           <div class="suite-grid" id="suiteGrid"></div>
-          <p class="suite-foot">Phase 1 wiring: server entitlements are authoritative when configured; device activation is fallback.</p>
+          <p class="suite-foot">Use this for skills training and progress tracking. It is not a medical or clinical service.</p>
         </article>
-        <article class="ui-card" style="margin-top:10px;">
-          <h2 class="ui-title" style="font-size:1rem;">Phase 1 Entitlement Config (Dev)</h2>
-          <p class="ui-text">Set endpoint URLs and bearer token for server entitlements and event logging.</p>
-          <div class="ui-row" style="margin-top:10px;">
-            <input id="entEndpointInput" class="ui-input" type="text" placeholder="Entitlements endpoint URL">
-            <input id="eventsEndpointInput" class="ui-input" type="text" placeholder="Events endpoint URL">
-            <input id="entTokenInput" class="ui-input" type="password" placeholder="Bearer token">
-          </div>
-          <div class="ui-row" style="margin-top:10px;">
-            <button id="saveEntConfigBtn" class="ui-btn ui-btn-info" type="button">Save auth config</button>
-            <button id="clearEntConfigBtn" class="ui-btn ui-btn-ghost" type="button">Clear auth config</button>
-          </div>
-          <p class="suite-foot">Stored locally in <code>iqmw.auth.config.v1</code>.</p>
+        <article id="suiteSettingsCard" class="ui-card">
+          <details id="devDetails" class="suite-dev-details">
+            <summary>Developer entitlement tools (optional)</summary>
+            <div class="suite-dev-inner">
+              <p class="ui-text">Set endpoint URLs and bearer token for server entitlements and event logging.</p>
+              <div class="ui-row">
+                <input id="entEndpointInput" class="ui-input" type="text" placeholder="Entitlements endpoint URL">
+                <input id="eventsEndpointInput" class="ui-input" type="text" placeholder="Events endpoint URL">
+                <input id="entTokenInput" class="ui-input" type="password" placeholder="Bearer token">
+              </div>
+              <div class="ui-row">
+                <button id="saveEntConfigBtn" class="ui-btn ui-btn-info" type="button">Save auth config</button>
+                <button id="clearEntConfigBtn" class="ui-btn ui-btn-ghost" type="button">Clear auth config</button>
+              </div>
+              <p class="suite-foot">Stored locally in <code>iqmw.auth.config.v1</code>.</p>
+            </div>
+          </details>
         </article>
         <div class="suite-back">
           <a class="ui-link" href="../../index.html">Back to product root</a>
         </div>
+        </div>
       </section>
     </main>
-    <nav class="suite-bottom-nav" aria-label="Suite navigation preview">
-      <a class="suite-tab suite-tab-active" href="#"><span class="suite-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/home.svg" alt=""></span><span>Home</span></a>
-      <a class="suite-tab" href="#"><span class="suite-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/play-hub.svg" alt=""></span><span>Hub</span></a>
-      <a class="suite-tab" href="#"><span class="suite-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/play-relational.svg" alt=""></span><span>Relational</span></a>
-      <a class="suite-tab" href="#"><span class="suite-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/history.svg" alt=""></span><span>Progress</span></a>
-      <a class="suite-tab" href="#"><span class="suite-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/settings.svg" alt=""></span><span>Settings</span></a>
+    <nav class="suite-bottom-nav" aria-label="IQ Core quick actions">
+      <button id="navApps" class="suite-tab suite-tab-active" type="button"><span class="suite-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../shared-ui/icons.svg#iq-icon-home"></use></svg></span><span>Apps</span></button>
+      <button id="navProtocol" class="suite-tab" type="button"><span class="suite-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../shared-ui/icons.svg#iq-icon-capacity"></use></svg></span><span>Protocol</span></button>
+      <button id="navHelp" class="suite-tab" type="button"><span class="suite-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../shared-ui/icons.svg#iq-icon-zone"></use></svg></span><span>How to use</span></button>
+      <button id="navSettings" class="suite-tab" type="button"><span class="suite-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/settings.svg" alt=""></span><span>Settings</span></button>
     </nav>
+  </div>
+
+  <div id="suiteHelpOverlay" class="suite-help-overlay" hidden>
+    <section class="suite-help-card" role="dialog" aria-modal="true" aria-labelledby="suiteHelpTitle">
+      <h2 id="suiteHelpTitle" class="suite-help-title">How IQ Core works</h2>
+      <ol class="suite-help-list">
+        <li>Choose one app and start there: Zone Coach, Capacity Gym, or G Tracker.</li>
+        <li>If an app is locked, enter your activation code when prompted.</li>
+        <li>Use Zone Coach for readiness, Capacity Gym for training, and G Tracker for progress logging.</li>
+        <li>Complete sessions in stable conditions and use notes for context.</li>
+      </ol>
+      <div class="ui-row">
+        <button id="closeHelpBtn" class="ui-btn ui-btn-primary" type="button">Got it</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="suiteProtocolOverlay" class="suite-help-overlay" hidden>
+    <section class="suite-help-card" role="dialog" aria-modal="true" aria-labelledby="suiteProtocolTitle">
+      <h2 id="suiteProtocolTitle" class="suite-help-title">IQ Core protocol flow</h2>
+      <ol class="suite-help-list">
+        <li>Start with Zone Coach to check readiness state before harder work.</li>
+        <li>Run Capacity Gym sessions to train attention, working memory, and relational control.</li>
+        <li>Use G Tracker to log baseline, weekly tracking, and post-training outcomes.</li>
+        <li>Use saved notes to keep context stable across sessions and compare like-with-like.</li>
+      </ol>
+      <div class="ui-row">
+        <button id="closeProtocolBtn" class="ui-btn ui-btn-primary" type="button">Got it</button>
+      </div>
+    </section>
   </div>
 
   <script src="../shared-ui/entitlements-client.js"></script>
@@ -372,7 +527,7 @@
 
     function buildLaunchUrl(route, appId) {
       const params = new URLSearchParams(window.location.search);
-      params.set("from", "iq-suite");
+      params.set("from", "iq-core");
       params.set("entryAppId", appId);
       const url = new URL(route, window.location.href);
       url.search = params.toString();
@@ -386,7 +541,7 @@
       }
       const bundle = bundleManifests.find((item) => item.bundleId === bundleId);
       const label = bundle && bundle.label ? bundle.label : bundleId;
-      contextEl.textContent = `Bundle context active: ${label}`;
+      contextEl.textContent = `Active plan: ${label}`;
       contextEl.style.display = "block";
     }
 
@@ -403,15 +558,15 @@
       if (access.mode === "server") {
         activationEl.style.display = "block";
         activationEl.className = "ui-notice";
-        activationEl.textContent = "Server entitlement mode active. Access is controlled by account entitlements.";
+        activationEl.textContent = "Server entitlement mode active.";
         return;
       }
       if (!access.activation || access.activation.isActive !== true || !access.activation.bundleId) {
         activationEl.style.display = "block";
         activationEl.className = "ui-notice ui-lock";
         activationEl.textContent = access.serverConfigured
-          ? "Entitlement fetch unavailable. Activation fallback is enabled for bundled apps."
-          : "Activation required for bundled paid apps. Browse mode remains available for non-bundled apps.";
+          ? "Entitlement fetch unavailable. Activation fallback is enabled."
+          : "Activation needed for bundled paid apps.";
         return;
       }
       const bundle = bundleManifests.find((item) => item.bundleId === access.activation.bundleId);
@@ -419,6 +574,111 @@
       activationEl.style.display = "block";
       activationEl.className = "ui-notice";
       activationEl.textContent = `Activated on this device: ${label}.`;
+    }
+
+    function wireHelpModal() {
+      const overlay = document.getElementById("suiteHelpOverlay");
+      const openBtn = document.getElementById("openHelpBtn");
+      const closeBtn = document.getElementById("closeHelpBtn");
+      if (!overlay || !openBtn || !closeBtn) {
+        return { open: () => {}, close: () => {} };
+      }
+      const close = () => { overlay.hidden = true; };
+      const open = () => { overlay.hidden = false; };
+      openBtn.addEventListener("click", () => { overlay.hidden = false; });
+      closeBtn.addEventListener("click", close);
+      overlay.addEventListener("click", (event) => {
+        if (event.target === overlay) {
+          close();
+        }
+      });
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !overlay.hidden) {
+          close();
+        }
+      });
+      return { open, close };
+    }
+
+    function wireProtocolModal() {
+      const overlay = document.getElementById("suiteProtocolOverlay");
+      const closeBtn = document.getElementById("closeProtocolBtn");
+      if (!overlay || !closeBtn) {
+        return { open: () => {}, close: () => {} };
+      }
+      const close = () => { overlay.hidden = true; };
+      const open = () => { overlay.hidden = false; };
+      closeBtn.addEventListener("click", close);
+      overlay.addEventListener("click", (event) => {
+        if (event.target === overlay) {
+          close();
+        }
+      });
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !overlay.hidden) {
+          close();
+        }
+      });
+      return { open, close };
+    }
+
+    function scrollToSection(targetId) {
+      const target = document.getElementById(targetId);
+      const content = document.querySelector("body.suite-rebrand .ui-content");
+      if (!target) return;
+      if (content && content.scrollHeight > content.clientHeight) {
+        const offset = Math.max(target.offsetTop - 8, 0);
+        content.scrollTo({ top: offset, behavior: "smooth" });
+        return;
+      }
+      target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function wireBottomNav(openHelp, openProtocol) {
+      const tabs = [
+        document.getElementById("navApps"),
+        document.getElementById("navProtocol"),
+        document.getElementById("navHelp"),
+        document.getElementById("navSettings")
+      ].filter(Boolean);
+      const setActive = (tab) => {
+        tabs.forEach((item) => item.classList.remove("suite-tab-active"));
+        if (tab) {
+          tab.classList.add("suite-tab-active");
+        }
+      };
+      const navApps = document.getElementById("navApps");
+      const navProtocol = document.getElementById("navProtocol");
+      const navHelp = document.getElementById("navHelp");
+      const navSettings = document.getElementById("navSettings");
+      if (navApps) {
+        navApps.addEventListener("click", () => {
+          setActive(navApps);
+          scrollToSection("suiteGrid");
+        });
+      }
+      if (navProtocol) {
+        navProtocol.addEventListener("click", () => {
+          setActive(navProtocol);
+          openProtocol();
+        });
+      }
+      if (navHelp) {
+        navHelp.addEventListener("click", () => {
+          setActive(navHelp);
+          openHelp();
+        });
+      }
+      if (navSettings) {
+        navSettings.addEventListener("click", () => {
+          setActive(navSettings);
+          const details = document.getElementById("devDetails");
+          if (details) {
+            details.open = true;
+          }
+          scrollToSection("suiteSettingsCard");
+        });
+      }
     }
 
     function renderApps(apps, bundleId, bundleManifests, access) {
@@ -530,6 +790,9 @@
       const params = new URLSearchParams(window.location.search);
       const bundleId = params.get("bundle") || "";
       const renderState = { apps, bundles, bundleId, render: null };
+      const helpModal = wireHelpModal();
+      const protocolModal = wireProtocolModal();
+      wireBottomNav(helpModal.open, protocolModal.open);
 
       const config = window.IQEntitlementsClient && window.IQEntitlementsClient.loadConfig
         ? window.IQEntitlementsClient.loadConfig()
