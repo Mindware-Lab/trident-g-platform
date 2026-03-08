@@ -1669,10 +1669,6 @@ function renderHome(state) {
         <p><strong>Streak:</strong> ${streakCurrent} (best ${streakBest})</p>
         <p><strong>Bank:</strong> ${state.bankUnits}</p>
       </div>
-      <div class="row home-footer-actions">
-        <button class="btn" data-action="go-history"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/history.svg" alt="" aria-hidden="true">Progress</button>
-        <button class="btn" data-action="go-settings"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/settings.svg" alt="" aria-hidden="true">Settings</button>
-      </div>
       ${renderFlash()}
       ${renderBottomTab("home")}
     </section>
