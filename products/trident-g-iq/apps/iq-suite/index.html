@@ -445,22 +445,19 @@
           <p class="suite-foot">Use this for skills training and progress tracking. It is not a medical or clinical service.</p>
         </article>
         <article id="suiteSettingsCard" class="ui-card">
-          <details id="devDetails" class="suite-dev-details">
-            <summary>Developer entitlement tools (optional)</summary>
-            <div class="suite-dev-inner">
-              <p class="ui-text">Set endpoint URLs and bearer token for server entitlements and event logging.</p>
-              <div class="ui-row">
-                <input id="entEndpointInput" class="ui-input" type="text" placeholder="Entitlements endpoint URL">
-                <input id="eventsEndpointInput" class="ui-input" type="text" placeholder="Events endpoint URL">
-                <input id="entTokenInput" class="ui-input" type="password" placeholder="Bearer token">
-              </div>
-              <div class="ui-row">
-                <button id="saveEntConfigBtn" class="ui-btn ui-btn-info" type="button">Save auth config</button>
-                <button id="clearEntConfigBtn" class="ui-btn ui-btn-ghost" type="button">Clear auth config</button>
-              </div>
-              <p class="suite-foot">Stored locally in <code>iqmw.auth.config.v1</code>.</p>
-            </div>
-          </details>
+          <h2 class="ui-title" style="font-size:1rem;">Settings and data guidance</h2>
+          <div class="ui-row" style="margin-top:8px;">
+            <span class="ui-chip ui-chip-info">Local data mode</span>
+            <span class="ui-chip ui-chip-info">Device-based activation</span>
+          </div>
+          <p class="ui-text">Your app data is stored on this device/browser using local storage for this launch phase (GDPR-aligned local-data handling: data stays on-device unless you choose to share it).</p>
+          <p class="ui-text">For stable progress tracking, train and log on the same device and OS until account sync is rolled out in the subscription upgrade.</p>
+          <p class="ui-text">This app provides skills tracking, not medical diagnosis.</p>
+          <div class="ui-row" style="margin-top:10px;">
+            <a class="ui-btn ui-btn-info" href="https://iqmindware.com/proof/" target="_blank" rel="noopener noreferrer">Open protocol and proof page</a>
+            <a class="ui-btn ui-btn-ghost" href="https://iqmindware.pages.dev/proof/" target="_blank" rel="noopener noreferrer">Fallback proof link</a>
+          </div>
+          <p class="suite-foot">If you clear browser data or switch device, re-enter your activation code.</p>
         </article>
         <div class="suite-back">
           <a class="ui-link" href="../../index.html">Back to product root</a>
@@ -470,7 +467,7 @@
     </main>
     <nav class="suite-bottom-nav" aria-label="IQ Core quick actions">
       <button id="navApps" class="suite-tab suite-tab-active" type="button"><span class="suite-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../shared-ui/icons.svg#iq-icon-home"></use></svg></span><span>Apps</span></button>
-      <button id="navProtocol" class="suite-tab" type="button"><span class="suite-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../shared-ui/icons.svg#iq-icon-capacity"></use></svg></span><span>Protocol</span></button>
+      <a id="navProtocol" class="suite-tab" href="https://iqmindware.com/proof/" target="_blank" rel="noopener noreferrer"><span class="suite-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../shared-ui/icons.svg#iq-icon-capacity"></use></svg></span><span>Protocol</span></a>
       <button id="navHelp" class="suite-tab" type="button"><span class="suite-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../shared-ui/icons.svg#iq-icon-zone"></use></svg></span><span>How to use</span></button>
       <button id="navSettings" class="suite-tab" type="button"><span class="suite-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/settings.svg" alt=""></span><span>Settings</span></button>
     </nav>
@@ -487,21 +484,6 @@
       </ol>
       <div class="ui-row">
         <button id="closeHelpBtn" class="ui-btn ui-btn-primary" type="button">Got it</button>
-      </div>
-    </section>
-  </div>
-
-  <div id="suiteProtocolOverlay" class="suite-help-overlay" hidden>
-    <section class="suite-help-card" role="dialog" aria-modal="true" aria-labelledby="suiteProtocolTitle">
-      <h2 id="suiteProtocolTitle" class="suite-help-title">IQ Core protocol flow</h2>
-      <ol class="suite-help-list">
-        <li>Start with Zone Coach to check readiness state before harder work.</li>
-        <li>Run Capacity Gym sessions to train attention, working memory, and relational control.</li>
-        <li>Use G Tracker to log baseline, weekly tracking, and post-training outcomes.</li>
-        <li>Use saved notes to keep context stable across sessions and compare like-with-like.</li>
-      </ol>
-      <div class="ui-row">
-        <button id="closeProtocolBtn" class="ui-btn ui-btn-primary" type="button">Got it</button>
       </div>
     </section>
   </div>
@@ -612,28 +594,6 @@
       return { open, close };
     }
 
-    function wireProtocolModal() {
-      const overlay = document.getElementById("suiteProtocolOverlay");
-      const closeBtn = document.getElementById("closeProtocolBtn");
-      if (!overlay || !closeBtn) {
-        return { open: () => {}, close: () => {} };
-      }
-      const close = () => { overlay.hidden = true; };
-      const open = () => { overlay.hidden = false; };
-      closeBtn.addEventListener("click", close);
-      overlay.addEventListener("click", (event) => {
-        if (event.target === overlay) {
-          close();
-        }
-      });
-      window.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && !overlay.hidden) {
-          close();
-        }
-      });
-      return { open, close };
-    }
-
     function scrollToSection(targetId) {
       const target = document.getElementById(targetId);
       const content = document.querySelector("body.suite-rebrand .ui-content");
@@ -646,7 +606,7 @@
       target.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
-    function wireBottomNav(openHelp, openProtocol) {
+    function wireBottomNav(openHelp) {
       const tabs = [
         document.getElementById("navApps"),
         document.getElementById("navProtocol"),
@@ -670,10 +630,7 @@
         });
       }
       if (navProtocol) {
-        navProtocol.addEventListener("click", () => {
-          setActive(navProtocol);
-          openProtocol();
-        });
+        navProtocol.addEventListener("click", () => setActive(navProtocol));
       }
       if (navHelp) {
         navHelp.addEventListener("click", () => {
@@ -684,10 +641,6 @@
       if (navSettings) {
         navSettings.addEventListener("click", () => {
           setActive(navSettings);
-          const details = document.getElementById("devDetails");
-          if (details) {
-            details.open = true;
-          }
           scrollToSection("suiteSettingsCard");
         });
       }
@@ -803,18 +756,7 @@
       const bundleId = params.get("bundle") || "";
       const renderState = { apps, bundles, bundleId, render: null };
       const helpModal = wireHelpModal();
-      const protocolModal = wireProtocolModal();
-      wireBottomNav(helpModal.open, protocolModal.open);
-
-      const config = window.IQEntitlementsClient && window.IQEntitlementsClient.loadConfig
-        ? window.IQEntitlementsClient.loadConfig()
-        : { entitlementsEndpoint: "", authToken: "" };
-      const endpointInput = document.getElementById("entEndpointInput");
-      const eventsEndpointInput = document.getElementById("eventsEndpointInput");
-      const tokenInput = document.getElementById("entTokenInput");
-      if (endpointInput) endpointInput.value = config.entitlementsEndpoint || "";
-      if (eventsEndpointInput) eventsEndpointInput.value = config.eventsEndpoint || "";
-      if (tokenInput) tokenInput.value = config.authToken || "";
+      wireBottomNav(helpModal.open);
 
       renderState.render = async () => {
         const access = await resolveAccessState(bundleId, bundles);
@@ -825,29 +767,6 @@
       };
 
       await renderState.render();
-
-      const saveBtn = document.getElementById("saveEntConfigBtn");
-      if (saveBtn && window.IQEntitlementsClient) {
-        saveBtn.addEventListener("click", async () => {
-          window.IQEntitlementsClient.saveConfig({
-            entitlementsEndpoint: endpointInput ? endpointInput.value : "",
-            eventsEndpoint: eventsEndpointInput ? eventsEndpointInput.value : "",
-            authToken: tokenInput ? tokenInput.value : ""
-          });
-          await renderState.render();
-        });
-      }
-
-      const clearBtn = document.getElementById("clearEntConfigBtn");
-      if (clearBtn && window.IQEntitlementsClient) {
-        clearBtn.addEventListener("click", async () => {
-          window.IQEntitlementsClient.clearConfig();
-          if (endpointInput) endpointInput.value = "";
-          if (eventsEndpointInput) eventsEndpointInput.value = "";
-          if (tokenInput) tokenInput.value = "";
-          await renderState.render();
-        });
-      }
 
       const resetBtn = document.getElementById("resetActivationBtn");
       if (resetBtn) {
