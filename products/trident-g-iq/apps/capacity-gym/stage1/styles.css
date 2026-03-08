@@ -335,17 +335,24 @@ body {
 }
 
 .bottom-tab-nav {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(470px, calc(100% - 12px));
+  bottom: 24px;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 2px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(180deg, rgba(16, 22, 35, 0.94), rgba(9, 14, 24, 0.97));
   padding: 8px 8px max(12px, env(safe-area-inset-bottom));
-  z-index: 4;
+  z-index: 10;
+}
+
+@media (min-width: 960px) {
+  .bottom-tab-nav {
+    width: min(900px, calc(100% - 24px));
+  }
 }
 
 .bottom-tab-btn {
@@ -1800,6 +1807,14 @@ input:disabled {
 
   .app-shell::after {
     display: none;
+  }
+
+  .bottom-tab-nav {
+    width: 100%;
+    left: 0;
+    right: 0;
+    transform: none;
+    bottom: 0;
   }
 
   .capacity-brand-row {
