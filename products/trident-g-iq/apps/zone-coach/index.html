@@ -200,7 +200,8 @@
   
     /* Capacity shell rebrand */
     body.zc-rebrand {
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
       background:
         radial-gradient(920px 460px at 50% -24%, rgba(110,198,255,.24), transparent 58%),
         linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%);
@@ -211,7 +212,7 @@
     }
     body.zc-rebrand .zoneAppShell {
       width: min(470px, calc(100% - 12px));
-      min-height: calc(100vh - 36px);
+      height: calc(100vh - 36px);
       border-radius: 38px;
       border: 1px solid rgba(255,255,255,.20);
       overflow: hidden;
@@ -220,6 +221,16 @@
         linear-gradient(180deg, #081326 0%, #050e1f 45%, #031029 100%);
       box-shadow: 0 30px 70px rgba(3,7,16,.38), inset 0 1px 0 rgba(255,255,255,.05);
       position: relative;
+    }
+    @media (min-width: 960px) {
+      body.zc-rebrand .zoneAppShell {
+        width: min(900px, calc(100% - 24px));
+      }
+    }
+    @media (max-height: 940px) {
+      body.zc-rebrand .zoneAppShell {
+        height: calc(100vh - 18px);
+      }
     }
     body.zc-rebrand .zoneAppShell::before {
       content: "";
@@ -250,7 +261,14 @@
       pointer-events: none;
     }
     body.zc-rebrand .tg-desktop-chrome { display: none; }
-    body.zc-rebrand .zoneContent { padding: 16px 12px 94px; }
+    body.zc-rebrand .zoneContent {
+      padding: 16px 12px 94px;
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
     body.zc-rebrand .zc-brand-row {
       display: flex;
       align-items: center;
@@ -324,7 +342,13 @@
       font-weight: 800;
       opacity: .94;
     }
-    body.zc-rebrand .app { width: 100%; }
+    body.zc-rebrand .app {
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
     body.zc-rebrand .card {
       border-radius: 22px;
       border-color: rgba(120,167,222,.22);
@@ -406,8 +430,8 @@
       filter: var(--zc-lime-filter) drop-shadow(0 0 9px rgba(204,255,102,.56));
     }
     @media (max-width: 520px) {
-      body.zc-rebrand { padding: 0; }
-      body.zc-rebrand .zoneAppShell { width: 100%; min-height: 100vh; border-radius: 0; border: none; }
+      body.zc-rebrand { height: 100dvh; padding: 0; }
+      body.zc-rebrand .zoneAppShell { width: 100%; height: 100dvh; border-radius: 0; border: none; }
       body.zc-rebrand .zoneContent { padding: 10px 10px 92px; }
       body.zc-rebrand .zoneAppShell::after { display: none; }
       body.zc-rebrand .zc-brand-site {
