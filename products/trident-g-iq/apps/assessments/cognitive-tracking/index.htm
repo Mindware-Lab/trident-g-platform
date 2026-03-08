@@ -136,6 +136,9 @@
       gap: 10px;
       overflow: hidden;
     }
+    .gt-panel-viewport.panelResults{
+      padding-bottom: 8px;
+    }
 
     .panelHint{
       margin: 0;
@@ -1507,6 +1510,9 @@
         overflow: visible;
         gap: 8px;
       }
+      .gt-panel-viewport.panelResults{
+        padding-bottom: calc(24px + env(safe-area-inset-bottom));
+      }
       .gt-panel-viewport > *{
         margin-bottom: 8px;
       }
@@ -2837,7 +2843,7 @@
               )}
             </div>
 
-            <div className="gt-panel-viewport">
+            <div className={`gt-panel-viewport ${activePanel === "results" ? "panelResults" : ""}`}>
               {!isTestsDualPanel && <p className="panelHint">{panelHelpText}</p>}
               {activePanel === "tests" && (
                 <>
