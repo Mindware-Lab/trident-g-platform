@@ -16,14 +16,14 @@
       padding: 16px 14px 24px;
       display: flex;
       justify-content: center;
-      align-items: flex-start;
+      align-items: center;
       margin: 0;
       font-family: var(--iq-font);
       color: var(--iq-text);
     }
     .premium-shell {
       width: min(470px, calc(100% - 12px));
-      min-height: calc(100vh - 36px);
+      min-height: 0;
       border-radius: 42px;
       border: 1.5px solid rgba(255,255,255,.45);
       overflow: hidden;
@@ -69,7 +69,7 @@
     .premium-content {
       width: 100%;
       padding: 16px 12px 28px;
-      min-height: calc(100vh - 36px);
+      min-height: 0;
       display: grid;
       align-content: start;
       gap: 10px;
@@ -164,6 +164,34 @@
       display: grid;
       gap: 10px;
     }
+    .premium-action-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .premium-action-grid .ui-btn {
+      width: 100%;
+      min-height: 54px;
+      text-align: center;
+    }
+    .premium-format-panel {
+      border: 1px solid rgba(110,198,255,.28);
+      background: rgba(16,30,52,.58);
+      border-radius: 14px;
+      padding: 12px;
+      color: var(--iq-text);
+      line-height: 1.45;
+      font-size: 0.92rem;
+    }
+    .premium-format-panel strong {
+      color: #d9ecff;
+    }
+    .premium-format-panel p {
+      margin: 0;
+    }
+    .hidden {
+      display: none !important;
+    }
     @media (max-width: 520px) {
       body.premium-wrap {
         padding: 0;
@@ -186,6 +214,9 @@
         padding: 10px 10px 24px;
         min-height: 100vh;
       }
+      .premium-action-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -203,12 +234,22 @@
 
       <article class="ui-card">
         <h1 class="premium-title">1:1 Premium</h1>
-        <p class="premium-sub">Access wrapper for private coaching clients. Activation requires a premium-specific code.</p>
+        <p class="premium-sub">Access hub for private coaching clients. Activation requires a premium-specific code.</p>
         <div id="premiumStatus" class="ui-notice" style="margin-top:10px;">Checking access...</div>
         <div class="premium-row" style="margin-top:10px;">
-          <a id="openWorkspaceBtn" class="ui-btn ui-btn-primary" href="../iq-suite/index.html?bundle=premium_1to1">Open IQ Core Workspace</a>
-          <a id="openCalendarBtn" class="ui-btn ui-btn-info" href="https://example.com/premium-calendar" target="_blank" rel="noopener noreferrer">Open 1:1 Calendar</a>
-          <button id="reactivateBtn" class="ui-btn ui-btn-ghost" type="button">Enter/Change Activation Code</button>
+          <div class="premium-action-grid">
+            <a id="openWorkspaceBtn" class="ui-btn ui-btn-primary" href="../iq-suite/index.html?bundle=premium_1to1">Open IQ Core Workspace</a>
+            <a id="openProtocolBtn" class="ui-btn ui-btn-info" href="https://iqmindware.com/proof/" target="_blank" rel="noopener noreferrer">Open Protocol (PROOF)</a>
+          </div>
+          <div class="premium-action-grid">
+            <a id="openBookingBtn" class="ui-btn ui-btn-info" href="https://example.com/premium-calendar" target="_blank" rel="noopener noreferrer">Open 1:1 Bookings</a>
+            <button id="openFormatBtn" class="ui-btn ui-btn-ghost" type="button">1:1 Format</button>
+          </div>
+          <div id="premiumFormatPanel" class="premium-format-panel hidden">
+            <p><strong>Session type:</strong> Personalised one-to-one sessions.</p>
+            <p style="margin-top:8px;"><strong>Before first booking:</strong> Email Dr Mark Ashton Smith at <a href="mailto:mark@iqmindware.com">mark@iqmindware.com</a> with your background information and goals.</p>
+            <p style="margin-top:8px;"><strong>Scheduling:</strong> Use the 1:1 Bookings button to choose your session slot.</p>
+          </div>
         </div>
       </article>
     </main>
@@ -220,19 +261,20 @@
       var REQUIRED_BUNDLE_ID = "premium_1to1";
       var MANIFEST_URL = "../iq-suite/bundle-manifests.json";
       var WORKSPACE_ROUTE = "../iq-suite/index.html?bundle=premium_1to1";
-      var DEFAULT_CALENDAR_URL = "https://example.com/premium-calendar";
+      var DEFAULT_BOOKING_URL = "https://example.com/premium-calendar";
 
       var statusEl = document.getElementById("premiumStatus");
       var workspaceBtn = document.getElementById("openWorkspaceBtn");
-      var calendarBtn = document.getElementById("openCalendarBtn");
-      var reactivateBtn = document.getElementById("reactivateBtn");
+      var bookingBtn = document.getElementById("openBookingBtn");
+      var formatBtn = document.getElementById("openFormatBtn");
+      var formatPanel = document.getElementById("premiumFormatPanel");
 
       var params = new URLSearchParams(window.location.search);
-      var calendarOverride = params.get("calendar");
-      if (calendarOverride) {
-        calendarBtn.href = calendarOverride;
+      var bookingOverride = params.get("booking") || params.get("calendar");
+      if (bookingOverride) {
+        bookingBtn.href = bookingOverride;
       } else {
-        calendarBtn.href = DEFAULT_CALENDAR_URL;
+        bookingBtn.href = DEFAULT_BOOKING_URL;
       }
 
       function setStatus(message, lock) {
@@ -277,7 +319,11 @@
       }
 
       workspaceBtn.href = WORKSPACE_ROUTE;
-      reactivateBtn.addEventListener("click", enforcePremiumAccess);
+      if (formatBtn && formatPanel) {
+        formatBtn.addEventListener("click", function () {
+          formatPanel.classList.toggle("hidden");
+        });
+      }
       enforcePremiumAccess();
     })();
   </script>
