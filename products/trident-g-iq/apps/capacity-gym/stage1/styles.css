@@ -544,10 +544,14 @@ body {
   bottom: 24px;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 2px;
+  gap: 4px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
   background: linear-gradient(180deg, rgba(16, 22, 35, 0.94), rgba(9, 14, 24, 0.97));
-  padding: 8px 8px max(12px, env(safe-area-inset-bottom));
+  border-radius: 0 0 38px 38px;
+  padding: 8px 14px max(12px, env(safe-area-inset-bottom));
+  overflow: hidden;
   z-index: 10;
 }
 
@@ -582,6 +586,11 @@ body {
   font-size: 0.72rem;
   font-weight: 700;
   line-height: 1;
+}
+
+.bottom-tab-btn:first-child,
+.bottom-tab-btn:last-child {
+  margin-inline: 2px;
 }
 
 .bottom-tab-btn.active {
@@ -2017,6 +2026,10 @@ input:disabled {
     right: 0;
     transform: none;
     bottom: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    padding: 8px 8px max(12px, env(safe-area-inset-bottom));
   }
 
   .capacity-brand-row {
