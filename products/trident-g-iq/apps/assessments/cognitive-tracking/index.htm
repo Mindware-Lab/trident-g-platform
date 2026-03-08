@@ -773,9 +773,14 @@
       align-items: center;
       max-width: 640px;
     }
-    .twoColSingle{
-      grid-template-columns: minmax(0, 1fr);
+    .twoColDual{
+      grid-template-columns: minmax(130px, 180px) minmax(180px, 1fr);
+      gap: 6px;
       max-width: none;
+    }
+    .compactCardDual .input{
+      padding: 6px 8px;
+      font-size: 12px;
     }
 
     @media (max-width: 720px){
@@ -2842,9 +2847,9 @@
                           </div>
                         </div>
                       )}
-                      <div className={isDualTestsView ? "twoCol twoColSingle" : "twoCol"}>
+                      <div className={isDualTestsView ? "twoCol twoColDual" : "twoCol"}>
                         <input className="input inputScoreReady" placeholder="Score" value={activeRepeatDraft.score} onChange={(e) => setDraftField(activeRepeatDraftKey, "score", e.target.value)} />
-                        {!isDualTestsView && <input className="input" placeholder="Notes (optional)" value={activeRepeatDraft.notes} onChange={(e) => setDraftField(activeRepeatDraftKey, "notes", e.target.value)} />}
+                        <input className="input" placeholder="Notes (optional)" value={activeRepeatDraft.notes} onChange={(e) => setDraftField(activeRepeatDraftKey, "notes", e.target.value)} />
                       </div>
                       <div className="compactActions">
                         <button className="btn btnPrimary" onClick={() => openTest(activeRepeatCard.testId)}>Open test</button>
@@ -2883,9 +2888,9 @@
                         </div>
                       )}
                       {!isDualTestsView && <p className="compactMeta">{activeOutcomeCard.comparison.line || "No comparison yet."}</p>}
-                      <div className={isDualTestsView ? "twoCol twoColSingle" : "twoCol"}>
+                      <div className={isDualTestsView ? "twoCol twoColDual" : "twoCol"}>
                         <input className="input inputScoreReady" placeholder="Score" value={activeOutcomeDraft.score} onChange={(e) => setDraftField(activeOutcomeDraftKey, "score", e.target.value)} />
-                        {!isDualTestsView && <input className="input" placeholder="Notes (optional)" value={activeOutcomeDraft.notes} onChange={(e) => setDraftField(activeOutcomeDraftKey, "notes", e.target.value)} />}
+                        <input className="input" placeholder="Notes (optional)" value={activeOutcomeDraft.notes} onChange={(e) => setDraftField(activeOutcomeDraftKey, "notes", e.target.value)} />
                       </div>
                       <div className="compactActions">
                         <button className="btn btnPrimary" onClick={() => {
