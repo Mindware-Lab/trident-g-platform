@@ -389,16 +389,20 @@
     body.zc-rebrand .zc-tab {
       border: 1px solid transparent;
       background: transparent;
+      appearance: none;
       display: grid;
       justify-items: center;
       gap: 4px;
       color: #9fb4d0;
       text-decoration: none;
       font: 700 11px/1.1 var(--iq-font, var(--font, system-ui, sans-serif));
+      width: 100%;
       min-height: 60px;
       padding: 6px 2px;
       border-radius: 10px;
+      cursor: pointer;
     }
+    body.zc-rebrand .zc-tab:focus-visible { outline: none; box-shadow: var(--zc-focus-ring); }
     body.zc-rebrand .zc-tab-icon {
       width: 28px;
       height: 28px;
@@ -427,6 +431,85 @@
     body.zc-rebrand .zc-tab-active .zc-tab-icon img {
       filter: var(--zc-lime-filter) drop-shadow(0 0 9px rgba(204,255,102,.56));
     }
+    body.zc-rebrand .zc-modal-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 12;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      background: rgba(3,7,15,.74);
+      backdrop-filter: blur(2px);
+    }
+    body.zc-rebrand .zc-modal-card {
+      width: min(560px, 100%);
+      max-height: min(78vh, 760px);
+      overflow: auto;
+      border-radius: 18px;
+      border: 1px solid rgba(120,167,222,.30);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.012)), rgba(9,20,40,.96);
+      box-shadow: 0 18px 34px rgba(2,6,15,.45), inset 0 1px 0 rgba(255,255,255,.05);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+    body.zc-rebrand .zc-modal-title {
+      margin: 0;
+      font-size: clamp(22px, 3.2vw, 28px);
+      line-height: 1.05;
+      font-weight: 900;
+      color: var(--zc-blue-soft);
+    }
+    body.zc-rebrand .zc-settings-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    body.zc-rebrand .zc-settings-field {
+      border: 1px solid var(--zc-border-soft);
+      border-radius: 12px;
+      padding: 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.012));
+      display: grid;
+      gap: 6px;
+    }
+    body.zc-rebrand .zc-settings-field label {
+      font-size: 12px;
+      color: var(--zc-text-label);
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    body.zc-rebrand .zc-settings-input {
+      width: 100%;
+      min-height: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--zc-border);
+      background: rgba(8,15,28,.92);
+      color: var(--zc-text);
+      padding: 8px 10px;
+      font: 700 14px/1.2 var(--iq-font, var(--font, system-ui, sans-serif));
+    }
+    body.zc-rebrand .zc-settings-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--zc-text);
+      padding: 2px 0;
+    }
+    body.zc-rebrand .zc-settings-check input { accent-color: #ccff66; }
+    body.zc-rebrand .zc-settings-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    body.zc-rebrand .zc-settings-actions .btn { flex: 1 1 160px; }
+    body.zc-rebrand .zc-settings-status {
+      min-height: 18px;
+      font-size: 12px;
+      color: var(--zc-text-muted);
+    }
     @media (max-width: 520px) {
       body.zc-rebrand { height: 100dvh; padding: 0; }
       body.zc-rebrand .zoneAppShell { width: 100%; height: 100dvh; border-radius: 0; border: none; }
@@ -437,6 +520,7 @@
         padding: 5px 8px;
         max-width: 48%;
       }
+      body.zc-rebrand .zc-settings-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -587,13 +671,50 @@
     </div>
   </div>
     </main>
-    <nav class="zc-bottom-nav" aria-label="Zone Coach navigation preview">
-      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/home.svg" alt=""></span><span>Home</span></a>
-      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/play-hub.svg" alt=""></span><span>Hub</span></a>
-      <a class="zc-tab zc-tab-active" href="#"><span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/play-relational.svg" alt=""></span><span>Relational</span></a>
-      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/history.svg" alt=""></span><span>Progress</span></a>
-      <a class="zc-tab" href="#"><span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/settings.svg" alt=""></span><span>Settings</span></a>
+    <nav class="zc-bottom-nav" aria-label="Zone Coach navigation">
+      <button class="zc-tab zc-tab-active" type="button" data-nav-action="home" aria-label="Go to Zone Coach home">
+        <span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/home.svg" alt=""></span><span>Home</span>
+      </button>
+      <button class="zc-tab" type="button" data-nav-action="run" aria-label="Run full CCC check">
+        <span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/play-hub.svg" alt=""></span><span>Run</span>
+      </button>
+      <button class="zc-tab" type="button" data-nav-action="trace" aria-label="Open CCC trace">
+        <span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/history.svg" alt=""></span><span>Trace</span>
+      </button>
+      <button class="zc-tab" type="button" data-nav-action="guide" aria-label="Open Zone Coach guide">
+        <span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/play-relational.svg" alt=""></span><span>Guide</span>
+      </button>
+      <button class="zc-tab" type="button" data-nav-action="settings" aria-label="Open Zone Coach settings">
+        <span class="zc-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/settings.svg" alt=""></span><span>Settings</span>
+      </button>
     </nav>
+    <div id="zcSettingsOverlay" class="zc-modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="zcSettingsTitle">
+      <section class="zc-modal-card">
+        <h2 id="zcSettingsTitle" class="zc-modal-title">Zone Coach Settings</h2>
+        <p class="small muted">Adjust recommendation preferences and safety flags stored on this device.</p>
+        <div class="zc-settings-grid">
+          <div class="zc-settings-field">
+            <label for="zcSettingsTimeBudget">Target session time (minutes)</label>
+            <input id="zcSettingsTimeBudget" class="zc-settings-input" type="number" min="5" max="45" step="1" value="10">
+          </div>
+          <div class="zc-settings-field">
+            <label>Recommendation profile</label>
+            <label class="zc-settings-check"><input id="zcSettingsPrefersExercise" type="checkbox"> Prefer exercise-first options (Flat state)</label>
+            <label class="zc-settings-check"><input id="zcSettingsAllowsHiit" type="checkbox"> Allow HIIT options</label>
+            <label class="zc-settings-check"><input id="zcSettingsAllowsCold" type="checkbox"> Allow cold exposure options</label>
+            <label class="zc-settings-check"><input id="zcSettingsAllowsBreath" type="checkbox"> Allow intense breathwork options</label>
+            <label class="zc-settings-check"><input id="zcSettingsInjuryIllness" type="checkbox"> Injury or illness mode (suppress high-load options)</label>
+          </div>
+        </div>
+        <div id="zcSettingsStatus" class="zc-settings-status"></div>
+        <div class="zc-settings-actions">
+          <button id="zcSettingsSaveBtn" type="button" class="btn btn-primary">Save settings</button>
+          <button id="zcSettingsResetHistoryBtn" type="button" class="btn btn-ghost">Reset local history</button>
+          <a id="zcSettingsSuiteBtn" class="btn btn-ghost" href="../iq-suite/index.html">Back to Suite</a>
+          <button id="zcSettingsCloseBtn" type="button" class="btn btn-info">Close</button>
+        </div>
+      </section>
+    </div>
   </div>
 
   <script src="../shared-ui/entitlements-client.js"></script>
@@ -676,6 +797,18 @@
       touchLeftBtn: $('touchLeftBtn'), touchRightBtn: $('touchRightBtn'),
       instructionsBtn: $('instructionsBtn'), learnAboutTestBtn: $('learnAboutTestBtn'), feelStatesBtn: $('feelStatesBtn'),
       startBpsTraceMeta: $('startBpsTraceMeta'), startBpsTraceSummary: $('startBpsTraceSummary'), startBpsTraceBand: $('startBpsTraceBand'), startBpsTraceSvgWrap: $('startBpsTraceSvgWrap'),
+      settingsOverlay: $('zcSettingsOverlay'),
+      settingsTimeBudget: $('zcSettingsTimeBudget'),
+      settingsPrefersExercise: $('zcSettingsPrefersExercise'),
+      settingsAllowsHiit: $('zcSettingsAllowsHiit'),
+      settingsAllowsCold: $('zcSettingsAllowsCold'),
+      settingsAllowsBreath: $('zcSettingsAllowsBreath'),
+      settingsInjuryIllness: $('zcSettingsInjuryIllness'),
+      settingsStatus: $('zcSettingsStatus'),
+      settingsSaveBtn: $('zcSettingsSaveBtn'),
+      settingsResetHistoryBtn: $('zcSettingsResetHistoryBtn'),
+      settingsSuiteBtn: $('zcSettingsSuiteBtn'),
+      settingsCloseBtn: $('zcSettingsCloseBtn'),
       canvas: $('c')
     };
     const ctx = dom.canvas.getContext('2d', { alpha:false, desynchronized:true }) || dom.canvas.getContext('2d');
@@ -2190,6 +2323,81 @@
         <p class="muted">This screen is informational only and does not change your saved data.</p>
       `);
     }
+    function openGuideScreen(){
+      openInfoScreen('Zone Coach Guide', `
+        <div class="kicker">Mindware Lab - Trident G IQ</div>
+        <h1>Zone Coach Quick Guide</h1>
+        <ul>
+          <li><strong>Home:</strong> return to the start screen and set your current felt state.</li>
+          <li><strong>Run:</strong> start a full 3-minute CCC check.</li>
+          <li><strong>Trace:</strong> open your local CCC Bits/Second history view.</li>
+          <li><strong>Guide:</strong> open instructions and state definitions.</li>
+          <li><strong>Settings:</strong> adjust recommendation preferences and safety flags for this device.</li>
+        </ul>
+      `);
+    }
+    function setFooterActive(action){
+      document.querySelectorAll('.zc-bottom-nav [data-nav-action]').forEach((el) => {
+        el.classList.toggle('zc-tab-active', el.getAttribute('data-nav-action') === action);
+      });
+    }
+    function scrollAppToTop(){
+      const appWrap = document.querySelector('body.zc-rebrand .app');
+      if (appWrap && typeof appWrap.scrollTo === 'function') {
+        appWrap.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+    function populateSettingsForm(){
+      const prefs = loadPrefs();
+      if (dom.settingsTimeBudget) dom.settingsTimeBudget.value = String(Number(prefs.timeBudget || DEFAULT_PREFS.timeBudget));
+      if (dom.settingsPrefersExercise) dom.settingsPrefersExercise.checked = Boolean(prefs.prefersExercise);
+      if (dom.settingsAllowsHiit) dom.settingsAllowsHiit.checked = Boolean(prefs.allowsHIIT);
+      if (dom.settingsAllowsCold) dom.settingsAllowsCold.checked = Boolean(prefs.allowsColdExposure);
+      if (dom.settingsAllowsBreath) dom.settingsAllowsBreath.checked = Boolean(prefs.allowsIntenseBreathwork);
+      if (dom.settingsInjuryIllness) dom.settingsInjuryIllness.checked = Boolean(prefs.injuryOrIllness);
+    }
+    function readSettingsForm(){
+      const current = loadPrefs();
+      const timeBudget = dom.settingsTimeBudget ? Number(dom.settingsTimeBudget.value) : current.timeBudget;
+      return {
+        ...current,
+        timeBudget: Number.isFinite(timeBudget) ? clamp(Math.round(timeBudget), 5, 45) : current.timeBudget,
+        prefersExercise: Boolean(dom.settingsPrefersExercise && dom.settingsPrefersExercise.checked),
+        allowsHIIT: Boolean(dom.settingsAllowsHiit && dom.settingsAllowsHiit.checked),
+        allowsColdExposure: Boolean(dom.settingsAllowsCold && dom.settingsAllowsCold.checked),
+        allowsIntenseBreathwork: Boolean(dom.settingsAllowsBreath && dom.settingsAllowsBreath.checked),
+        injuryOrIllness: Boolean(dom.settingsInjuryIllness && dom.settingsInjuryIllness.checked)
+      };
+    }
+    function closeSettingsPanel(){
+      if (!dom.settingsOverlay) return;
+      dom.settingsOverlay.classList.add('hidden');
+      if (dom.settingsStatus) dom.settingsStatus.textContent = '';
+      setFooterActive('home');
+    }
+    function openSettingsPanel(){
+      if (!dom.settingsOverlay) return;
+      populateSettingsForm();
+      if (dom.settingsStatus) dom.settingsStatus.textContent = '';
+      if (dom.settingsSuiteBtn) {
+        const suiteLink = document.getElementById('suiteBackLink');
+        dom.settingsSuiteBtn.href = suiteLink && suiteLink.href ? suiteLink.href : '../iq-suite/index.html';
+      }
+      dom.settingsOverlay.classList.remove('hidden');
+      setFooterActive('settings');
+    }
+    function wireFooterNav(){
+      const navHome = document.querySelector('[data-nav-action="home"]');
+      const navRun = document.querySelector('[data-nav-action="run"]');
+      const navTrace = document.querySelector('[data-nav-action="trace"]');
+      const navGuide = document.querySelector('[data-nav-action="guide"]');
+      const navSettings = document.querySelector('[data-nav-action="settings"]');
+      if (navHome) navHome.addEventListener('click', () => { returnToStart(); scrollAppToTop(); setFooterActive('home'); });
+      if (navRun) navRun.addEventListener('click', () => { setFooterActive('run'); hideSessionPanel(); runProbe(CFG.totalSeconds, 'Full probe'); });
+      if (navTrace) navTrace.addEventListener('click', () => { setFooterActive('trace'); openBpsTraceScreen(); });
+      if (navGuide) navGuide.addEventListener('click', () => { setFooterActive('guide'); openGuideScreen(); });
+      if (navSettings) navSettings.addEventListener('click', () => openSettingsPanel());
+    }
     dom.startBtn.addEventListener('click', () => { hideSessionPanel(); runProbe(CFG.totalSeconds, 'Full probe'); });
     dom.quickBtn.addEventListener('click', () => { hideSessionPanel(); runProbe(CFG.quickSeconds, 'Quick re-check'); });
     dom.fullBtn.addEventListener('click', () => { hideSessionPanel(); runProbe(CFG.totalSeconds, 'Full probe'); });
@@ -2283,6 +2491,22 @@
         rt.stop = true; if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); }
       }
     });
+    if (dom.settingsSaveBtn) dom.settingsSaveBtn.addEventListener('click', () => {
+      const prefs = readSettingsForm();
+      savePrefs(prefs);
+      if (dom.settingsStatus) dom.settingsStatus.textContent = 'Settings saved on this device.';
+    });
+    if (dom.settingsResetHistoryBtn) dom.settingsResetHistoryBtn.addEventListener('click', () => {
+      const shouldReset = window.confirm('Reset local Zone Coach history on this device?');
+      if (!shouldReset) return;
+      dom.resetHistoryBtn.click();
+      if (dom.settingsStatus) dom.settingsStatus.textContent = 'Local history reset.';
+    });
+    if (dom.settingsCloseBtn) dom.settingsCloseBtn.addEventListener('click', () => closeSettingsPanel());
+    if (dom.settingsOverlay) dom.settingsOverlay.addEventListener('click', (event) => {
+      if (event.target === dom.settingsOverlay) closeSettingsPanel();
+    });
+    wireFooterNav();
 
     clearResultMetricSlots(); rt.lastSummary = null; resizeCanvas(); drawFix(); refreshHistoryUI(); setPhase('Ready'); setStatus('Idle'); dom.stopBtn.disabled = true; if (dom.skipToResultBtn) dom.skipToResultBtn.disabled = true;
   })();
