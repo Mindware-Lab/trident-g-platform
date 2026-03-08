@@ -1472,7 +1472,35 @@
         border: none;
       }
       .ui-content{
-        padding: 10px 10px 92px;
+        padding: 10px 10px 108px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+      .ui-screen{
+        height: 100%;
+        min-height: 100%;
+      }
+      #root{
+        display: block;
+        flex: 0 0 auto;
+        min-height: auto;
+      }
+      #root > .screen{
+        display: block;
+        flex: 0 0 auto;
+        min-height: auto;
+      }
+      #root > .screen > .content{
+        display: grid;
+        gap: 8px;
+        overflow: visible;
+        min-height: auto;
+      }
+      .gt-panel-viewport{
+        flex: 0 0 auto;
+        overflow: visible;
+        gap: 8px;
       }
       .gt-shell::after{
         display: none;
