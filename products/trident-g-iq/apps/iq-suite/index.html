@@ -286,6 +286,18 @@
       min-height: 148px;
       border-radius: 16px;
     }
+    body.suite-rebrand .suite-app .ui-chip.suite-chip-included {
+      border-color: rgba(232, 240, 252, 0.78);
+      background: linear-gradient(180deg, rgba(196, 208, 224, 0.32), rgba(140, 156, 182, 0.24));
+      color: #edf5ff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    }
+    body.suite-rebrand .suite-app .ui-chip.suite-chip-activated {
+      border-color: rgba(176, 226, 255, 0.82);
+      background: linear-gradient(180deg, rgba(142, 205, 255, 0.34), rgba(94, 166, 240, 0.22));
+      color: #f2f9ff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
     body.suite-rebrand .ui-btn {
       min-height: 46px;
       border-radius: 14px;
@@ -695,10 +707,10 @@
         const requiresActivation = showBundleHints && inBundle;
         const isUnlocked = requiresActivation ? unlockedSet.has(app.appId) : true;
         const bundleChip = showBundleHints
-          ? `<span class="ui-chip ${inBundle ? "ui-chip-primary" : "ui-chip-info"}">${inBundle ? "Included in bundle" : "Outside bundle scope"}</span>`
+          ? `<span class="ui-chip ${inBundle ? "suite-chip-included" : "ui-chip-info"}">${inBundle ? "Included in bundle" : "Outside bundle scope"}</span>`
           : "";
         const gateChip = requiresActivation
-          ? `<span class="ui-chip ${isUnlocked ? "ui-chip-primary" : "ui-lock"}">${
+          ? `<span class="ui-chip ${isUnlocked ? "suite-chip-activated" : "ui-lock"}">${
               isUnlocked ? (access.mode === "server" ? "Entitled" : "Activated") : (access.mode === "server" ? "Entitlement required" : "Activation needed")
             }</span>`
           : "";
