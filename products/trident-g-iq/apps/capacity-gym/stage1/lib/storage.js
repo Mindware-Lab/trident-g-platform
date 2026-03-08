@@ -1,3 +1,5 @@
+import { normalizeProgression } from "./progression.js";
+
 export const STORAGE_KEY = "tg_capacity_gym_v1";
 const HISTORY_LIMIT = 200;
 
@@ -16,13 +18,15 @@ function makeDefaultState() {
     },
     history: [],
     bankUnits: 0,
+    transferBankUnits: 0,
     unlocks: {
       hub_noncat: true,
       transitive: false,
       graph: false,
       propositional: false
     },
-    missionsByDate: {}
+    missionsByDate: {},
+    progression: normalizeProgression({})
   };
 }
 
@@ -105,11 +109,13 @@ function normalizeState(raw) {
     },
     history: Array.isArray(raw.history) ? raw.history.slice(0, HISTORY_LIMIT) : [],
     bankUnits: Number.isFinite(raw.bankUnits) ? raw.bankUnits : 0,
+    transferBankUnits: Number.isFinite(raw.transferBankUnits) ? raw.transferBankUnits : 0,
     unlocks: {
       ...defaults.unlocks,
       ...(isObject(raw.unlocks) ? raw.unlocks : {})
     },
-    missionsByDate: normalizeMissionsByDate(raw.missionsByDate)
+    missionsByDate: normalizeMissionsByDate(raw.missionsByDate),
+    progression: normalizeProgression(raw.progression)
   };
 }
 

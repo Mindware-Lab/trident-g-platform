@@ -522,6 +522,20 @@ body {
   border-color: rgba(204, 255, 102, 0.7) !important;
 }
 
+.transfer-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(110, 198, 255, 0.45);
+  background: rgba(110, 198, 255, 0.15);
+  color: #d9eeff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 5px 10px;
+  line-height: 1;
+}
+
 .stage-panel {
   border: 1px solid var(--brand-border);
   border-radius: var(--radius-xl);
@@ -826,6 +840,28 @@ body {
   margin: 4px 0;
 }
 
+.transfer-evidence-card {
+  margin-top: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(110, 198, 255, 0.35);
+  background: rgba(110, 198, 255, 0.12);
+  padding: 10px 12px;
+}
+
+.transfer-evidence-card p {
+  margin: 4px 0;
+}
+
+.transfer-evidence-success {
+  border-color: rgba(204, 255, 102, 0.55);
+  background: rgba(204, 255, 102, 0.14);
+}
+
+.transfer-evidence-warn {
+  border-color: rgba(255, 196, 120, 0.5);
+  background: rgba(255, 196, 120, 0.13);
+}
+
 .card h2,
 .card h3 {
   margin: 0;
@@ -876,11 +912,44 @@ body {
 
 .mission-card,
 .snapshot-card,
-.mode-panel {
+.mode-panel,
+.training-state-card {
   border: 1px solid var(--brand-border);
   border-radius: var(--radius-md);
   background: linear-gradient(180deg, rgba(26, 36, 54, 0.9), rgba(11, 19, 33, 0.9));
   padding: 13px;
+}
+
+.training-state-card {
+  margin-top: 10px;
+}
+
+.training-state-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 8px 0;
+}
+
+.session-style-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(110, 198, 255, 0.4);
+  background: rgba(110, 198, 255, 0.14);
+  padding: 6px 10px;
+  color: #dff1ff;
+  font-size: 0.82rem;
+}
+
+.session-style-pill strong {
+  color: #111f30;
+  background: #9dd8ff;
+  border-radius: 999px;
+  padding: 3px 7px;
+  font-size: 0.73rem;
+  letter-spacing: 0.02em;
 }
 
 .kicker {

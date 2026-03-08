@@ -35,6 +35,16 @@ import {
 } from "./games/relational.js";
 import { hash32 } from "./lib/rng.js";
 import { coachUpdateAfterBlock, relationalCoachUpdateAfterBlock } from "./lib/coach.js";
+import {
+  applyHubTransferOutcome,
+  applyZoneToProgression,
+  computeHubSessionStyle,
+  describeSessionStyle,
+  formatRemainingDuration,
+  normalizeProgression,
+  otherHubWrapper,
+  readZoneHandoffFromStorage
+} from "./lib/progression.js";
 import { transitiveMode } from "./games/transitive.js";
 import { graphMode } from "./games/graph.js";
 import { propositionalMode } from "./games/propositional.js";
@@ -48,7 +58,7 @@ import { resolvePrimaryScreen } from "./ui/screen-coordinator.js";
 import { renderPrimaryScreen } from "./ui/screens.js";
 import { buildShellViewModel } from "./ui/view-models.js";
 
-const TEMP_RELATIONAL_UNLOCK_FOR_INSPECTION = true;
+const TEMP_RELATIONAL_UNLOCK_FOR_INSPECTION = false;
 const ROUTES = new Set(["home", "play-hub", "play-relational", "history", "settings"]);
 const DEFAULT_ROUTE = "home";
 const appRoot = document.querySelector("#app");
@@ -269,13 +279,12 @@ const HELP_TOPICS = Object.freeze({
   "training-progression": {
     title: "How to Progress Through Training",
     lines: [
-      "Build stability in both Hub games: Categorical and Non-Categorical.",
-      "Reach and hold a consistent 3-back level in both Hub variations to unlock Relational training.",
-      "After unlock, practice all three relational n-back modes: Transitive, Graph, and Propositional.",
-      "Complete daily session missions to earn bonus bank units and keep your streak moving.",
-      "Units are earned from achievements: +2 for UP blocks, +1 for HOLD blocks, plus +3 mission bonus when a full daily mission is completed.",
-      "The built-in coach follows the Trident G Far Transfer Protocol to support transfer of core IQ capacities to real life: attention control, working memory, and relational processing.",
-      "For protocol details, visit IQMindware.com."
+      "Training bank is instant points for block performance (+2 UP, +1 HOLD).",
+      "Transfer bank is stricter evidence: Probe check pass + Later check pass after at least 24 hours.",
+      "Probe check = wrapper swap test at block 4, then return at block 5.",
+      "Later check = delayed durability test that replays the same swap pattern.",
+      "If Zone is too hot, run reset mode. If Zone is stale or unclear, run stabilise mode.",
+      "Relational modes unlock after stable performance in both Hub games."
     ]
   },
   "rel-metrics": {
@@ -299,6 +308,7 @@ const UI_TAP_ACTIONS = new Set([
   "rel-next-block",
   "start-hub-session",
   "start-relational-session",
+  "import-zone-handoff",
   "unlock-go-relational",
   "unlock-close"
 ]);
@@ -456,6 +466,82 @@ function dayDiffByDateKeys(fromDateKey, toDateKey) {
     return null;
   }
   return toDays - fromDays;
+}
+
+function getProgressionState(state) {
+  return normalizeProgression(state?.progression);
+}
+
+function getSavedZoneForNow(state, nowTs = Date.now()) {
+  const progression = getProgressionState(state);
+  const zone = progression.lastZone && typeof progression.lastZone === "object"
+    ? progression.lastZone
+    : null;
+  if (!zone) {
+    return null;
+  }
+  const zoneDay = Number.isFinite(zone.timestamp) ? toDateKeyLocal(zone.timestamp) : null;
+  const nowDay = toDateKeyLocal(nowTs);
+  return {
+    ...zone,
+    freshSameDay: Boolean(zoneDay && zoneDay === nowDay)
+  };
+}
+
+function buildZoneStatusCopy(zone) {
+  if (!zone) {
+    return {
+      title: "No Zone result imported",
+      detail: "Run Zone Coach and import the latest result in Settings."
+    };
+  }
+  const freshness = zone.freshSameDay ? "Fresh today" : "Stale";
+  if (zone.zone === "in_band") {
+    const detail = zone.freshSameDay
+      ? "Ready for normal progression."
+      : "Zone result is from a previous day. Import a fresh Zone check to unlock normal progression.";
+    return {
+      title: `In-band (${freshness})`,
+      detail
+    };
+  }
+  if (zone.zone === "too_hot") {
+    return {
+      title: `Out of band: overloaded (${freshness})`,
+      detail: "Use reset settings and avoid transfer checks today."
+    };
+  }
+  if (zone.zone === "too_cold") {
+    return {
+      title: `Out of band: underpowered (${freshness})`,
+      detail: "Use stabilise settings before high challenge."
+    };
+  }
+  return {
+    title: `Zone unclear (${freshness})`,
+    detail: "Fallback to stabilise settings until a clear Zone result is imported."
+  };
+}
+
+function getHubStyleDecision(state, nowTs = Date.now()) {
+  const progression = getProgressionState(state);
+  const zone = getSavedZoneForNow(state, nowTs);
+  return computeHubSessionStyle({
+    history: Array.isArray(state?.history) ? state.history : [],
+    progression,
+    zoneHandoff: zone,
+    nowTs
+  });
+}
+
+function renderSessionStyleBadge(style) {
+  const styleCopy = describeSessionStyle(style);
+  return `
+    <span class="session-style-pill" aria-label="Session style">
+      <strong>${escapeHtml(styleCopy.shortLabel)}</strong>
+      <span>${escapeHtml(styleCopy.label)}</span>
+    </span>
+  `;
 }
 
 function deriveOutcomeBandFromAccuracy(accuracy) {
@@ -758,7 +844,29 @@ function registerMissionSessionStart() {
   return mission;
 }
 
-function applySessionProgressAndSave(summary, family) {
+function importLatestZoneHandoffToGymState() {
+  const nowTs = Date.now();
+  const handoff = readZoneHandoffFromStorage(nowTs);
+  if (!handoff) {
+    setFlash("No Zone result found. Run Zone Coach first, then import here.", "warn");
+    return false;
+  }
+  const state = loadGymState();
+  const progression = applyZoneToProgression(state.progression, handoff);
+  saveGymState({
+    ...state,
+    progression
+  });
+  const zoneCopy = buildZoneStatusCopy(handoff);
+  if (handoff.freshSameDay) {
+    setFlash(`Zone result imported: ${zoneCopy.title}.`, "success");
+  } else {
+    setFlash(`Zone result imported but stale: ${zoneCopy.title}. Run Zone Coach again today for full gating.`, "warn");
+  }
+  return true;
+}
+
+function applySessionProgressAndSave(summary, family, options = {}) {
   const dateKey = toDateKeyLocal(summary?.tsEnd || Date.now());
   let state = loadGymState();
   const synced = syncRelationalUnlockFlags(state);
@@ -778,16 +886,43 @@ function applySessionProgressAndSave(summary, family) {
 
   const sessionUnitsEarned = computeSessionUnits(summary?.blocks || []);
   let bankUnits = Number(state.bankUnits || 0) + sessionUnitsEarned;
+  let transferBankUnits = Number(state.transferBankUnits || 0);
+  let progression = getProgressionState(state);
   const rewardOutcome = maybeAwardMissionReward(mission, bankUnits);
   mission = rewardOutcome.mission;
   bankUnits = rewardOutcome.bankUnits;
   const missionNowComplete = isMissionComplete(mission);
   const missionJustCompleted = !missionWasComplete && missionNowComplete;
 
+  let transferBankDelta = 0;
+  let transferEvidence = {
+    status: "not_counted",
+    title: "Transfer check not counted",
+    detail: "This session focused on standard training."
+  };
+  if (family === "hub") {
+    const precomputed = options?.hubTransferOutcome && typeof options.hubTransferOutcome === "object"
+      ? options.hubTransferOutcome
+      : null;
+    const transferOutcome = precomputed || applyHubTransferOutcome({
+      progression,
+      summary,
+      sessionStyle: summary?.sessionStyle || null,
+      nowTs: Number(summary?.tsEnd || Date.now())
+    });
+    progression = transferOutcome.progression;
+    progression.hubSessionIndex = Math.max(0, Number(progression.hubSessionIndex || 0)) + 1;
+    transferBankDelta = Number(transferOutcome.transferDelta || 0);
+    transferEvidence = transferOutcome.transferEvidence || transferEvidence;
+    transferBankUnits += transferBankDelta;
+  }
+
   const nextSettings = applyMissionStreakOnCompletion(state.settings, dateKey, missionJustCompleted);
   const nextState = {
     ...state,
     bankUnits,
+    transferBankUnits,
+    progression,
     settings: nextSettings,
     missionsByDate: {
       ...(state.missionsByDate || {}),
@@ -804,6 +939,9 @@ function applySessionProgressAndSave(summary, family) {
     missionCompletedSteps: mission.completedSteps || 0,
     missionStepTotal: Array.isArray(mission.steps) ? mission.steps.length : 0,
     bankTotal: bankUnits,
+    transferBankDelta,
+    transferBankTotal: transferBankUnits,
+    transferEvidence,
     streakCurrent: Number(nextSettings.streakCurrent || 0),
     streakBest: Number(nextSettings.streakBest || 0),
     unlockProgress,
@@ -1272,6 +1410,82 @@ function renderAccuracyBars(blocks) {
   `;
 }
 
+function transferEvidenceTone(status) {
+  if (status === "banked") {
+    return "success";
+  }
+  if (status === "failed" || status === "no_pending") {
+    return "warn";
+  }
+  return "info";
+}
+
+function transferEvidenceStatusLabel(status) {
+  if (status === "banked") {
+    return "Banked";
+  }
+  if (status === "pending_recheck") {
+    return "Pending later check";
+  }
+  if (status === "not_counted_early") {
+    return "Too early";
+  }
+  if (status === "failed") {
+    return "Failed later check";
+  }
+  if (status === "no_pending") {
+    return "No pending candidate";
+  }
+  return "Not counted";
+}
+
+function renderTransferEvidenceCard(transferEvidence) {
+  if (!transferEvidence || typeof transferEvidence !== "object") {
+    return "";
+  }
+  const status = String(transferEvidence.status || "not_counted");
+  const tone = transferEvidenceTone(status);
+  const statusLabel = transferEvidenceStatusLabel(status);
+  const title = transferEvidence.title || "Transfer evidence";
+  let detail = transferEvidence.detail || "";
+  if (status === "not_counted_early" && Number.isFinite(transferEvidence.remainingMs)) {
+    detail = `${detail} Remaining delay: ${formatRemainingDuration(transferEvidence.remainingMs)}.`;
+  }
+  return `
+    <div class="transfer-evidence-card transfer-evidence-${tone}" role="status" aria-live="polite">
+      <p class="kicker">Transfer Evidence</p>
+      <p class="hint"><strong>Status:</strong> ${escapeHtml(statusLabel)}</p>
+      <p><strong>${escapeHtml(title)}</strong></p>
+      <p class="hint">${escapeHtml(detail)}</p>
+    </div>
+  `;
+}
+
+function renderZoneStateCard(zone, styleDecision) {
+  const zoneCopy = buildZoneStatusCopy(zone);
+  const styleCopy = describeSessionStyle(styleDecision?.style || "TUNE");
+  const reason = styleDecision?.reason || styleCopy.description;
+  const pendingCandidate = styleDecision?.pendingCandidate || null;
+  const remainingMs = pendingCandidate && pendingCandidate.eligibleNow === false && Number.isFinite(pendingCandidate.eligibleAfterTs)
+    ? Math.max(0, pendingCandidate.eligibleAfterTs - Date.now())
+    : null;
+  const waitingLine = Number.isFinite(remainingMs)
+    ? `<p class="hint"><strong>Later check opens in:</strong> ${escapeHtml(formatRemainingDuration(remainingMs))}</p>`
+    : "";
+  return `
+    <div class="training-state-card">
+      <p class="kicker">Today's training state</p>
+      <div class="training-state-head">
+        ${renderSessionStyleBadge(styleDecision?.style || "TUNE")}
+      </div>
+      <p><strong>Zone:</strong> ${escapeHtml(zoneCopy.title)}</p>
+      <p class="hint">${escapeHtml(zoneCopy.detail)}</p>
+      <p class="hint"><strong>Next:</strong> ${escapeHtml(reason)}</p>
+      ${waitingLine}
+    </div>
+  `;
+}
+
 function updateShellHeaderStats(shellVm) {
   const streakEl = document.querySelector("#shell-streak");
   const bankEl = document.querySelector("#shell-bank");
@@ -1484,6 +1698,137 @@ function normalizeRelationalCoachFlags(flags) {
   };
 }
 
+function applyHubSessionStylePatch(session, patch, blockIndex, lastPlan) {
+  const safePatch = patch && typeof patch === "object" ? { ...patch } : {};
+  const safeFlags = safePatch.flags && typeof safePatch.flags === "object" ? { ...safePatch.flags } : {};
+  const style = session?.sessionStyle || "TUNE";
+  const baselineWrapper = session?.baselineWrapper === "hub_noncat" ? "hub_noncat" : "hub_cat";
+
+  if (style === "RESET" || style === "TIGHTEN") {
+    const currentN = Number.isFinite(safePatch.n) ? safePatch.n : Number(session?.currentN || 1);
+    safePatch.wrapper = baselineWrapper;
+    safePatch.speed = "slow";
+    safePatch.interference = "low";
+    safePatch.n = style === "RESET"
+      ? Math.max(1, Math.min(2, Math.round(currentN)))
+      : Math.max(1, Math.round(currentN));
+    safePatch.flags = {
+      coachState: style === "RESET" ? "RECOVER" : "STABILISE",
+      pulseType: null,
+      swapSegment: null,
+      wasSwapProbe: false,
+      userOverride: "coach"
+    };
+    return safePatch;
+  }
+
+  if (style === "PROBE" && blockIndex === 4) {
+    const probeN = Number.isFinite(safePatch.n) ? Math.max(1, Math.round(safePatch.n)) : Math.max(1, Number(session?.currentN || 1));
+    const probeSpeed = safePatch.speed ? normalizeHubSpeed(safePatch.speed) : normalizeHubSpeed(lastPlan?.speed || hubPreferences.speed);
+    const probeInterference = safePatch.interference
+      ? normalizeHubInterference(safePatch.interference)
+      : normalizeHubInterference(lastPlan?.interference || hubPreferences.interference);
+    const targetModality = normalizeHubTargetModality(safePatch.targetModality || lastPlan?.targetModality, blockIndex);
+    const swapWrapper = otherHubWrapper(baselineWrapper);
+    session.probeRunConfig = {
+      baselineWrapper,
+      swapWrapper,
+      n: probeN,
+      speed: probeSpeed,
+      interference: probeInterference,
+      targetModality
+    };
+    return {
+      ...safePatch,
+      wrapper: swapWrapper,
+      n: probeN,
+      speed: probeSpeed,
+      interference: probeInterference,
+      targetModality,
+      flags: {
+        ...safeFlags,
+        coachState: "SPIKE_TUNE",
+        pulseType: null,
+        swapSegment: "B",
+        wasSwapProbe: true,
+        userOverride: "coach"
+      }
+    };
+  }
+
+  if (style === "PROBE" && blockIndex === 5 && session?.probeRunConfig) {
+    return {
+      ...safePatch,
+      wrapper: session.probeRunConfig.baselineWrapper,
+      n: session.probeRunConfig.n,
+      speed: session.probeRunConfig.speed,
+      interference: session.probeRunConfig.interference,
+      targetModality: session.probeRunConfig.targetModality,
+      flags: {
+        ...safeFlags,
+        coachState: "SPIKE_TUNE",
+        pulseType: null,
+        swapSegment: "A",
+        wasSwapProbe: true,
+        userOverride: "coach"
+      }
+    };
+  }
+
+  if (style === "RECHECK" && session?.recheckSignature && blockIndex === 4) {
+    const signature = session.recheckSignature;
+    session.recheckRunConfig = {
+      baselineWrapper: signature.baselineWrapper,
+      swapWrapper: signature.swapWrapper,
+      n: signature.n,
+      speed: signature.speed,
+      interference: signature.interference,
+      targetModality: signature.targetModality
+    };
+    return {
+      ...safePatch,
+      wrapper: signature.swapWrapper,
+      n: signature.n,
+      speed: signature.speed,
+      interference: signature.interference,
+      targetModality: signature.targetModality,
+      flags: {
+        ...safeFlags,
+        coachState: "SPIKE_TUNE",
+        pulseType: null,
+        swapSegment: "B",
+        wasSwapProbe: true,
+        userOverride: "coach"
+      }
+    };
+  }
+
+  if (style === "RECHECK" && session?.recheckRunConfig && blockIndex === 5) {
+    const config = session.recheckRunConfig;
+    return {
+      ...safePatch,
+      wrapper: config.baselineWrapper,
+      n: config.n,
+      speed: config.speed,
+      interference: config.interference,
+      targetModality: config.targetModality,
+      flags: {
+        ...safeFlags,
+        coachState: "SPIKE_TUNE",
+        pulseType: null,
+        swapSegment: "A",
+        wasSwapProbe: true,
+        userOverride: "coach"
+      }
+    };
+  }
+
+  safePatch.flags = {
+    ...safeFlags
+  };
+  return safePatch;
+}
+
 function isFirstHubRun(state) {
   const safeState = state && typeof state === "object" ? state : loadGymState();
   const hasHubHistory = Array.isArray(safeState.history)
@@ -1566,11 +1911,15 @@ function renderBottomTab(activeTab) {
 
 function renderHome(state) {
   const unlockProgress = deriveRelationalUnlockProgress(state.history);
+  const progression = getProgressionState(state);
+  const zone = getSavedZoneForNow(state);
+  const styleDecision = getHubStyleDecision(state);
   const todayKey = toDateKeyLocal();
   const mission = getMissionPreview(state, todayKey, unlockProgress);
   const streakCurrent = Number(state.settings?.streakCurrent || 0);
   const streakBest = Number(state.settings?.streakBest || 0);
   const greeting = getDayGreeting();
+  const transferBankUnits = Number(state.transferBankUnits || 0);
   const missionSteps = mission.steps.map((stepId, idx) => {
     const done = idx < mission.completedSteps;
     const label = stepId === "reset"
@@ -1604,11 +1953,13 @@ function renderHome(state) {
         </div>
         <div class="game-topbar-stats">
           <span><img src="../brandingUI/icons/gamification/streak-flame.svg" alt="" aria-hidden="true"> ${streakCurrent}</span>
-          <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${state.bankUnits}</span>
+          <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> Training ${state.bankUnits}</span>
+          <span class="transfer-pill" role="status">Transfer ${transferBankUnits}</span>
         </div>
       </div>
       <h2>${greeting}</h2>
       <p class="hint">${subtitle}</p>
+      ${renderZoneStateCard(zone, styleDecision)}
       <div class="mission-card">
         <div class="mission-header-row">
           <p class="kicker">Daily Mission ${mission.tier === "tier1" ? "- Tier 1" : ""}</p>
@@ -1667,7 +2018,9 @@ function renderHome(state) {
       <div class="snapshot-card snapshot-list">
         <p><strong>Sessions:</strong> ${state.history.length}</p>
         <p><strong>Streak:</strong> ${streakCurrent} (best ${streakBest})</p>
-        <p><strong>Bank:</strong> ${state.bankUnits}</p>
+        <p><strong>Training bank:</strong> ${state.bankUnits}</p>
+        <p><strong>Transfer bank:</strong> ${transferBankUnits}</p>
+        <p><strong>Pending later checks:</strong> ${progression.pendingCandidateId ? 1 : 0}</p>
       </div>
       ${renderFlash()}
       ${renderBottomTab("home")}
@@ -1893,6 +2246,11 @@ function renderRelationalBlockSummary(block) {
 }
 
 function renderPlayHub() {
+  const state = loadGymState();
+  const zone = getSavedZoneForNow(state);
+  const styleDecision = getHubStyleDecision(state);
+  const styleCopy = describeSessionStyle(styleDecision.style);
+  const transferBankUnits = Number(state.transferBankUnits || 0);
   const running = Boolean(hubSession && hubSession.status === "running");
   const completed = Boolean(hubSession && hubSession.status === "completed");
   const requestedWrapper = normalizeHubWrapper(hubPreferences.wrapper);
@@ -1908,11 +2266,19 @@ function renderPlayHub() {
             <strong>Hub</strong>
           </div>
           <div class="game-topbar-stats">
-            <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${loadGymState().bankUnits || 0}</span>
+            <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> Training ${state.bankUnits || 0}</span>
+            <span class="transfer-pill">Transfer ${transferBankUnits}</span>
           </div>
         </div>
         <h2>Hub Session</h2>
         <p class="hint">Choose your setup, then start a 10-block session.</p>
+        <div class="stage-panel">
+          <p class="kicker">Recommended session style</p>
+          ${renderSessionStyleBadge(styleDecision.style)}
+          <p class="hint">${escapeHtml(styleCopy.description)}</p>
+          <p class="hint">${escapeHtml(styleDecision.reason)}</p>
+        </div>
+        ${renderZoneStateCard(zone, styleDecision)}
         <div class="stage-panel">
           ${renderHubConfigControls({ showWrapperSelect: true, wrapperLocked: false, dialsLocked: false })}
           <div class="row home-primary-row">
@@ -1947,6 +2313,8 @@ function renderPlayHub() {
           <p>Session earned: <strong>+${progressDelta.sessionUnitsEarned}</strong></p>
           <p>Mission bonus: <strong>+${progressDelta.missionBonusEarned}</strong></p>
           <p>Total bank: <strong>${progressDelta.bankTotal}</strong></p>
+          <p>Transfer bank earned: <strong>+${progressDelta.transferBankDelta || 0}</strong></p>
+          <p>Transfer bank total: <strong>${progressDelta.transferBankTotal || transferBankUnits}</strong></p>
           <p>Streak: <strong>${progressDelta.streakCurrent}</strong> (best ${progressDelta.streakBest})</p>
         </div>
       `
@@ -1954,13 +2322,17 @@ function renderPlayHub() {
     const allCleanNote = progressDelta?.allBlocksClean
       ? `<p class="prestige-note">All Blocks Clean (prestige)</p>`
       : "";
+    const transferEvidenceCard = progressDelta?.transferEvidence
+      ? renderTransferEvidenceCard(progressDelta.transferEvidence)
+      : "";
 
     return `
       <section class="card game-screen has-bottom-tab">
         <div class="game-topbar">
           <div class="game-topbar-brand"><strong>Session Complete</strong></div>
           <div class="game-topbar-stats">
-            <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${progressDelta?.bankTotal || loadGymState().bankUnits || 0}</span>
+            <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> Training ${progressDelta?.bankTotal || state.bankUnits || 0}</span>
+            <span class="transfer-pill">Transfer ${progressDelta?.transferBankTotal || transferBankUnits}</span>
           </div>
         </div>
         <h2>${wrapperDisplayName(completedWrapper)}</h2>
@@ -1972,6 +2344,7 @@ function renderPlayHub() {
         </div>
         ${accuracyChart}
         ${progressionSummary}
+        ${transferEvidenceCard}
         ${allCleanNote}
         <div class="row help-action-row">
           ${renderHelpButton(helpTopicForHubWrapper(completedWrapper), "How to play this game")}
@@ -1983,7 +2356,7 @@ function renderPlayHub() {
           <button class="btn" data-action="go-home"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">Return Home</button>
         </div>
         ${renderFlash()}
-        ${renderBottomTab("relational")}
+        ${renderBottomTab("hub")}
       </section>
     `;
   }
@@ -2002,7 +2375,11 @@ function renderPlayHub() {
   const pendingPatch = hubSession.pendingPlanPatch && typeof hubSession.pendingPlanPatch === "object"
     ? hubSession.pendingPlanPatch
     : {};
+  const activeStyle = hubSession.sessionStyle || styleDecision.style;
+  const activeStyleCopy = describeSessionStyle(activeStyle);
+  const styleDisablesOverride = activeStyle === "RESET" || activeStyle === "TIGHTEN";
   const overrideEligible = hubSession.phase === "block-result"
+    && !styleDisablesOverride
     && (preview.coachState === "TUNE" || preview.coachState === "SPIKE_TUNE");
   const alternativePatch = overrideEligible ? resolveHubAlternativePatch(hubSession, pendingPatch) : null;
   const overrideControls = overrideEligible
@@ -2082,11 +2459,12 @@ function renderPlayHub() {
           <span>Level ${hubSession.currentN}</span>
         </div>
         <div class="game-topbar-stats">
-          <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${loadGymState().bankUnits || 0}</span>
+          <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> Training ${state.bankUnits || 0}</span>
+          <span class="transfer-pill">Transfer ${transferBankUnits}</span>
           ${renderHelpMiniButton(helpTopicForHubWrapper(currentWrapper))}
         </div>
       </div>
-      <p class="hint run-context-line">${wrapperDisplayName(currentWrapper)} game</p>
+      <p class="hint run-context-line">${wrapperDisplayName(currentWrapper)} game | ${escapeHtml(activeStyleCopy.label)}</p>
       ${phasePanel}
       ${renderFlash()}
     </section>
@@ -2339,6 +2717,12 @@ function renderHistory(history) {
     const quizLine = session.wrapperFamily === "relational"
       ? `<p>Quiz: ${quizCorrectTotal}/${REL_TOTAL_BLOCKS * 2}</p>`
       : "";
+    const styleLine = session.wrapperFamily === "hub" && session.sessionStyle
+      ? `<p class="hint">Session style: ${escapeHtml(describeSessionStyle(session.sessionStyle).label)}</p>`
+      : "";
+    const transferLine = session.wrapperFamily === "hub" && session.transferEvidence?.title
+      ? `<p class="hint">Transfer: ${escapeHtml(session.transferEvidence.title)}</p>`
+      : "";
     const modeText = mode ? wrapperDisplayName(mode) : "";
     const modeIcon = wrapperIconPath(mode || session.wrapperFamily);
     return `
@@ -2354,6 +2738,8 @@ function renderHistory(history) {
           <span>+${units} units</span>
         </div>
         ${quizLine}
+        ${styleLine}
+        ${transferLine}
         ${modeText ? `<p class="hint">Mode: ${escapeHtml(modeText)}</p>` : ""}
       </li>
     `;
@@ -2386,6 +2772,11 @@ function renderHistory(history) {
 }
 
 function renderSettings(state) {
+  const zone = getSavedZoneForNow(state);
+  const zoneCopy = buildZoneStatusCopy(zone);
+  const zoneStamp = Number.isFinite(zone?.timestamp)
+    ? new Date(zone.timestamp).toLocaleString()
+    : "Not imported";
   return `
     <section class="card game-screen has-bottom-tab">
       <div class="game-topbar">
@@ -2401,6 +2792,15 @@ function renderSettings(state) {
           <input class="toggle" id="sound-toggle" type="checkbox" ${state.settings.soundOn ? "checked" : ""}>
           Sound enabled
         </label>
+      </div>
+      <div class="stage-panel">
+        <p class="kicker">Zone integration</p>
+        <p><strong>${escapeHtml(zoneCopy.title)}</strong></p>
+        <p class="hint">${escapeHtml(zoneCopy.detail)}</p>
+        <p class="hint">Last imported: ${escapeHtml(zoneStamp)}</p>
+        <div class="row">
+          <button class="btn" data-action="import-zone-handoff">Import latest Zone result</button>
+        </div>
       </div>
       <div class="row home-footer-actions">
         <button class="btn" data-action="export-json">Export JSON</button>
@@ -2631,10 +3031,19 @@ function startHubSession() {
   const state = loadGymState();
   const firstHubRun = isFirstHubRun(state);
   const tsStart = Date.now();
+  const styleDecision = getHubStyleDecision(state, tsStart);
+  const styleCopy = describeSessionStyle(styleDecision.style);
+  const recheckSignature = styleDecision.pendingCandidate?.signature
+    ? { ...styleDecision.pendingCandidate.signature }
+    : null;
   const selectedWrapper = normalizeHubWrapper(hubPreferences.wrapper);
   const sessionSeed = hash32(String(tsStart));
-  const initialWrapper = selectedWrapper;
-  const initialN = firstHubRun ? FIRST_RUN_BASELINE_BLOCK.n : 1;
+  const initialWrapper = styleDecision.style === "RECHECK" && recheckSignature
+    ? (recheckSignature.baselineWrapper === "hub_noncat" ? "hub_noncat" : "hub_cat")
+    : selectedWrapper;
+  const initialN = firstHubRun
+    ? FIRST_RUN_BASELINE_BLOCK.n
+    : (styleDecision.style === "RESET" ? Math.min(2, Math.max(1, Number(state.settings?.lastRecommendedLevel || 2))) : 1);
   const initialSpeed = firstHubRun ? FIRST_RUN_BASELINE_BLOCK.speed : undefined;
   const initialInterference = firstHubRun ? FIRST_RUN_BASELINE_BLOCK.interference : undefined;
 
@@ -2643,8 +3052,16 @@ function startHubSession() {
     phase: "briefing",
     tsStart,
     sessionSeed,
+    sessionStyle: styleDecision.style,
+    sessionStyleReason: styleDecision.reason,
+    zoneGate: styleDecision.zoneHandoff || null,
+    recheckCandidateId: styleDecision.pendingCandidate?.id || null,
+    recheckSignature,
+    probeRunConfig: null,
+    recheckRunConfig: null,
+    baselineWrapper: initialWrapper,
     blockCursor: 0,
-    currentN: 1,
+    currentN: initialN,
     blocksPlanned: [],
     blocks: [],
     completedBlocks: [],
@@ -2664,7 +3081,9 @@ function startHubSession() {
         wasSwapProbe: false
       }
     },
-    introNotice: firstHubRun ? "Starting with a gentle baseline block." : "",
+    introNotice: firstHubRun
+      ? "Starting with a gentle baseline block."
+      : `${styleCopy.label} session. ${styleDecision.reason}`,
     coachNotice: "",
     trialPaused: false,
     missionStartRecorded: false,
@@ -2702,7 +3121,7 @@ function beginHubBlock() {
     : {};
   const pendingFlags = pendingPatch.flags && typeof pendingPatch.flags === "object" ? pendingPatch.flags : {};
   const isOverrideCoachState = pendingFlags.coachState === "TUNE" || pendingFlags.coachState === "SPIKE_TUNE";
-  const patchWithDefaultOverride = isOverrideCoachState && !pendingFlags.userOverride
+  const patchWithDefaultOverrideRaw = isOverrideCoachState && !pendingFlags.userOverride
     ? {
       ...pendingPatch,
       flags: {
@@ -2711,6 +3130,12 @@ function beginHubBlock() {
       }
     }
     : pendingPatch;
+  const patchWithDefaultOverride = applyHubSessionStylePatch(
+    hubSession,
+    patchWithDefaultOverrideRaw,
+    blockIndex,
+    lastPlan
+  );
 
   const wrapper = patchWithDefaultOverride.wrapper
     ? normalizeHubWrapper(patchWithDefaultOverride.wrapper)
@@ -3160,21 +3585,33 @@ function finishHubBlock() {
   playBlockProgressSfx(blockSummary.blockResult);
   playSfx("coach_next_block");
 
+  const nextBlockIndex = hubSession.blockCursor + 1;
   const coachDecision = coachUpdateAfterBlock(hubSession.lastBlockSummary, {
     completedBlocks: hubSession.completedBlocks,
     coachContext: hubSession.coachContext
   });
   if (coachDecision && typeof coachDecision === "object") {
-    hubSession.pendingPlanPatch = coachDecision.patch && typeof coachDecision.patch === "object"
+    const coachPatch = coachDecision.patch && typeof coachDecision.patch === "object"
       ? coachDecision.patch
       : {};
+    hubSession.pendingPlanPatch = applyHubSessionStylePatch(
+      hubSession,
+      coachPatch,
+      nextBlockIndex,
+      block.plan
+    );
     hubSession.coachContext = coachDecision.coachContext && typeof coachDecision.coachContext === "object"
       ? coachDecision.coachContext
       : hubSession.coachContext;
-    const coachState = coachDecision.patch?.flags?.coachState;
+    const coachState = hubSession.pendingPlanPatch?.flags?.coachState || coachDecision.patch?.flags?.coachState;
     hubSession.coachNotice = makeCoachNarrative(coachState, typeof coachDecision.notice === "string" ? coachDecision.notice : "");
   } else {
-    hubSession.pendingPlanPatch = {};
+    hubSession.pendingPlanPatch = applyHubSessionStylePatch(
+      hubSession,
+      {},
+      nextBlockIndex,
+      block.plan
+    );
     hubSession.coachNotice = "";
   }
 
@@ -3197,8 +3634,19 @@ function completeHubSession() {
     blocksPlanned: hubSession.blocksPlanned,
     blocks: hubSession.blocks
   });
+  summary.sessionStyle = hubSession.sessionStyle || null;
+  summary.zoneGate = hubSession.zoneGate || null;
+  const precomputedHubTransfer = applyHubTransferOutcome({
+    progression: stateBefore.progression,
+    summary,
+    sessionStyle: hubSession.sessionStyle,
+    nowTs: tsEnd
+  });
+  summary.transferEvidence = precomputedHubTransfer.transferEvidence;
   appendSessionSummary(summary);
-  const progressDelta = applySessionProgressAndSave(summary, "hub");
+  const progressDelta = applySessionProgressAndSave(summary, "hub", {
+    hubTransferOutcome: precomputedHubTransfer
+  });
   const stateAfter = loadStateWithSyncedUnlocks();
   const nowUnlocked = deriveRelationalUnlockProgress(stateAfter.history).relationalUnlocked;
   if (wasLocked && nowUnlocked) {
@@ -3837,6 +4285,12 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (action === "import-zone-handoff") {
+    importLatestZoneHandoffToGymState();
+    render();
+    return;
+  }
+
   if (action === "start-hub-session") {
     startHubSession();
     return;
@@ -3865,6 +4319,11 @@ document.addEventListener("click", (event) => {
 
   if (action === "hub-accept-coach") {
     if (hubSession && hubSession.status === "running" && hubSession.phase === "block-result") {
+      if (hubSession.sessionStyle === "RESET" || hubSession.sessionStyle === "TIGHTEN") {
+        setFlash("Alternative challenge is disabled during stabilise/reset sessions.", "warn");
+        render();
+        return;
+      }
       const pendingPatch = hubSession.pendingPlanPatch && typeof hubSession.pendingPlanPatch === "object"
         ? hubSession.pendingPlanPatch
         : {};
@@ -3885,6 +4344,11 @@ document.addEventListener("click", (event) => {
 
   if (action === "hub-try-alternative") {
     if (hubSession && hubSession.status === "running" && hubSession.phase === "block-result") {
+      if (hubSession.sessionStyle === "RESET" || hubSession.sessionStyle === "TIGHTEN") {
+        setFlash("Alternative challenge is disabled during stabilise/reset sessions.", "warn");
+        render();
+        return;
+      }
       const pendingPatch = hubSession.pendingPlanPatch && typeof hubSession.pendingPlanPatch === "object"
         ? hubSession.pendingPlanPatch
         : {};
