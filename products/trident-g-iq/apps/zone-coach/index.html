@@ -334,11 +334,16 @@
       white-space: nowrap;
     }
     body.zc-rebrand .zc-suite-back {
+      display: none;
       color: #9ed3ff;
       text-decoration: none;
       font-size: 12px;
       font-weight: 800;
       opacity: .94;
+    }
+    body.zc-rebrand .zc-suite-back.is-visible {
+      display: inline-flex;
+      align-items: center;
     }
     body.zc-rebrand .app {
       width: 100%;
@@ -734,15 +739,30 @@
     }
     const initSuiteBackLink = () => {
       const link = document.querySelector("#suiteBackLink");
+      const settingsLink = document.querySelector("#zcSettingsSuiteBtn");
       if (!link) return;
       const params = new URLSearchParams(window.location.search);
+      const launchedFromSuite = params.get("from") === "iq-core" || Boolean(params.get("bundle"));
+      if (!launchedFromSuite) {
+        link.classList.remove("is-visible");
+        link.setAttribute("aria-hidden", "true");
+        if (settingsLink) settingsLink.classList.add("hidden");
+        return;
+      }
       const suiteUrl = new URL("../iq-suite/index.html", window.location.href);
       if (params.toString()) {
         suiteUrl.search = window.location.search || "";
         suiteUrl.hash = window.location.hash || "";
       }
+      link.textContent = "Back to IQ Core";
       link.href = suiteUrl.toString();
       link.classList.add("is-visible");
+      link.removeAttribute("aria-hidden");
+      if (settingsLink) {
+        settingsLink.textContent = "Back to IQ Core";
+        settingsLink.href = suiteUrl.toString();
+        settingsLink.classList.remove("hidden");
+      }
     };
     initSuiteBackLink();
     const CFG = {
