@@ -1714,7 +1714,7 @@
         <div class="gt-brand-row" aria-label="G Tracker branding">
           <div class="gt-brand-left">
             <span class="gt-brand-icon"><img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="" /></span>
-            <a id="suiteBackLink" class="gt-suite-back" href="../../iq-suite/index.html">Back to Suite</a>
+            <a id="suiteBackLink" class="gt-suite-back" href="../../iq-core/index.html">Back to IQ Core</a>
           </div>
           <span class="gt-brand-pill">Trident G - IQ</span>
         </div>
@@ -1772,7 +1772,7 @@
         appId: "g_tracker",
         appLabel: "G Tracker",
         manifestUrl: "../../iq-suite/bundle-manifests.json",
-        returnTo: "../../iq-suite/index.html",
+        returnTo: "../../iq-core/index.html",
         bundleIdHint: new URLSearchParams(window.location.search).get("bundle") || ""
       });
     }
@@ -1780,12 +1780,20 @@
     (() => {
       const link = document.querySelector("#suiteBackLink");
       if (!link) return;
-      const suiteUrl = new URL("../../iq-suite/index.html", window.location.href);
-      if (window.location.search || window.location.hash) {
-        suiteUrl.search = window.location.search || "";
-        suiteUrl.hash = window.location.hash || "";
+      const params = new URLSearchParams(window.location.search);
+      const launchFrom = (params.get("from") || "").toLowerCase();
+      const launchedFromHub = launchFrom === "iq-suite" || launchFrom === "iq-core";
+      if (!launchedFromHub) {
+        link.style.display = "none";
+        return;
       }
-      link.href = suiteUrl.toString();
+      const hubUrl = new URL("../../iq-core/index.html", window.location.href);
+      if (window.location.search || window.location.hash) {
+        hubUrl.search = window.location.search || "";
+        hubUrl.hash = window.location.hash || "";
+      }
+      link.textContent = "Back to IQ Core";
+      link.href = hubUrl.toString();
     })();
 
     const { useEffect, useMemo, useState } = React;
