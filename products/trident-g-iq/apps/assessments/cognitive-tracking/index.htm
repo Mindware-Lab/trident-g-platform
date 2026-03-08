@@ -1472,10 +1472,12 @@
         border: none;
       }
       .ui-content{
-        padding: 10px 10px calc(112px + env(safe-area-inset-bottom));
+        padding: 10px 10px calc(144px + env(safe-area-inset-bottom));
+        scroll-padding-bottom: calc(156px + env(safe-area-inset-bottom));
         overflow-y: auto;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
       }
       .ui-screen{
         height: 100%;
@@ -1519,6 +1521,7 @@
         z-index: 50;
         padding: 3px 12px calc(6px + env(safe-area-inset-bottom));
         pointer-events: auto;
+        touch-action: manipulation;
       }
       .gt-shell::after{
         display: none;
@@ -2561,7 +2564,6 @@
       useEffect(() => {
         const navButtons = Array.from(document.querySelectorAll(".gt-tab[data-gt-nav]"));
         if(navButtons.length === 0) return undefined;
-        const navEvents = ["click", "pointerup", "touchend"];
         const onNavClick = (event) => {
           event.preventDefault();
           const panelName = event.currentTarget?.dataset?.gtNav;
@@ -2569,13 +2571,9 @@
             setActivePanel(panelName);
           }
         };
-        navButtons.forEach((button) => {
-          navEvents.forEach((eventName) => button.addEventListener(eventName, onNavClick, { passive: false }));
-        });
+        navButtons.forEach((button) => button.addEventListener("click", onNavClick));
         return () => {
-          navButtons.forEach((button) => {
-            navEvents.forEach((eventName) => button.removeEventListener(eventName, onNavClick));
-          });
+          navButtons.forEach((button) => button.removeEventListener("click", onNavClick));
         };
       }, []);
 
