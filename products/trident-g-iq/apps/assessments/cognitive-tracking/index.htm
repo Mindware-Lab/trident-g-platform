@@ -266,6 +266,35 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
       overflow: hidden;
     }
+    .compactCardDual{
+      padding: 8px;
+      gap: 6px;
+    }
+
+    .compactCardDual .compactTitle{
+      font-size: 16px;
+      line-height: 1.1;
+    }
+
+    .compactCardDual .compactMeta{
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .dualMetricLine{
+      margin: 0;
+      font-size: 12px;
+      color: var(--brand-text-muted);
+      line-height: 1.25;
+      font-weight: 700;
+    }
+
+    .compactCardDual .btn{
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: 13px;
+      border-radius: 10px;
+    }
 
     .compactTitle{
       margin: 0;
@@ -712,6 +741,10 @@
       gap: 8px;
       align-items: center;
       max-width: 640px;
+    }
+    .twoColSingle{
+      grid-template-columns: minmax(0, 1fr);
+      max-width: none;
     }
 
     @media (max-width: 720px){
@@ -2645,6 +2678,7 @@
       };
       const activeRepeatDraftKey = activeRepeatCard ? `repeat_${activeRepeatCard.id}` : "";
       const activeOutcomeDraftKey = activeOutcomeCard ? `outcome_${activeOutcomeCard.id}` : "";
+      const isDualTestsView = testsViewMode === "all";
       const activeRepeatDraft = activeRepeatDraftKey ? getDraft(activeRepeatDraftKey) : { score: "", notes: "" };
       const activeOutcomeDraft = activeOutcomeDraftKey ? getDraft(activeOutcomeDraftKey) : { score: "", notes: "" };
       const activeRepeatHistory = activeRepeatCard ? getRepeatableHistory(activeRepeatCard.testId, state).slice(0, 4) : [];
@@ -2738,7 +2772,7 @@
                   </div>
 
                   {activeRepeatCard && (testsViewMode === "all" || testsFocus === "repeatable") && (
-                    <div className="compactCard">
+                    <div className={`compactCard ${isDualTestsView ? "compactCardDual" : ""}`}>
                       <div className="deckHeader">
                         <p className="deckLabel">Repeatable Tracker</p>
                         <div className="deckControls">
@@ -2757,20 +2791,24 @@
                         </label>
                       </div>
                       <p className="compactTitle">{activeRepeatCard.title}</p>
-                      <p className="compactMeta">{activeRepeatCard.purpose}</p>
-                      <div className="compactRow">
-                        <div className="compactMetric">
-                          <p className="compactMetricLabel">Latest score</p>
-                          <p className="compactMetricValue">{activeRepeatCard.latestScore || "-"}</p>
+                      {!isDualTestsView && <p className="compactMeta">{activeRepeatCard.purpose}</p>}
+                      {isDualTestsView ? (
+                        <p className="dualMetricLine">Latest: {activeRepeatCard.latestScore || "-"} | Due: {activeRepeatCard.due.text}</p>
+                      ) : (
+                        <div className="compactRow">
+                          <div className="compactMetric">
+                            <p className="compactMetricLabel">Latest score</p>
+                            <p className="compactMetricValue">{activeRepeatCard.latestScore || "-"}</p>
+                          </div>
+                          <div className="compactMetric">
+                            <p className="compactMetricLabel">Due status</p>
+                            <p className="compactMetricValue">{activeRepeatCard.due.text}</p>
+                          </div>
                         </div>
-                        <div className="compactMetric">
-                          <p className="compactMetricLabel">Due status</p>
-                          <p className="compactMetricValue">{activeRepeatCard.due.text}</p>
-                        </div>
-                      </div>
-                      <div className="twoCol">
+                      )}
+                      <div className={isDualTestsView ? "twoCol twoColSingle" : "twoCol"}>
                         <input className="input inputScoreReady" placeholder="Score" value={activeRepeatDraft.score} onChange={(e) => setDraftField(activeRepeatDraftKey, "score", e.target.value)} />
-                        <input className="input" placeholder="Notes (optional)" value={activeRepeatDraft.notes} onChange={(e) => setDraftField(activeRepeatDraftKey, "notes", e.target.value)} />
+                        {!isDualTestsView && <input className="input" placeholder="Notes (optional)" value={activeRepeatDraft.notes} onChange={(e) => setDraftField(activeRepeatDraftKey, "notes", e.target.value)} />}
                       </div>
                       <div className="compactActions">
                         <button className="btn btnPrimary" onClick={() => openTest(activeRepeatCard.testId)}>Open test</button>
@@ -2780,9 +2818,9 @@
                   )}
 
                   {activeOutcomeCard && (testsViewMode === "all" || testsFocus === "outcome") && (
-                    <div className="compactCard">
+                    <div className={`compactCard ${isDualTestsView ? "compactCardDual" : ""}`}>
                       <div className="deckHeader">
-                        <p className="deckLabel">Pre/Post Outcome</p>
+                        <p className="deckLabel">Pre/Post Training Tests</p>
                         <div className="deckControls">
                           <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setOutcomeDeckIndex, -1, outcomeCards.length)}>Prev</button>
                           <span className="deckCount">{outcomeIndex + 1}/{outcomeCards.length}</span>
@@ -2793,21 +2831,25 @@
                         <StatusPill status={activeOutcomeCard.status} />
                       </div>
                       <p className="compactTitle">{activeOutcomeCard.title}</p>
-                      <p className="compactMeta">{activeOutcomeCard.purpose}</p>
-                      <div className="compactRow">
-                        <div className="compactMetric">
-                          <p className="compactMetricLabel">{activeOutcomeCard.baseline.label}</p>
-                          <p className="compactMetricValue">{activeOutcomeCard.baseline.score || "-"}</p>
+                      {!isDualTestsView && <p className="compactMeta">{activeOutcomeCard.purpose}</p>}
+                      {isDualTestsView ? (
+                        <p className="dualMetricLine">{activeOutcomeCard.baseline.label}: {activeOutcomeCard.baseline.score || "-"} | {activeOutcomeCard.post.label}: {activeOutcomeCard.post.score || "-"}</p>
+                      ) : (
+                        <div className="compactRow">
+                          <div className="compactMetric">
+                            <p className="compactMetricLabel">{activeOutcomeCard.baseline.label}</p>
+                            <p className="compactMetricValue">{activeOutcomeCard.baseline.score || "-"}</p>
+                          </div>
+                          <div className="compactMetric">
+                            <p className="compactMetricLabel">{activeOutcomeCard.post.label}</p>
+                            <p className="compactMetricValue">{activeOutcomeCard.post.score || "-"}</p>
+                          </div>
                         </div>
-                        <div className="compactMetric">
-                          <p className="compactMetricLabel">{activeOutcomeCard.post.label}</p>
-                          <p className="compactMetricValue">{activeOutcomeCard.post.score || "-"}</p>
-                        </div>
-                      </div>
-                      <p className="compactMeta">{activeOutcomeCard.comparison.line || "No comparison yet."}</p>
-                      <div className="twoCol">
+                      )}
+                      {!isDualTestsView && <p className="compactMeta">{activeOutcomeCard.comparison.line || "No comparison yet."}</p>}
+                      <div className={isDualTestsView ? "twoCol twoColSingle" : "twoCol"}>
                         <input className="input inputScoreReady" placeholder="Score" value={activeOutcomeDraft.score} onChange={(e) => setDraftField(activeOutcomeDraftKey, "score", e.target.value)} />
-                        <input className="input" placeholder="Notes (optional)" value={activeOutcomeDraft.notes} onChange={(e) => setDraftField(activeOutcomeDraftKey, "notes", e.target.value)} />
+                        {!isDualTestsView && <input className="input" placeholder="Notes (optional)" value={activeOutcomeDraft.notes} onChange={(e) => setDraftField(activeOutcomeDraftKey, "notes", e.target.value)} />}
                       </div>
                       <div className="compactActions">
                         <button className="btn btnPrimary" onClick={() => {
