@@ -352,13 +352,15 @@
   <script src="../shared-ui/activation-gate.js"></script>
   <script>
   (() => {
+    const launchBundleId = new URLSearchParams(window.location.search).get("bundle") || "";
     if (window.IQActivationGate) {
       window.IQActivationGate.enforceAppAccess({
         appId: "zone_coach",
         appLabel: "Zone Coach",
         manifestUrl: "../iq-suite/bundle-manifests.json",
         returnTo: "../iq-suite/index.html",
-        bundleIdHint: new URLSearchParams(window.location.search).get("bundle") || ""
+        bundleIdHint: launchBundleId,
+        requiredBundleId: launchBundleId || ""
       });
     }
     const initSuiteBackLink = () => {
@@ -1053,7 +1055,7 @@
       dom.histBps.textContent = fmt(e, 2);
       const last = rows[rows.length-1];
       const lastState = normState(last?.router?.state);
-      dom.lastLine.textContent = last ? `Last check: ${ROUTER_STATE_UI[lastState]?.label || lastState || '-'} • ${last.router?.confidence || '-'} confidence` : 'Last check: -';
+      dom.lastLine.textContent = last ? `Last check: ${ROUTER_STATE_UI[lastState]?.label || lastState || '-'} â€¢ ${last.router?.confidence || '-'} confidence` : 'Last check: -';
       renderStartBpsTraceCard(rows);
       return { rows, base: b };
     }

@@ -26,13 +26,15 @@
   <script src="../../shared-ui/entitlements-client.js"></script>
   <script src="../../shared-ui/activation-gate.js"></script>
   <script>
+    var launchBundleId = new URLSearchParams(window.location.search).get("bundle") || "";
     if (window.IQActivationGate) {
       window.IQActivationGate.enforceAppAccess({
         appId: "capacity_gym",
         appLabel: "Capacity Gym",
         manifestUrl: "../../iq-suite/bundle-manifests.json",
         returnTo: "../../iq-suite/index.html",
-        bundleIdHint: new URLSearchParams(window.location.search).get("bundle") || ""
+        bundleIdHint: launchBundleId,
+        requiredBundleId: launchBundleId || ""
       });
     }
   </script>

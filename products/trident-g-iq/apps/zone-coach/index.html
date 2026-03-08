@@ -579,13 +579,15 @@
   <script src="../shared-ui/activation-gate.js"></script>
   <script>
   (() => {
+    const launchBundleId = new URLSearchParams(window.location.search).get("bundle") || "";
     if (window.IQActivationGate) {
       window.IQActivationGate.enforceAppAccess({
         appId: "zone_coach",
         appLabel: "Zone Coach",
         manifestUrl: "../iq-suite/bundle-manifests.json",
         returnTo: "../iq-suite/index.html",
-        bundleIdHint: new URLSearchParams(window.location.search).get("bundle") || ""
+        bundleIdHint: launchBundleId,
+        requiredBundleId: launchBundleId || ""
       });
     }
     const initSuiteBackLink = () => {

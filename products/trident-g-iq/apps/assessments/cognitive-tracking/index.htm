@@ -1796,13 +1796,15 @@
   <script src="../../shared-ui/entitlements-client.js"></script>
   <script src="../../shared-ui/activation-gate.js"></script>
   <script type="text/babel" data-presets="env,react">
+    const launchBundleId = new URLSearchParams(window.location.search).get("bundle") || "";
     if (window.IQActivationGate) {
       window.IQActivationGate.enforceAppAccess({
         appId: "g_tracker",
         appLabel: "G Tracker",
         manifestUrl: "../../iq-suite/bundle-manifests.json",
         returnTo: "../../iq-core/index.html",
-        bundleIdHint: new URLSearchParams(window.location.search).get("bundle") || ""
+        bundleIdHint: launchBundleId,
+        requiredBundleId: launchBundleId || ""
       });
     }
 
