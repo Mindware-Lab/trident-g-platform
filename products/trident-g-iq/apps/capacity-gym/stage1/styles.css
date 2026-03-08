@@ -272,16 +272,18 @@ body {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto auto;
   gap: 4px;
-  align-content: start;
+  align-content: stretch;
 }
 
 .play-session-screen .hub-stimulus,
 .play-session-screen .rel-stimulus {
   margin-top: 2px;
   display: grid;
-  gap: 6px;
-  align-content: start;
+  gap: 8px;
+  align-content: center;
+  justify-items: center;
   min-height: 0;
+  height: 100%;
 }
 
 .play-session-screen .hub-stimulus.hub-stimulus-noncat {
@@ -294,18 +296,18 @@ body {
 }
 
 .play-session-screen .hub-arena {
-  width: min(84vw, clamp(190px, 30vh, 290px));
-  margin: 2px auto 0 auto;
+  width: min(86vw, clamp(220px, 40vh, 360px));
+  margin: 0 auto;
 }
 
 .play-session-screen .hub-token {
-  width: clamp(52px, 7.4vh, 64px);
-  height: clamp(52px, 7.4vh, 64px);
-  font-size: clamp(1.8rem, 4.2vh, 2.5rem);
+  width: clamp(60px, 9vh, 82px);
+  height: clamp(60px, 9vh, 82px);
+  font-size: clamp(2rem, 5.1vh, 3rem);
 }
 
 .play-session-screen .rel-center-token {
-  font-size: clamp(1.1rem, 2.6vh, 1.55rem);
+  font-size: clamp(1.35rem, 3.3vh, 2rem);
 }
 
 .play-session-screen .game-match-btn {
@@ -2058,7 +2060,7 @@ input:disabled {
   }
 
   .play-session-screen .hub-arena {
-    width: min(82vw, clamp(172px, 28vh, 250px));
+    width: min(84vw, clamp(196px, 33vh, 290px));
   }
 
   .play-session-screen .hub-target {
@@ -2151,7 +2153,7 @@ input:disabled {
 
 @media (max-height: 820px) {
   .play-session-screen .hub-arena {
-    width: min(80vw, clamp(168px, 27vh, 238px));
+    width: min(84vw, clamp(188px, 34vh, 280px));
   }
 
   .play-session-screen .game-match-btn {
