@@ -497,6 +497,29 @@
       gap: 10px;
       margin-bottom: 8px;
       padding: 4px 8px 2px;
+      position: relative;
+    }
+    .gt-brand-site{
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #9ed3ff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid rgba(110,198,255,.30);
+      background: rgba(16,30,52,.58);
+      border-radius: 999px;
+      padding: 6px 10px;
+      line-height: 1;
+      white-space: nowrap;
+      max-width: 44%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .gt-brand-site:hover{
+      border-color: rgba(158,211,255,.56);
+      color: #c8e8ff;
     }
 
     .gt-brand-left{
@@ -1571,6 +1594,11 @@
         padding: 8px 12px;
         font-size: 11px;
       }
+      .gt-brand-site{
+        font-size: 10.5px;
+        padding: 5px 8px;
+        max-width: 48%;
+      }
 
       .card{
         padding: 10px !important;
@@ -1716,6 +1744,7 @@
             <span class="gt-brand-icon"><img src="/trident-g-platform/branding/Trident-G-Icon.svg" alt="" /></span>
             <a id="suiteBackLink" class="gt-suite-back" href="../../iq-core/index.html">Back to IQ Core</a>
           </div>
+          <a class="gt-brand-site" href="https://iqmindware.com/" target="_blank" rel="noopener noreferrer">IQMindware.com</a>
           <span class="gt-brand-pill">Trident G - IQ</span>
         </div>
         <div id="root"></div>

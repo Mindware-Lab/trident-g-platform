@@ -155,6 +155,29 @@
       gap: 10px;
       margin-bottom: 8px;
       padding: 4px 2px 2px;
+      position: relative;
+    }
+    body.suite-rebrand .suite-brand-site {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #9ed3ff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid rgba(110,198,255,.30);
+      background: rgba(16,30,52,.58);
+      border-radius: 999px;
+      padding: 6px 10px;
+      line-height: 1;
+      white-space: nowrap;
+      max-width: 44%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    body.suite-rebrand .suite-brand-site:hover {
+      border-color: rgba(158,211,255,.56);
+      color: #c8e8ff;
     }
     body.suite-rebrand .suite-brand-icon {
       width: 54px;
@@ -399,6 +422,11 @@
       body.suite-rebrand .suite-shell::after {
         display: none;
       }
+      body.suite-rebrand .suite-brand-site {
+        font-size: 10.5px;
+        padding: 5px 8px;
+        max-width: 48%;
+      }
       body.suite-rebrand .suite-bottom-nav {
         position: fixed;
         left: 0;
@@ -428,6 +456,7 @@
       <section class="ui-content">
         <div class="suite-brand-row" aria-label="Suite branding">
           <span class="suite-brand-icon"><img src="../../../../branding/Trident-G-Icon.svg" alt=""></span>
+          <a class="suite-brand-site" href="https://iqmindware.com/" target="_blank" rel="noopener noreferrer">IQMindware.com</a>
           <span class="suite-brand-pill">Trident G - IQ</span>
         </div>
         <div class="suite-main-stack">

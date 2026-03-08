@@ -258,8 +258,30 @@
       gap: 10px;
       margin-bottom: 8px;
       padding: 4px 2px 2px;
+      position: relative;
     }
-    body.zc-rebrand .zc-brand-left {
+    body.zc-rebrand .zc-brand-site {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #9ed3ff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid rgba(110,198,255,.30);
+      background: rgba(16,30,52,.58);
+      border-radius: 999px;
+      padding: 6px 10px;
+      line-height: 1;
+      white-space: nowrap;
+      max-width: 44%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    body.zc-rebrand .zc-brand-site:hover {
+      border-color: rgba(158,211,255,.56);
+      color: #c8e8ff;
+    }    body.zc-rebrand .zc-brand-left {
       display: inline-flex;
       align-items: center;
       gap: 10px;
@@ -388,20 +410,26 @@
       body.zc-rebrand .zoneAppShell { width: 100%; min-height: 100vh; border-radius: 0; border: none; }
       body.zc-rebrand .zoneContent { padding: 10px 10px 92px; }
       body.zc-rebrand .zoneAppShell::after { display: none; }
+      body.zc-rebrand .zc-brand-site {
+        font-size: 10.5px;
+        padding: 5px 8px;
+        max-width: 48%;
+      }
     }
   </style>
 </head>
 <body class="zc-rebrand">
   <div class="screen zoneAppShell">
-<main class="content zoneContent">
+    <main class="content zoneContent">
       <div class="zc-brand-row" aria-label="Zone Coach branding">
         <div class="zc-brand-left">
           <span class="zc-brand-icon"><img class="appIcon" src="../../../../branding/Trident-G-Icon.svg" alt="" /></span>
           <a id="suiteBackLink" class="zc-suite-back" href="../iq-suite/index.html">Back to Suite</a>
         </div>
+        <a class="zc-brand-site" href="https://iqmindware.com/" target="_blank" rel="noopener noreferrer">IQMindware.com</a>
         <span class="zc-brand-pill">Trident G - IQ</span>
       </div>
-  <div class="app">
+      <div class="app">
     <div class="top hidden" aria-hidden="true">
       <div class="row">
         <div class="title">Zone Coach - MFT-M State Router</div>
@@ -1038,8 +1066,8 @@
     const sd = (xs) => { if (xs.length<2) return 0; const m=mean(xs); return Math.sqrt(Math.max(0, xs.reduce((a,x)=>a+(x-m)*(x-m),0)/(xs.length-1))); };
     const pct = (xs,p) => { if (!xs.length) return null; const s=[...xs].sort((a,b)=>a-b); const i=clamp((s.length-1)*p,0,s.length-1); const lo=Math.floor(i), hi=Math.ceil(i); if (lo===hi) return s[lo]; const t=i-lo; return s[lo]*(1-t)+s[hi]*t; };
     const ewma = (xs,a=.25) => { if (!xs.length) return null; let s=xs[0]; for (let i=1;i<xs.length;i++) s=a*xs[i]+(1-a)*s; return s; };
-    const fmt = (x,d=2) => (x==null || !Number.isFinite(Number(x))) ? '—' : Number(x).toFixed(d);
-    const fmtPct = (x,d=1) => (x==null || !Number.isFinite(Number(x))) ? '—' : `${(x*100).toFixed(d)}%`;
+    const fmt = (x,d=2) => (x==null || !Number.isFinite(Number(x))) ? 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â' : Number(x).toFixed(d);
+    const fmtPct = (x,d=1) => (x==null || !Number.isFinite(Number(x))) ? 'ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â' : `${(x*100).toFixed(d)}%`;
     const shuffle = (a) => { for (let i=a.length-1;i>0;i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
     const show = (name) => ['Start','Run','Result'].forEach(k => dom[`screen${k}`].classList.toggle('active', k.toLowerCase() === name));
     const clearResultMetricSlots = () => {
@@ -1185,11 +1213,11 @@
         return `<li><a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer">${esc(item.label)}</a></li>`;
       }).join('');
       const safety = (rec.safety_level === 'medium' || rec.safety_level === 'high')
-        ? `<div class="safety-banner ${rec.safety_level}">Safety: ${esc(rec.safety_level.toUpperCase())}${rec.requires_opt_in ? ' • opt-in only' : ''}</div>`
+        ? `<div class="safety-banner ${rec.safety_level}">Safety: ${esc(rec.safety_level.toUpperCase())}${rec.requires_opt_in ? ' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ opt-in only' : ''}</div>`
         : '';
       return [
         `<h3 style="margin:0 0 6px 0;">${esc(rec.title)}</h3>`,
-        `<div class="small muted">${rec.duration_min ? `${esc(rec.duration_min)} min` : 'Flexible'}${rec.requires_opt_in ? ' • opt-in only' : ''}${rec.recheck_after ? ' • re-check after' : ''}</div>`,
+        `<div class="small muted">${rec.duration_min ? `${esc(rec.duration_min)} min` : 'Flexible'}${rec.requires_opt_in ? ' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ opt-in only' : ''}${rec.recheck_after ? ' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ re-check after' : ''}</div>`,
         chips ? `<div class="chips">${chips}</div>` : '',
         `<ol class="small" style="margin:10px 0 0 18px; padding:0;">${steps}</ol>`,
         safety,
@@ -1211,7 +1239,7 @@
       if (!summary?.valid || !rec) return;
       dom.sessionPanelTitle.textContent = rec.title || 'Recommended session';
       dom.sessionPanelWhy.textContent = rec.why || 'Follow the stabilisation steps, then re-check if suggested.';
-      dom.sessionPanelMeta.textContent = `${rec.duration_min || '?'} min${rec.recheck_after ? ' • re-check after' : ''}`;
+      dom.sessionPanelMeta.textContent = `${rec.duration_min || '?'} min${rec.recheck_after ? ' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ re-check after' : ''}`;
       dom.sessionPanelGateChips.innerHTML = '';
       const gateChip = document.createElement('span');
       gateChip.className = `gate-chip ${gateClass(gate?.trainingGate)}`;
@@ -1252,7 +1280,7 @@
       dom.histBps.textContent = fmt(e, 2);
       const last = rows[rows.length-1];
       const lastState = normState(last?.router?.state);
-      dom.lastLine.textContent = last ? `Last check: ${ROUTER_STATE_UI[lastState]?.label || lastState || '-'} � ${last.router?.confidence || '-'} confidence` : 'Last check: -';
+      dom.lastLine.textContent = last ? `Last check: ${ROUTER_STATE_UI[lastState]?.label || lastState || '-'} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ ${last.router?.confidence || '-'} confidence` : 'Last check: -';
       renderStartBpsTraceCard(rows);
       return { rows, base: b };
     }
@@ -1536,7 +1564,7 @@
       clearResultMetricSlots();
       rt.lastSummary = null;
       dom.startBtn.disabled = true; dom.resetHistoryBtn.disabled = true; dom.quickBtn.disabled = true; dom.fullBtn.disabled = true; dom.tryAgainBtn.disabled = true; if (dom.returnStartBtn) dom.returnStartBtn.disabled = true; dom.stopBtn.disabled = false; if (dom.skipToResultBtn) dom.skipToResultBtn.disabled = false;
-      show('run'); setPhase('Running'); setStatus('Calibrating…'); dom.qualityPill.textContent = 'Quality: —'; dom.refreshPill.textContent = 'Refresh: —';
+      show('run'); setPhase('Running'); setStatus('CalibratingÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦'); dom.qualityPill.textContent = 'Quality: ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â'; dom.refreshPill.textContent = 'Refresh: ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â';
       dom.runLabelPill.textContent = `${label} (${durationSeconds}s)`;
       dom.progressFill.style.width = '0%'; dom.trialPill.textContent = 'Trials: 0'; dom.mixPill.textContent = 'S:0 P:0 C:0';
       drawFix();
@@ -1550,7 +1578,7 @@
 
       let summary = null;
       try {
-        const frameMs = await calibrate(); dom.refreshPill.textContent = `Refresh: ~${Math.round(1000/frameMs)} Hz`; setStatus('Running…');
+        const frameMs = await calibrate(); dom.refreshPill.textContent = `Refresh: ~${Math.round(1000/frameMs)} Hz`; setStatus('RunningÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦');
         const timing = { dropped:0, total:0, frameMs };
         const minF = Math.max(2, Math.round(CFG.minStimMs/frameMs));
         const maxF = Math.max(minF+2, Math.round(CFG.maxStimMs/frameMs));
@@ -2145,14 +2173,14 @@
     const returnToStart = () => { hideSessionPanel(); clearResultMetricSlots(); rt.lastSummary = null; show('start'); setPhase('Ready'); setStatus('Idle'); };
     dom.tryAgainBtn.addEventListener('click', () => { returnToStart(); });
     if (dom.returnStartBtn) dom.returnStartBtn.addEventListener('click', () => { returnToStart(); });
-    dom.resetHistoryBtn.addEventListener('click', () => { hideSessionPanel(); clearResultMetricSlots(); rt.lastSummary = null; localStorage.removeItem(LS_HISTORY); refreshHistoryUI(); show('start'); setPhase('Ready'); setStatus('Idle'); dom.refreshPill.textContent='Refresh: —'; dom.qualityPill.textContent='Quality: —'; drawFix(); });
-    dom.stopBtn.addEventListener('click', () => { if (!rt.running) return; rt.stop = true; if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); } setStatus('Stopping…'); });
+    dom.resetHistoryBtn.addEventListener('click', () => { hideSessionPanel(); clearResultMetricSlots(); rt.lastSummary = null; localStorage.removeItem(LS_HISTORY); refreshHistoryUI(); show('start'); setPhase('Ready'); setStatus('Idle'); dom.refreshPill.textContent='Refresh: ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â'; dom.qualityPill.textContent='Quality: ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â'; drawFix(); });
+    dom.stopBtn.addEventListener('click', () => { if (!rt.running) return; rt.stop = true; if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); } setStatus('StoppingÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦'); });
     if (dom.skipToResultBtn) dom.skipToResultBtn.addEventListener('click', () => {
       if (!rt.running) return;
       rt.skipSummary = buildSkipPreviewSummary();
       rt.stop = true;
       if (rt.resolver) { const r = rt.resolver; rt.resolver = null; r({ key:null, rt:null }); }
-      setStatus('Skipping to preview…');
+      setStatus('Skipping to previewÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¦');
     });
     if (dom.showBpsTraceBtn) dom.showBpsTraceBtn.addEventListener('click', () => openBpsTraceScreen());
     dom.startRecommendedBtn.addEventListener('click', () => {
