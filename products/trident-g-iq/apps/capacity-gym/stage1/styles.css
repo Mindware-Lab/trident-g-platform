@@ -234,7 +234,97 @@ body {
 }
 
 .play-session-screen {
-  padding-bottom: 18px;
+  padding-bottom: 12px;
+  height: calc(100% - 14px);
+  min-height: calc(100% - 14px);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  align-content: stretch;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.play-session-screen .game-topbar {
+  padding-bottom: 2px;
+}
+
+.play-session-screen .run-context-line {
+  margin-top: 0;
+}
+
+.play-session-screen .help-action-row {
+  margin-top: 2px;
+}
+
+.play-session-screen .stage-panel {
+  margin-top: 0;
+  min-height: 0;
+  padding: 10px 12px;
+}
+
+.play-session-screen .trial-stage,
+.play-session-screen .quiz-stage,
+.play-session-screen .result-stage {
+  padding-top: 8px;
+}
+
+.play-session-screen .trial-stage {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  gap: 6px;
+  align-content: start;
+}
+
+.play-session-screen .hub-stimulus,
+.play-session-screen .rel-stimulus {
+  margin-top: 2px;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-height: 0;
+}
+
+.play-session-screen .hub-stimulus.hub-stimulus-noncat {
+  margin-bottom: 0;
+}
+
+.play-session-screen .hub-target {
+  margin-bottom: 4px;
+  font-size: 0.96rem;
+}
+
+.play-session-screen .hub-arena {
+  width: min(86vw, clamp(210px, 34vh, 320px));
+  margin: 2px auto 0 auto;
+}
+
+.play-session-screen .hub-token {
+  width: clamp(56px, 8.2vh, 70px);
+  height: clamp(56px, 8.2vh, 70px);
+  font-size: clamp(2rem, 4.8vh, 3rem);
+}
+
+.play-session-screen .rel-center-token {
+  font-size: clamp(1.2rem, 3vh, 1.8rem);
+}
+
+.play-session-screen .game-match-btn {
+  margin-top: 8px;
+  min-height: 56px;
+  font-size: 1.6rem;
+}
+
+.play-session-screen .pause-control-row {
+  margin-top: 6px;
+}
+
+.play-session-screen .pause-control-row .pause-btn,
+.play-session-screen .pause-control-row .stop-btn {
+  min-height: 36px;
+}
+
+.play-session-screen .quiz-action-row .quiz-btn {
+  min-height: 56px;
+  font-size: 1.6rem;
 }
 
 .has-bottom-tab {
@@ -1834,6 +1924,37 @@ input:disabled {
     min-height: 100%;
   }
 
+  .play-session-screen {
+    gap: 6px;
+  }
+
+  .play-session-screen .stage-panel {
+    padding: 8px 10px;
+  }
+
+  .play-session-screen .hub-arena {
+    width: min(84vw, clamp(190px, 31vh, 270px));
+  }
+
+  .play-session-screen .hub-target {
+    font-size: 0.9rem;
+  }
+
+  .play-session-screen .game-match-btn {
+    min-height: 50px;
+    font-size: 1.35rem;
+  }
+
+  .play-session-screen .quiz-action-row .quiz-btn {
+    min-height: 50px;
+    font-size: 1.35rem;
+  }
+
+  .play-session-screen .pause-control-row .pause-btn,
+  .play-session-screen .pause-control-row .stop-btn {
+    min-height: 34px;
+  }
+
   .hub-arena {
     width: min(330px, 92vw);
   }
@@ -1869,5 +1990,16 @@ input:disabled {
 
   .history-mini-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-height: 820px) {
+  .play-session-screen .hub-arena {
+    width: min(82vw, clamp(180px, 30vh, 270px));
+  }
+
+  .play-session-screen .game-match-btn {
+    min-height: 50px;
+    font-size: 1.45rem;
   }
 }
