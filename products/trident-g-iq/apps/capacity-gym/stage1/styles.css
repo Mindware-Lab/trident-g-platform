@@ -291,7 +291,7 @@ body {
 }
 
 .play-session-screen .hub-target {
-  margin-bottom: 2px;
+  margin-bottom: 10px;
   font-size: 0.92rem;
 }
 
@@ -1678,6 +1678,26 @@ input:disabled {
 
 .rel-stimulus.rel-stimulus-graph + .game-match-btn {
   margin-top: 24px;
+}
+
+/* Keep gameplay spacing consistent across hub_cat, hub_noncat, and all relational modes. */
+.play-session-screen .hub-runtime {
+  margin: 0 0 2px 0;
+}
+
+.play-session-screen .hub-stimulus.hub-stimulus-noncat,
+.play-session-screen .rel-stimulus.rel-stimulus-graph {
+  margin-bottom: 0;
+}
+
+.play-session-screen .hub-stimulus.hub-stimulus-noncat .hub-arena,
+.play-session-screen .rel-stimulus.rel-stimulus-graph .hub-arena {
+  margin-bottom: 0;
+}
+
+.play-session-screen .hub-stimulus.hub-stimulus-noncat + .game-match-btn,
+.play-session-screen .rel-stimulus.rel-stimulus-graph + .game-match-btn {
+  margin-top: 6px;
 }
 
 .rel-center-token {
