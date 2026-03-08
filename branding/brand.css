@@ -78,6 +78,15 @@
   --type-body-strong: 700 15px/1.4 var(--font);
   --type-label: 700 12px/1.2 var(--font);
   --type-button: 700 15px/1.1 var(--font);
+
+  /* UI size contract (v3) */
+  --iq-shell-desktop-width: min(900px, calc(100% - 24px));
+  --iq-shell-desktop-height: calc(100vh - 36px);
+  --iq-shell-desktop-height-compact: calc(100vh - 18px);
+  --iq-shell-mobile-width: 100%;
+  --iq-shell-mobile-height: 100dvh;
+  --iq-mobile-footer-reserve: calc(112px + env(safe-area-inset-bottom));
+  --iq-mobile-scroll-padding-bottom: calc(124px + env(safe-area-inset-bottom));
 }
 
 *{
@@ -105,6 +114,40 @@ body{
 .appShell{
   min-height: 100vh;
   background: transparent;
+}
+
+/* Shared shell sizing helpers (optional utility classes) */
+.iq-shell-frame{
+  width: var(--iq-shell-desktop-width);
+  height: var(--iq-shell-desktop-height);
+  max-height: var(--iq-shell-desktop-height);
+  overflow: hidden;
+}
+
+@media (max-height: 940px){
+  .iq-shell-frame{
+    height: var(--iq-shell-desktop-height-compact);
+    max-height: var(--iq-shell-desktop-height-compact);
+  }
+}
+
+@media (max-width: 520px){
+  .iq-shell-frame{
+    width: var(--iq-shell-mobile-width);
+    height: var(--iq-shell-mobile-height);
+    max-height: var(--iq-shell-mobile-height);
+    border-radius: 0;
+    border: none;
+  }
+
+  .iq-mobile-scroll{
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    padding-bottom: var(--iq-mobile-footer-reserve);
+    scroll-padding-bottom: var(--iq-mobile-scroll-padding-bottom);
+  }
 }
 
 .appShellTopband{

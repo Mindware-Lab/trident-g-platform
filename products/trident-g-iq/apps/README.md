@@ -8,4 +8,5 @@ Keep each app in its own folder with a short README describing:
 - inputs and outputs (what it reads/writes)
 
 Cross-app standards:
-- `../UI_SIZE_CONTRACT.md` (required shell sizing + no-scroll behavior)
+- `../UI_SIZE_CONTRACT.md` (required shell sizing + scroll behavior contract)
+- `../APP_UX_COMMUNICATION_QA_CHECKLIST.md` (required UX/communication QA before release)

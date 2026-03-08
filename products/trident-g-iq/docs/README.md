@@ -10,3 +10,4 @@ Typical contents:
 
 Related standards:
 - `../UI_SIZE_CONTRACT.md`
+- `../APP_UX_COMMUNICATION_QA_CHECKLIST.md`

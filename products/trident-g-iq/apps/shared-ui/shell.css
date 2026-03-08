@@ -97,6 +97,18 @@ body {
   padding: 18px;
 }
 
+/* Optional utilities aligned to UI_SIZE_CONTRACT.md (v3) */
+.ui-shell-contract {
+  width: var(--iq-shell-desktop-width);
+  height: var(--iq-shell-desktop-height);
+  max-height: var(--iq-shell-desktop-height);
+  overflow: hidden;
+}
+
+.ui-content-scroll-mobile {
+  overflow: hidden;
+}
+
 @media (min-width: 960px) {
   .tg-topbar {
     height: 90px;
@@ -125,6 +137,32 @@ body {
   .ui-screen {
     min-height: calc(100vh - 90px);
     padding-top: 90px;
+  }
+}
+
+@media (max-height: 940px) {
+  .ui-shell-contract {
+    height: var(--iq-shell-desktop-height-compact);
+    max-height: var(--iq-shell-desktop-height-compact);
+  }
+}
+
+@media (max-width: 520px) {
+  .ui-shell-contract {
+    width: var(--iq-shell-mobile-width);
+    height: var(--iq-shell-mobile-height);
+    max-height: var(--iq-shell-mobile-height);
+    border-radius: 0;
+    border: none;
+  }
+
+  .ui-content-scroll-mobile {
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    padding-bottom: var(--iq-mobile-footer-reserve);
+    scroll-padding-bottom: var(--iq-mobile-scroll-padding-bottom);
   }
 }
 

@@ -12,4 +12,5 @@ This product contains the IQ track of the Trident-G platform.
 - `research/` analysis scripts/notebooks (code only, no sensitive datasets)
 
 ## UI Standards
-- `UI_SIZE_CONTRACT.md` - baseline shell dimensions and no-scroll rules for desktop/mobile app UX
+- `UI_SIZE_CONTRACT.md` - baseline shell dimensions and scroll model (desktop no-scroll, mobile scroll + fixed footer)
+- `APP_UX_COMMUNICATION_QA_CHECKLIST.md` - app QA checklist for clarity, accessibility, trust, and recovery

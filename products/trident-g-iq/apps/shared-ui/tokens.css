@@ -26,5 +26,13 @@
   --iq-shadow-primary: 0 0 0 1px rgba(204, 255, 102, 0.14), 0 8px 22px rgba(190, 239, 78, 0.14);
   --iq-focus-ring: 0 0 0 2px rgba(11, 17, 24, 0.95), 0 0 0 4px rgba(110, 198, 255, 0.8), 0 0 0 8px rgba(110, 198, 255, 0.2);
   --iq-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-}
 
+  /* UI size contract (v3) */
+  --iq-shell-desktop-width: min(900px, calc(100% - 24px));
+  --iq-shell-desktop-height: calc(100vh - 36px);
+  --iq-shell-desktop-height-compact: calc(100vh - 18px);
+  --iq-shell-mobile-width: 100%;
+  --iq-shell-mobile-height: 100dvh;
+  --iq-mobile-footer-reserve: calc(112px + env(safe-area-inset-bottom));
+  --iq-mobile-scroll-padding-bottom: calc(124px + env(safe-area-inset-bottom));
+}
