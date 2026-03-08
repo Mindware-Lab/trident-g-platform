@@ -1087,6 +1087,17 @@ function renderHelpButton(topic, label = "How to play") {
   `;
 }
 
+function renderHelpMiniButton(topic, label = "How to play this game") {
+  if (!HELP_TOPICS[topic]) {
+    return "";
+  }
+  return `
+    <button class="topbar-mini-help" data-action="show-help" data-topic="${topic}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">
+      <img src="${HELP_ICON_PATH}" alt="" aria-hidden="true">
+    </button>
+  `;
+}
+
 function displayHubTargetLabel(targetModality, wrapper) {
   const base = modalityLabel(targetModality);
   if (wrapper === "hub_cat" && targetModality === "sym") {
@@ -2076,12 +2087,10 @@ function renderPlayHub() {
         </div>
         <div class="game-topbar-stats">
           <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${loadGymState().bankUnits || 0}</span>
+          ${renderHelpMiniButton(helpTopicForHubWrapper(currentWrapper))}
         </div>
       </div>
       <p class="hint run-context-line">${wrapperDisplayName(currentWrapper)} game</p>
-      <div class="row help-action-row">
-        ${renderHelpButton(helpTopicForHubWrapper(currentWrapper), "How to play this game")}
-      </div>
       ${phasePanel}
       ${renderFlash()}
     </section>
@@ -2292,12 +2301,10 @@ function renderPlayRelational(state) {
         </div>
         <div class="game-topbar-stats">
           <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> ${state.bankUnits}</span>
+          ${renderHelpMiniButton(helpTopicForRelWrapper(relSession.wrapper))}
         </div>
       </div>
       <p class="hint run-context-line">${wrapperDisplayName(relSession.wrapper)} game</p>
-      <div class="row help-action-row">
-        ${renderHelpButton(helpTopicForRelWrapper(relSession.wrapper), "How to play this game")}
-      </div>
       ${phasePanel}
       ${renderFlash()}
     </section>

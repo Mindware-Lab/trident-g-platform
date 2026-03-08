@@ -237,18 +237,19 @@ body {
   padding-bottom: 12px;
   height: calc(100% - 14px);
   min-height: calc(100% - 14px);
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   align-content: stretch;
-  gap: 8px;
+  gap: 6px;
   overflow: hidden;
 }
 
 .play-session-screen .game-topbar {
-  padding-bottom: 2px;
+  padding-bottom: 0;
 }
 
 .play-session-screen .run-context-line {
   margin-top: 0;
+  margin-bottom: 0;
 }
 
 .play-session-screen .help-action-row {
@@ -258,7 +259,7 @@ body {
 .play-session-screen .stage-panel {
   margin-top: 0;
   min-height: 0;
-  padding: 10px 12px;
+  padding: 8px 10px;
 }
 
 .play-session-screen .trial-stage,
@@ -270,7 +271,7 @@ body {
 .play-session-screen .trial-stage {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto auto;
-  gap: 6px;
+  gap: 4px;
   align-content: start;
 }
 
@@ -288,43 +289,154 @@ body {
 }
 
 .play-session-screen .hub-target {
-  margin-bottom: 4px;
-  font-size: 0.96rem;
+  margin-bottom: 2px;
+  font-size: 0.92rem;
 }
 
 .play-session-screen .hub-arena {
-  width: min(86vw, clamp(210px, 34vh, 320px));
+  width: min(84vw, clamp(190px, 30vh, 290px));
   margin: 2px auto 0 auto;
 }
 
 .play-session-screen .hub-token {
-  width: clamp(56px, 8.2vh, 70px);
-  height: clamp(56px, 8.2vh, 70px);
-  font-size: clamp(2rem, 4.8vh, 3rem);
+  width: clamp(52px, 7.4vh, 64px);
+  height: clamp(52px, 7.4vh, 64px);
+  font-size: clamp(1.8rem, 4.2vh, 2.5rem);
 }
 
 .play-session-screen .rel-center-token {
-  font-size: clamp(1.2rem, 3vh, 1.8rem);
+  font-size: clamp(1.1rem, 2.6vh, 1.55rem);
 }
 
 .play-session-screen .game-match-btn {
-  margin-top: 8px;
-  min-height: 56px;
-  font-size: 1.6rem;
+  margin-top: 6px;
+  min-height: 50px;
+  font-size: 1.35rem;
 }
 
 .play-session-screen .pause-control-row {
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .play-session-screen .pause-control-row .pause-btn,
 .play-session-screen .pause-control-row .stop-btn {
-  min-height: 36px;
+  min-height: 34px;
+  font-size: 0.78rem;
 }
 
 .play-session-screen .quiz-action-row .quiz-btn {
-  min-height: 56px;
-  font-size: 1.6rem;
+  min-height: 50px;
+  font-size: 1.35rem;
+}
+
+.play-session-screen .result-hero {
+  margin-top: 2px;
+  gap: 10px;
+}
+
+.play-session-screen .result-ring-wrap,
+.play-session-screen .result-ring {
+  width: 104px;
+  height: 104px;
+}
+
+.play-session-screen .result-ring-text strong {
+  font-size: 1.45rem;
+}
+
+.play-session-screen .result-ring-text span {
+  font-size: 0.62rem;
+  margin-top: 3px;
+}
+
+.play-session-screen .result-outcome {
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+
+.play-session-screen .result-hero-side p {
+  margin: 4px 0;
+}
+
+.play-session-screen .result-metric-grid {
+  margin-top: 6px;
+  gap: 6px;
+}
+
+.play-session-screen .result-metric {
+  padding: 6px 4px;
+}
+
+.play-session-screen .result-metric span {
+  font-size: 0.62rem;
+}
+
+.play-session-screen .result-metric strong {
+  font-size: 1rem;
+}
+
+.play-session-screen .result-earned-row {
+  margin-top: 6px;
+  padding: 8px 10px;
+}
+
+.play-session-screen .summary-help-row {
+  margin-top: 4px;
+}
+
+.play-session-screen .summary-help-row .btn {
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+
+.play-session-screen .coach-next-block {
+  margin-top: 8px;
+}
+
+.play-session-screen .coach-next-title {
+  font-size: 0.98rem;
+}
+
+.play-session-screen .coach-next-icon {
+  width: 42px;
+  height: 42px;
+  margin-top: 5px;
+}
+
+.play-session-screen .home-primary-btn {
+  min-height: 48px;
+  margin-top: 8px;
+  font-size: 1rem;
+}
+
+.topbar-mini-help {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--brand-border);
+  background: rgba(255, 255, 255, 0.05);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brand-text);
+  cursor: pointer;
+  padding: 0;
+}
+
+.topbar-mini-help img {
+  width: 20px;
+  height: 20px;
+  filter: var(--icon-accent-filter) var(--icon-accent-glow);
+}
+
+.topbar-mini-help:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.topbar-mini-help:focus-visible {
+  outline: none;
+  box-shadow: var(--brand-focus-ring);
 }
 
 .has-bottom-tab {
@@ -1929,30 +2041,61 @@ input:disabled {
   }
 
   .play-session-screen .stage-panel {
-    padding: 8px 10px;
+    padding: 8px 9px;
   }
 
   .play-session-screen .hub-arena {
-    width: min(84vw, clamp(190px, 31vh, 270px));
+    width: min(82vw, clamp(172px, 28vh, 250px));
   }
 
   .play-session-screen .hub-target {
-    font-size: 0.9rem;
+    font-size: 0.86rem;
   }
 
   .play-session-screen .game-match-btn {
-    min-height: 50px;
-    font-size: 1.35rem;
+    min-height: 46px;
+    font-size: 1.2rem;
   }
 
   .play-session-screen .quiz-action-row .quiz-btn {
-    min-height: 50px;
-    font-size: 1.35rem;
+    min-height: 46px;
+    font-size: 1.2rem;
   }
 
   .play-session-screen .pause-control-row .pause-btn,
   .play-session-screen .pause-control-row .stop-btn {
-    min-height: 34px;
+    min-height: 32px;
+    font-size: 0.74rem;
+  }
+
+  .play-session-screen .result-ring-wrap,
+  .play-session-screen .result-ring {
+    width: 92px;
+    height: 92px;
+  }
+
+  .play-session-screen .result-ring-text strong {
+    font-size: 1.25rem;
+  }
+
+  .play-session-screen .coach-next-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .play-session-screen .home-primary-btn {
+    min-height: 44px;
+    font-size: 0.95rem;
+  }
+
+  .topbar-mini-help {
+    width: 30px;
+    height: 30px;
+  }
+
+  .topbar-mini-help img {
+    width: 18px;
+    height: 18px;
   }
 
   .hub-arena {
@@ -1995,11 +2138,26 @@ input:disabled {
 
 @media (max-height: 820px) {
   .play-session-screen .hub-arena {
-    width: min(82vw, clamp(180px, 30vh, 270px));
+    width: min(80vw, clamp(168px, 27vh, 238px));
   }
 
   .play-session-screen .game-match-btn {
-    min-height: 50px;
-    font-size: 1.45rem;
+    min-height: 46px;
+    font-size: 1.2rem;
+  }
+
+  .play-session-screen .result-ring-wrap,
+  .play-session-screen .result-ring {
+    width: 92px;
+    height: 92px;
+  }
+
+  .play-session-screen .coach-next-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .play-session-screen .home-primary-btn {
+    min-height: 44px;
   }
 }
