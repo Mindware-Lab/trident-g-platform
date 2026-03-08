@@ -24,6 +24,8 @@
   --shadow-info: 0 0 0 1px rgba(110, 198, 255, 0.18), 0 8px 18px rgba(78, 160, 232, 0.2);
   --shadow-primary: 0 0 0 1px rgba(204, 255, 102, 0.17), 0 8px 18px rgba(190, 239, 78, 0.22);
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --cg-shell-height: calc(100vh - 44px);
+  --cg-brand-row-height: 84px;
 }
 
 * {
@@ -34,18 +36,24 @@ html,
 body {
   margin: 0;
   min-height: 100vh;
-  background: #d7dde3;
+  background: linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%);
   color: var(--brand-text);
   font-family: var(--font);
 }
 
 body {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
   padding: 16px 14px 24px;
+  background:
+    radial-gradient(920px 460px at 50% -24%, rgba(110, 198, 255, 0.24), transparent 58%),
+    linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%);
 }
 
 .shell {
   width: min(470px, calc(100% - 12px));
-  margin: 0 auto;
+  margin: 0;
 }
 
 @media (min-width: 960px) {
@@ -55,16 +63,33 @@ body {
 }
 
 .app-shell {
-  min-height: calc(100vh - 36px);
+  height: var(--cg-shell-height);
+  min-height: 0;
   border-radius: 42px;
   overflow: hidden;
   border: 1.5px solid rgba(255, 255, 255, 0.45);
-  background: radial-gradient(ellipse at 50% 20%, rgba(56, 119, 178, 0.12), rgba(3, 12, 26, 1) 58%, rgba(3, 11, 22, 1) 100%);
+  background:
+    radial-gradient(700px 420px at 50% -10%, rgba(110, 198, 255, 0.18), transparent 62%),
+    linear-gradient(180deg, #081326 0%, #050e1f 45%, #031029 100%);
   box-shadow: 0 22px 44px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr;
 }
 
 .app-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(460px 460px at 50% -15%, rgba(255, 255, 255, 0.18), transparent 62%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(221, 234, 248, 0.38) 47%, rgba(130, 154, 181, 0.32) 50%, rgba(221, 234, 248, 0.34) 53%, rgba(255, 255, 255, 0) 100%);
+  opacity: 0.56;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-shell::after {
   content: "";
   position: absolute;
   top: 0;
@@ -74,7 +99,100 @@ body {
   height: 20px;
   border-radius: 0 0 16px 16px;
   background: rgba(6, 12, 23, 0.95);
-  z-index: 3;
+  z-index: 2;
+}
+
+.app-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.capacity-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 12px 10px;
+  min-height: var(--cg-brand-row-height);
+  position: relative;
+}
+
+.capacity-brand-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.capacity-brand-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  border: 1px solid rgba(110, 198, 255, 0.22);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)), rgba(15, 18, 26, 0.94);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.capacity-brand-icon img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: block;
+}
+
+.capacity-suite-back {
+  display: none;
+  color: #9ed3ff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0.94;
+}
+
+.capacity-suite-back.is-visible {
+  display: inline-flex;
+  align-items: center;
+}
+
+.capacity-brand-site {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #9ed3ff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid rgba(110, 198, 255, 0.3);
+  background: rgba(16, 30, 52, 0.58);
+  border-radius: 999px;
+  padding: 6px 10px;
+  line-height: 1;
+  white-space: nowrap;
+  max-width: 44%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.capacity-brand-site:hover {
+  border-color: rgba(158, 211, 255, 0.56);
+  color: #c8e8ff;
+}
+
+.capacity-brand-pill {
+  border-radius: 999px;
+  background: #ccff66;
+  color: #0b1a0b;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .hidden-header,
@@ -84,18 +202,25 @@ body {
 
 .main {
   position: relative;
-  min-height: calc(100vh - 36px);
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 0;
 }
 
 .card {
-  border-radius: 0;
-  border: 0;
-  background: transparent;
-  padding: 22px 22px 26px;
-  box-shadow: none;
-  min-height: calc(100vh - 36px);
+  border-radius: 22px;
+  border: 1px solid rgba(120, 167, 222, 0.22);
+  background:
+    radial-gradient(620px 300px at 50% 8%, rgba(110, 198, 255, 0.13), transparent 65%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.026), rgba(255, 255, 255, 0.01)),
+    rgba(10, 22, 42, 0.92);
+  padding: 16px 16px 24px;
+  box-shadow: 0 14px 30px rgba(2, 6, 15, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  min-height: calc(100% - 14px);
   position: relative;
+  margin: 7px;
 }
 
 .card + .card {
@@ -1626,6 +1751,11 @@ input:disabled {
 }
 
 @media (max-width: 900px) {
+  :root {
+    --cg-shell-height: calc(100vh - 30px);
+    --cg-brand-row-height: 78px;
+  }
+
   body {
     padding: 12px 10px 18px;
   }
@@ -1640,9 +1770,53 @@ input:disabled {
 }
 
 @media (max-width: 620px) {
+  :root {
+    --cg-shell-height: 100dvh;
+    --cg-brand-row-height: 72px;
+  }
+
+  html,
+  body {
+    min-height: 100dvh;
+  }
+
+  body {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .shell {
+    width: 100%;
+    margin: 0;
+  }
+
+  .app-shell {
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    border-radius: 0;
+    border: none;
+  }
+
+  .app-shell::after {
+    display: none;
+  }
+
+  .capacity-brand-row {
+    padding: 10px 10px 8px;
+  }
+
+  .capacity-brand-site {
+    font-size: 10.5px;
+    padding: 5px 8px;
+    max-width: 48%;
+  }
+
   .card {
     padding: 15px;
-    border-radius: 18px;
+    border-radius: 0;
+    margin: 0;
+    min-height: 100%;
   }
 
   .hub-arena {

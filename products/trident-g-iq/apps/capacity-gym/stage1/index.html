@@ -21,11 +21,39 @@
       <a href="#/history" data-route="history"><span>Progress</span></a>
       <a href="#/settings" data-route="settings"><span>Settings</span></a>
     </nav>
+    <header class="capacity-brand-row" aria-label="Capacity Gym branding">
+      <div class="capacity-brand-left">
+        <span class="capacity-brand-icon"><img src="../brandingUI/Trident-G-Icon.svg" alt=""></span>
+        <a id="suiteBackLink" class="capacity-suite-back" href="../../iq-suite/index.html">Back to IQ Core</a>
+      </div>
+      <a class="capacity-brand-site" href="https://iqmindware.com/" target="_blank" rel="noopener noreferrer">IQMindware.com</a>
+      <span class="capacity-brand-pill">Trident G - IQ</span>
+    </header>
     <main id="app" class="main" aria-live="polite"></main>
   </div>
   <script src="../../shared-ui/entitlements-client.js"></script>
   <script src="../../shared-ui/activation-gate.js"></script>
   <script>
+    var initSuiteBackLink = function () {
+      var link = document.getElementById("suiteBackLink");
+      if (!link) return;
+      var params = new URLSearchParams(window.location.search);
+      var launchedFromSuite = params.get("from") === "iq-core" || Boolean(params.get("bundle"));
+      if (!launchedFromSuite) {
+        link.classList.remove("is-visible");
+        link.setAttribute("aria-hidden", "true");
+        return;
+      }
+      var suiteUrl = new URL("../../iq-suite/index.html", window.location.href);
+      if (params.toString()) {
+        suiteUrl.search = window.location.search || "";
+        suiteUrl.hash = window.location.hash || "";
+      }
+      link.href = suiteUrl.toString();
+      link.classList.add("is-visible");
+      link.removeAttribute("aria-hidden");
+    };
+    initSuiteBackLink();
     var launchBundleId = new URLSearchParams(window.location.search).get("bundle") || "";
     if (window.IQActivationGate) {
       window.IQActivationGate.enforceAppAccess({
