@@ -154,6 +154,13 @@
       color: var(--brand-text-muted);
       font-weight: 700;
     }
+    .dualPanelHint{
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.3;
+      color: var(--brand-text-muted);
+      font-weight: 700;
+    }
 
     .panelModeRow{
       display: flex;
@@ -294,6 +301,30 @@
       padding: 7px 10px;
       font-size: 13px;
       border-radius: 10px;
+    }
+    .compactCardDual .deckLabel{
+      font-size: 12px;
+    }
+    .compactCardDual .deckBtn{
+      min-height: 28px;
+      min-width: 32px;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    .compactCardDual .deckCount{
+      font-size: 11px;
+      min-width: 34px;
+    }
+    .compactCardDual .statusPill{
+      font-size: 11px;
+      padding: 3px 9px;
+    }
+    .compactCardDual .compactActions{
+      gap: 6px;
+    }
+    .compactCardDual .compactActions .btn{
+      flex: 1 1 auto;
+      min-width: 0;
     }
 
     .compactTitle{
@@ -2679,6 +2710,7 @@
       const activeRepeatDraftKey = activeRepeatCard ? `repeat_${activeRepeatCard.id}` : "";
       const activeOutcomeDraftKey = activeOutcomeCard ? `outcome_${activeOutcomeCard.id}` : "";
       const isDualTestsView = testsViewMode === "all";
+      const isTestsDualPanel = activePanel === "tests" && isDualTestsView;
       const activeRepeatDraft = activeRepeatDraftKey ? getDraft(activeRepeatDraftKey) : { score: "", notes: "" };
       const activeOutcomeDraft = activeOutcomeDraftKey ? getDraft(activeOutcomeDraftKey) : { score: "", notes: "" };
       const activeRepeatHistory = activeRepeatCard ? getRepeatableHistory(activeRepeatCard.testId, state).slice(0, 4) : [];
@@ -2717,13 +2749,15 @@
                 </div>
               </div>
               <p className="p">Use 3 steps: Baseline (once) -> Weekly trackers -> Post-tests (once).</p>
+                {!isTestsDualPanel && (
                 <div className="btnRow" style={{ marginTop: "6px" }}>
                   <button className="btn btnSecondary panelMiniBtns howToUseBtn" onClick={() => setShowUsageHelp(true)}>How to use (30s)</button>
                 </div>
+                )}
                 <div className="progressStrip">
                   Core baseline: {requiredBaselineDone}/{requiredOutcomeCards.length}  -  Core post: {requiredPostDone}/{requiredOutcomeCards.length}  -  Weekly due: {trackersDue}
                 </div>
-                <p className="nextAction">{nextActionText}</p>
+                {!isTestsDualPanel ? <p className="nextAction">{nextActionText}</p> : <p className="dualPanelHint">{nextActionText}</p>}
                 <p className="sectionSub sectionSubOptional" style={{ marginTop: "8px" }}>
                   {activePanel === "tests" ? "Tests panel active" : activePanel === "results" ? "Results panel active" : activePanel === "validation" ? "Validation panel active" : "Settings panel active"}
                 </p>
@@ -2750,7 +2784,7 @@
             </div>
 
             <div className="gt-panel-viewport">
-              <p className="panelHint">{panelHelpText}</p>
+              {!isTestsDualPanel && <p className="panelHint">{panelHelpText}</p>}
               {activePanel === "tests" && (
                 <>
                   <div className="panelModeShell">
@@ -2783,12 +2817,14 @@
                       </div>
                       <div className="cardActions">
                         <StatusPill status={activeRepeatCard.status} />
+                        {!isDualTestsView && (
                         <label className="programToggle" style={{ marginLeft: "auto" }}>
                           Cadence
                           <select className="input" style={{ minWidth: "130px" }} value={activeRepeatCard.cadenceValue} onChange={(e) => setCadence(activeRepeatCard.cadenceKey, e.target.value)}>
                             {CADENCE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                           </select>
                         </label>
+                        )}
                       </div>
                       <p className="compactTitle">{activeRepeatCard.title}</p>
                       {!isDualTestsView && <p className="compactMeta">{activeRepeatCard.purpose}</p>}
