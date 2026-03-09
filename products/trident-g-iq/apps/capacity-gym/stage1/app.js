@@ -2495,44 +2495,43 @@ function resolveNextBlockPreview(session) {
 function renderRelationalProgressCard(unlockProgress) {
   const catDone = Boolean(unlockProgress?.catQualified);
   const noncatDone = Boolean(unlockProgress?.noncatQualified);
-  const emoLocDone = Boolean(unlockProgress?.emoLocQualified);
-  const emoColDone = Boolean(unlockProgress?.emoColQualified);
   const emoDualDone = Boolean(unlockProgress?.emoDualQualified);
+  const relationalUnlocked = Boolean(unlockProgress?.relationalUnlocked);
   const unlockOverrideActive = Boolean(unlockProgress?.unlockOverrideActive);
   const unlockHint = unlockOverrideActive
-    ? "Relational unlock is temporarily forced ON for inspection."
-    : (catDone && noncatDone && emoDualDone
-      ? "Relational modes are now available."
-      : "Qualify in Hub cat + Hub non-categorical + Emotional dual to unlock Relational.");
+    ? "Relational games are temporarily forced ON for inspection."
+    : (relationalUnlocked
+      ? "Relational games are now unlocked."
+      : "Relational games are locked until the readiness checks are complete.");
+  const readinessTag = (done) => done ? "Done" : "Pending";
+  const renderAvailabilityPill = (label, unlocked) => `
+    <span class="rel-progress-pill ${unlocked ? "done" : ""}">
+      <img class="rel-progress-icon" src="../brandingUI/icons/status/${unlocked ? "unlock.svg" : "lock.svg"}" alt="" aria-hidden="true">
+      ${label}
+    </span>
+  `;
   return `
     <div class="rel-progress-card">
-      <p class="kicker">Relational Unlock</p>
+      <p class="kicker">Mode Availability</p>
+      <p class="hint"><strong>Capacity games (available now)</strong></p>
       <div class="rel-progress-line">
-        <span class="rel-progress-pill ${catDone ? "done" : ""}">
-          <img class="rel-progress-icon" src="../brandingUI/icons/status/${catDone ? "unlock.svg" : "lock.svg"}" alt="" aria-hidden="true">
-          Hub (cat)
-        </span>
-        <span class="rel-progress-pill ${noncatDone ? "done" : ""}">
-          <img class="rel-progress-icon" src="../brandingUI/icons/status/${noncatDone ? "unlock.svg" : "lock.svg"}" alt="" aria-hidden="true">
-          Hub (non-categorical)
-        </span>
-        <span class="rel-progress-pill ${emoLocDone ? "done" : ""}">
-          <img class="rel-progress-icon" src="../brandingUI/icons/status/${emoLocDone ? "unlock.svg" : "lock.svg"}" alt="" aria-hidden="true">
-          Emotion (location)
-        </span>
-        <span class="rel-progress-pill ${emoColDone ? "done" : ""}">
-          <img class="rel-progress-icon" src="../brandingUI/icons/status/${emoColDone ? "unlock.svg" : "lock.svg"}" alt="" aria-hidden="true">
-          Emotion (colour)
-        </span>
-        <span class="rel-progress-pill ${emoDualDone ? "done" : ""}">
-          <img class="rel-progress-icon" src="../brandingUI/icons/status/${emoDualDone ? "unlock.svg" : "lock.svg"}" alt="" aria-hidden="true">
-          Emotion (dual)
-        </span>
+        ${renderAvailabilityPill("Hub (cat)", true)}
+        ${renderAvailabilityPill("Hub (non-categorical)", true)}
+        ${renderAvailabilityPill("Emotional N-Back", true)}
+      </div>
+      <p class="hint"><strong>Relational games</strong></p>
+      <div class="rel-progress-line">
+        ${renderAvailabilityPill("Transitive", relationalUnlocked)}
+        ${renderAvailabilityPill("Graph", relationalUnlocked)}
+        ${renderAvailabilityPill("Propositional", relationalUnlocked)}
       </div>
       <p class="hint">${unlockHint}</p>
       <details class="rel-progress-help">
-        <summary><img src="../brandingUI/icons/status/help-information.svg" alt="" aria-hidden="true">What counts as stable?</summary>
-        <p>Stable = 3 blocks at N >= 3 (Hub) or N >= 2 (Emotional) with accuracy >= 75%.</p>
+        <summary><img src="../brandingUI/icons/status/help-information.svg" alt="" aria-hidden="true">What unlocks Relational?</summary>
+        <p>Hub (cat) readiness: <strong>${readinessTag(catDone)}</strong>.</p>
+        <p>Hub (non-categorical) readiness: <strong>${readinessTag(noncatDone)}</strong>.</p>
+        <p>Emotional dual readiness: <strong>${readinessTag(emoDualDone)}</strong>.</p>
+        <p>Stable means 3 blocks at N >= 3 (Hub) or N >= 2 (Emotional), with accuracy >= 75%.</p>
       </details>
     </div>
   `;
