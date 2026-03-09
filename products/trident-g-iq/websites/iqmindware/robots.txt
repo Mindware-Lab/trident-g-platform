@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Keep non-content and legacy utility routes out of crawl budget.
+Disallow: /scripts/
+Disallow: /branding/
+Disallow: /g-tracker-validation/
+Disallow: /login/
+
+Sitemap: https://iqmindware.com/sitemap.xml
