@@ -300,6 +300,15 @@ body {
   margin: 0 auto;
 }
 
+.play-session-screen .emotion-trial-stage .emotion-stimulus {
+  margin-top: 0;
+}
+
+.play-session-screen .emotion-trial-stage .emotion-arena {
+  width: min(92vw, clamp(250px, 47vh, 430px));
+  margin: 0 auto;
+}
+
 .play-session-screen .hub-token {
   width: clamp(60px, 9vh, 82px);
   height: clamp(60px, 9vh, 82px);
@@ -1175,6 +1184,20 @@ input:disabled {
   margin: 10px auto 0 auto;
 }
 
+.emotion-match-row {
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.emotion-match-row .match-btn {
+  width: 100%;
+  min-width: 0;
+  margin-top: 0;
+  min-height: 56px;
+}
+
 .pause-btn {
   width: 100%;
   margin-top: 8px;
@@ -1745,8 +1768,8 @@ input:disabled {
 
 .emotion-face-token {
   position: absolute;
-  width: clamp(58px, 10.4vw, 73px);
-  height: clamp(58px, 10.4vw, 73px);
+  width: clamp(72px, 12.8vw, 96px);
+  height: clamp(72px, 12.8vw, 96px);
   object-fit: cover;
   transform: translate(-50%, -50%);
   border-radius: 12px;
@@ -1772,9 +1795,9 @@ input:disabled {
   justify-content: center;
   text-align: center;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: clamp(1rem, 2.2vw, 1.24rem);
-  font-weight: 820;
+  letter-spacing: 0.04em;
+  font-size: clamp(1.16rem, 2.7vw, 1.62rem);
+  font-weight: 900;
   padding: 8px 14px;
   background: transparent !important;
   border: none !important;
@@ -2302,6 +2325,10 @@ input:disabled {
     width: min(84vw, clamp(196px, 33vh, 290px));
   }
 
+  .play-session-screen .emotion-trial-stage .emotion-arena {
+    width: min(90vw, clamp(220px, 38vh, 340px));
+  }
+
   .play-session-screen .hub-target {
     font-size: 0.86rem;
   }
@@ -2359,6 +2386,16 @@ input:disabled {
   .match-btn {
     width: 100%;
     min-width: 0;
+  }
+
+  .emotion-match-row {
+    gap: 8px;
+  }
+
+  .emotion-match-row .match-btn {
+    min-height: 46px;
+    font-size: 0.98rem;
+    padding: 8px 6px;
   }
 
   .row .quiz-btn {

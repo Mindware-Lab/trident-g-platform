@@ -748,10 +748,14 @@ function getCoachCapacityRecommendation(state) {
 
 function renderSessionStyleBadge(style) {
   const styleCopy = describeSessionStyle(style);
+  const shortLabel = String(styleCopy.shortLabel || "").trim();
+  const fullLabel = String(styleCopy.label || "").trim();
+  const normalizeLabel = (value) => value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const showFullLabel = Boolean(fullLabel) && normalizeLabel(fullLabel) !== normalizeLabel(shortLabel);
   return `
     <span class="session-style-pill" aria-label="Session style">
-      <strong>${escapeHtml(styleCopy.shortLabel)}</strong>
-      <span>${escapeHtml(styleCopy.label)}</span>
+      <strong>${escapeHtml(shortLabel || fullLabel)}</strong>
+      ${showFullLabel ? `<span>${escapeHtml(fullLabel)}</span>` : ""}
     </span>
   `;
 }
@@ -3149,7 +3153,7 @@ function emotionModeToLabel(mode) {
   return "Emotional Location";
 }
 
-function renderEmotionStimulus(trial, visible, mode, renderMapping, runtimeInfo = "") {
+function renderEmotionStimulus(trial, visible, renderMapping, runtimeInfo = "") {
   const points = Array.isArray(renderMapping?.markerPositions) ? renderMapping.markerPositions : [];
   const markerDots = points.map((point) => (
     `<span class="hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`
@@ -3170,9 +3174,8 @@ function renderEmotionStimulus(trial, visible, mode, renderMapping, runtimeInfo 
     : `<div class="emotion-word-token hidden"></div>`;
   return `
     <div class="hub-stimulus emotion-stimulus">
-      <p class="hub-target">Target: <strong>${escapeHtml(emotionModeTarget(mode))}</strong> | Game: <strong>${escapeHtml(emotionModeToLabel(mode))}</strong></p>
       ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
-      <div class="hub-arena">
+      <div class="hub-arena emotion-arena">
         <div class="hub-ring"></div>
         ${markerDots}
         ${faceToken}
@@ -3400,11 +3403,11 @@ function renderPlayEmotion() {
     const locEnabled = activeMode === "emo_loc" || activeMode === "emo_dual";
     const colEnabled = activeMode === "emo_col" || activeMode === "emo_dual";
     phasePanel = `
-      <div class="stage-panel trial-stage">
+      <div class="stage-panel trial-stage emotion-trial-stage">
         <div class="trial-progress-track"><span style="width:${trialProgressPct}%;"></span></div>
         <p class="hint">Trial ${trialNumber}/${trialCount}</p>
-        ${renderEmotionStimulus(trial, block.stimulusVisible, activeMode, block.renderMapping)}
-        <div class="row">
+        ${renderEmotionStimulus(trial, block.stimulusVisible, block.renderMapping)}
+        <div class="emotion-match-row">
           <button class="btn primary match-btn" data-action="emotion-match-loc" ${(!locEnabled || responseLocCaptured || paused) ? "disabled" : ""}>LOCATION MATCH</button>
           <button class="btn primary match-btn" data-action="emotion-match-col" ${(!colEnabled || responseColCaptured || paused) ? "disabled" : ""}>COLOUR MATCH</button>
         </div>
