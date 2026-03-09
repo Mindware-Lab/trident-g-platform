@@ -3466,7 +3466,7 @@ function renderPlayRelational(state) {
         ? "Relational modes are available."
         : "Complete both Hub games and Emotional dual to unlock Relational.");
     return `
-      <section class="card game-screen">
+      <section class="card game-screen has-bottom-tab">
         <div class="game-topbar">
           <div class="game-topbar-brand">
             <button class="topbar-icon-btn" data-action="go-home" aria-label="Home">
@@ -3506,10 +3506,8 @@ function renderPlayRelational(state) {
         </div>
         ${renderRelationalProgressCard(unlockProgress)}
         <p class="hint">${lockText}</p>
-        <div class="row home-footer-actions">
-          <button class="btn" data-action="go-home"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">Return Home</button>
-        </div>
         ${renderFlash()}
+        ${renderBottomTab("relational")}
       </section>
     `;
   }
@@ -3541,7 +3539,7 @@ function renderPlayRelational(state) {
       : "";
 
     return `
-      <section class="card game-screen">
+      <section class="card game-screen has-bottom-tab">
         <div class="game-topbar">
           <div class="game-topbar-brand"><strong>Session Complete</strong></div>
           <div class="game-topbar-stats">
@@ -3564,10 +3562,8 @@ function renderPlayRelational(state) {
         <div class="row home-primary-row">
           <button class="btn primary home-primary-btn" data-action="start-relational-session" data-mode="transitive"><img class="btn-inline-icon btn-inline-icon-lg" src="../brandingUI/icons/tab-bar/play-relational.svg" alt="" aria-hidden="true">Play Again</button>
         </div>
-        <div class="row home-footer-actions">
-          <button class="btn" data-action="go-home"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">Return Home</button>
-        </div>
         ${renderFlash()}
+        ${renderBottomTab("relational")}
       </section>
     `;
   }
