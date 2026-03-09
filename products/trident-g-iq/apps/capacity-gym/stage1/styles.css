@@ -2034,13 +2034,15 @@ input:disabled {
 
 .help-sheet {
   max-width: 460px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
 }
 
 .help-sheet.with-media {
   width: min(940px, calc(100% - 24px));
   max-width: none;
-  max-height: calc(100vh - 32px);
-  overflow-y: auto;
 }
 
 .help-graphic {
@@ -2082,6 +2084,37 @@ input:disabled {
 .help-lines p {
   margin: 7px 0;
   color: var(--brand-text-muted);
+  line-height: 1.45;
+}
+
+.help-sections {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.help-section {
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 10px 11px;
+}
+
+.help-section h4 {
+  margin: 0;
+  color: var(--brand-text);
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.help-section ul {
+  margin: 7px 0 0 16px;
+  padding: 0;
+  color: var(--brand-text-muted);
+}
+
+.help-section li {
+  margin: 5px 0;
   line-height: 1.45;
 }
 

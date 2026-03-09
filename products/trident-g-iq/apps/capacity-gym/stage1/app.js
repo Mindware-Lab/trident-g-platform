@@ -348,18 +348,45 @@ const HELP_TOPICS = Object.freeze({
   },
   "training-progression": {
     title: "How to Progress Through Training",
+    imagePath: "./help-graphics/training-progression-flow.svg",
+    imageAlt: "Flow diagram showing start choice, coach guidance, transfer checks, and unlock gates.",
     lines: [
-      "Start with any capacity game: Hub (category), Hub (non-categorical), or Emotional DNB.",
-      "Use Start Recommended Session when possible. Coach may suggest staying in one game for a short run, then switching to test transfer.",
-      "Far transfer is trained by stable control first, then controlled swaps: speed/interference changes, wrapper swaps, and delayed rechecks.",
-      "Zone gate controls load: too hot = reset, stale/unclear/too cold = stabilise, in-band = normal tune/explore/probe/recheck progression.",
-      "Training Bank is immediate motivation (+2 UP, +1 HOLD). Transfer Bank is stricter and only counts durable transfer evidence.",
-      "Transfer Bank rule: Probe pass (block 4 swap + block 5 return) and then Later Check pass after at least 24 hours.",
-      "Emotional Dual unlock: first show stable mono competence in BOTH Emotional Location and Emotional Colour.",
-      "Mono competence = final level at least 2-back, with 3 stable blocks at 2-back or above (>=75% accuracy).",
-      "Relational unlock requires all core competence gates: Hub category + Hub non-categorical + Emotional dual competence.",
-      "Hub competence = final level at least 3-back, with 3 stable blocks at 3-back or above (>=75% accuracy).",
-      "Emotional dual competence = final level at least 2-back, with 3 stable dual blocks at 2-back or above (both dimensions >=75%)."
+      "Goal: build capacity that transfers across games, not just one-game score gains."
+    ],
+    sections: [
+      {
+        heading: "1) Start Choice",
+        points: [
+          "You can start with Hub (category), Hub (non-categorical), or Emotional DNB.",
+          "Use Start Recommended Session when possible for the best progression path."
+        ]
+      },
+      {
+        heading: "2) Coach Guidance For Far Transfer",
+        points: [
+          "Coach may keep you in one game for a short run, then suggest a switch to test transfer.",
+          "Coach adjusts speed/interference and schedules swap checks when performance plateaus in-band.",
+          "Zone gate controls load: too hot = reset, stale/unclear/too cold = stabilise, in-band = tune/explore/probe/recheck."
+        ]
+      },
+      {
+        heading: "3) Banking Rules",
+        points: [
+          "Training Bank = immediate points for block performance (+2 UP, +1 HOLD).",
+          "Transfer Bank = strict durability evidence only.",
+          "Transfer Bank requires Probe pass (block 4 swap + block 5 return) and Later Check pass after at least 24 hours."
+        ]
+      },
+      {
+        heading: "4) Unlock Sequence",
+        points: [
+          "Emotional Dual unlock: first pass BOTH Emotional Location and Emotional Colour mono competence.",
+          "Mono competence: final level >=2-back and 3 stable blocks at >=2-back (>=75% accuracy).",
+          "Relational unlock: Hub category + Hub non-categorical + Emotional dual competence.",
+          "Hub competence: final level >=3-back and 3 stable blocks at >=3-back (>=75% accuracy).",
+          "Emotional dual competence: final level >=2-back and 3 stable dual blocks at >=2-back (both dimensions >=75%)."
+        ]
+      }
     ]
   },
   "rel-metrics": {
@@ -3903,6 +3930,35 @@ function renderHelpOverlay() {
   const links = Array.isArray(topic.links)
     ? topic.links.filter((item) => item && typeof item.href === "string" && item.href.trim())
     : [];
+  const lines = Array.isArray(topic.lines) ? topic.lines : [];
+  const sections = Array.isArray(topic.sections)
+    ? topic.sections.filter((item) => item && typeof item.heading === "string" && item.heading.trim())
+    : [];
+  const linesMarkup = lines.length
+    ? `
+      <div class="help-lines">
+        ${lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
+      </div>
+    `
+    : "";
+  const sectionsMarkup = sections.length
+    ? `
+      <div class="help-sections">
+        ${sections.map((section) => {
+          const points = Array.isArray(section.points) ? section.points.filter((point) => typeof point === "string" && point.trim()) : [];
+          const pointsMarkup = points.length
+            ? `<ul>${points.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}</ul>`
+            : "";
+          return `
+            <section class="help-section">
+              <h4>${escapeHtml(section.heading)}</h4>
+              ${pointsMarkup}
+            </section>
+          `;
+        }).join("")}
+      </div>
+    `
+    : "";
   const linksMarkup = links.length
     ? `
       <div class="help-links">
@@ -3922,9 +3978,8 @@ function renderHelpOverlay() {
       <div class="overlay-card help-sheet ${hasGraphic ? "with-media" : ""}">
         <h3>${escapeHtml(topic.title)}</h3>
         ${galleryMarkup}
-        <div class="help-lines">
-          ${topic.lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
-        </div>
+        ${linesMarkup}
+        ${sectionsMarkup}
         ${linksMarkup}
         <div class="overlay-actions">
           <button class="btn primary" data-action="help-close">Got it</button>

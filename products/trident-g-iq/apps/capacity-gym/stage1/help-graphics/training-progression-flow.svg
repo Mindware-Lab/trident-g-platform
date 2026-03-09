@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" role="img" aria-labelledby="title desc">
+  <title id="title">Capacity Gym progression flow</title>
+  <desc id="desc">Flow diagram showing start choice, coach guidance, transfer checks, and unlock sequence.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a1530"/>
+      <stop offset="100%" stop-color="#08101f"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#152748"/>
+      <stop offset="100%" stop-color="#101c35"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+      <path d="M0,0 L12,4 L0,8 Z" fill="#9fd6ff"/>
+    </marker>
+    <style>
+      .panel { fill: url(#card); stroke: #2c4d7c; stroke-width: 2; }
+      .title { fill: #e7f3ff; font: 700 26px 'Segoe UI', Arial, sans-serif; }
+      .head { fill: #ccff66; font: 700 21px 'Segoe UI', Arial, sans-serif; }
+      .txt { fill: #d4e7ff; font: 18px 'Segoe UI', Arial, sans-serif; }
+      .small { fill: #b9d5f8; font: 16px 'Segoe UI', Arial, sans-serif; }
+      .chip { fill: #1a355f; stroke: #3f6da9; stroke-width: 1.5; }
+      .chipTxt { fill: #dff0ff; font: 15px 'Segoe UI', Arial, sans-serif; }
+      .arrow { stroke: #9fd6ff; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="620" fill="url(#bg)"/>
+  <text class="title" x="600" y="44" text-anchor="middle">How Capacity Training Progresses</text>
+
+  <rect class="panel" x="36" y="78" width="258" height="500" rx="18"/>
+  <text class="head" x="165" y="122" text-anchor="middle">1. Start Choice</text>
+  <rect class="chip" x="58" y="146" width="214" height="44" rx="10"/>
+  <text class="chipTxt" x="165" y="174" text-anchor="middle">Hub (category)</text>
+  <rect class="chip" x="58" y="198" width="214" height="44" rx="10"/>
+  <text class="chipTxt" x="165" y="226" text-anchor="middle">Hub (non-categorical)</text>
+  <rect class="chip" x="58" y="250" width="214" height="44" rx="10"/>
+  <text class="chipTxt" x="165" y="278" text-anchor="middle">Emotional DNB</text>
+  <text class="txt" x="58" y="332">Use Start Recommended</text>
+  <text class="txt" x="58" y="360">Session when possible.</text>
+  <text class="small" x="58" y="402">You can choose any option,</text>
+  <text class="small" x="58" y="426">then follow coach guidance</text>
+  <text class="small" x="58" y="450">for transfer checks.</text>
+
+  <rect class="panel" x="324" y="78" width="258" height="500" rx="18"/>
+  <text class="head" x="453" y="122" text-anchor="middle">2. Coach Guidance</text>
+  <text class="txt" x="346" y="164">Zone gate:</text>
+  <text class="small" x="346" y="192">too hot = Reset</text>
+  <text class="small" x="346" y="216">too cold/stale = Tighten</text>
+  <text class="small" x="346" y="240">in-band = Tune/Explore</text>
+  <text class="txt" x="346" y="286">When stable:</text>
+  <text class="small" x="346" y="314">Speed/interference pulses</text>
+  <text class="small" x="346" y="338">Wrapper swaps for transfer</text>
+  <text class="small" x="346" y="362">Cross-game recommendations</text>
+  <text class="txt" x="346" y="408">Never forced switch:</text>
+  <text class="small" x="346" y="436">coach recommends,</text>
+  <text class="small" x="346" y="460">player chooses session.</text>
+
+  <rect class="panel" x="612" y="78" width="258" height="500" rx="18"/>
+  <text class="head" x="741" y="122" text-anchor="middle">3. Banking Rules</text>
+  <text class="txt" x="634" y="164">Training Bank:</text>
+  <text class="small" x="634" y="192">Immediate motivation</text>
+  <text class="small" x="634" y="216">(+2 UP, +1 HOLD)</text>
+  <text class="txt" x="634" y="264">Transfer Bank:</text>
+  <text class="small" x="634" y="292">Probe pass required</text>
+  <text class="small" x="634" y="316">(swap block + return block)</text>
+  <text class="small" x="634" y="340">then Later Check after 24h+</text>
+  <text class="small" x="634" y="364">Only durable gains count</text>
+  <text class="txt" x="634" y="412">No delayed pass =</text>
+  <text class="small" x="634" y="440">not transfer-banked.</text>
+
+  <rect class="panel" x="900" y="78" width="264" height="500" rx="18"/>
+  <text class="head" x="1032" y="122" text-anchor="middle">4. Unlock Sequence</text>
+  <text class="txt" x="922" y="164">Emotional Dual unlock:</text>
+  <text class="small" x="922" y="192">Pass Emotional Location</text>
+  <text class="small" x="922" y="216">and Emotional Colour mono</text>
+  <text class="small" x="922" y="240">(N >= 2, stable blocks)</text>
+  <text class="txt" x="922" y="288">Relational unlock:</text>
+  <text class="small" x="922" y="316">Hub category competence</text>
+  <text class="small" x="922" y="340">Hub non-categorical competence</text>
+  <text class="small" x="922" y="364">Emotional dual competence</text>
+  <text class="txt" x="922" y="412">Coach keeps routing</text>
+  <text class="small" x="922" y="440">toward robust transfer</text>
+  <text class="small" x="922" y="464">before harder wrappers.</text>
+
+  <path class="arrow" d="M294 328 L314 328"/>
+  <path class="arrow" d="M582 328 L602 328"/>
+  <path class="arrow" d="M870 328 L890 328"/>
+</svg>
