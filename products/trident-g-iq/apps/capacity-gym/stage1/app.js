@@ -351,7 +351,7 @@ const HELP_TOPICS = Object.freeze({
     imagePath: "./help-graphics/training-progression-flow.svg",
     imageAlt: "Flow diagram showing start choice, coach guidance, transfer checks, and unlock gates.",
     lines: [
-      "Goal: build capacity that transfers across games, not just one-game score gains."
+      "Goal: build skills that carry across games and settings, not just higher score in one game."
     ],
     sections: [
       {
@@ -362,19 +362,21 @@ const HELP_TOPICS = Object.freeze({
         ]
       },
       {
-        heading: "2) Coach Guidance For Far Transfer",
+        heading: "2) Coach Guidance For Carry-Over Skills",
         points: [
-          "Coach may keep you in one game for a short run, then suggest a switch to test transfer.",
-          "Coach adjusts speed/interference and schedules swap checks when performance plateaus in-band.",
-          "Zone gate controls load: too hot = reset, stale/unclear/too cold = stabilise, in-band = tune/explore/probe/recheck."
+          "Coach may keep you in one game for a short run, then suggest switching games to test carry-over.",
+          "Coach adjusts speed and distraction level, and schedules a swap check when progress flattens in the zone.",
+          "Zone gate controls load: too hot = reset, stale/unclear/too cold = stabilise, in-zone = build/explore/swap check/later check.",
+          "Swap check = one short switch to a different game mode, then a return."
         ]
       },
       {
         heading: "3) Banking Rules",
         points: [
           "Training Bank = immediate points for block performance (+2 UP, +1 HOLD).",
-          "Transfer Bank = strict durability evidence only.",
-          "Transfer Bank requires Probe pass (block 4 swap + block 5 return) and Later Check pass after at least 24 hours."
+          "Transfer Bank = only counts gains that still hold after challenge and delay.",
+          "Transfer Bank requires Swap Check pass (block 4 switch + block 5 return) and Later Check pass after at least 24 hours.",
+          "Later Check = repeat the same check on a later day to confirm the gain lasts."
         ]
       },
       {

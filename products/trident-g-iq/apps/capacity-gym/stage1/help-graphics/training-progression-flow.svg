@@ -46,11 +46,11 @@
   <text class="head" x="453" y="122" text-anchor="middle">2. Coach Guidance</text>
   <text class="txt" x="346" y="164">Zone gate:</text>
   <text class="small" x="346" y="192">too hot = Reset</text>
-  <text class="small" x="346" y="216">too cold/stale = Tighten</text>
-  <text class="small" x="346" y="240">in-band = Tune/Explore</text>
+  <text class="small" x="346" y="216">too cold/stale = Stabilise</text>
+  <text class="small" x="346" y="240">in-zone = Build/Explore</text>
   <text class="txt" x="346" y="286">When stable:</text>
-  <text class="small" x="346" y="314">Speed/interference pulses</text>
-  <text class="small" x="346" y="338">Wrapper swaps for transfer</text>
+  <text class="small" x="346" y="314">Speed/distraction pulses</text>
+  <text class="small" x="346" y="338">Game-swap checks</text>
   <text class="small" x="346" y="362">Cross-game recommendations</text>
   <text class="txt" x="346" y="408">Never forced switch:</text>
   <text class="small" x="346" y="436">coach recommends,</text>
@@ -62,8 +62,8 @@
   <text class="small" x="634" y="192">Immediate motivation</text>
   <text class="small" x="634" y="216">(+2 UP, +1 HOLD)</text>
   <text class="txt" x="634" y="264">Transfer Bank:</text>
-  <text class="small" x="634" y="292">Probe pass required</text>
-  <text class="small" x="634" y="316">(swap block + return block)</text>
+  <text class="small" x="634" y="292">Swap Check pass required</text>
+  <text class="small" x="634" y="316">(block 4 switch + block 5 return)</text>
   <text class="small" x="634" y="340">then Later Check after 24h+</text>
   <text class="small" x="634" y="364">Only durable gains count</text>
   <text class="txt" x="634" y="412">No delayed pass =</text>
@@ -80,8 +80,8 @@
   <text class="small" x="922" y="340">Hub non-categorical competence</text>
   <text class="small" x="922" y="364">Emotional dual competence</text>
   <text class="txt" x="922" y="412">Coach keeps routing</text>
-  <text class="small" x="922" y="440">toward robust transfer</text>
-  <text class="small" x="922" y="464">before harder wrappers.</text>
+  <text class="small" x="922" y="440">toward strong carry-over</text>
+  <text class="small" x="922" y="464">before harder games.</text>
 
   <path class="arrow" d="M294 328 L314 328"/>
   <path class="arrow" d="M582 328 L602 328"/>
