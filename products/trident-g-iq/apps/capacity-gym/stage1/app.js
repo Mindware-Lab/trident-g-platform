@@ -2785,7 +2785,7 @@ function renderHubStimulus(trial, visible, targetLabel, renderMapping, wrapper, 
 
   return `
     <div class="hub-stimulus ${wrapperClass}">
-      <p class="hub-target">Target: ${targetIcon}<strong>${escapeHtml(targetLabel)}</strong> | Game: <strong>${escapeHtml(wrapperDisplayName(wrapper))}</strong></p>
+      <p class="hub-target">Target: ${targetIcon}<strong>${escapeHtml(targetLabel)}</strong></p>
       ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
       <div class="hub-arena">
         <div class="hub-ring"></div>
@@ -3094,7 +3094,7 @@ function renderPlayHub() {
       `
       : "";
     phasePanel = `
-      <div class="stage-panel trial-stage">
+      <div class="stage-panel trial-stage hub-trial-stage">
         <div class="trial-progress-track"><span style="width:${trialProgressPct}%;"></span></div>
         <p class="hint">Trial ${trialNumber}/${trialCount}</p>
         ${renderHubStimulus(trial, block.stimulusVisible, targetLabel, block.renderMapping, block.plan.wrapper)}

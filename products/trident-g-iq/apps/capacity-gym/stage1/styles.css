@@ -295,6 +295,30 @@ body {
   font-size: 0.92rem;
 }
 
+.play-session-screen .hub-trial-stage .hub-stimulus {
+  margin-top: 0;
+  align-content: start;
+}
+
+.play-session-screen .hub-trial-stage .hub-target {
+  width: 100%;
+  margin: 0 0 6px 0;
+  text-align: center;
+  justify-content: center;
+  font-size: 1.02rem;
+  line-height: 1.25;
+}
+
+.play-session-screen .hub-trial-stage .hub-target strong {
+  font-size: 1.08em;
+  letter-spacing: 0.01em;
+}
+
+.play-session-screen .hub-trial-stage .hub-arena {
+  width: min(92vw, clamp(250px, 47vh, 430px));
+  margin: 0 auto;
+}
+
 .play-session-screen .hub-arena {
   width: min(86vw, clamp(220px, 40vh, 360px));
   margin: 0 auto;
@@ -2331,6 +2355,10 @@ input:disabled {
 
   .play-session-screen .hub-arena {
     width: min(84vw, clamp(196px, 33vh, 290px));
+  }
+
+  .play-session-screen .hub-trial-stage .hub-arena {
+    width: min(90vw, clamp(220px, 38vh, 340px));
   }
 
   .play-session-screen .emotion-trial-stage .emotion-arena {
