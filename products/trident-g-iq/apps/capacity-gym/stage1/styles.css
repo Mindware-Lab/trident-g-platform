@@ -1058,11 +1058,13 @@ body {
   display: block;
   color: var(--brand-text);
   font-size: 0.87rem;
+  overflow-wrap: anywhere;
 }
 
 .mode-tile span {
   color: var(--brand-text-dim);
   font-size: 0.74rem;
+  overflow-wrap: anywhere;
 }
 
 .mode-tile.locked {
@@ -2207,6 +2209,10 @@ input:disabled {
     margin: 0;
   }
 
+  .main {
+    padding-inline: 6px;
+  }
+
   .app-shell {
     width: 100%;
     height: 100dvh;
@@ -2242,10 +2248,46 @@ input:disabled {
   }
 
   .card {
-    padding: 15px;
-    border-radius: 0;
-    margin: 0;
-    min-height: 100%;
+    padding: 14px 13px 22px;
+    border-radius: 16px;
+    margin: 6px 0;
+    min-height: calc(100% - 12px);
+  }
+
+  .game-topbar {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .game-topbar-brand {
+    min-width: 0;
+  }
+
+  .game-topbar-brand strong {
+    font-size: 1.22rem;
+  }
+
+  .game-topbar-stats {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .game-topbar-stats span {
+    padding: 5px 8px;
+    font-size: 0.8rem;
+  }
+
+  .game-topbar-stats img {
+    width: 18px;
+    height: 18px;
+  }
+
+  .home-primary-btn {
+    min-height: 52px;
+    font-size: 0.96rem;
+    line-height: 1.2;
   }
 
   .play-session-screen {
@@ -2345,6 +2387,16 @@ input:disabled {
 
   .history-mini-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 430px) {
+  .mode-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-tile {
+    min-height: 108px;
   }
 }
 
