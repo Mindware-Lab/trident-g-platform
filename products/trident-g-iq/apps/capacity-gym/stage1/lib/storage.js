@@ -1,4 +1,4 @@
-import { normalizeProgression } from "./progression.js";
+import { normalizeEmotionProgression, normalizeProgression } from "./progression.js";
 
 export const STORAGE_KEY = "tg_capacity_gym_v1";
 const HISTORY_LIMIT = 200;
@@ -10,6 +10,7 @@ function makeDefaultState() {
       lastWrapper: null,
       lastSpeed: null,
       lastInterference: null,
+      lastEmotionMode: "emo_loc",
       soundOn: true,
       hasRunHubBefore: false,
       streakCurrent: 0,
@@ -21,12 +22,14 @@ function makeDefaultState() {
     transferBankUnits: 0,
     unlocks: {
       hub_noncat: true,
+      emotionDual: false,
       transitive: false,
       graph: false,
       propositional: false
     },
     missionsByDate: {},
-    progression: normalizeProgression({})
+    progression: normalizeProgression({}),
+    emotionProgression: normalizeEmotionProgression({})
   };
 }
 
@@ -115,7 +118,8 @@ function normalizeState(raw) {
       ...(isObject(raw.unlocks) ? raw.unlocks : {})
     },
     missionsByDate: normalizeMissionsByDate(raw.missionsByDate),
-    progression: normalizeProgression(raw.progression)
+    progression: normalizeProgression(raw.progression),
+    emotionProgression: normalizeEmotionProgression(raw.emotionProgression)
   };
 }
 

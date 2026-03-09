@@ -1,0 +1,307 @@
+﻿{
+    "faces":  [
+                  {
+                      "id":  "afraid_1",
+                      "emotion":  "afraid",
+                      "pack":  "A",
+                      "src":  "./face-word-stim/faces/afraid_1.png",
+                      "source":  "./afraid.png",
+                      "sourceRect":  {
+                                         "x":  0,
+                                         "y":  0,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "afraid_2",
+                      "emotion":  "afraid",
+                      "pack":  "A",
+                      "src":  "./face-word-stim/faces/afraid_2.png",
+                      "source":  "./afraid.png",
+                      "sourceRect":  {
+                                         "x":  1024,
+                                         "y":  0,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "afraid_3",
+                      "emotion":  "afraid",
+                      "pack":  "B",
+                      "src":  "./face-word-stim/faces/afraid_3.png",
+                      "source":  "./afraid.png",
+                      "sourceRect":  {
+                                         "x":  0,
+                                         "y":  1024,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "afraid_4",
+                      "emotion":  "afraid",
+                      "pack":  "B",
+                      "src":  "./face-word-stim/faces/afraid_4.png",
+                      "source":  "./afraid.png",
+                      "sourceRect":  {
+                                         "x":  1024,
+                                         "y":  1024,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "angry_1",
+                      "emotion":  "angry",
+                      "pack":  "A",
+                      "src":  "./face-word-stim/faces/angry_1.png",
+                      "source":  "./angry.png",
+                      "sourceRect":  {
+                                         "x":  0,
+                                         "y":  0,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "angry_2",
+                      "emotion":  "angry",
+                      "pack":  "A",
+                      "src":  "./face-word-stim/faces/angry_2.png",
+                      "source":  "./angry.png",
+                      "sourceRect":  {
+                                         "x":  1024,
+                                         "y":  0,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "angry_3",
+                      "emotion":  "angry",
+                      "pack":  "B",
+                      "src":  "./face-word-stim/faces/angry_3.png",
+                      "source":  "./angry.png",
+                      "sourceRect":  {
+                                         "x":  0,
+                                         "y":  1024,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "angry_4",
+                      "emotion":  "angry",
+                      "pack":  "B",
+                      "src":  "./face-word-stim/faces/angry_4.png",
+                      "source":  "./angry.png",
+                      "sourceRect":  {
+                                         "x":  1024,
+                                         "y":  1024,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "happy_1",
+                      "emotion":  "happy",
+                      "pack":  "A",
+                      "src":  "./face-word-stim/faces/happy_1.png",
+                      "source":  "./happy.png",
+                      "sourceRect":  {
+                                         "x":  0,
+                                         "y":  0,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "happy_2",
+                      "emotion":  "happy",
+                      "pack":  "A",
+                      "src":  "./face-word-stim/faces/happy_2.png",
+                      "source":  "./happy.png",
+                      "sourceRect":  {
+                                         "x":  1024,
+                                         "y":  0,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "happy_3",
+                      "emotion":  "happy",
+                      "pack":  "B",
+                      "src":  "./face-word-stim/faces/happy_3.png",
+                      "source":  "./happy.png",
+                      "sourceRect":  {
+                                         "x":  0,
+                                         "y":  1024,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "happy_4",
+                      "emotion":  "happy",
+                      "pack":  "B",
+                      "src":  "./face-word-stim/faces/happy_4.png",
+                      "source":  "./happy.png",
+                      "sourceRect":  {
+                                         "x":  1024,
+                                         "y":  1024,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "neutral_1",
+                      "emotion":  "neutral",
+                      "pack":  "A",
+                      "src":  "./face-word-stim/faces/neutral_1.png",
+                      "source":  "./neutral.png",
+                      "sourceRect":  {
+                                         "x":  0,
+                                         "y":  0,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "neutral_2",
+                      "emotion":  "neutral",
+                      "pack":  "A",
+                      "src":  "./face-word-stim/faces/neutral_2.png",
+                      "source":  "./neutral.png",
+                      "sourceRect":  {
+                                         "x":  1024,
+                                         "y":  0,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "neutral_3",
+                      "emotion":  "neutral",
+                      "pack":  "B",
+                      "src":  "./face-word-stim/faces/neutral_3.png",
+                      "source":  "./neutral.png",
+                      "sourceRect":  {
+                                         "x":  0,
+                                         "y":  1024,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "neutral_4",
+                      "emotion":  "neutral",
+                      "pack":  "B",
+                      "src":  "./face-word-stim/faces/neutral_4.png",
+                      "source":  "./neutral.png",
+                      "sourceRect":  {
+                                         "x":  1024,
+                                         "y":  1024,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "sad_1",
+                      "emotion":  "sad",
+                      "pack":  "A",
+                      "src":  "./face-word-stim/faces/sad_1.png",
+                      "source":  "./sad.png",
+                      "sourceRect":  {
+                                         "x":  0,
+                                         "y":  0,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "sad_2",
+                      "emotion":  "sad",
+                      "pack":  "A",
+                      "src":  "./face-word-stim/faces/sad_2.png",
+                      "source":  "./sad.png",
+                      "sourceRect":  {
+                                         "x":  1024,
+                                         "y":  0,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "sad_3",
+                      "emotion":  "sad",
+                      "pack":  "B",
+                      "src":  "./face-word-stim/faces/sad_3.png",
+                      "source":  "./sad.png",
+                      "sourceRect":  {
+                                         "x":  0,
+                                         "y":  1024,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  },
+                  {
+                      "id":  "sad_4",
+                      "emotion":  "sad",
+                      "pack":  "B",
+                      "src":  "./face-word-stim/faces/sad_4.png",
+                      "source":  "./sad.png",
+                      "sourceRect":  {
+                                         "x":  1024,
+                                         "y":  1024,
+                                         "width":  1024,
+                                         "height":  1024
+                                     },
+                      "width":  256,
+                      "height":  256
+                  }
+              ],
+    "source":  "2x2 quadrant extraction from 2048 source sheets",
+    "version":  1,
+    "size":  256
+}

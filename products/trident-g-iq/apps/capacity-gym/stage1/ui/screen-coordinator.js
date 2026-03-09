@@ -1,6 +1,7 @@
 export const PRIMARY_SCREENS = Object.freeze({
   HOME: "home",
   HUB: "play-hub",
+  EMOTION: "play-emotion",
   RELATIONAL: "play-relational",
   HISTORY: "history",
   SETTINGS: "settings"
@@ -12,6 +13,9 @@ export function resolvePrimaryScreen({ route }) {
   }
   if (route === "play-hub") {
     return PRIMARY_SCREENS.HUB;
+  }
+  if (route === "play-emotion") {
+    return PRIMARY_SCREENS.EMOTION;
   }
   if (route === "play-relational") {
     return PRIMARY_SCREENS.RELATIONAL;
@@ -34,4 +38,3 @@ export function resolveOverlayScreen({ showSplash, activeOverlay }) {
   }
   return "none";
 }
-

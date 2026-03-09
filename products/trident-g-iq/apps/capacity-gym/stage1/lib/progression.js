@@ -234,8 +234,87 @@ export function normalizeProgression(progressionRaw) {
   };
 }
 
+function normalizeEmotionSignature(signatureRaw) {
+  const signature = asObject(signatureRaw);
+  const baselineMode = signature.baselineMode === "emo_col"
+    ? "emo_col"
+    : (signature.baselineMode === "emo_dual" ? "emo_dual" : "emo_loc");
+  const swapMode = signature.swapMode === "emo_col"
+    ? "emo_col"
+    : (signature.swapMode === "emo_dual" ? "emo_dual" : "emo_loc");
+  const representationFrom = signature.representationFrom === "B" ? "B" : "A";
+  const representationTo = signature.representationTo === "B" ? "B" : "A";
+  const n = Number.isFinite(signature.n) ? Math.max(1, Math.round(signature.n)) : 1;
+  const speed = signature.speed === "fast" ? "fast" : "slow";
+  const interference = signature.interference === "high" ? "high" : "low";
+  const probeAcc = Number.isFinite(signature.probeAcc) ? Math.max(0, Math.min(1, signature.probeAcc)) : 0;
+  const probeN = Number.isFinite(signature.probeN) ? Math.max(1, Math.round(signature.probeN)) : 1;
+  const probeAccLoc = Number.isFinite(signature.probeAccLoc) ? Math.max(0, Math.min(1, signature.probeAccLoc)) : null;
+  const probeAccCol = Number.isFinite(signature.probeAccCol) ? Math.max(0, Math.min(1, signature.probeAccCol)) : null;
+  return {
+    baselineMode,
+    swapMode,
+    representationFrom,
+    representationTo,
+    n,
+    speed,
+    interference,
+    probeAcc,
+    probeN,
+    probeAccLoc,
+    probeAccCol
+  };
+}
+
+function normalizeEmotionCandidate(candidateRaw) {
+  const candidate = asObject(candidateRaw);
+  const status = CANDIDATE_STATUS.has(candidate.status) ? candidate.status : "pending";
+  const probeTs = Number.isFinite(candidate.probeTs) ? Math.round(candidate.probeTs) : null;
+  const eligibleAfterTs = Number.isFinite(candidate.eligibleAfterTs)
+    ? Math.round(candidate.eligibleAfterTs)
+    : (Number.isFinite(probeTs) ? probeTs + RECHECK_GAP_MS : null);
+  return {
+    id: typeof candidate.id === "string" && candidate.id.trim() ? candidate.id.trim() : null,
+    probeTs,
+    eligibleAfterTs,
+    signature: normalizeEmotionSignature(candidate.signature),
+    status,
+    recheckTs: Number.isFinite(candidate.recheckTs) ? Math.round(candidate.recheckTs) : null,
+    rewardGranted: candidate.rewardGranted === true
+  };
+}
+
+export function normalizeEmotionProgression(progressionRaw) {
+  const progression = asObject(progressionRaw);
+  const rawCandidates = Array.isArray(progression.candidates) ? progression.candidates : [];
+  const candidates = rawCandidates
+    .map((entry) => normalizeEmotionCandidate(entry))
+    .filter((entry) => entry.id && Number.isFinite(entry.probeTs));
+  const pendingCandidateIds = new Set(candidates.filter((entry) => entry.status === "pending").map((entry) => entry.id));
+  const pendingCandidateId = typeof progression.pendingCandidateId === "string" && pendingCandidateIds.has(progression.pendingCandidateId)
+    ? progression.pendingCandidateId
+    : null;
+  const lastZone = normalizeZoneHandoffCandidate(progression.lastZone, "saved", Date.now());
+  return {
+    emotionSessionIndex: Number.isFinite(progression.emotionSessionIndex)
+      ? Math.max(0, Math.floor(progression.emotionSessionIndex))
+      : 0,
+    lastZone,
+    pendingCandidateId,
+    candidates
+  };
+}
+
 export function applyZoneToProgression(progressionRaw, zoneHandoff) {
   const progression = normalizeProgression(progressionRaw);
+  return {
+    ...progression,
+    lastZone: zoneHandoff || null
+  };
+}
+
+export function applyZoneToEmotionProgression(progressionRaw, zoneHandoff) {
+  const progression = normalizeEmotionProgression(progressionRaw);
   return {
     ...progression,
     lastZone: zoneHandoff || null
@@ -284,8 +363,43 @@ function detectHubPlateauTrend(history) {
   return means.every((value) => value >= 0.75 && value < 0.9);
 }
 
+function extractEmotionSessions(historyRaw, count = 3) {
+  const history = Array.isArray(historyRaw) ? historyRaw : [];
+  const sessions = history.filter((session) => session?.wrapperFamily === "emotion");
+  return sessions.slice(0, count);
+}
+
+function detectEmotionPlateauTrend(history) {
+  const recent = extractEmotionSessions(history, 3);
+  if (recent.length < 3) {
+    return false;
+  }
+  const finalNs = recent.map((session) => getSessionFinalN(session));
+  const sameFinalN = finalNs.every((value) => value === finalNs[0]);
+  if (!sameFinalN) {
+    return false;
+  }
+  const means = recent.map((session) => averageAccuracy(session?.blocks));
+  return means.every((value) => value >= 0.75 && value < 0.9);
+}
+
 function findPendingCandidate(progression, nowTs = Date.now()) {
   const safeProgression = normalizeProgression(progression);
+  if (!safeProgression.pendingCandidateId) {
+    return null;
+  }
+  const candidate = safeProgression.candidates.find((entry) => entry.id === safeProgression.pendingCandidateId);
+  if (!candidate || candidate.status !== "pending") {
+    return null;
+  }
+  return {
+    ...candidate,
+    eligibleNow: Number.isFinite(candidate.eligibleAfterTs) && nowTs >= candidate.eligibleAfterTs
+  };
+}
+
+function findPendingEmotionCandidate(progression, nowTs = Date.now()) {
+  const safeProgression = normalizeEmotionProgression(progression);
   if (!safeProgression.pendingCandidateId) {
     return null;
   }
@@ -370,6 +484,95 @@ export function computeHubSessionStyle({
   }
 
   if (detectHubPlateauTrend(history)) {
+    return {
+      style: "EXPLORE",
+      reason: "Recent sessions are stable but flat, so controlled exploration is scheduled.",
+      zoneHandoff: zone,
+      pendingCandidate,
+      probeDue: false
+    };
+  }
+
+  return {
+    style: "TUNE",
+    reason: "Continue normal build progression.",
+    zoneHandoff: zone,
+    pendingCandidate,
+    probeDue: false
+  };
+}
+
+export function computeEmotionSessionStyle({
+  history,
+  progression,
+  zoneHandoff,
+  nowTs = Date.now()
+} = {}) {
+  const safeProgression = normalizeEmotionProgression(progression);
+  const pendingCandidate = findPendingEmotionCandidate(safeProgression, nowTs);
+  const zone = normalizeZoneHandoffCandidate(zoneHandoff, zoneHandoff?.sourceKey || "saved", nowTs);
+  const zoneIsFresh = Boolean(zone?.freshSameDay);
+
+  if (!zoneIsFresh) {
+    return {
+      style: "TIGHTEN",
+      reason: "No fresh Zone check found today. Start with stabilise settings.",
+      zoneHandoff: zone,
+      pendingCandidate,
+      probeDue: false
+    };
+  }
+  if (zone.zone === "too_hot") {
+    return {
+      style: "RESET",
+      reason: "Zone check shows overload. Use reset settings today.",
+      zoneHandoff: zone,
+      pendingCandidate,
+      probeDue: false
+    };
+  }
+  if (zone.zone === "too_cold") {
+    return {
+      style: "TIGHTEN",
+      reason: "Zone check is below band. Build control before heavier challenge.",
+      zoneHandoff: zone,
+      pendingCandidate,
+      probeDue: false
+    };
+  }
+  if (zone.zone !== "in_band") {
+    return {
+      style: "TIGHTEN",
+      reason: "Zone status is unclear. Start with stabilise settings.",
+      zoneHandoff: zone,
+      pendingCandidate,
+      probeDue: false
+    };
+  }
+
+  if (pendingCandidate?.eligibleNow) {
+    return {
+      style: "RECHECK",
+      reason: "A probe candidate is ready for delayed durability check.",
+      zoneHandoff: zone,
+      pendingCandidate,
+      probeDue: false
+    };
+  }
+
+  const nextIndex = safeProgression.emotionSessionIndex + 1;
+  const probeDue = !pendingCandidate && nextIndex % PROBE_SLOT_INTERVAL === 0;
+  if (probeDue) {
+    return {
+      style: "PROBE",
+      reason: "Scheduled swap check for transfer evidence.",
+      zoneHandoff: zone,
+      pendingCandidate,
+      probeDue: true
+    };
+  }
+
+  if (detectEmotionPlateauTrend(history)) {
     return {
       style: "EXPLORE",
       reason: "Recent sessions are stable but flat, so controlled exploration is scheduled.",
@@ -636,6 +839,323 @@ export function applyHubTransferOutcome({
 
   return {
     progression: normalizeProgression(nextProgression),
+    transferDelta,
+    transferEvidence
+  };
+}
+
+function isStableEmotionBlock(blockResult) {
+  if (!blockResult || typeof blockResult !== "object") {
+    return false;
+  }
+  const accuracy = Number(blockResult.accuracy || 0);
+  const lapseCount = Number(blockResult.lapseCount || 0);
+  const errorBursts = Number(blockResult.errorBursts || 0);
+  const mode = blockResult.mode === "emo_col"
+    ? "emo_col"
+    : (blockResult.mode === "emo_dual" ? "emo_dual" : "emo_loc");
+  if (mode === "emo_dual") {
+    const accuracyLoc = Number(blockResult.accuracyLoc || 0);
+    const accuracyCol = Number(blockResult.accuracyCol || 0);
+    return accuracy >= 0.75 && accuracyLoc >= 0.75 && accuracyCol >= 0.75 && lapseCount === 0 && errorBursts <= 1;
+  }
+  return accuracy >= 0.75 && lapseCount === 0 && errorBursts <= 1;
+}
+
+function evaluateEmotionProbeCandidate(summary, nowTs = Date.now()) {
+  const baselineMode = summary?.emotionalMode === "emo_col"
+    ? "emo_col"
+    : (summary?.emotionalMode === "emo_dual" ? "emo_dual" : "emo_loc");
+  const block4 = findBlockByIndex(summary?.blocks, 4);
+  const block5 = findBlockByIndex(summary?.blocks, 5);
+  if (!block4) {
+    return {
+      pass: false,
+      reason: "Probe block was missing from this session."
+    };
+  }
+  const returnMode = block5?.mode === "emo_col"
+    ? "emo_col"
+    : (block5?.mode === "emo_dual" ? "emo_dual" : baselineMode);
+  if (baselineMode === "emo_dual") {
+    const packA = block5?.representationPack === "B" ? "B" : "A";
+    const packB = block4?.representationPack === "B" ? "B" : "A";
+    if (packA === packB) {
+      return {
+        pass: false,
+        reason: "Probe representation swap was not detected."
+      };
+    }
+    if (!isStableEmotionBlock(block4)) {
+      return {
+        pass: false,
+        reason: "Probe block did not stay stable."
+      };
+    }
+    return {
+      pass: true,
+      reason: "Probe swap block stayed stable and is ready for delayed check.",
+      signature: {
+        baselineMode: "emo_dual",
+        swapMode: "emo_dual",
+        representationFrom: packA,
+        representationTo: packB,
+        n: Number.isFinite(block4.nStart) ? block4.nStart : 1,
+        speed: block4.speed === "fast" ? "fast" : "slow",
+        interference: block4.interference === "high" ? "high" : "low",
+        probeAcc: Number.isFinite(block4.accuracy) ? block4.accuracy : 0,
+        probeN: Number.isFinite(block4.nEnd) ? block4.nEnd : 1,
+        probeAccLoc: Number.isFinite(block4.accuracyLoc) ? block4.accuracyLoc : null,
+        probeAccCol: Number.isFinite(block4.accuracyCol) ? block4.accuracyCol : null
+      },
+      probeTs: Number.isFinite(summary?.tsEnd) ? summary.tsEnd : nowTs
+    };
+  }
+
+  const swapMode = block4?.mode === "emo_col" ? "emo_col" : "emo_loc";
+  if (swapMode === returnMode) {
+    return {
+      pass: false,
+      reason: "Probe modality swap was not detected."
+    };
+  }
+  if (!isStableEmotionBlock(block4)) {
+    return {
+      pass: false,
+      reason: "Probe block did not stay stable."
+    };
+  }
+  return {
+    pass: true,
+    reason: "Probe swap block stayed stable and is ready for delayed check.",
+    signature: {
+      baselineMode: returnMode,
+      swapMode,
+      representationFrom: block5?.representationPack === "B" ? "B" : "A",
+      representationTo: block4?.representationPack === "B" ? "B" : "A",
+      n: Number.isFinite(block4.nStart) ? block4.nStart : 1,
+      speed: block4.speed === "fast" ? "fast" : "slow",
+      interference: block4.interference === "high" ? "high" : "low",
+      probeAcc: Number.isFinite(block4.accuracy) ? block4.accuracy : 0,
+      probeN: Number.isFinite(block4.nEnd) ? block4.nEnd : 1,
+      probeAccLoc: null,
+      probeAccCol: null
+    },
+    probeTs: Number.isFinite(summary?.tsEnd) ? summary.tsEnd : nowTs
+  };
+}
+
+function evaluateEmotionRecheckCandidate(summary, candidate, nowTs = Date.now()) {
+  if (!candidate) {
+    return {
+      status: "no_pending",
+      pass: false,
+      reason: "No pending probe candidate was found."
+    };
+  }
+  if (Number.isFinite(candidate.eligibleAfterTs) && nowTs < candidate.eligibleAfterTs) {
+    return {
+      status: "too_early",
+      pass: false,
+      reason: "Later check attempted before the 24-hour delay gate.",
+      remainingMs: candidate.eligibleAfterTs - nowTs
+    };
+  }
+  const block4 = findBlockByIndex(summary?.blocks, 4);
+  const block5 = findBlockByIndex(summary?.blocks, 5);
+  if (!block4) {
+    return {
+      status: "failed",
+      pass: false,
+      reason: "Later check block was missing."
+    };
+  }
+  if (!isStableEmotionBlock(block4)) {
+    return {
+      status: "failed",
+      pass: false,
+      reason: "Later check block was unstable."
+    };
+  }
+  const signature = normalizeEmotionSignature(candidate.signature);
+  if (signature.baselineMode === "emo_dual") {
+    const block4Pack = block4.representationPack === "B" ? "B" : "A";
+    const block5Pack = block5?.representationPack === "B" ? "B" : "A";
+    if (block4.mode !== "emo_dual" || block4Pack !== signature.representationTo) {
+      return {
+        status: "failed",
+        pass: false,
+        reason: "Later check did not replay the probe representation swap."
+      };
+    }
+    if (!block5 || block5.mode !== "emo_dual" || block5Pack !== signature.representationFrom) {
+      return {
+        status: "failed",
+        pass: false,
+        reason: "Later check did not return to the baseline representation."
+      };
+    }
+    const minAccuracy = Math.max(0, Number(signature.probeAcc || 0) - 0.08);
+    const minNEnd = Math.max(1, Number(signature.probeN || 1) - 1);
+    const minLoc = Math.max(0, Number(signature.probeAccLoc || 0) - 0.08);
+    const minCol = Math.max(0, Number(signature.probeAccCol || 0) - 0.08);
+    if (
+      Number(block4.accuracy || 0) < minAccuracy
+      || Number(block4.nEnd || 0) < minNEnd
+      || Number(block4.accuracyLoc || 0) < minLoc
+      || Number(block4.accuracyCol || 0) < minCol
+    ) {
+      return {
+        status: "failed",
+        pass: false,
+        reason: "Later check did not preserve probe-level dual control."
+      };
+    }
+    return {
+      status: "pass",
+      pass: true,
+      reason: "Later check passed. Transfer evidence is now banked."
+    };
+  }
+
+  if (block4.mode !== signature.swapMode) {
+    return {
+      status: "failed",
+      pass: false,
+      reason: "Later check did not replay the probe swap mode."
+    };
+  }
+  if (!block5 || block5.mode !== signature.baselineMode) {
+    return {
+      status: "failed",
+      pass: false,
+      reason: "Later check did not return to the baseline mode."
+    };
+  }
+  const minAccuracy = Math.max(0, Number(signature.probeAcc || 0) - 0.08);
+  const minNEnd = Math.max(1, Number(signature.probeN || 1) - 1);
+  if (Number(block4.accuracy || 0) < minAccuracy || Number(block4.nEnd || 0) < minNEnd) {
+    return {
+      status: "failed",
+      pass: false,
+      reason: "Later check did not preserve probe-level control."
+    };
+  }
+  return {
+    status: "pass",
+    pass: true,
+    reason: "Later check passed. Transfer evidence is now banked."
+  };
+}
+
+export function applyEmotionTransferOutcome({
+  progression,
+  summary,
+  sessionStyle,
+  nowTs = Date.now()
+} = {}) {
+  const safeProgression = normalizeEmotionProgression(progression);
+  let nextProgression = {
+    ...safeProgression,
+    candidates: safeProgression.candidates.slice()
+  };
+  let transferDelta = 0;
+  let transferEvidence = buildTransferEvidence(
+    "not_counted",
+    "Transfer check not counted",
+    "This session focused on standard training."
+  );
+
+  if (sessionStyle === "PROBE") {
+    const probeEval = evaluateEmotionProbeCandidate(summary, nowTs);
+    if (probeEval.pass && probeEval.signature) {
+      const candidateId = makeCandidateId(nowTs, nextProgression.candidates.length);
+      const candidate = {
+        id: candidateId,
+        probeTs: probeEval.probeTs,
+        eligibleAfterTs: probeEval.probeTs + RECHECK_GAP_MS,
+        signature: normalizeEmotionSignature(probeEval.signature),
+        status: "pending",
+        recheckTs: null,
+        rewardGranted: false
+      };
+      nextProgression.candidates.push(candidate);
+      nextProgression.pendingCandidateId = candidateId;
+      transferEvidence = buildTransferEvidence(
+        "pending_recheck",
+        "Probe passed",
+        "Swap check held. Run a later check after 24 hours to bank transfer.",
+        { candidateId }
+      );
+    } else {
+      transferEvidence = buildTransferEvidence(
+        "not_counted",
+        "Probe did not qualify",
+        probeEval.reason || "Probe evidence was not stable enough."
+      );
+    }
+  } else if (sessionStyle === "RECHECK") {
+    const pending = nextProgression.pendingCandidateId
+      ? nextProgression.candidates.find((entry) => entry.id === nextProgression.pendingCandidateId && entry.status === "pending")
+      : null;
+    const recheckEval = evaluateEmotionRecheckCandidate(summary, pending, nowTs);
+    if (recheckEval.status === "too_early") {
+      transferEvidence = buildTransferEvidence(
+        "not_counted_early",
+        "Later check too early",
+        "This run was before the 24-hour delay gate.",
+        {
+          remainingMs: recheckEval.remainingMs || 0,
+          candidateId: pending?.id || null
+        }
+      );
+    } else if (recheckEval.pass && pending) {
+      const updated = {
+        ...pending,
+        status: "passed",
+        recheckTs: nowTs,
+        rewardGranted: true
+      };
+      nextProgression.candidates = nextProgression.candidates.map((entry) => (entry.id === updated.id ? updated : entry));
+      nextProgression.pendingCandidateId = null;
+      if (!pending.rewardGranted) {
+        transferDelta = 1;
+      }
+      transferEvidence = buildTransferEvidence(
+        "banked",
+        "Later check passed",
+        "Transfer evidence has been banked.",
+        { candidateId: updated.id }
+      );
+    } else if (pending) {
+      const failed = {
+        ...pending,
+        status: "failed",
+        recheckTs: nowTs
+      };
+      nextProgression.candidates = nextProgression.candidates.map((entry) => (entry.id === failed.id ? failed : entry));
+      nextProgression.pendingCandidateId = null;
+      transferEvidence = buildTransferEvidence(
+        "failed",
+        "Later check failed",
+        recheckEval.reason || "Transfer evidence did not hold after delay.",
+        { candidateId: failed.id }
+      );
+    } else {
+      transferEvidence = buildTransferEvidence(
+        "no_pending",
+        "No pending later check",
+        "There was no pending probe candidate to evaluate."
+      );
+    }
+  }
+
+  if (nextProgression.candidates.length > 64) {
+    nextProgression.candidates = nextProgression.candidates.slice(nextProgression.candidates.length - 64);
+  }
+
+  return {
+    progression: normalizeEmotionProgression(nextProgression),
     transferDelta,
     transferEvidence
   };

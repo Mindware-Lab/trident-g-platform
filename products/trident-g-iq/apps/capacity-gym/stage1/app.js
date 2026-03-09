@@ -33,14 +33,32 @@ import {
   isRelationalMatchAtIndex,
   summarizeRelationalBlock
 } from "./games/relational.js";
+import {
+  EMO_BASE_TRIALS,
+  EMO_CUE_MS,
+  EMO_MODES,
+  EMO_N_MAX,
+  EMO_TOTAL_BLOCKS,
+  createEmotionBlockPlan,
+  createEmotionBlockTrials,
+  createEmotionSessionSummary,
+  emotionModeLabel,
+  emotionModeTarget,
+  isEmotionMatchAtIndex,
+  summarizeEmotionBlock
+} from "./games/emotion.js";
 import { hash32 } from "./lib/rng.js";
 import { coachUpdateAfterBlock, relationalCoachUpdateAfterBlock } from "./lib/coach.js";
 import {
+  applyEmotionTransferOutcome,
+  applyZoneToEmotionProgression,
   applyHubTransferOutcome,
   applyZoneToProgression,
+  computeEmotionSessionStyle,
   computeHubSessionStyle,
   describeSessionStyle,
   formatRemainingDuration,
+  normalizeEmotionProgression,
   normalizeProgression,
   otherHubWrapper,
   readZoneHandoffFromStorage
@@ -54,12 +72,13 @@ import {
   setAudioEnabled,
   playSfx
 } from "./lib/audio.js";
+import { loadEmotionAssets, preloadEmotionImages } from "./lib/emotion-assets.js";
 import { resolvePrimaryScreen } from "./ui/screen-coordinator.js";
 import { renderPrimaryScreen } from "./ui/screens.js";
 import { buildShellViewModel } from "./ui/view-models.js";
 
 const TEMP_RELATIONAL_UNLOCK_FOR_INSPECTION = false;
-const ROUTES = new Set(["home", "play-hub", "play-relational", "history", "settings"]);
+const ROUTES = new Set(["home", "play-hub", "play-emotion", "play-relational", "history", "settings"]);
 const DEFAULT_ROUTE = "home";
 const appRoot = document.querySelector("#app");
 const initialState = loadStateWithSyncedUnlocks();
@@ -71,6 +90,11 @@ initAudio({
 
 const hubPreferences = {
   wrapper: initialSettings.lastWrapper === "hub_noncat" ? "hub_noncat" : "hub_cat",
+  speed: initialSettings.lastSpeed === "fast" ? "fast" : "slow",
+  interference: initialSettings.lastInterference === "high" ? "high" : "low"
+};
+const emotionPreferences = {
+  mode: EMO_MODES.includes(initialSettings.lastEmotionMode) ? initialSettings.lastEmotionMode : "emo_loc",
   speed: initialSettings.lastSpeed === "fast" ? "fast" : "slow",
   interference: initialSettings.lastInterference === "high" ? "high" : "low"
 };
@@ -90,6 +114,7 @@ if (isFirstHubRun(initialState)) {
 let flash = "";
 let flashKind = "success";
 let hubSession = null;
+let emotionSession = null;
 let relSession = null;
 let helpGraphicsPreloadScheduled = false;
 const helpGraphicsPreloadedPaths = new Set();
@@ -101,6 +126,11 @@ const REL_MODE_MAP = {
   propositional: propositionalMode
 };
 const hubTimers = {
+  cue: null,
+  display: null,
+  trial: null
+};
+const emotionTimers = {
   cue: null,
   display: null,
   trial: null
@@ -221,7 +251,7 @@ const HELP_TOPICS = Object.freeze({
       "There are 3 features in each display: location, colour, and letter. Keep track of the cued feature.",
       "Press MATCH (or Space) only when the target repeats at n-back. A 1-back and 2-back match (for two different features) are shown above. Depending on performance, your N-back level could be 3, 4 or higher.",
       "Ignore non-target changes, and do not tap on non-matches.",
-      "You need to reach a consistent 3-back level in this and the non-categorical variation of this game to unlock the relational n-back games."
+      "Relational unlock also requires a stable Emotional dual session after qualifying both Hub games."
     ]
   },
   "hub-noncat-how": {
@@ -231,7 +261,7 @@ const HELP_TOPICS = Object.freeze({
       "There are 3 features in each display: location, colour, and symbol. Keep track of the cued feature.",
       "Press MATCH (or Space) only when the feature repeats at n-back. A 1-back and 2-back match (for two different features) are shown above. Depending on performance, your N-back level could be 3, 4 or higher.",
       "Ignore non-target changes, and do not tap on non-matches.",
-      "You need to reach a consistent 3-back level in this and the non-categorical variation of this game to unlock the relational n-back games."
+      "Relational unlock also requires a stable Emotional dual session after qualifying both Hub games."
     ]
   },
   "rel-transitive-how": {
@@ -276,6 +306,17 @@ const HELP_TOPICS = Object.freeze({
       "Correct skips = correct no-tap moments."
     ]
   },
+  "emotion-how": {
+    title: "How to Play: Emotional N-Back",
+    lines: [
+      "Faces move around 4 ring locations; words stream in the center.",
+      "Track location or colour in mono mode, or both in dual mode.",
+      "Ignore expression and word meaning unless the current target requires it.",
+      "Touch: LOCATION MATCH and COLOUR MATCH buttons.",
+      "Keyboard: Left Arrow = LOCATION MATCH, Right Arrow = COLOUR MATCH.",
+      "Coach recommends when to stay, speed up, add interference, or switch games."
+    ]
+  },
   "training-progression": {
     title: "How to Progress Through Training",
     lines: [
@@ -284,7 +325,7 @@ const HELP_TOPICS = Object.freeze({
       "Probe check = wrapper swap test at block 4, then return at block 5.",
       "Later check = delayed durability test that replays the same swap pattern.",
       "If Zone is too hot, run reset mode. If Zone is stale or unclear, run stabilise mode.",
-      "Relational modes unlock after stable performance in both Hub games."
+      "Relational modes unlock after stable Hub performance and a stable Emotional dual session."
     ]
   },
   "rel-metrics": {
@@ -299,6 +340,7 @@ const HELP_TOPICS = Object.freeze({
 const UI_TAP_ACTIONS = new Set([
   "go-home",
   "go-play-hub",
+  "go-play-emotion",
   "go-play-relational",
   "go-history",
   "go-settings",
@@ -307,7 +349,14 @@ const UI_TAP_ACTIONS = new Set([
   "hub-next-block",
   "rel-next-block",
   "start-hub-session",
+  "start-emotion-session",
   "start-relational-session",
+  "emotion-start-block",
+  "emotion-next-block",
+  "emotion-match-loc",
+  "emotion-match-col",
+  "emotion-toggle-pause",
+  "emotion-stop-session",
   "import-zone-handoff",
   "unlock-go-relational",
   "unlock-close"
@@ -324,6 +373,7 @@ const uiState = {
   helpTopic: null
 };
 let audioFullPreloadRequested = false;
+let emotionAssetsCache = null;
 
 function collectTopicGraphicPaths(topic) {
   if (!topic || typeof topic !== "object") {
@@ -472,8 +522,14 @@ function getProgressionState(state) {
   return normalizeProgression(state?.progression);
 }
 
-function getSavedZoneForNow(state, nowTs = Date.now()) {
-  const progression = getProgressionState(state);
+function getEmotionProgressionState(state) {
+  return normalizeEmotionProgression(state?.emotionProgression);
+}
+
+function getSavedZoneForNow(state, nowTs = Date.now(), track = "hub") {
+  const progression = track === "emotion"
+    ? getEmotionProgressionState(state)
+    : getProgressionState(state);
   const zone = progression.lastZone && typeof progression.lastZone === "object"
     ? progression.lastZone
     : null;
@@ -534,6 +590,101 @@ function getHubStyleDecision(state, nowTs = Date.now()) {
   });
 }
 
+function getEmotionStyleDecision(state, nowTs = Date.now()) {
+  const progression = getEmotionProgressionState(state);
+  const zone = getSavedZoneForNow(state, nowTs, "emotion");
+  return computeEmotionSessionStyle({
+    history: Array.isArray(state?.history) ? state.history : [],
+    progression,
+    zoneHandoff: zone,
+    nowTs
+  });
+}
+
+function recentCapacitySessions(historyRaw) {
+  const history = Array.isArray(historyRaw) ? historyRaw : [];
+  return history.filter((entry) => entry?.wrapperFamily === "hub" || entry?.wrapperFamily === "emotion");
+}
+
+function countConsecutiveFamily(historyRaw, family) {
+  const history = recentCapacitySessions(historyRaw);
+  let count = 0;
+  for (let i = 0; i < history.length; i += 1) {
+    if (history[i]?.wrapperFamily !== family) {
+      break;
+    }
+    count += 1;
+  }
+  return count;
+}
+
+function getCoachCapacityRecommendation(state) {
+  const history = recentCapacitySessions(state?.history);
+  const lastFamily = history.length ? history[0]?.wrapperFamily : null;
+  const hubStyle = getHubStyleDecision(state);
+  const emotionStyle = getEmotionStyleDecision(state);
+  const persistWindow = 3;
+
+  if (lastFamily === "hub") {
+    const streak = countConsecutiveFamily(state?.history, "hub");
+    if (streak > 0 && streak < persistWindow) {
+      return {
+        family: "hub",
+        routeAction: "go-play-hub",
+        label: "Hub",
+        reason: `Coach recommends: stay with Hub for session ${streak + 1}/${persistWindow}.`
+      };
+    }
+    if (hubStyle.style === "EXPLORE") {
+      return {
+        family: "emotion",
+        routeAction: "go-play-emotion",
+        label: "Emotional",
+        reason: "Coach recommends: switch to Emotional to test transfer after Hub plateau."
+      };
+    }
+    return {
+      family: "hub",
+      routeAction: "go-play-hub",
+      label: "Hub",
+      reason: "Coach recommends: continue Hub progression."
+    };
+  }
+
+  if (lastFamily === "emotion") {
+    const streak = countConsecutiveFamily(state?.history, "emotion");
+    if (streak > 0 && streak < persistWindow) {
+      return {
+        family: "emotion",
+        routeAction: "go-play-emotion",
+        label: "Emotional",
+        reason: `Coach recommends: stay with Emotional for session ${streak + 1}/${persistWindow}.`
+      };
+    }
+    if (emotionStyle.style === "EXPLORE") {
+      return {
+        family: "hub",
+        routeAction: "go-play-hub",
+        label: "Hub",
+        reason: "Coach recommends: switch to Hub to test transfer after Emotional plateau."
+      };
+    }
+    return {
+      family: "emotion",
+      routeAction: "go-play-emotion",
+      label: "Emotional",
+      reason: "Coach recommends: continue Emotional progression."
+    };
+  }
+
+  return {
+    family: "hub",
+    routeAction: "go-play-hub",
+    label: "Hub",
+    reason: "Coach recommends: start with Hub baseline."
+  };
+}
+
 function renderSessionStyleBadge(style) {
   const styleCopy = describeSessionStyle(style);
   return `
@@ -578,6 +729,17 @@ function getSessionBaselineWrapper(session) {
   return wrapper === "hub_noncat" ? "hub_noncat" : (wrapper === "hub_cat" ? "hub_cat" : null);
 }
 
+function getEmotionSessionBaselineMode(session) {
+  const mode = session?.emotionalMode || session?.blocksPlanned?.[0]?.mode || session?.blocksPlanned?.[0]?.wrapper;
+  if (mode === "emo_col") {
+    return "emo_col";
+  }
+  if (mode === "emo_dual") {
+    return "emo_dual";
+  }
+  return "emo_loc";
+}
+
 function isQualifyingWrapperSession(session, wrapper) {
   if (!session || session.wrapperFamily !== "hub") {
     return false;
@@ -611,6 +773,9 @@ function deriveRelationalUnlockProgress(history) {
   const safeHistory = Array.isArray(history) ? history : [];
   let catQualified = false;
   let noncatQualified = false;
+  let emoLocQualified = false;
+  let emoColQualified = false;
+  let emoDualQualified = false;
   for (let i = 0; i < safeHistory.length; i += 1) {
     const session = safeHistory[i];
     if (!catQualified && isQualifyingWrapperSession(session, "hub_cat")) {
@@ -619,17 +784,90 @@ function deriveRelationalUnlockProgress(history) {
     if (!noncatQualified && isQualifyingWrapperSession(session, "hub_noncat")) {
       noncatQualified = true;
     }
-    if (catQualified && noncatQualified) {
+    if (!emoLocQualified && isQualifyingEmotionMonoSession(session, "emo_loc")) {
+      emoLocQualified = true;
+    }
+    if (!emoColQualified && isQualifyingEmotionMonoSession(session, "emo_col")) {
+      emoColQualified = true;
+    }
+    if (!emoDualQualified && isQualifyingEmotionDualSession(session)) {
+      emoDualQualified = true;
+    }
+    if (catQualified && noncatQualified && emoLocQualified && emoColQualified && emoDualQualified) {
       break;
     }
   }
   const unlockOverrideActive = TEMP_RELATIONAL_UNLOCK_FOR_INSPECTION === true;
+  const emotionDualUnlocked = emoLocQualified && emoColQualified;
+  const relationalUnlockedByCriteria = catQualified && noncatQualified && emoDualQualified;
   return {
     catQualified,
     noncatQualified,
+    emoLocQualified,
+    emoColQualified,
+    emoDualQualified,
+    emotionDualUnlocked,
     unlockOverrideActive,
-    relationalUnlocked: unlockOverrideActive || (catQualified && noncatQualified)
+    relationalUnlocked: unlockOverrideActive || relationalUnlockedByCriteria
   };
+}
+
+function isQualifyingEmotionMonoSession(session, mode) {
+  if (!session || session.wrapperFamily !== "emotion") {
+    return false;
+  }
+  if (getEmotionSessionBaselineMode(session) !== mode) {
+    return false;
+  }
+  const safeBlocks = Array.isArray(session.blocks) ? session.blocks : [];
+  const modeBlocks = safeBlocks.filter((block) => block?.mode === mode);
+  if (!modeBlocks.length) {
+    return false;
+  }
+  const final = modeBlocks[modeBlocks.length - 1];
+  if (!final || Number(final.nEnd || 0) < 2) {
+    return false;
+  }
+  let stableCount = 0;
+  for (let i = 0; i < modeBlocks.length; i += 1) {
+    const block = modeBlocks[i];
+    if (Number(block?.nStart || 0) < 2) {
+      continue;
+    }
+    if (Number(block?.accuracy || 0) >= 0.75) {
+      stableCount += 1;
+    }
+  }
+  return stableCount >= 3;
+}
+
+function isQualifyingEmotionDualSession(session) {
+  if (!session || session.wrapperFamily !== "emotion") {
+    return false;
+  }
+  if (getEmotionSessionBaselineMode(session) !== "emo_dual") {
+    return false;
+  }
+  const safeBlocks = Array.isArray(session.blocks) ? session.blocks : [];
+  const dualBlocks = safeBlocks.filter((block) => block?.mode === "emo_dual");
+  if (!dualBlocks.length) {
+    return false;
+  }
+  const final = dualBlocks[dualBlocks.length - 1];
+  if (!final || Number(final.nEnd || 0) < 2) {
+    return false;
+  }
+  let stableCount = 0;
+  for (let i = 0; i < dualBlocks.length; i += 1) {
+    const block = dualBlocks[i];
+    if (Number(block?.nStart || 0) < 2) {
+      continue;
+    }
+    if (Number(block?.accuracyLoc || 0) >= 0.75 && Number(block?.accuracyCol || 0) >= 0.75) {
+      stableCount += 1;
+    }
+  }
+  return stableCount >= 3;
 }
 
 function syncRelationalUnlockFlags(state) {
@@ -637,11 +875,13 @@ function syncRelationalUnlockFlags(state) {
   const nextUnlockValue = unlockProgress.relationalUnlocked;
   const unlocks = {
     ...(state?.unlocks || {}),
+    emotionDual: Boolean(unlockProgress.emotionDualUnlocked),
     transitive: nextUnlockValue,
     graph: nextUnlockValue,
     propositional: nextUnlockValue
   };
   const changed = !state?.unlocks
+    || state.unlocks.emotionDual !== unlocks.emotionDual
     || state.unlocks.transitive !== unlocks.transitive
     || state.unlocks.graph !== unlocks.graph
     || state.unlocks.propositional !== unlocks.propositional;
@@ -853,9 +1093,11 @@ function importLatestZoneHandoffToGymState() {
   }
   const state = loadGymState();
   const progression = applyZoneToProgression(state.progression, handoff);
+  const emotionProgression = applyZoneToEmotionProgression(state.emotionProgression, handoff);
   saveGymState({
     ...state,
-    progression
+    progression,
+    emotionProgression
   });
   const zoneCopy = buildZoneStatusCopy(handoff);
   if (handoff.freshSameDay) {
@@ -878,7 +1120,7 @@ function applySessionProgressAndSave(summary, family, options = {}) {
   let mission = ensured.mission;
   const missionWasComplete = isMissionComplete(mission);
 
-  if (family === "hub") {
+  if (family === "hub" || family === "emotion") {
     mission = markMissionStep(mission, "control");
   } else if (family === "relational" && mission.tier === "tier1") {
     mission = markMissionStep(mission, "reason");
@@ -888,6 +1130,7 @@ function applySessionProgressAndSave(summary, family, options = {}) {
   let bankUnits = Number(state.bankUnits || 0) + sessionUnitsEarned;
   let transferBankUnits = Number(state.transferBankUnits || 0);
   let progression = getProgressionState(state);
+  let emotionProgression = getEmotionProgressionState(state);
   const rewardOutcome = maybeAwardMissionReward(mission, bankUnits);
   mission = rewardOutcome.mission;
   bankUnits = rewardOutcome.bankUnits;
@@ -915,6 +1158,21 @@ function applySessionProgressAndSave(summary, family, options = {}) {
     transferBankDelta = Number(transferOutcome.transferDelta || 0);
     transferEvidence = transferOutcome.transferEvidence || transferEvidence;
     transferBankUnits += transferBankDelta;
+  } else if (family === "emotion") {
+    const precomputed = options?.emotionTransferOutcome && typeof options.emotionTransferOutcome === "object"
+      ? options.emotionTransferOutcome
+      : null;
+    const transferOutcome = precomputed || applyEmotionTransferOutcome({
+      progression: emotionProgression,
+      summary,
+      sessionStyle: summary?.sessionStyle || null,
+      nowTs: Number(summary?.tsEnd || Date.now())
+    });
+    emotionProgression = transferOutcome.progression;
+    emotionProgression.emotionSessionIndex = Math.max(0, Number(emotionProgression.emotionSessionIndex || 0)) + 1;
+    transferBankDelta = Number(transferOutcome.transferDelta || 0);
+    transferEvidence = transferOutcome.transferEvidence || transferEvidence;
+    transferBankUnits += transferBankDelta;
   }
 
   const nextSettings = applyMissionStreakOnCompletion(state.settings, dateKey, missionJustCompleted);
@@ -923,6 +1181,7 @@ function applySessionProgressAndSave(summary, family, options = {}) {
     bankUnits,
     transferBankUnits,
     progression,
+    emotionProgression,
     settings: nextSettings,
     missionsByDate: {
       ...(state.missionsByDate || {}),
@@ -1169,6 +1428,18 @@ function wrapperDisplayName(wrapper) {
   if (wrapper === "hub_cat") {
     return "Hub Categorical";
   }
+  if (wrapper === "emo_loc") {
+    return "Emotional Location";
+  }
+  if (wrapper === "emo_col") {
+    return "Emotional Colour";
+  }
+  if (wrapper === "emo_dual") {
+    return "Emotional Dual";
+  }
+  if (wrapper === "emotion") {
+    return "Emotional";
+  }
   if (wrapper === "transitive") {
     return "Transitive";
   }
@@ -1187,6 +1458,15 @@ function wrapperIconPath(wrapper) {
   }
   if (wrapper === "hub_noncat") {
     return "../brandingUI/icons/game/symbol-response.svg";
+  }
+  if (wrapper === "emo_loc") {
+    return "../brandingUI/icons/game/location-response.svg";
+  }
+  if (wrapper === "emo_col") {
+    return "../brandingUI/icons/game/colour-response.svg";
+  }
+  if (wrapper === "emo_dual" || wrapper === "emotion") {
+    return "../brandingUI/icons/game/location-response.svg";
   }
   if (wrapper === "transitive") {
     return "../brandingUI/icons/game/transitive-order.svg";
@@ -1528,6 +1808,55 @@ function clearHubTimers() {
   hubTimers.trial = null;
 }
 
+function clearEmotionTimers() {
+  if (emotionTimers.cue) {
+    clearTimeout(emotionTimers.cue);
+  }
+  if (emotionTimers.display) {
+    clearTimeout(emotionTimers.display);
+  }
+  if (emotionTimers.trial) {
+    clearTimeout(emotionTimers.trial);
+  }
+  emotionTimers.cue = null;
+  emotionTimers.display = null;
+  emotionTimers.trial = null;
+}
+
+async function ensureEmotionAssetsLoaded() {
+  if (emotionAssetsCache) {
+    return emotionAssetsCache;
+  }
+  const assets = await loadEmotionAssets();
+  emotionAssetsCache = assets;
+  return assets;
+}
+
+function replaceFailedEmotionFaces(trialsRaw, failedSources, fallbackFace) {
+  const trials = Array.isArray(trialsRaw) ? trialsRaw : [];
+  const failed = new Set(Array.isArray(failedSources) ? failedSources : []);
+  const fallbackSrc = fallbackFace?.src ? String(fallbackFace.src) : "";
+  if (!failed.size || !fallbackSrc) {
+    return trials;
+  }
+  return trials.map((trial) => {
+    const faceSrc = String(trial?.display?.faceSrc || trial?.faceSrc || "");
+    if (!failed.has(faceSrc)) {
+      return trial;
+    }
+    return {
+      ...trial,
+      faceSrc: fallbackSrc,
+      faceEmotion: String(fallbackFace?.emotion || trial?.faceEmotion || "neutral"),
+      display: {
+        ...(trial?.display || {}),
+        faceSrc: fallbackSrc,
+        faceEmotion: String(fallbackFace?.emotion || trial?.display?.faceEmotion || "neutral")
+      }
+    };
+  });
+}
+
 function clearRelTimers() {
   if (relTimers.cue) {
     clearTimeout(relTimers.cue);
@@ -1607,6 +1936,10 @@ function relationalTrialAudioBaseKey(block) {
   return `rel:block-${Number(block?.plan?.blockIndex || 0)}:trial-${Number(block?.trialIndex || 0)}`;
 }
 
+function emotionTrialAudioBaseKey(block) {
+  return `emo:block-${Number(block?.plan?.blockIndex || 0)}:trial-${Number(block?.trialIndex || 0)}`;
+}
+
 function playHubTrialOutcomeSfx(block, classification) {
   const eventId = outcomeSfxFromClassification(classification);
   if (!eventId) {
@@ -1624,6 +1957,16 @@ function playRelationalTrialOutcomeSfx(block, classification) {
   }
   playSfx(eventId, {
     onceKey: `${relationalTrialAudioBaseKey(block)}:outcome`
+  });
+}
+
+function playEmotionTrialOutcomeSfx(block, classification) {
+  const eventId = outcomeSfxFromClassification(classification);
+  if (!eventId) {
+    return;
+  }
+  playSfx(eventId, {
+    onceKey: `${emotionTrialAudioBaseKey(block)}:outcome`
   });
 }
 
@@ -1663,6 +2006,32 @@ function normalizeHubInterference(value) {
   return value === "high" ? "high" : "low";
 }
 
+function normalizeEmotionSpeed(value) {
+  return value === "fast" ? "fast" : "slow";
+}
+
+function normalizeEmotionInterference(value) {
+  return value === "high" ? "high" : "low";
+}
+
+function normalizeEmotionModeForPlan(value) {
+  if (value === "emo_col") {
+    return "emo_col";
+  }
+  if (value === "emo_dual") {
+    return "emo_dual";
+  }
+  return "emo_loc";
+}
+
+function otherEmotionMonoMode(mode) {
+  return mode === "emo_col" ? "emo_loc" : "emo_col";
+}
+
+function otherRepresentationPack(pack) {
+  return pack === "B" ? "A" : "B";
+}
+
 function normalizeHubTargetModality(value, blockIndex) {
   if (HUB_TARGET_MODALITIES.includes(value)) {
     return value;
@@ -1695,6 +2064,25 @@ function normalizeRelationalCoachFlags(flags) {
     userOverride: safeFlags.userOverride === "coach" || safeFlags.userOverride === "alternative"
       ? safeFlags.userOverride
       : undefined
+  };
+}
+
+function normalizeEmotionCoachPatch(patch) {
+  const safePatch = patch && typeof patch === "object" ? patch : {};
+  const safeFlags = safePatch.flags && typeof safePatch.flags === "object" ? safePatch.flags : {};
+  return {
+    ...(Number.isFinite(safePatch.n) ? { n: Math.max(1, Math.round(safePatch.n)) } : {}),
+    ...(safePatch.speed ? { speed: normalizeEmotionSpeed(safePatch.speed) } : {}),
+    ...(safePatch.interference ? { interference: normalizeEmotionInterference(safePatch.interference) } : {}),
+    flags: {
+      coachState: safeFlags.coachState,
+      pulseType: safeFlags.pulseType ?? null,
+      swapSegment: safeFlags.swapSegment ?? null,
+      wasSwapProbe: Boolean(safeFlags.wasSwapProbe),
+      userOverride: safeFlags.userOverride === "coach" || safeFlags.userOverride === "alternative"
+        ? safeFlags.userOverride
+        : undefined
+    }
   };
 }
 
@@ -1829,6 +2217,183 @@ function applyHubSessionStylePatch(session, patch, blockIndex, lastPlan) {
   return safePatch;
 }
 
+function applyEmotionSessionStylePatch(session, patch, blockIndex, lastPlan) {
+  const safePatch = patch && typeof patch === "object" ? { ...patch } : {};
+  const safeFlags = safePatch.flags && typeof safePatch.flags === "object" ? { ...safePatch.flags } : {};
+  const style = session?.sessionStyle || "TUNE";
+  const baselineMode = normalizeEmotionModeForPlan(session?.baselineMode);
+  const baselinePack = session?.baselineRepresentationPack === "B" ? "B" : "A";
+  const planPack = lastPlan?.representationPack === "B" ? "B" : baselinePack;
+
+  if (style === "RESET" || style === "TIGHTEN") {
+    const currentN = Number.isFinite(safePatch.n) ? safePatch.n : Number(session?.currentN || 1);
+    safePatch.mode = baselineMode;
+    safePatch.representationPack = baselinePack;
+    safePatch.speed = "slow";
+    safePatch.interference = "low";
+    safePatch.n = style === "RESET"
+      ? Math.max(1, Math.min(2, Math.round(currentN)))
+      : Math.max(1, Math.round(currentN));
+    safePatch.flags = {
+      coachState: style === "RESET" ? "RECOVER" : "STABILISE",
+      pulseType: null,
+      swapSegment: null,
+      wasSwapProbe: false,
+      userOverride: "coach"
+    };
+    return safePatch;
+  }
+
+  if (style === "PROBE" && blockIndex === 4) {
+    const probeN = Number.isFinite(safePatch.n) ? Math.max(1, Math.round(safePatch.n)) : Math.max(1, Number(session?.currentN || 1));
+    const probeSpeed = safePatch.speed
+      ? normalizeEmotionSpeed(safePatch.speed)
+      : normalizeEmotionSpeed(lastPlan?.speed || emotionPreferences.speed);
+    const probeInterference = safePatch.interference
+      ? normalizeEmotionInterference(safePatch.interference)
+      : normalizeEmotionInterference(lastPlan?.interference || emotionPreferences.interference);
+
+    if (baselineMode === "emo_dual") {
+      const fromPack = planPack;
+      const toPack = otherRepresentationPack(fromPack);
+      session.probeRunConfig = {
+        baselineMode: "emo_dual",
+        swapMode: "emo_dual",
+        n: probeN,
+        speed: probeSpeed,
+        interference: probeInterference,
+        representationFrom: fromPack,
+        representationTo: toPack
+      };
+      return {
+        ...safePatch,
+        mode: "emo_dual",
+        representationPack: toPack,
+        n: probeN,
+        speed: probeSpeed,
+        interference: probeInterference,
+        flags: {
+          ...safeFlags,
+          coachState: "SPIKE_TUNE",
+          pulseType: null,
+          swapSegment: "B",
+          wasSwapProbe: true,
+          userOverride: "coach"
+        }
+      };
+    }
+
+    const swapMode = otherEmotionMonoMode(baselineMode);
+    session.probeRunConfig = {
+      baselineMode,
+      swapMode,
+      n: probeN,
+      speed: probeSpeed,
+      interference: probeInterference,
+      representationFrom: planPack,
+      representationTo: planPack
+    };
+    return {
+      ...safePatch,
+      mode: swapMode,
+      representationPack: planPack,
+      n: probeN,
+      speed: probeSpeed,
+      interference: probeInterference,
+      flags: {
+        ...safeFlags,
+        coachState: "SPIKE_TUNE",
+        pulseType: null,
+        swapSegment: "B",
+        wasSwapProbe: true,
+        userOverride: "coach"
+      }
+    };
+  }
+
+  if (style === "PROBE" && blockIndex === 5 && session?.probeRunConfig) {
+    const config = session.probeRunConfig;
+    return {
+      ...safePatch,
+      mode: normalizeEmotionModeForPlan(config.baselineMode),
+      representationPack: config.representationFrom === "B" ? "B" : "A",
+      n: config.n,
+      speed: normalizeEmotionSpeed(config.speed),
+      interference: normalizeEmotionInterference(config.interference),
+      flags: {
+        ...safeFlags,
+        coachState: "SPIKE_TUNE",
+        pulseType: null,
+        swapSegment: "A",
+        wasSwapProbe: true,
+        userOverride: "coach"
+      }
+    };
+  }
+
+  if (style === "RECHECK" && session?.recheckSignature && blockIndex === 4) {
+    const signature = session.recheckSignature;
+    const signatureBaselineMode = normalizeEmotionModeForPlan(signature.baselineMode);
+    const signatureSwapMode = normalizeEmotionModeForPlan(signature.swapMode);
+    const fromPack = signature.representationFrom === "B" ? "B" : "A";
+    const toPack = signature.representationTo === "B" ? "B" : "A";
+    session.recheckRunConfig = {
+      baselineMode: signatureBaselineMode,
+      swapMode: signatureSwapMode,
+      n: Number.isFinite(signature.n) ? Math.max(1, Math.round(signature.n)) : Math.max(1, Number(session?.currentN || 1)),
+      speed: normalizeEmotionSpeed(signature.speed),
+      interference: normalizeEmotionInterference(signature.interference),
+      representationFrom: fromPack,
+      representationTo: toPack
+    };
+    return {
+      ...safePatch,
+      mode: signatureSwapMode,
+      representationPack: signatureBaselineMode === "emo_dual" ? toPack : fromPack,
+      n: session.recheckRunConfig.n,
+      speed: session.recheckRunConfig.speed,
+      interference: session.recheckRunConfig.interference,
+      flags: {
+        ...safeFlags,
+        coachState: "SPIKE_TUNE",
+        pulseType: null,
+        swapSegment: "B",
+        wasSwapProbe: true,
+        userOverride: "coach"
+      }
+    };
+  }
+
+  if (style === "RECHECK" && session?.recheckRunConfig && blockIndex === 5) {
+    const config = session.recheckRunConfig;
+    return {
+      ...safePatch,
+      mode: normalizeEmotionModeForPlan(config.baselineMode),
+      representationPack: config.representationFrom === "B" ? "B" : "A",
+      n: config.n,
+      speed: normalizeEmotionSpeed(config.speed),
+      interference: normalizeEmotionInterference(config.interference),
+      flags: {
+        ...safeFlags,
+        coachState: "SPIKE_TUNE",
+        pulseType: null,
+        swapSegment: "A",
+        wasSwapProbe: true,
+        userOverride: "coach"
+      }
+    };
+  }
+
+  safePatch.mode = safePatch.mode
+    ? normalizeEmotionModeForPlan(safePatch.mode)
+    : normalizeEmotionModeForPlan(lastPlan?.mode || baselineMode);
+  safePatch.representationPack = safePatch.representationPack === "B" ? "B" : planPack;
+  safePatch.flags = {
+    ...safeFlags
+  };
+  return safePatch;
+}
+
 function isFirstHubRun(state) {
   const safeState = state && typeof state === "object" ? state : loadGymState();
   const hasHubHistory = Array.isArray(safeState.history)
@@ -1863,10 +2428,15 @@ function resolveNextBlockPreview(session) {
 function renderRelationalProgressCard(unlockProgress) {
   const catDone = Boolean(unlockProgress?.catQualified);
   const noncatDone = Boolean(unlockProgress?.noncatQualified);
+  const emoLocDone = Boolean(unlockProgress?.emoLocQualified);
+  const emoColDone = Boolean(unlockProgress?.emoColQualified);
+  const emoDualDone = Boolean(unlockProgress?.emoDualQualified);
   const unlockOverrideActive = Boolean(unlockProgress?.unlockOverrideActive);
   const unlockHint = unlockOverrideActive
     ? "Relational unlock is temporarily forced ON for inspection."
-    : (catDone && noncatDone ? "Relational modes are now available." : "Qualify in both Hub modes to unlock Relational.");
+    : (catDone && noncatDone && emoDualDone
+      ? "Relational modes are now available."
+      : "Qualify in Hub cat + Hub non-categorical + Emotional dual to unlock Relational.");
   return `
     <div class="rel-progress-card">
       <p class="kicker">Relational Unlock</p>
@@ -1879,11 +2449,23 @@ function renderRelationalProgressCard(unlockProgress) {
           <img class="rel-progress-icon" src="../brandingUI/icons/status/${noncatDone ? "unlock.svg" : "lock.svg"}" alt="" aria-hidden="true">
           Hub (non-categorical)
         </span>
+        <span class="rel-progress-pill ${emoLocDone ? "done" : ""}">
+          <img class="rel-progress-icon" src="../brandingUI/icons/status/${emoLocDone ? "unlock.svg" : "lock.svg"}" alt="" aria-hidden="true">
+          Emotion (location)
+        </span>
+        <span class="rel-progress-pill ${emoColDone ? "done" : ""}">
+          <img class="rel-progress-icon" src="../brandingUI/icons/status/${emoColDone ? "unlock.svg" : "lock.svg"}" alt="" aria-hidden="true">
+          Emotion (colour)
+        </span>
+        <span class="rel-progress-pill ${emoDualDone ? "done" : ""}">
+          <img class="rel-progress-icon" src="../brandingUI/icons/status/${emoDualDone ? "unlock.svg" : "lock.svg"}" alt="" aria-hidden="true">
+          Emotion (dual)
+        </span>
       </div>
       <p class="hint">${unlockHint}</p>
       <details class="rel-progress-help">
         <summary><img src="../brandingUI/icons/status/help-information.svg" alt="" aria-hidden="true">What counts as stable?</summary>
-        <p>Stable = 3 blocks at N >= 3 with accuracy >= 75% in the same game baseline.</p>
+        <p>Stable = 3 blocks at N >= 3 (Hub) or N >= 2 (Emotional) with accuracy >= 75%.</p>
       </details>
     </div>
   `;
@@ -1912,8 +2494,14 @@ function renderBottomTab(activeTab) {
 function renderHome(state) {
   const unlockProgress = deriveRelationalUnlockProgress(state.history);
   const progression = getProgressionState(state);
-  const zone = getSavedZoneForNow(state);
-  const styleDecision = getHubStyleDecision(state);
+  const emotionProgression = getEmotionProgressionState(state);
+  const coachRecommendation = getCoachCapacityRecommendation(state);
+  const styleDecision = coachRecommendation.family === "emotion"
+    ? getEmotionStyleDecision(state)
+    : getHubStyleDecision(state);
+  const zone = coachRecommendation.family === "emotion"
+    ? getSavedZoneForNow(state, Date.now(), "emotion")
+    : getSavedZoneForNow(state);
   const todayKey = toDateKeyLocal();
   const mission = getMissionPreview(state, todayKey, unlockProgress);
   const streakCurrent = Number(state.settings?.streakCurrent || 0);
@@ -1924,7 +2512,7 @@ function renderHome(state) {
     const done = idx < mission.completedSteps;
     const label = stepId === "reset"
       ? "Start any session"
-      : (stepId === "control" ? "Complete a Hub session" : "Complete a Relational session");
+      : (stepId === "control" ? "Complete a Hub or Emotional session" : "Complete a Relational session");
     return `
       <div class="mission-step">
         <img
@@ -1938,10 +2526,12 @@ function renderHome(state) {
     `;
   }).join("");
   const relModeLocked = !unlockProgress.relationalUnlocked;
+  const emotionDualLocked = !unlockProgress.emotionDualUnlocked;
   const relLockText = relModeLocked ? "Locked" : "Available";
+  const emotionTileStatus = emotionDualLocked ? "Dual locked (mono first)" : "Available";
   const subtitle = mission.tier === "tier1"
     ? "Tier 1 - Reset - Control - Reason"
-    : "Complete a Hub session today";
+    : "Complete a Hub or Emotional session today";
   return `
     <section class="card has-bottom-tab game-screen">
       <div class="game-topbar">
@@ -1972,12 +2562,17 @@ function renderHome(state) {
         ${renderHelpButton("training-progression", "How to progress through training")}
       </div>
       <div class="row home-primary-row">
-        <button class="btn primary home-primary-btn" data-action="go-play-hub" data-wrapper="hub_cat">
+        <button
+          class="btn primary home-primary-btn"
+          data-action="${coachRecommendation.routeAction}"
+          ${coachRecommendation.family === "hub" ? 'data-wrapper="hub_cat"' : ""}
+          ${coachRecommendation.family === "emotion" ? `data-mode="${escapeHtml(emotionPreferences.mode)}"` : ""}
+        >
           <img class="btn-inline-icon btn-inline-icon-lg" src="../brandingUI/icons/tab-bar/play-hub.svg" alt="" aria-hidden="true">
-          Start Recommended Session
+          Start Recommended ${escapeHtml(coachRecommendation.label)} Session
         </button>
       </div>
-      <p class="hint home-cta-hint">~10 min | Hub (category) | Level ${Math.max(1, Math.min(HUB_N_MAX, Number(state.settings?.lastRecommendedLevel || 2)))} recommended</p>
+      <p class="hint home-cta-hint">~10 min | ${escapeHtml(coachRecommendation.reason)}</p>
       <div class="mode-panel">
         <p class="kicker">Choose a Mode</p>
         <div class="mode-group">
@@ -1991,6 +2586,11 @@ function renderHome(state) {
               <img src="../brandingUI/icons/game/symbol-response.svg" alt="" aria-hidden="true">
               <strong>Hub (non-categorical)</strong>
               <span>Available</span>
+            </button>
+            <button class="mode-tile mode-action" data-action="go-play-emotion" data-mode="${escapeHtml(normalizeEmotionMode(emotionPreferences.mode))}">
+              <img src="../brandingUI/icons/game/location-response.svg" alt="" aria-hidden="true">
+              <strong>Emotional DNB</strong>
+              <span>${emotionTileStatus}</span>
             </button>
           </div>
         </div>
@@ -2020,7 +2620,7 @@ function renderHome(state) {
         <p><strong>Streak:</strong> ${streakCurrent} (best ${streakBest})</p>
         <p><strong>Training bank:</strong> ${state.bankUnits}</p>
         <p><strong>Transfer bank:</strong> ${transferBankUnits}</p>
-        <p><strong>Pending later checks:</strong> ${progression.pendingCandidateId ? 1 : 0}</p>
+        <p><strong>Pending later checks:</strong> ${(progression.pendingCandidateId ? 1 : 0) + (emotionProgression.pendingCandidateId ? 1 : 0)}</p>
       </div>
       ${renderFlash()}
       ${renderBottomTab("home")}
@@ -2033,6 +2633,9 @@ function renderRelationalUnlockChecklist(unlockProgress) {
       <p><strong>Relational Unlock Checklist</strong></p>
       <p>${unlockProgress.catQualified ? "[x]" : "[ ]"} hub_cat qualification ${unlockProgress.catQualified ? "complete" : "pending"}</p>
       <p>${unlockProgress.noncatQualified ? "[x]" : "[ ]"} Hub non-categorical qualification ${unlockProgress.noncatQualified ? "complete" : "pending"}</p>
+      <p>${unlockProgress.emoLocQualified ? "[x]" : "[ ]"} Emotional location qualification ${unlockProgress.emoLocQualified ? "complete" : "pending"}</p>
+      <p>${unlockProgress.emoColQualified ? "[x]" : "[ ]"} Emotional colour qualification ${unlockProgress.emoColQualified ? "complete" : "pending"}</p>
+      <p>${unlockProgress.emoDualQualified ? "[x]" : "[ ]"} Emotional dual qualification ${unlockProgress.emoDualQualified ? "complete" : "pending"}</p>
     </div>
   `;
 }
@@ -2470,6 +3073,330 @@ function renderPlayHub() {
     </section>
   `;
 }
+
+function normalizeEmotionMode(value) {
+  return EMO_MODES.includes(value) ? value : "emo_loc";
+}
+
+function emotionModeToLabel(mode) {
+  if (mode === "emo_col") {
+    return "Emotional Colour";
+  }
+  if (mode === "emo_dual") {
+    return "Emotional Dual";
+  }
+  return "Emotional Location";
+}
+
+function renderEmotionStimulus(trial, visible, mode, renderMapping, runtimeInfo = "") {
+  const points = Array.isArray(renderMapping?.markerPositions) ? renderMapping.markerPositions : [];
+  const markerDots = points.map((point) => (
+    `<span class="hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`
+  )).join("");
+  const point = trial && points[trial.locIdx] ? points[trial.locIdx] : { xPct: 50, yPct: 50 };
+  const tokenVisible = Boolean(trial && visible);
+  const faceSrc = tokenVisible ? String(trial?.display?.faceSrc || trial?.faceSrc || "") : "";
+  const wordText = tokenVisible ? escapeHtml(trial?.display?.wordText || trial?.wordText || "") : "";
+  const wordPixelColour = tokenVisible ? String(trial?.display?.colourHex || "#ffffff") : "transparent";
+  const normalizedColour = wordPixelColour.toLowerCase();
+  const wordTextColor = normalizedColour;
+  let wordBackground = "rgba(15, 23, 42, 0.92)";
+  if (normalizedColour === "#ffffff") {
+    wordBackground = "#111827";
+  } else if (normalizedColour === "#111827") {
+    wordBackground = "#f8fafc";
+  }
+  const faceToken = tokenVisible
+    ? `<img class="emotion-face-token" src="${faceSrc}" alt="" style="left:${point.xPct}%;top:${point.yPct}%;">`
+    : `<img class="emotion-face-token hidden" src="" alt="" style="left:${point.xPct}%;top:${point.yPct}%;">`;
+  const wordToken = tokenVisible
+    ? `<div class="emotion-word-token" style="color:${wordTextColor};background:${wordBackground};">${wordText}</div>`
+    : `<div class="emotion-word-token hidden"></div>`;
+  return `
+    <div class="hub-stimulus emotion-stimulus">
+      <p class="hub-target">Target: <strong>${escapeHtml(emotionModeTarget(mode))}</strong> | Game: <strong>${escapeHtml(emotionModeToLabel(mode))}</strong></p>
+      ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
+      <div class="hub-arena">
+        <div class="hub-ring"></div>
+        ${markerDots}
+        ${faceToken}
+        ${wordToken}
+      </div>
+    </div>
+  `;
+}
+
+function renderEmotionBlockSummary(block) {
+  if (!block) {
+    return "";
+  }
+  const outcomeBand = deriveOutcomeBandFromAccuracy(block.accuracy);
+  const accuracyPercent = Number(block.accuracy || 0) * 100;
+  const blockUnits = outcomeBand === "UP" ? 2 : (outcomeBand === "HOLD" ? 1 : 0);
+  const dualLines = block.mode === "emo_dual"
+    ? `
+      <div class="result-metric"><span>Loc Acc</span><strong>${Math.round(Number(block.accuracyLoc || 0) * 100)}%</strong></div>
+      <div class="result-metric"><span>Col Acc</span><strong>${Math.round(Number(block.accuracyCol || 0) * 100)}%</strong></div>
+    `
+    : "";
+  return `
+    <div class="hub-summary">
+      <p class="kicker">Block ${block.blockIndex} Complete</p>
+      <div class="result-hero">
+        ${renderAccuracyRing(accuracyPercent)}
+        <div class="result-hero-side">
+          <p class="result-outcome result-outcome-${outcomeBand.toLowerCase()}">${outcomeBand}</p>
+          <p>N level: <strong>${block.nStart} -> ${block.nEnd}</strong></p>
+          <p>Mode: <strong>${escapeHtml(emotionModeToLabel(block.mode || "emo_loc"))}</strong></p>
+        </div>
+      </div>
+      <div class="result-metric-grid">
+        <div class="result-metric"><span>Hits</span><strong>${block.hits}</strong></div>
+        <div class="result-metric"><span>Misses</span><strong>${block.misses}</strong></div>
+        <div class="result-metric"><span>False Alarms</span><strong>${block.falseAlarms}</strong></div>
+        <div class="result-metric"><span>CR</span><strong>${block.correctRejections}</strong></div>
+        ${dualLines}
+      </div>
+      <div class="result-earned-row">
+        <span>Block earned</span>
+        <strong>+${blockUnits} units</strong>
+      </div>
+    </div>
+  `;
+}
+
+function renderPlayEmotion() {
+  const state = loadGymState();
+  const unlockProgress = deriveRelationalUnlockProgress(state.history);
+  const zone = getSavedZoneForNow(state, Date.now(), "emotion");
+  const styleDecision = getEmotionStyleDecision(state);
+  const styleCopy = describeSessionStyle(styleDecision.style);
+  const transferBankUnits = Number(state.transferBankUnits || 0);
+  const running = Boolean(emotionSession && emotionSession.status === "running");
+  const completed = Boolean(emotionSession && emotionSession.status === "completed");
+  const requestedMode = normalizeEmotionMode(emotionPreferences.mode);
+  const dualLocked = !unlockProgress.emotionDualUnlocked;
+  const setupMode = dualLocked && requestedMode === "emo_dual" ? "emo_loc" : requestedMode;
+
+  if (!running && !completed) {
+    const dualHint = dualLocked
+      ? '<p class="hint">Dual mode unlocks after stable 2-back in both mono emotional modes.</p>'
+      : "";
+    return `
+      <section class="card game-screen has-bottom-tab">
+        <div class="game-topbar">
+          <div class="game-topbar-brand">
+            <button class="topbar-icon-btn" data-action="go-home" aria-label="Home">
+              <img src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">
+            </button>
+            <strong>Emotional</strong>
+          </div>
+          <div class="game-topbar-stats">
+            <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> Training ${state.bankUnits || 0}</span>
+            <span class="transfer-pill">Transfer ${transferBankUnits}</span>
+          </div>
+        </div>
+        <h2>Emotional Session</h2>
+        <p class="hint">Track location, colour, or both in a 10-block session.</p>
+        <div class="stage-panel">
+          <p class="kicker">Recommended session style</p>
+          ${renderSessionStyleBadge(styleDecision.style)}
+          <p class="hint">${escapeHtml(styleCopy.description)}</p>
+          <p class="hint">${escapeHtml(styleDecision.reason)}</p>
+        </div>
+        ${renderZoneStateCard(zone, styleDecision)}
+        <div class="stage-panel">
+          <div class="row hub-config-row">
+            <label class="hub-config-item">
+              Emotional mode
+              <select id="emotion-mode-select">
+                <option value="emo_loc" ${setupMode === "emo_loc" ? "selected" : ""}>Location</option>
+                <option value="emo_col" ${setupMode === "emo_col" ? "selected" : ""}>Colour</option>
+                <option value="emo_dual" ${setupMode === "emo_dual" ? "selected" : ""} ${dualLocked ? "disabled" : ""}>Dual</option>
+              </select>
+            </label>
+            <label class="hub-config-item">
+              Speed
+              <select id="emotion-speed-select">
+                <option value="slow" ${emotionPreferences.speed === "slow" ? "selected" : ""}>Slow pace</option>
+                <option value="fast" ${emotionPreferences.speed === "fast" ? "selected" : ""}>Fast pace</option>
+              </select>
+            </label>
+            <label class="hub-config-item">
+              Interference
+              <select id="emotion-interference-select">
+                <option value="low" ${emotionPreferences.interference === "low" ? "selected" : ""}>Low</option>
+                <option value="high" ${emotionPreferences.interference === "high" ? "selected" : ""}>High</option>
+              </select>
+            </label>
+          </div>
+          ${dualHint}
+          <div class="row home-primary-row">
+            <button class="btn primary home-primary-btn" data-action="start-emotion-session">Start ${escapeHtml(emotionModeLabel(setupMode))} Session</button>
+          </div>
+        </div>
+        <div class="row help-action-row">
+          ${renderHelpButton("emotion-how", "How to play Emotional")}
+        </div>
+        ${renderFlash()}
+        ${renderBottomTab("hub")}
+      </section>
+    `;
+  }
+
+  if (completed) {
+    const summary = emotionSession.sessionSummary;
+    const completedMode = summary.emotionalMode || "emo_loc";
+    const progressDelta = emotionSession.progressDelta || null;
+    const visualStats = computeSessionVisualStats(summary);
+    const accuracyChart = renderAccuracyBars(summary.blocks);
+    const progressionSummary = progressDelta
+      ? `
+        <div class="result-earned-row session-earned-box">
+          <span>Session earned</span>
+          <strong>+${progressDelta.sessionUnitsEarned + progressDelta.missionBonusEarned} units</strong>
+        </div>
+        <div class="session-bank-lines">
+          <p>Session earned: <strong>+${progressDelta.sessionUnitsEarned}</strong></p>
+          <p>Mission bonus: <strong>+${progressDelta.missionBonusEarned}</strong></p>
+          <p>Total bank: <strong>${progressDelta.bankTotal}</strong></p>
+          <p>Transfer bank earned: <strong>+${progressDelta.transferBankDelta || 0}</strong></p>
+          <p>Transfer bank total: <strong>${progressDelta.transferBankTotal || transferBankUnits}</strong></p>
+          <p>Streak: <strong>${progressDelta.streakCurrent}</strong> (best ${progressDelta.streakBest})</p>
+        </div>
+      `
+      : "";
+    const transferEvidenceCard = progressDelta?.transferEvidence
+      ? renderTransferEvidenceCard(progressDelta.transferEvidence)
+      : "";
+    return `
+      <section class="card game-screen has-bottom-tab">
+        <div class="game-topbar">
+          <div class="game-topbar-brand"><strong>Session Complete</strong></div>
+          <div class="game-topbar-stats">
+            <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> Training ${progressDelta?.bankTotal || state.bankUnits || 0}</span>
+            <span class="transfer-pill">Transfer ${progressDelta?.transferBankTotal || transferBankUnits}</span>
+          </div>
+        </div>
+        <h2>${escapeHtml(emotionModeToLabel(completedMode))}</h2>
+        <p class="hint">10 blocks completed</p>
+        <div class="session-stats-grid">
+          <div class="session-stat"><span>Peak Level</span><strong>${visualStats.peakN}</strong></div>
+          <div class="session-stat"><span>Final Level</span><strong>${visualStats.finalN}</strong></div>
+          <div class="session-stat"><span>Stability</span><strong>${visualStats.holdUpCount}/${visualStats.totalBlocks}</strong></div>
+        </div>
+        ${accuracyChart}
+        ${progressionSummary}
+        ${transferEvidenceCard}
+        <div class="row help-action-row">
+          ${renderHelpButton("emotion-how", "How to play Emotional")}
+        </div>
+        <div class="row home-primary-row">
+          <button class="btn primary home-primary-btn" data-action="start-emotion-session"><img class="btn-inline-icon btn-inline-icon-lg" src="../brandingUI/icons/tab-bar/play-hub.svg" alt="" aria-hidden="true">Play Again</button>
+        </div>
+        <div class="row home-footer-actions">
+          <button class="btn" data-action="go-home"><img class="btn-inline-icon" src="../brandingUI/icons/tab-bar/home.svg" alt="" aria-hidden="true">Return Home</button>
+        </div>
+        ${renderFlash()}
+        ${renderBottomTab("hub")}
+      </section>
+    `;
+  }
+
+  const block = emotionSession.currentBlock;
+  const trial = block && block.trialIndex >= 0 ? block.trials[block.trialIndex] : null;
+  const trialNumber = block ? block.trialIndex + 1 : 0;
+  const trialCount = block ? block.trials.length : 0;
+  const responseLocCaptured = block ? block.responseLocCaptured : false;
+  const responseColCaptured = block ? block.responseColCaptured : false;
+  const paused = Boolean(emotionSession?.trialPaused);
+  const activeMode = block?.plan?.mode || emotionSession.mode;
+  const targetLabel = emotionModeTarget(activeMode);
+  const trialProgressPct = trialCount > 0 ? Math.max(0, Math.min(100, Math.round((trialNumber / trialCount) * 100))) : 0;
+
+  let phasePanel = "";
+  if (emotionSession.phase === "loading") {
+    phasePanel = `
+      <div class="stage-panel trial-stage">
+        <p class="kicker">Preparing</p>
+        <h3>Preparing stimuli...</h3>
+        <p class="hint">Faces are preloading for smooth playback.</p>
+      </div>
+    `;
+  } else if (emotionSession.phase === "briefing") {
+    phasePanel = `
+      <div class="stage-panel">
+        <p class="kicker">Block ${emotionSession.blockCursor + 1} of ${EMO_TOTAL_BLOCKS}</p>
+        <h3>Ready?</h3>
+        <p class="hint">Target: ${escapeHtml(targetLabel)} at ${block?.plan?.n || emotionSession.currentN}-back.</p>
+        <button class="btn primary home-primary-btn" data-action="emotion-start-block">Start Block</button>
+      </div>
+    `;
+  } else if (emotionSession.phase === "cue") {
+    phasePanel = `
+      <div class="stage-panel trial-stage">
+        <p class="kicker">Target</p>
+        <div class="cue-target-card">${escapeHtml(targetLabel)}</div>
+        <p class="hint">Starting now...</p>
+      </div>
+    `;
+  } else if (emotionSession.phase === "trial") {
+    const locEnabled = activeMode === "emo_loc" || activeMode === "emo_dual";
+    const colEnabled = activeMode === "emo_col" || activeMode === "emo_dual";
+    phasePanel = `
+      <div class="stage-panel trial-stage">
+        <div class="trial-progress-track"><span style="width:${trialProgressPct}%;"></span></div>
+        <p class="hint">Trial ${trialNumber}/${trialCount}</p>
+        ${renderEmotionStimulus(trial, block.stimulusVisible, activeMode, block.renderMapping)}
+        <div class="row">
+          <button class="btn primary match-btn" data-action="emotion-match-loc" ${(!locEnabled || responseLocCaptured || paused) ? "disabled" : ""}>LOCATION MATCH</button>
+          <button class="btn primary match-btn" data-action="emotion-match-col" ${(!colEnabled || responseColCaptured || paused) ? "disabled" : ""}>COLOUR MATCH</button>
+        </div>
+        <p class="hint">Keys: Left Arrow = Location, Right Arrow = Colour.</p>
+        <div class="row pause-control-row">
+          <button class="btn subtle pause-btn" data-action="emotion-toggle-pause">${paused ? "Resume" : "Pause"}</button>
+          <button class="btn subtle stop-btn" data-action="emotion-stop-session">Stop</button>
+        </div>
+      </div>
+    `;
+  } else {
+    const nextPatch = emotionSession.pendingPlanPatch && typeof emotionSession.pendingPlanPatch === "object"
+      ? emotionSession.pendingPlanPatch
+      : {};
+    const nextSpeed = nextPatch.speed ? normalizeEmotionSpeed(nextPatch.speed) : normalizeEmotionSpeed(emotionPreferences.speed);
+    const nextInterference = nextPatch.interference
+      ? normalizeEmotionInterference(nextPatch.interference)
+      : normalizeEmotionInterference(emotionPreferences.interference);
+    phasePanel = `
+      <div class="stage-panel result-stage">
+        ${renderEmotionBlockSummary(emotionSession.lastBlockSummary)}
+        ${emotionSession.coachNotice ? `<p class="hint"><strong>Coach recommends:</strong> ${escapeHtml(emotionSession.coachNotice)}</p>` : ""}
+        <p class="hint"><strong>Next block:</strong> ${escapeHtml(nextSpeed)} speed, ${escapeHtml(nextInterference)} interference.</p>
+        <button class="btn primary home-primary-btn" data-action="emotion-next-block">Next Block</button>
+      </div>
+    `;
+  }
+
+  return `
+    <section class="card game-screen play-session-screen">
+      <div class="game-topbar">
+        <div class="game-topbar-brand">
+          <span>Block ${emotionSession.blockCursor + (emotionSession.phase === "block-result" ? 0 : 1)}/${EMO_TOTAL_BLOCKS}</span>
+          <span>Level ${emotionSession.currentN}</span>
+        </div>
+        <div class="game-topbar-stats">
+          <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> Training ${state.bankUnits || 0}</span>
+          <span class="transfer-pill">Transfer ${transferBankUnits}</span>
+          ${renderHelpMiniButton("emotion-how")}
+        </div>
+      </div>
+      <p class="hint run-context-line">${escapeHtml(emotionModeToLabel(activeMode))} | ${escapeHtml(describeSessionStyle(emotionSession.sessionStyle || "TUNE").label)}</p>
+      ${phasePanel}
+      ${renderFlash()}
+    </section>
+  `;
+}
+
 function renderPlayRelational(state) {
   const unlockProgress = deriveRelationalUnlockProgress(state.history);
   const relationalUnlocked = unlockProgress.relationalUnlocked;
@@ -2481,7 +3408,7 @@ function renderPlayRelational(state) {
       ? "Relational unlock override is active for inspection."
       : (relationalUnlocked
         ? "Relational modes are available."
-        : "Complete both Hub games to unlock Relational.");
+        : "Complete both Hub games and Emotional dual to unlock Relational.");
     return `
       <section class="card game-screen">
         <div class="game-topbar">
@@ -2899,7 +3826,7 @@ function renderUnlockCelebrationOverlay() {
       <div class="overlay-card unlock-sheet">
         <img class="unlock-badge" src="../brandingUI/icons/status/unlock.svg" alt="Unlocked">
         <h3>New Modes Unlocked</h3>
-        <p>You qualified in both Hub games. Relational training is now available.</p>
+        <p>You qualified in Hub and Emotional dual criteria. Relational training is now available.</p>
         <div class="unlock-icons unlock-icons-large">
           <span class="unlock-icon"><img src="../brandingUI/icons/game/transitive-order.svg" alt="Transitive"></span>
           <span class="unlock-icon"><img src="../brandingUI/icons/game/graph-directed.svg" alt="Graph"></span>
@@ -2998,6 +3925,12 @@ function dropRunningSessionsIfLeaving(route) {
     closeBriefingOverlay();
     setFlash("Relational session stopped because you left Play Relational before completion.", "warn");
   }
+  if (route !== "play-emotion" && emotionSession && emotionSession.status === "running") {
+    clearEmotionTimers();
+    emotionSession = null;
+    closeBriefingOverlay();
+    setFlash("Emotional session stopped because you left Play Emotional before completion.", "warn");
+  }
 }
 
 function render() {
@@ -3014,6 +3947,7 @@ function render() {
   const pageHtml = renderPrimaryScreen(primaryScreen, {
     home: () => renderHome(state),
     hub: () => renderPlayHub(),
+    emotion: () => renderPlayEmotion(),
     relational: () => renderPlayRelational(state),
     history: () => renderHistory(getSessionHistory()),
     settings: () => renderSettings(state)
@@ -3663,11 +4597,668 @@ function completeHubSession() {
   render();
 }
 
+async function buildEmotionBlockFromPlan(plan, blockIndex, sessionTsStart) {
+  let assets;
+  try {
+    assets = await ensureEmotionAssetsLoaded();
+  } catch {
+    if (emotionSession && emotionSession.tsStart === sessionTsStart) {
+      clearEmotionTimers();
+      emotionSession = null;
+      closeBriefingOverlay();
+      setFlash("Could not load emotional stimuli. Check local files and retry.", "warn");
+      render();
+    }
+    return;
+  }
+
+  if (!emotionSession || emotionSession.status !== "running" || emotionSession.tsStart !== sessionTsStart) {
+    return;
+  }
+
+  const blockBuild = createEmotionBlockTrials({
+    mode: plan.mode,
+    n: plan.n,
+    speed: plan.speed,
+    interference: plan.interference,
+    representationPack: plan.representationPack,
+    assets,
+    baseTrials: EMO_BASE_TRIALS,
+    seed: Date.now() + blockIndex
+  });
+  const preloadSources = Array.from(new Set(
+    blockBuild.trials
+      .map((trial) => String(trial?.display?.faceSrc || trial?.faceSrc || ""))
+      .filter(Boolean)
+  ));
+  const preloadResult = await preloadEmotionImages(preloadSources, "high");
+  if (!emotionSession || emotionSession.status !== "running" || emotionSession.tsStart !== sessionTsStart) {
+    return;
+  }
+  if (Array.isArray(preloadResult.failedSources) && preloadResult.failedSources.length) {
+    const fallbackFace = assets.fallbackFace
+      || assets.facesByPack?.A?.[0]
+      || assets.facesByPack?.B?.[0]
+      || null;
+    blockBuild.trials = replaceFailedEmotionFaces(blockBuild.trials, preloadResult.failedSources, fallbackFace);
+    if (fallbackFace?.src) {
+      await preloadEmotionImages([fallbackFace.src], "high");
+    }
+  }
+  if (!emotionSession || emotionSession.status !== "running" || emotionSession.tsStart !== sessionTsStart) {
+    return;
+  }
+
+  emotionSession.trialPaused = false;
+  emotionSession.currentBlock = {
+    plan,
+    trials: blockBuild.trials,
+    soaMs: blockBuild.soaMs,
+    displayMs: blockBuild.displayMs,
+    renderMapping: blockBuild.renderMapping,
+    trialIndex: -1,
+    stimulusVisible: false,
+    responseLocCaptured: false,
+    responseColCaptured: false,
+    responseLocRtMs: null,
+    responseColRtMs: null,
+    trialElapsedMs: 0,
+    trialStartedAtMs: 0,
+    trialOutcomes: []
+  };
+  emotionSession.phase = "briefing";
+  render();
+}
+
+function startEmotionSession() {
+  warmAudioAfterSessionStart();
+  clearEmotionTimers();
+  clearFlash();
+  dismissUnlockCelebration();
+  closeBriefingOverlay();
+  const state = loadGymState();
+  const unlockProgress = deriveRelationalUnlockProgress(state.history);
+  let selectedMode = normalizeEmotionMode(emotionPreferences.mode);
+  if (selectedMode === "emo_dual" && !unlockProgress.emotionDualUnlocked) {
+    selectedMode = "emo_loc";
+    emotionPreferences.mode = "emo_loc";
+    updateSettings({ lastEmotionMode: "emo_loc" });
+    setFlash("Emotional dual mode is locked. Starting in location mode.", "warn");
+  }
+
+  const tsStart = Date.now();
+  const styleDecision = getEmotionStyleDecision(state, tsStart);
+  const styleCopy = describeSessionStyle(styleDecision.style);
+  const recheckSignature = styleDecision.pendingCandidate?.signature
+    ? { ...styleDecision.pendingCandidate.signature }
+    : null;
+  const initialMode = styleDecision.style === "RECHECK" && recheckSignature
+    ? normalizeEmotionModeForPlan(recheckSignature.baselineMode)
+    : selectedMode;
+  if (initialMode === "emo_dual" && !unlockProgress.emotionDualUnlocked) {
+    setFlash("Emotional dual mode is still locked. Complete both mono modes first.", "warn");
+    render();
+    return;
+  }
+  const initialN = styleDecision.style === "RESET"
+    ? Math.min(2, Math.max(1, Number(state.settings?.lastRecommendedLevel || 2)))
+    : 1;
+  const initialPack = styleDecision.style === "RECHECK" && recheckSignature
+    ? (recheckSignature.representationFrom === "B" ? "B" : "A")
+    : "A";
+
+  emotionSession = {
+    status: "running",
+    phase: "loading",
+    tsStart,
+    sessionSeed: hash32(String(tsStart)),
+    sessionStyle: styleDecision.style,
+    sessionStyleReason: styleDecision.reason,
+    zoneGate: styleDecision.zoneHandoff || null,
+    recheckCandidateId: styleDecision.pendingCandidate?.id || null,
+    recheckSignature,
+    probeRunConfig: null,
+    recheckRunConfig: null,
+    baselineMode: initialMode,
+    baselineRepresentationPack: initialPack,
+    mode: initialMode,
+    blockCursor: 0,
+    currentN: initialN,
+    blocksPlanned: [],
+    blocks: [],
+    completedBlocks: [],
+    coachContext: {
+      pendingStabilise: false,
+      pendingSwapReturnWrapper: null
+    },
+    pendingPlanPatch: {
+      mode: initialMode,
+      representationPack: initialPack,
+      n: initialN,
+      speed: normalizeEmotionSpeed(emotionPreferences.speed),
+      interference: normalizeEmotionInterference(emotionPreferences.interference),
+      flags: {
+        coachState: "STABILISE",
+        pulseType: null,
+        swapSegment: null,
+        wasSwapProbe: false
+      }
+    },
+    introNotice: `${styleCopy.label} session. ${styleDecision.reason}`,
+    coachNotice: "",
+    trialPaused: false,
+    missionStartRecorded: false,
+    currentBlock: null,
+    lastBlockSummary: null,
+    sessionSummary: null,
+    progressDelta: null
+  };
+
+  updateSettings({
+    lastEmotionMode: initialMode,
+    lastSpeed: emotionPreferences.speed,
+    lastInterference: emotionPreferences.interference
+  });
+
+  beginEmotionBlock();
+}
+
+function beginEmotionBlock() {
+  if (!emotionSession || emotionSession.status !== "running") {
+    return;
+  }
+  if (emotionSession.blockCursor >= EMO_TOTAL_BLOCKS) {
+    completeEmotionSession();
+    return;
+  }
+
+  const blockIndex = emotionSession.blockCursor + 1;
+  const lastPlan = emotionSession.blocksPlanned.length
+    ? emotionSession.blocksPlanned[emotionSession.blocksPlanned.length - 1]
+    : null;
+  const pendingPatch = normalizeEmotionCoachPatch(emotionSession.pendingPlanPatch);
+  const pendingFlags = pendingPatch.flags && typeof pendingPatch.flags === "object" ? pendingPatch.flags : {};
+  const isOverrideCoachState = pendingFlags.coachState === "TUNE" || pendingFlags.coachState === "SPIKE_TUNE";
+  const patchWithDefaultOverrideRaw = isOverrideCoachState && !pendingFlags.userOverride
+    ? {
+      ...pendingPatch,
+      flags: {
+        ...pendingFlags,
+        userOverride: "coach"
+      }
+    }
+    : pendingPatch;
+  const patchWithDefaultOverride = applyEmotionSessionStylePatch(
+    emotionSession,
+    patchWithDefaultOverrideRaw,
+    blockIndex,
+    lastPlan
+  );
+  const mode = patchWithDefaultOverride.mode
+    ? normalizeEmotionModeForPlan(patchWithDefaultOverride.mode)
+    : normalizeEmotionModeForPlan(lastPlan?.mode || emotionSession.mode);
+  const nextN = Number.isFinite(patchWithDefaultOverride.n)
+    ? Math.max(1, Math.min(EMO_N_MAX, Math.round(patchWithDefaultOverride.n)))
+    : emotionSession.currentN;
+  const speed = patchWithDefaultOverride.speed
+    ? normalizeEmotionSpeed(patchWithDefaultOverride.speed)
+    : normalizeEmotionSpeed(emotionPreferences.speed);
+  const interference = patchWithDefaultOverride.interference
+    ? normalizeEmotionInterference(patchWithDefaultOverride.interference)
+    : normalizeEmotionInterference(emotionPreferences.interference);
+  const representationPack = patchWithDefaultOverride.representationPack === "B" ? "B" : "A";
+  const normalizedFlags = normalizeEmotionCoachPatch({ flags: patchWithDefaultOverride.flags });
+  const flags = normalizedFlags.flags;
+
+  const plan = createEmotionBlockPlan({
+    mode,
+    blockIndex,
+    n: nextN,
+    speed,
+    interference,
+    representationPack,
+    flags
+  });
+  if (plan.flags && flags?.userOverride) {
+    plan.flags.userOverride = flags.userOverride;
+  }
+
+  emotionSession.pendingPlanPatch = {};
+  emotionSession.mode = mode;
+  emotionSession.blocksPlanned.push(plan);
+  emotionSession.phase = "loading";
+  emotionSession.currentBlock = {
+    plan,
+    trials: [],
+    soaMs: 0,
+    displayMs: 0,
+    renderMapping: { markerPositions: [] },
+    trialIndex: -1,
+    stimulusVisible: false,
+    responseLocCaptured: false,
+    responseColCaptured: false,
+    responseLocRtMs: null,
+    responseColRtMs: null,
+    trialElapsedMs: 0,
+    trialStartedAtMs: 0,
+    trialOutcomes: []
+  };
+  clearEmotionTimers();
+  render();
+  void buildEmotionBlockFromPlan(plan, blockIndex, emotionSession.tsStart);
+}
+
+function startEmotionCue() {
+  if (!emotionSession || emotionSession.status !== "running" || !emotionSession.currentBlock) {
+    return;
+  }
+  if (emotionSession.phase !== "briefing") {
+    return;
+  }
+  emotionSession.phase = "cue";
+  render();
+  clearEmotionTimers();
+  emotionTimers.cue = setTimeout(() => {
+    startEmotionTrial(0);
+  }, EMO_CUE_MS);
+}
+
+function startEmotionTrial(trialIndex) {
+  if (!emotionSession || emotionSession.status !== "running" || !emotionSession.currentBlock) {
+    return;
+  }
+  const block = emotionSession.currentBlock;
+  if (trialIndex === 0 && !emotionSession.missionStartRecorded) {
+    registerMissionSessionStart();
+    emotionSession.missionStartRecorded = true;
+  }
+  block.trialIndex = trialIndex;
+  block.stimulusVisible = true;
+  block.responseLocCaptured = false;
+  block.responseColCaptured = false;
+  block.responseLocRtMs = null;
+  block.responseColRtMs = null;
+  block.trialElapsedMs = 0;
+  block.trialStartedAtMs = performance.now();
+  emotionSession.trialPaused = false;
+  emotionSession.phase = "trial";
+
+  render();
+  if (emotionTimers.display) {
+    clearTimeout(emotionTimers.display);
+  }
+  if (emotionTimers.trial) {
+    clearTimeout(emotionTimers.trial);
+  }
+
+  emotionTimers.display = setTimeout(() => {
+    if (!emotionSession || emotionSession.status !== "running" || emotionSession.phase !== "trial" || emotionSession.trialPaused) {
+      return;
+    }
+    const current = emotionSession.currentBlock;
+    if (!current || current.trialIndex !== trialIndex) {
+      return;
+    }
+    current.stimulusVisible = false;
+    render();
+  }, block.displayMs);
+
+  emotionTimers.trial = setTimeout(() => {
+    finishEmotionTrial();
+  }, block.soaMs);
+}
+
+function pauseEmotionTrial() {
+  if (!emotionSession || emotionSession.status !== "running" || emotionSession.phase !== "trial" || !emotionSession.currentBlock) {
+    return;
+  }
+  if (emotionSession.trialPaused) {
+    return;
+  }
+  const block = emotionSession.currentBlock;
+  block.trialElapsedMs = Math.max(0, Math.round(performance.now() - block.trialStartedAtMs));
+  emotionSession.trialPaused = true;
+
+  if (emotionTimers.display) {
+    clearTimeout(emotionTimers.display);
+    emotionTimers.display = null;
+  }
+  if (emotionTimers.trial) {
+    clearTimeout(emotionTimers.trial);
+    emotionTimers.trial = null;
+  }
+  playSfx("pause_on");
+  render();
+}
+
+function resumeEmotionTrial() {
+  if (!emotionSession || emotionSession.status !== "running" || emotionSession.phase !== "trial" || !emotionSession.currentBlock) {
+    return;
+  }
+  if (!emotionSession.trialPaused) {
+    return;
+  }
+  const block = emotionSession.currentBlock;
+  const elapsedMs = Number.isFinite(block.trialElapsedMs)
+    ? Math.max(0, Math.round(block.trialElapsedMs))
+    : 0;
+  const remainingSoaMs = Math.max(0, block.soaMs - elapsedMs);
+  const remainingDisplayMs = Math.max(0, block.displayMs - elapsedMs);
+  if (remainingSoaMs <= 0) {
+    emotionSession.trialPaused = false;
+    finishEmotionTrial();
+    return;
+  }
+
+  block.trialStartedAtMs = performance.now() - elapsedMs;
+  emotionSession.trialPaused = false;
+
+  if (emotionTimers.display) {
+    clearTimeout(emotionTimers.display);
+    emotionTimers.display = null;
+  }
+  if (emotionTimers.trial) {
+    clearTimeout(emotionTimers.trial);
+    emotionTimers.trial = null;
+  }
+
+  if (block.stimulusVisible) {
+    if (remainingDisplayMs <= 0) {
+      block.stimulusVisible = false;
+    } else {
+      const trialIndex = block.trialIndex;
+      emotionTimers.display = setTimeout(() => {
+        if (!emotionSession || emotionSession.status !== "running" || emotionSession.phase !== "trial" || emotionSession.trialPaused) {
+          return;
+        }
+        const current = emotionSession.currentBlock;
+        if (!current || current.trialIndex !== trialIndex) {
+          return;
+        }
+        current.stimulusVisible = false;
+        render();
+      }, remainingDisplayMs);
+    }
+  }
+
+  emotionTimers.trial = setTimeout(() => {
+    finishEmotionTrial();
+  }, remainingSoaMs);
+  playSfx("resume_on");
+  render();
+}
+
+function toggleEmotionPause() {
+  if (!emotionSession || emotionSession.status !== "running" || emotionSession.phase !== "trial" || !emotionSession.currentBlock) {
+    return;
+  }
+  if (emotionSession.trialPaused) {
+    resumeEmotionTrial();
+    return;
+  }
+  pauseEmotionTrial();
+}
+
+function stopEmotionSession() {
+  if (!emotionSession || emotionSession.status !== "running") {
+    return;
+  }
+  clearEmotionTimers();
+  emotionSession = null;
+  closeBriefingOverlay();
+  playSfx("session_stop_discard");
+  setFlash("Emotional session stopped. Session discarded and not logged.", "warn", { playWarningSound: false });
+  window.location.hash = "/home";
+}
+
+function captureEmotionMatch(modality) {
+  if (!emotionSession || emotionSession.status !== "running" || emotionSession.phase !== "trial" || !emotionSession.currentBlock) {
+    return false;
+  }
+  if (emotionSession.trialPaused) {
+    return false;
+  }
+  const block = emotionSession.currentBlock;
+  const mode = normalizeEmotionModeForPlan(block?.plan?.mode || emotionSession.mode);
+  const locEnabled = mode === "emo_loc" || mode === "emo_dual";
+  const colEnabled = mode === "emo_col" || mode === "emo_dual";
+  if (modality === "loc" && !locEnabled) {
+    return false;
+  }
+  if (modality === "col" && !colEnabled) {
+    return false;
+  }
+
+  if (modality === "loc") {
+    if (block.responseLocCaptured) {
+      return false;
+    }
+    block.responseLocCaptured = true;
+    block.responseLocRtMs = Math.max(0, Math.round(performance.now() - block.trialStartedAtMs));
+  } else {
+    if (block.responseColCaptured) {
+      return false;
+    }
+    block.responseColCaptured = true;
+    block.responseColRtMs = Math.max(0, Math.round(performance.now() - block.trialStartedAtMs));
+  }
+
+  playSfx("game_match_press", {
+    onceKey: `${emotionTrialAudioBaseKey(block)}:${modality}-press`
+  });
+  const isMatch = isEmotionMatchAtIndex(block.trials, block.trialIndex, block.plan.n, modality);
+  playEmotionTrialOutcomeSfx(block, isMatch ? "hit" : "false_alarm");
+  render();
+  return true;
+}
+
+function captureEmotionLocationMatch() {
+  return captureEmotionMatch("loc");
+}
+
+function captureEmotionColourMatch() {
+  return captureEmotionMatch("col");
+}
+
+function finishEmotionTrial() {
+  if (!emotionSession || emotionSession.status !== "running" || !emotionSession.currentBlock) {
+    return;
+  }
+  emotionSession.trialPaused = false;
+  const block = emotionSession.currentBlock;
+  const trial = block.trials[block.trialIndex];
+  const mode = normalizeEmotionModeForPlan(block?.plan?.mode || emotionSession.mode);
+  const isRelevantLoc = mode === "emo_loc" || mode === "emo_dual";
+  const isRelevantCol = mode === "emo_col" || mode === "emo_dual";
+  const isMatchLoc = isEmotionMatchAtIndex(block.trials, block.trialIndex, block.plan.n, "loc");
+  const isMatchCol = isEmotionMatchAtIndex(block.trials, block.trialIndex, block.plan.n, "col");
+  const respondedLoc = Boolean(block.responseLocCaptured);
+  const respondedCol = Boolean(block.responseColCaptured);
+
+  const classify = (isRelevant, responded, isMatch) => {
+    if (!isRelevant) {
+      return null;
+    }
+    if (responded && isMatch) {
+      return "hit";
+    }
+    if (responded && !isMatch) {
+      return "false_alarm";
+    }
+    if (!responded && isMatch) {
+      return "miss";
+    }
+    return "correct_rejection";
+  };
+
+  const classificationLoc = classify(isRelevantLoc, respondedLoc, isMatchLoc);
+  const classificationCol = classify(isRelevantCol, respondedCol, isMatchCol);
+  const sfxClassification = classificationLoc === "false_alarm" || classificationCol === "false_alarm"
+    ? "false_alarm"
+    : (classificationLoc === "miss" || classificationCol === "miss"
+      ? "miss"
+      : (classificationLoc === "hit" || classificationCol === "hit" ? "hit" : "correct_rejection"));
+  playEmotionTrialOutcomeSfx(block, sfxClassification);
+  const isLocError = classificationLoc === "miss" || classificationLoc === "false_alarm";
+  const isColError = classificationCol === "miss" || classificationCol === "false_alarm";
+  const isError = isLocError || isColError;
+
+  block.trialOutcomes.push({
+    trialIndex: block.trialIndex,
+    canonLoc: trial?.canonLoc || null,
+    canonCol: trial?.canonCol || null,
+    isRelevantLoc,
+    isRelevantCol,
+    isMatchLoc,
+    isMatchCol,
+    respondedLoc,
+    respondedCol,
+    classificationLoc,
+    classificationCol,
+    classification: isError ? "error" : "ok",
+    responseLocRtMs: respondedLoc ? block.responseLocRtMs : null,
+    responseColRtMs: respondedCol ? block.responseColRtMs : null,
+    classificationLocRtMs: respondedLoc ? block.responseLocRtMs : null,
+    classificationColRtMs: respondedCol ? block.responseColRtMs : null,
+    isError,
+    isLapse: (isRelevantLoc && !respondedLoc && isMatchLoc) || (isRelevantCol && !respondedCol && isMatchCol)
+  });
+
+  if (emotionTimers.display) {
+    clearTimeout(emotionTimers.display);
+    emotionTimers.display = null;
+  }
+  if (emotionTimers.trial) {
+    clearTimeout(emotionTimers.trial);
+    emotionTimers.trial = null;
+  }
+
+  const nextTrialIndex = block.trialIndex + 1;
+  if (nextTrialIndex < block.trials.length) {
+    startEmotionTrial(nextTrialIndex);
+    return;
+  }
+  finishEmotionBlock();
+}
+
+function finishEmotionBlock() {
+  if (!emotionSession || emotionSession.status !== "running" || !emotionSession.currentBlock) {
+    return;
+  }
+
+  const block = emotionSession.currentBlock;
+  const blockSummary = summarizeEmotionBlock({
+    plan: block.plan,
+    trials: block.trials,
+    trialOutcomes: block.trialOutcomes,
+    nMax: EMO_N_MAX
+  });
+
+  emotionSession.blocks.push(blockSummary.blockResult);
+  emotionSession.lastBlockSummary = {
+    ...blockSummary.blockResult,
+    outcomeBand: blockSummary.outcomeBand
+  };
+  emotionSession.completedBlocks.push({
+    plan: block.plan,
+    result: blockSummary.blockResult,
+    outcomeBand: blockSummary.outcomeBand
+  });
+  emotionSession.currentN = blockSummary.nEnd;
+  emotionSession.blockCursor += 1;
+  emotionSession.currentBlock = null;
+
+  if (emotionSession.blockCursor >= EMO_TOTAL_BLOCKS) {
+    completeEmotionSession();
+    return;
+  }
+  playBlockProgressSfx(blockSummary.blockResult);
+  playSfx("coach_next_block");
+
+  const nextBlockIndex = emotionSession.blockCursor + 1;
+  const coachDecision = coachUpdateAfterBlock(emotionSession.lastBlockSummary, {
+    completedBlocks: emotionSession.completedBlocks,
+    coachContext: emotionSession.coachContext
+  });
+  if (coachDecision && typeof coachDecision === "object") {
+    const rawPatch = coachDecision.patch && typeof coachDecision.patch === "object"
+      ? coachDecision.patch
+      : {};
+    const coachPatch = normalizeEmotionCoachPatch(rawPatch);
+    emotionSession.pendingPlanPatch = applyEmotionSessionStylePatch(
+      emotionSession,
+      coachPatch,
+      nextBlockIndex,
+      block.plan
+    );
+    emotionSession.coachContext = coachDecision.coachContext && typeof coachDecision.coachContext === "object"
+      ? coachDecision.coachContext
+      : emotionSession.coachContext;
+    const coachState = emotionSession.pendingPlanPatch?.flags?.coachState || coachPatch.flags?.coachState;
+    emotionSession.coachNotice = makeCoachNarrative(coachState, typeof coachDecision.notice === "string" ? coachDecision.notice : "");
+  } else {
+    emotionSession.pendingPlanPatch = applyEmotionSessionStylePatch(
+      emotionSession,
+      {},
+      nextBlockIndex,
+      block.plan
+    );
+    emotionSession.coachNotice = "";
+  }
+
+  emotionSession.phase = "block-result";
+  render();
+}
+
+function completeEmotionSession() {
+  if (!emotionSession || emotionSession.status !== "running") {
+    return;
+  }
+  clearEmotionTimers();
+
+  const stateBefore = loadGymState();
+  const wasLocked = !deriveRelationalUnlockProgress(stateBefore.history).relationalUnlocked;
+  const tsEnd = Date.now();
+  const summary = createEmotionSessionSummary({
+    tsStart: emotionSession.tsStart,
+    tsEnd,
+    mode: emotionSession.baselineMode || emotionSession.mode,
+    blocksPlanned: emotionSession.blocksPlanned,
+    blocks: emotionSession.blocks
+  });
+  summary.sessionStyle = emotionSession.sessionStyle || null;
+  summary.zoneGate = emotionSession.zoneGate || null;
+  const precomputedEmotionTransfer = applyEmotionTransferOutcome({
+    progression: stateBefore.emotionProgression,
+    summary,
+    sessionStyle: emotionSession.sessionStyle,
+    nowTs: tsEnd
+  });
+  summary.transferEvidence = precomputedEmotionTransfer.transferEvidence;
+  appendSessionSummary(summary);
+  const progressDelta = applySessionProgressAndSave(summary, "emotion", {
+    emotionTransferOutcome: precomputedEmotionTransfer
+  });
+  const stateAfter = loadStateWithSyncedUnlocks();
+  const nowUnlocked = deriveRelationalUnlockProgress(stateAfter.history).relationalUnlocked;
+  if (wasLocked && nowUnlocked) {
+    queueUnlockCelebration();
+  }
+
+  emotionSession.status = "completed";
+  emotionSession.phase = "session-done";
+  emotionSession.sessionSummary = summary;
+  emotionSession.progressDelta = progressDelta;
+  playSessionRewardSfx(progressDelta);
+  setFlash("Emotional session complete and saved to History.", "success");
+  render();
+}
+
 function startRelationalSession(mode) {
   const state = loadStateWithSyncedUnlocks();
   const unlockProgress = deriveRelationalUnlockProgress(state.history);
   if (!unlockProgress.relationalUnlocked) {
-    setFlash("Relational modes are locked. Complete qualifying Hub category and Hub non-categorical games first.", "warn");
+    setFlash("Relational modes are locked. Complete qualifying Hub category, Hub non-categorical, and Emotional dual games first.", "warn");
     render();
     return;
   }
@@ -4265,6 +5856,22 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (action === "go-play-emotion") {
+    const requestedMode = target.getAttribute("data-mode");
+    const stateNow = loadGymState();
+    const unlockProgress = deriveRelationalUnlockProgress(stateNow.history);
+    if (requestedMode === "emo_dual" && !unlockProgress.emotionDualUnlocked) {
+      emotionPreferences.mode = "emo_loc";
+      updateSettings({ lastEmotionMode: "emo_loc" });
+      setFlash("Emotional dual is locked. Starting in Location mode.", "warn");
+    } else if (requestedMode === "emo_loc" || requestedMode === "emo_col" || requestedMode === "emo_dual") {
+      emotionPreferences.mode = requestedMode;
+      updateSettings({ lastEmotionMode: requestedMode });
+    }
+    window.location.hash = "/play-emotion";
+    return;
+  }
+
   if (action === "go-play-relational") {
     window.location.hash = "/play-relational";
     return;
@@ -4293,6 +5900,11 @@ document.addEventListener("click", (event) => {
 
   if (action === "start-hub-session") {
     startHubSession();
+    return;
+  }
+
+  if (action === "start-emotion-session") {
+    startEmotionSession();
     return;
   }
 
@@ -4393,6 +6005,36 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (action === "emotion-start-block") {
+    startEmotionCue();
+    return;
+  }
+
+  if (action === "emotion-match-loc") {
+    captureEmotionLocationMatch();
+    return;
+  }
+
+  if (action === "emotion-match-col") {
+    captureEmotionColourMatch();
+    return;
+  }
+
+  if (action === "emotion-toggle-pause") {
+    toggleEmotionPause();
+    return;
+  }
+
+  if (action === "emotion-stop-session") {
+    stopEmotionSession();
+    return;
+  }
+
+  if (action === "emotion-next-block") {
+    beginEmotionBlock();
+    return;
+  }
+
   if (action === "rel-next-block") {
     beginRelationalBlock();
     return;
@@ -4438,6 +6080,8 @@ document.addEventListener("click", (event) => {
     }
     clearHubTimers();
     hubSession = null;
+    clearEmotionTimers();
+    emotionSession = null;
     clearRelTimers();
     relSession = null;
     closeBriefingOverlay();
@@ -4446,10 +6090,14 @@ document.addEventListener("click", (event) => {
     hubPreferences.wrapper = FIRST_RUN_BASELINE_BLOCK.wrapper;
     hubPreferences.speed = FIRST_RUN_BASELINE_BLOCK.speed;
     hubPreferences.interference = FIRST_RUN_BASELINE_BLOCK.interference;
+    emotionPreferences.mode = "emo_loc";
+    emotionPreferences.speed = FIRST_RUN_BASELINE_BLOCK.speed;
+    emotionPreferences.interference = FIRST_RUN_BASELINE_BLOCK.interference;
     updateSettings({
       lastWrapper: hubPreferences.wrapper,
       lastSpeed: hubPreferences.speed,
       lastInterference: hubPreferences.interference,
+      lastEmotionMode: emotionPreferences.mode,
       hasRunHubBefore: false
     });
     setFlash("Local data reset complete.", "success");
@@ -4464,6 +6112,12 @@ document.addEventListener("change", (event) => {
   }
   const wrapperLocked = Boolean(hubSession && hubSession.status === "running");
   const hubLocked = Boolean(hubSession && hubSession.status === "running" && (hubSession.phase === "cue" || hubSession.phase === "trial"));
+  const emotionModeLocked = Boolean(emotionSession && emotionSession.status === "running");
+  const emotionDialLocked = Boolean(
+    emotionSession
+      && emotionSession.status === "running"
+      && (emotionSession.phase === "loading" || emotionSession.phase === "cue" || emotionSession.phase === "trial")
+  );
 
   if (target.id === "sound-toggle" && target instanceof HTMLInputElement) {
     if (target.checked) {
@@ -4494,6 +6148,38 @@ document.addEventListener("change", (event) => {
     hubPreferences.interference = target.value === "high" ? "high" : "low";
     updateSettings({ lastInterference: hubPreferences.interference });
     render();
+    return;
+  }
+
+  if (target.id === "emotion-mode-select" && !emotionModeLocked) {
+    const nextMode = target.value === "emo_col"
+      ? "emo_col"
+      : (target.value === "emo_dual" ? "emo_dual" : "emo_loc");
+    const unlockProgress = deriveRelationalUnlockProgress(loadGymState().history);
+    if (nextMode === "emo_dual" && !unlockProgress.emotionDualUnlocked) {
+      emotionPreferences.mode = "emo_loc";
+      updateSettings({ lastEmotionMode: "emo_loc" });
+      setFlash("Dual mode is locked. Complete mono location and mono colour goals first.", "warn");
+      render();
+      return;
+    }
+    emotionPreferences.mode = nextMode;
+    updateSettings({ lastEmotionMode: emotionPreferences.mode });
+    render();
+    return;
+  }
+
+  if (target.id === "emotion-speed-select" && !emotionDialLocked) {
+    emotionPreferences.speed = target.value === "fast" ? "fast" : "slow";
+    updateSettings({ lastSpeed: emotionPreferences.speed });
+    render();
+    return;
+  }
+
+  if (target.id === "emotion-interference-select" && !emotionDialLocked) {
+    emotionPreferences.interference = target.value === "high" ? "high" : "low";
+    updateSettings({ lastInterference: emotionPreferences.interference });
+    render();
   }
 });
 
@@ -4518,6 +6204,28 @@ document.addEventListener("keydown", (event) => {
       startRelationalCue();
       return;
     }
+  }
+
+  if (emotionSession && emotionSession.status === "running" && emotionSession.phase === "briefing" && (event.code === "Space" || event.code === "Enter")) {
+    event.preventDefault();
+    startEmotionCue();
+    return;
+  }
+
+  if (event.code === "ArrowLeft" || event.code === "KeyF") {
+    const handled = captureEmotionLocationMatch();
+    if (handled) {
+      event.preventDefault();
+    }
+    return;
+  }
+
+  if (event.code === "ArrowRight" || event.code === "KeyJ") {
+    const handled = captureEmotionColourMatch();
+    if (handled) {
+      event.preventDefault();
+    }
+    return;
   }
 
   if (event.code !== "Space") {

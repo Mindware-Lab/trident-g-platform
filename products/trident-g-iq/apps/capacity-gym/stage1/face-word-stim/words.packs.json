@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "packs": {
+    "A": {
+      "threatening": ["LURK", "PERIL", "RISK", "SNARE", "GRIM", "WARN", "LOOM", "TRAP"],
+      "positive": ["JOY", "HOPE", "GLAD", "SMILE"],
+      "neutral": ["DESK", "FACT", "ITEM", "CLOCK"],
+      "sad": ["CRY", "LOSS", "ACHE", "GLOOM"]
+    },
+    "B": {
+      "threatening": ["FOE", "FEAR", "DREAD", "HUNT", "BOLT", "FLEE", "HARM", "RAGE"],
+      "positive": ["HUG", "WISH", "CHEER", "CALM"],
+      "neutral": ["BOOK", "PAGE", "LAMP", "DOOR"],
+      "sad": ["TEAR", "SIGH", "DULL", "LONE"]
+    }
+  }
+}

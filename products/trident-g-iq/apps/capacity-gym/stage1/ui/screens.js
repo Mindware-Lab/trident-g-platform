@@ -7,6 +7,9 @@ export function renderPrimaryScreen(screen, renderers) {
   if (screen === PRIMARY_SCREENS.HUB) {
     return renderers.hub();
   }
+  if (screen === PRIMARY_SCREENS.EMOTION) {
+    return renderers.emotion();
+  }
   if (screen === PRIMARY_SCREENS.RELATIONAL) {
     return renderers.relational();
   }
@@ -15,4 +18,3 @@ export function renderPrimaryScreen(screen, renderers) {
   }
   return renderers.settings();
 }
-
