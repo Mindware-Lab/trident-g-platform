@@ -14,7 +14,7 @@ export const EMO_SOA_MS = {
 export const EMO_MODES = ["emo_loc", "emo_col", "emo_dual"];
 export const EMO_COLOURS = Object.freeze([
   Object.freeze({ label: "White", hex: "#ffffff" }),
-  Object.freeze({ label: "Black", hex: "#111827" }),
+  Object.freeze({ label: "Green", hex: "#16a34a" }),
   Object.freeze({ label: "Red", hex: "#dc2626" }),
   Object.freeze({ label: "Blue", hex: "#2563eb" })
 ]);
@@ -507,4 +507,3 @@ export function formatEmotionBlockToken(blockIndex, totalBlocks) {
   const safeTotal = Number.isFinite(totalBlocks) ? Math.max(1, Math.round(totalBlocks)) : EMO_TOTAL_BLOCKS;
   return `${pad2(safeIndex)}/${pad2(safeTotal)}`;
 }
-

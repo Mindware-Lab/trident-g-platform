@@ -1743,8 +1743,8 @@ input:disabled {
 
 .emotion-face-token {
   position: absolute;
-  width: clamp(44px, 8vw, 56px);
-  height: clamp(44px, 8vw, 56px);
+  width: clamp(58px, 10.4vw, 73px);
+  height: clamp(58px, 10.4vw, 73px);
   object-fit: cover;
   transform: translate(-50%, -50%);
   border-radius: 12px;
@@ -1765,8 +1765,6 @@ input:disabled {
   transform: translate(-50%, -50%);
   min-width: min(70%, 220px);
   min-height: 50px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1776,6 +1774,15 @@ input:disabled {
   font-size: clamp(1rem, 2.2vw, 1.24rem);
   font-weight: 820;
   padding: 8px 14px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  text-shadow:
+    0 1px 1px var(--emotion-word-shadow, rgba(7, 11, 19, 0.88)),
+    0 0 4px var(--emotion-word-shadow, rgba(7, 11, 19, 0.88)),
+    0 0 10px rgba(0, 0, 0, 0.25);
+  -webkit-text-stroke: 0;
+  -webkit-text-fill-color: currentColor;
   transition: opacity 180ms ease;
 }
 
@@ -2076,6 +2083,25 @@ input:disabled {
   margin: 7px 0;
   color: var(--brand-text-muted);
   line-height: 1.45;
+}
+
+.help-links {
+  margin-top: 10px;
+}
+
+.help-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #9fd6ff;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.help-link:hover,
+.help-link:focus-visible {
+  color: #c9ebff;
 }
 
 .unlock-badge {

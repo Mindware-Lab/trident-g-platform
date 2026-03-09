@@ -207,6 +207,28 @@ const HUB_NONCAT_MATCH_EXAMPLE_IMAGES = Object.freeze([
     label: "LOCATION 2-back match"
   })
 ]);
+const EMOTION_MATCH_EXAMPLE_IMAGES = Object.freeze([
+  Object.freeze({
+    path: "./help-graphics/emotion-colour-1back-match.svg",
+    alt: "Two emotional displays showing a colour 1-back match.",
+    label: "COLOUR 1-back match"
+  }),
+  Object.freeze({
+    path: "./help-graphics/emotion-colour-2back-match.svg",
+    alt: "Three emotional displays showing a colour 2-back match.",
+    label: "COLOUR 2-back match"
+  }),
+  Object.freeze({
+    path: "./help-graphics/emotion-location-1back-match.svg",
+    alt: "Two emotional displays showing a location 1-back match.",
+    label: "LOCATION 1-back match"
+  }),
+  Object.freeze({
+    path: "./help-graphics/emotion-location-2back-match.svg",
+    alt: "Three emotional displays showing a location 2-back match.",
+    label: "LOCATION 2-back match"
+  })
+]);
 const REL_PROPOSITIONAL_MATCH_EXAMPLES = Object.freeze([
   Object.freeze({
     path: "./help-graphics/rel-propositional-1back-match.svg",
@@ -308,6 +330,13 @@ const HELP_TOPICS = Object.freeze({
   },
   "emotion-how": {
     title: "How to Play: Emotional N-Back",
+    images: EMOTION_MATCH_EXAMPLE_IMAGES,
+    links: [
+      {
+        label: "Watch explainer video (classic dual n-back)",
+        href: "https://youtu.be/fE4Z0vuj_As?si=mLbE_EJlEsqyuXup"
+      }
+    ],
     lines: [
       "Faces move around 4 ring locations; words stream in the center.",
       "Track location or colour in mono mode, or both in dual mode.",
@@ -3100,17 +3129,12 @@ function renderEmotionStimulus(trial, visible, mode, renderMapping, runtimeInfo 
   const wordPixelColour = tokenVisible ? String(trial?.display?.colourHex || "#ffffff") : "transparent";
   const normalizedColour = wordPixelColour.toLowerCase();
   const wordTextColor = normalizedColour;
-  let wordBackground = "rgba(15, 23, 42, 0.92)";
-  if (normalizedColour === "#ffffff") {
-    wordBackground = "#111827";
-  } else if (normalizedColour === "#111827") {
-    wordBackground = "#f8fafc";
-  }
+  const shadowColor = normalizedColour === "#ffffff" ? "rgba(7,11,19,0.95)" : "rgba(7,11,19,0.88)";
   const faceToken = tokenVisible
     ? `<img class="emotion-face-token" src="${faceSrc}" alt="" style="left:${point.xPct}%;top:${point.yPct}%;">`
     : `<img class="emotion-face-token hidden" src="" alt="" style="left:${point.xPct}%;top:${point.yPct}%;">`;
   const wordToken = tokenVisible
-    ? `<div class="emotion-word-token" style="color:${wordTextColor};background:${wordBackground};">${wordText}</div>`
+    ? `<div class="emotion-word-token" style="color:${wordTextColor};--emotion-word-shadow:${shadowColor};">${wordText}</div>`
     : `<div class="emotion-word-token hidden"></div>`;
   return `
     <div class="hub-stimulus emotion-stimulus">
@@ -3871,6 +3895,22 @@ function renderHelpOverlay() {
       </div>
     `
     : (hasGraphic ? `<img class="help-graphic" src="${imagePath}" alt="${escapeHtml(imageAlt)}" loading="eager" decoding="sync" fetchpriority="high">` : "");
+  const links = Array.isArray(topic.links)
+    ? topic.links.filter((item) => item && typeof item.href === "string" && item.href.trim())
+    : [];
+  const linksMarkup = links.length
+    ? `
+      <div class="help-links">
+        ${links.map((item) => {
+          const href = String(item.href).trim();
+          const label = typeof item.label === "string" && item.label.trim()
+            ? item.label.trim()
+            : href;
+          return `<a class="help-link" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+        }).join("")}
+      </div>
+    `
+    : "";
   return `
     <div class="app-overlay">
       <div class="overlay-backdrop" data-action="help-close"></div>
@@ -3880,6 +3920,7 @@ function renderHelpOverlay() {
         <div class="help-lines">
           ${topic.lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
         </div>
+        ${linksMarkup}
         <div class="overlay-actions">
           <button class="btn primary" data-action="help-close">Got it</button>
         </div>
