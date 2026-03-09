@@ -961,6 +961,10 @@ body {
   letter-spacing: 0.02em;
 }
 
+.session-style-pill span {
+  display: none;
+}
+
 .kicker {
   margin: 0 0 8px 0;
   color: #d9ecff;
@@ -1764,6 +1768,10 @@ input:disabled {
 
 .emotion-stimulus {
   margin-top: 10px;
+}
+
+.emotion-stimulus .hub-target {
+  display: none !important;
 }
 
 .emotion-face-token {
