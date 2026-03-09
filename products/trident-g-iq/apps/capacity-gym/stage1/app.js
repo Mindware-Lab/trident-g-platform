@@ -349,12 +349,17 @@ const HELP_TOPICS = Object.freeze({
   "training-progression": {
     title: "How to Progress Through Training",
     lines: [
-      "Training bank is instant points for block performance (+2 UP, +1 HOLD).",
-      "Transfer bank is stricter evidence: Probe check pass + Later check pass after at least 24 hours.",
-      "Probe check = wrapper swap test at block 4, then return at block 5.",
-      "Later check = delayed durability test that replays the same swap pattern.",
-      "If Zone is too hot, run reset mode. If Zone is stale or unclear, run stabilise mode.",
-      "Relational modes unlock after stable Hub performance and a stable Emotional dual session."
+      "Start with any capacity game: Hub (category), Hub (non-categorical), or Emotional DNB.",
+      "Use Start Recommended Session when possible. Coach may suggest staying in one game for a short run, then switching to test transfer.",
+      "Far transfer is trained by stable control first, then controlled swaps: speed/interference changes, wrapper swaps, and delayed rechecks.",
+      "Zone gate controls load: too hot = reset, stale/unclear/too cold = stabilise, in-band = normal tune/explore/probe/recheck progression.",
+      "Training Bank is immediate motivation (+2 UP, +1 HOLD). Transfer Bank is stricter and only counts durable transfer evidence.",
+      "Transfer Bank rule: Probe pass (block 4 swap + block 5 return) and then Later Check pass after at least 24 hours.",
+      "Emotional Dual unlock: first show stable mono competence in BOTH Emotional Location and Emotional Colour.",
+      "Mono competence = final level at least 2-back, with 3 stable blocks at 2-back or above (>=75% accuracy).",
+      "Relational unlock requires all core competence gates: Hub category + Hub non-categorical + Emotional dual competence.",
+      "Hub competence = final level at least 3-back, with 3 stable blocks at 3-back or above (>=75% accuracy).",
+      "Emotional dual competence = final level at least 2-back, with 3 stable dual blocks at 2-back or above (both dimensions >=75%)."
     ]
   },
   "rel-metrics": {
@@ -2617,7 +2622,7 @@ function renderHome(state) {
               <span>Available</span>
             </button>
             <button class="mode-tile mode-action" data-action="go-play-emotion" data-mode="${escapeHtml(normalizeEmotionMode(emotionPreferences.mode))}">
-              <img src="../brandingUI/icons/game/location-response.svg" alt="" aria-hidden="true">
+              <img src="../brandingUI/icons/game/emotional-face.svg" alt="" aria-hidden="true">
               <strong>Emotional DNB</strong>
               <span>${emotionTileStatus}</span>
             </button>
