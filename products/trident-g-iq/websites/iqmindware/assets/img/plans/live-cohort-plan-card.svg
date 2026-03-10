@@ -40,14 +40,16 @@
   <g transform="translate(760 340)">
     <rect x="0" y="0" width="700" height="422" rx="20" fill="#1a2744" stroke="#3f6aa1" stroke-width="2"/>
     <text x="42" y="64" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="3">WHAT YOU GET</text>
-    <text x="42" y="132" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">- IQ Core included (all 3 apps)</text>
-    <text x="42" y="196" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">- 4 live sessions with Dr Mark Ashton Smith</text>
-    <text x="42" y="260" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">- Recorded session sent to your inbox</text>
-    <text x="42" y="324" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">- Substack paid inclusion bundled</text>
+    <text x="42" y="124" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700">- IQ Core included (all 3 apps)</text>
+    <text x="42" y="178" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700">- 4 live sessions with</text>
+    <text x="42" y="232" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700">- Dr Mark Ashton Smith</text>
+    <text x="42" y="286" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700">- Recorded session sent to your inbox</text>
+    <text x="42" y="340" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700">- Substack paid inclusion bundled</text>
     <circle cx="642" cy="76" r="9" fill="#6fb8ff"/>
-    <circle cx="642" cy="140" r="9" fill="#8fd6ff"/>
-    <circle cx="642" cy="204" r="9" fill="#6ce0ff"/>
-    <circle cx="642" cy="268" r="9" fill="#6ce0ff"/>
+    <circle cx="642" cy="130" r="9" fill="#8fd6ff"/>
+    <circle cx="642" cy="184" r="9" fill="#6ce0ff"/>
+    <circle cx="642" cy="238" r="9" fill="#6ce0ff"/>
+    <circle cx="642" cy="292" r="9" fill="#8fd6ff"/>
   </g>
 
   <rect x="1188" y="140" width="280" height="116" rx="18" fill="#243455" filter="url(#softGlow)"/>

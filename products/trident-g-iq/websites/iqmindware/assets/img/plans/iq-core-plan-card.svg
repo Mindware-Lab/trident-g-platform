@@ -40,14 +40,16 @@
   <g transform="translate(760 340)">
     <rect x="0" y="0" width="700" height="422" rx="20" fill="#1a2744" stroke="#8b6f2e" stroke-width="2"/>
     <text x="42" y="64" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="3">WHAT YOU GET</text>
-    <text x="42" y="132" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">- 90-day launch-pass access</text>
-    <text x="42" y="196" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">- G Tracker + Zone Coach + Capacity Gym</text>
-    <text x="42" y="260" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">- Shared progression workflow</text>
-    <text x="42" y="324" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">- Substack paid inclusion bundled</text>
+    <text x="42" y="128" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700">- 90-day launch-pass access</text>
+    <text x="42" y="186" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700">- G Tracker + Zone Coach</text>
+    <text x="42" y="244" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700">- Capacity Gym included</text>
+    <text x="42" y="302" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700">- Shared progression workflow</text>
+    <text x="42" y="360" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700">- Substack paid inclusion bundled</text>
     <circle cx="642" cy="76" r="9" fill="#ffcc6f"/>
-    <circle cx="642" cy="140" r="9" fill="#ffe096"/>
-    <circle cx="642" cy="204" r="9" fill="#bdfb45"/>
-    <circle cx="642" cy="268" r="9" fill="#bdfb45"/>
+    <circle cx="642" cy="134" r="9" fill="#ffe096"/>
+    <circle cx="642" cy="192" r="9" fill="#bdfb45"/>
+    <circle cx="642" cy="250" r="9" fill="#bdfb45"/>
+    <circle cx="642" cy="308" r="9" fill="#ffcc6f"/>
   </g>
 
   <rect x="1188" y="140" width="280" height="116" rx="18" fill="#243455" filter="url(#softGlow)"/>
