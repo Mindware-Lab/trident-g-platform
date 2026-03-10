@@ -1,5 +1,6 @@
 {
   "default_currency": "USD",
+  "early_bird_until": "2026-04-10",
   "supported_currencies": [
     "USD",
     "GBP"
