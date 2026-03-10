@@ -40,18 +40,20 @@
   <g transform="translate(760 340)">
     <rect x="0" y="0" width="700" height="422" rx="20" fill="#1a2744" stroke="#6750a8" stroke-width="2"/>
     <text x="42" y="64" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="3">WHAT YOU GET</text>
-    <text x="42" y="118" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700">- IQ Core included (all 3 apps)</text>
-    <text x="42" y="166" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700">- 3 private sessions with</text>
-    <text x="42" y="214" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700">- Dr Mark Ashton Smith</text>
-    <text x="42" y="262" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700">- Mission-specific script build</text>
-    <text x="42" y="310" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700">- and transfer review</text>
-    <text x="42" y="358" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700">- Recorded session sent to your inbox</text>
+    <text x="42" y="112" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">- IQ Core included (all 3 apps)</text>
+    <text x="42" y="156" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">- 3 private sessions with</text>
+    <text x="42" y="200" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">- Dr Mark Ashton Smith</text>
+    <text x="42" y="244" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">- Mission-specific script build</text>
+    <text x="42" y="288" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">- and transfer review</text>
+    <text x="42" y="332" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">- Recorded session sent to your</text>
+    <text x="42" y="376" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">- inbox</text>
     <circle cx="642" cy="76" r="9" fill="#9f83ff"/>
-    <circle cx="642" cy="124" r="9" fill="#caa9ff"/>
-    <circle cx="642" cy="172" r="9" fill="#bda0ff"/>
-    <circle cx="642" cy="220" r="9" fill="#bda0ff"/>
-    <circle cx="642" cy="268" r="9" fill="#caa9ff"/>
-    <circle cx="642" cy="316" r="9" fill="#9f83ff"/>
+    <circle cx="642" cy="120" r="9" fill="#caa9ff"/>
+    <circle cx="642" cy="164" r="9" fill="#bda0ff"/>
+    <circle cx="642" cy="208" r="9" fill="#bda0ff"/>
+    <circle cx="642" cy="252" r="9" fill="#caa9ff"/>
+    <circle cx="642" cy="296" r="9" fill="#9f83ff"/>
+    <circle cx="642" cy="340" r="9" fill="#caa9ff"/>
   </g>
 
   <rect x="1188" y="140" width="280" height="116" rx="18" fill="#243455" filter="url(#softGlow)"/>
