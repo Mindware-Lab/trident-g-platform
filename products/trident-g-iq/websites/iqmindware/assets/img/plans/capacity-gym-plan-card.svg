@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">IQMindware Capacity Gym Plan Card</title>
+  <desc id="desc">Pricing card image for Capacity Gym launch pass plan.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10162a"/>
+      <stop offset="55%" stop-color="#1a223c"/>
+      <stop offset="100%" stop-color="#10162a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#9f83ff"/>
+      <stop offset="100%" stop-color="#6fb8ff"/>
+    </linearGradient>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect x="64" y="64" width="1472" height="772" rx="26" fill="#121a30" stroke="#5f52b0" stroke-width="2"/>
+  <rect x="64" y="64" width="1472" height="14" rx="7" fill="url(#accent)"/>
+
+  <text x="120" y="156" fill="#bfaeff" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="6">IQMINDWARE LAUNCH PASS</text>
+  <text x="120" y="238" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="700">Capacity Gym</text>
+  <text x="120" y="290" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="36">Transfer-oriented capacity training for adaptable cognitive performance</text>
+
+  <rect x="120" y="356" width="530" height="262" rx="20" fill="#1a2744" stroke="#5f52b0" stroke-width="2"/>
+  <text x="158" y="424" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="28" letter-spacing="3">EARLY BIRD UNTIL 10 APRIL 2026</text>
+  <text x="158" y="520" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">USD</text>
+  <text x="278" y="520" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="700">39.99</text>
+  <text x="158" y="578" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="32">Standard: USD 49.99</text>
+
+  <rect x="120" y="660" width="530" height="102" rx="14" fill="#9f83ff"/>
+  <text x="150" y="725" fill="#131b30" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">Access Capacity Gym</text>
+
+  <g transform="translate(760 340)">
+    <rect x="0" y="0" width="700" height="422" rx="20" fill="#1a2744" stroke="#5f52b0" stroke-width="2"/>
+    <text x="42" y="64" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="3">WHAT YOU GET</text>
+    <text x="42" y="132" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">- 90-day launch-pass access</text>
+    <text x="42" y="196" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">- Daily adaptive training blocks</text>
+    <text x="42" y="260" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">- Game-swap transfer checks</text>
+    <text x="42" y="324" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">- Progress trend with local export</text>
+    <circle cx="642" cy="76" r="9" fill="#9f83ff"/>
+    <circle cx="642" cy="140" r="9" fill="#bfaeff"/>
+    <circle cx="642" cy="204" r="9" fill="#6fb8ff"/>
+    <circle cx="642" cy="268" r="9" fill="#6fb8ff"/>
+  </g>
+
+  <rect x="1188" y="140" width="280" height="116" rx="18" fill="#243455" filter="url(#softGlow)"/>
+  <text x="1226" y="194" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="26">ONE-TIME</text>
+  <text x="1226" y="232" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700">90 DAYS</text>
+</svg>
