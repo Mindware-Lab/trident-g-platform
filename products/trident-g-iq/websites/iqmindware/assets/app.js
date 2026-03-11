@@ -25,7 +25,11 @@ async function renderPricing() {
       .map((plan) => {
         const value = currency === "GBP" ? plan.price_gbp : plan.price_usd;
         const symbol = currency === "GBP" ? "GBP " : "USD ";
-        const discounts = plan.discounts || {};
+        const discounts = Object.fromEntries(
+          Object.entries(plan.discounts || {}).filter(
+            ([k]) => !/existing/i.test(k)
+          )
+        );
         const discountRows = Object.keys(discounts).length
           ? `<ul>${Object.entries(discounts)
               .map(
