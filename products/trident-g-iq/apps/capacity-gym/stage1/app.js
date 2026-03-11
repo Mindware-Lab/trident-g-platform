@@ -77,7 +77,7 @@ import { resolvePrimaryScreen } from "./ui/screen-coordinator.js";
 import { renderPrimaryScreen } from "./ui/screens.js";
 import { buildShellViewModel } from "./ui/view-models.js";
 
-const TEMP_RELATIONAL_UNLOCK_FOR_INSPECTION = true;
+const TEMP_RELATIONAL_UNLOCK_FOR_INSPECTION = false;
 const ROUTES = new Set(["home", "play-hub", "play-emotion", "play-relational", "history", "settings"]);
 const DEFAULT_ROUTE = "home";
 const appRoot = document.querySelector("#app");
