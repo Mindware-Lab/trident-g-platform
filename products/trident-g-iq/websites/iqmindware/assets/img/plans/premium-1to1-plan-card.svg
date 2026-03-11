@@ -24,15 +24,15 @@
   <rect x="64" y="64" width="1472" height="772" rx="26" fill="#121a30" stroke="#6750a8" stroke-width="2"/>
   <rect x="64" y="64" width="1472" height="14" rx="7" fill="url(#accent)"/>
 
-  <text x="120" y="156" fill="#d0b8ff" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="6">IQMINDWARE LIVE COACHING BUNDLE</text>
+  <text x="120" y="156" fill="#d0b8ff" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="6">IQMINDWARE COACHING PLAN</text>
   <text x="120" y="238" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="700">1:1 Premium</text>
   <text x="120" y="290" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="36">3 x 1h flexible sessions with high-touch personalised implementation</text>
 
   <rect x="120" y="356" width="530" height="262" rx="20" fill="#1a2744" stroke="#6750a8" stroke-width="2"/>
-  <text x="158" y="424" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="28" letter-spacing="3">FIXED COACHING BUNDLE PRICE</text>
-  <text x="158" y="520" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">USD</text>
-  <text x="278" y="520" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="700">499</text>
-  <text x="158" y="578" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="32">GBP equivalent: 400</text>
+  <text x="158" y="424" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="28" letter-spacing="3">COACHING PLAN PRICE</text>
+  <text x="158" y="492" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="700">See checkout</text>
+  <text x="158" y="544" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="700">for current price</text>
+  <text x="158" y="602" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="28">Includes IQ Core coaching bundle</text>
 
   <rect x="120" y="660" width="530" height="102" rx="14" fill="#9f83ff"/>
   <text x="188" y="725" fill="#1a1430" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">Apply to 1:1 Premium</text>
