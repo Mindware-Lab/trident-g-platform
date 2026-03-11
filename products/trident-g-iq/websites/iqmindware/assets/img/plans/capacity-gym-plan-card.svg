@@ -24,15 +24,16 @@
   <rect x="64" y="64" width="1472" height="772" rx="26" fill="#121a30" stroke="#5f52b0" stroke-width="2"/>
   <rect x="64" y="64" width="1472" height="14" rx="7" fill="url(#accent)"/>
 
-  <text x="120" y="156" fill="#bfaeff" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="6">IQMINDWARE LAUNCH PASS</text>
+  <text x="120" y="156" fill="#bfaeff" font-family="Arial, Helvetica, sans-serif" font-size="26" letter-spacing="6">IQMINDWARE SOFTWARE PLAN</text>
   <text x="120" y="238" fill="#f4f8ff" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="700">Capacity Gym</text>
   <text x="120" y="290" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="36">Transfer-oriented capacity training for adaptable cognitive performance</text>
 
   <rect x="120" y="356" width="530" height="262" rx="20" fill="#1a2744" stroke="#5f52b0" stroke-width="2"/>
-  <text x="158" y="424" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="28" letter-spacing="3">EARLY BIRD UNTIL 10 APRIL 2026</text>
-  <text x="158" y="520" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">USD</text>
-  <text x="278" y="520" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="92" font-weight="700">39.99</text>
-  <text x="158" y="578" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="32">Standard: USD 49.99</text>
+  <text x="158" y="424" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="28" letter-spacing="3">FLEXIBLE PRICING TIERS</text>
+  <text x="158" y="492" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="700">See checkout</text>
+  <text x="158" y="544" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="52" font-weight="700">for current price</text>
+  <text x="158" y="580" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="28">Early Bird | Standard</text>
+  <text x="158" y="610" fill="#9fb4d9" font-family="Arial, Helvetica, sans-serif" font-size="28">Student | Existing</text>
 
   <rect x="120" y="660" width="530" height="102" rx="14" fill="#9f83ff"/>
   <text x="150" y="725" fill="#131b30" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700">Access Capacity Gym</text>
