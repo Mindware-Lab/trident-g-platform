@@ -42,7 +42,14 @@
     "LEGACY-CAPACITY-2026": Object.freeze({ bundleId: "capacity_gym", segment: "legacy_reactivation", campaign: "legacy_reactivation_2026", durationDays: 90 }),
     "LEGACY-IQCORE-2026": Object.freeze({ bundleId: "performance_bundle", segment: "legacy_reactivation", campaign: "legacy_reactivation_2026", durationDays: 90 }),
     "LEGACY-COHORT-2026": Object.freeze({ bundleId: "cohort_bundle", segment: "legacy_reactivation", campaign: "legacy_reactivation_2026", durationDays: 90 }),
-    "LEGACY-PREMIUM-2026": Object.freeze({ bundleId: "premium_1to1", segment: "legacy_reactivation", campaign: "legacy_reactivation_2026", durationDays: 90 })
+    "LEGACY-PREMIUM-2026": Object.freeze({ bundleId: "premium_1to1", segment: "legacy_reactivation", campaign: "legacy_reactivation_2026", durationDays: 90 }),
+
+    "EXISTING-GTRACKER-2026": Object.freeze({ bundleId: "g_tracker", segment: "legacy_reactivation", campaign: "existing_alias_2026", durationDays: 90 }),
+    "EXISTING-ZONE-2026": Object.freeze({ bundleId: "zone_coach", segment: "legacy_reactivation", campaign: "existing_alias_2026", durationDays: 90 }),
+    "EXISTING-CAPACITY-2026": Object.freeze({ bundleId: "capacity_gym", segment: "legacy_reactivation", campaign: "existing_alias_2026", durationDays: 90 }),
+    "EXISTING-IQCORE-2026": Object.freeze({ bundleId: "performance_bundle", segment: "legacy_reactivation", campaign: "existing_alias_2026", durationDays: 90 }),
+    "EXISTING-COHORT-2026": Object.freeze({ bundleId: "cohort_bundle", segment: "legacy_reactivation", campaign: "existing_alias_2026", durationDays: 90 }),
+    "EXISTING-PREMIUM-2026": Object.freeze({ bundleId: "premium_1to1", segment: "legacy_reactivation", campaign: "existing_alias_2026", durationDays: 90 })
   });
 
   function normalizeCode(value) {
