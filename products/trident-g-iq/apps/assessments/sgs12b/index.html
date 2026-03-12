@@ -528,20 +528,48 @@
       },
     ];
 
+    function toSafeInt(value, fallback = 0) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return fallback;
+      return Math.round(num);
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function computeRawScore(answers, items) {
+      if (!Array.isArray(items) || !items.length || !Array.isArray(answers)) {
+        return 0;
+      }
+      let score = 0;
+      for (let idx = 0; idx < items.length; idx += 1) {
+        const item = items[idx];
+        if (!item || typeof item.correctOptionIndex !== 'number') continue;
+        if (answers[idx] === item.correctOptionIndex) {
+          score += 1;
+        }
+      }
+      return clamp(score, 0, items.length);
+    }
+
     // -----------------------------
     // Scoring functions (same as Form A)
     // -----------------------------
     function getBand(raw) {
-      if (raw <= 3) return 'low';
-      if (raw <= 7) return 'typical';
-      if (raw <= 9) return 'high';
+      const safeRaw = clamp(toSafeInt(raw, 0), 0, ITEMS.length);
+      if (safeRaw <= 3) return 'low';
+      if (safeRaw <= 7) return 'typical';
+      if (safeRaw <= 9) return 'high';
       return 'veryHigh';
     }
 
     function rsIq(raw) {
       const mean = 5.4;
       const sd = 1.6;
-      return Math.round(100 + 15 * ((raw - mean) / sd));
+      const safeRaw = clamp(Number(raw) || 0, 0, ITEMS.length);
+      const iq = Math.round(100 + 15 * ((safeRaw - mean) / sd));
+      return clamp(iq, 40, 160);
     }
 
     function getBandLabel(band) {
@@ -551,7 +579,7 @@
         high: 'Higher than typical range',
         veryHigh: 'Very high range',
       };
-      return labels[band];
+      return labels[band] || labels.typical;
     }
 
     function getBandDescription(band) {
@@ -561,7 +589,7 @@
         high: 'Your score is above average. You found the pattern puzzles fairly natural once the format became clear. You perform well on abstract reasoning tasks.',
         veryHigh: 'Your score is in the very high range, indicating strong abstract reasoning ability. At this level, small differences in raw scores are not particularly meaningful.',
       };
-      return descriptions[band];
+      return descriptions[band] || descriptions.typical;
     }
 
     const STEM_IMAGE_URLS = ITEMS.filter(item => !!item.stemImageUrl).map(item => item.stemImageUrl);
@@ -837,7 +865,10 @@
                 Previous
               </button>
               <button
-                onClick={onNext}
+                onClick={(event) => {
+                  event.currentTarget.disabled = true;
+                  onNext();
+                }}
                 disabled={!isAnswered}
                 className="flex-1 py-3 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
@@ -851,10 +882,11 @@
 
     // Results screen
     function ResultsScreen({ rawScore, onRestart }) {
-      const band = getBand(rawScore);
+      const safeRawScore = clamp(toSafeInt(rawScore, 0), 0, ITEMS.length);
+      const band = getBand(safeRawScore);
       const bandLabel = getBandLabel(band);
       const description = getBandDescription(band);
-      const iq = rsIq(rawScore);
+      const iq = rsIq(safeRawScore);
 
       return (
         <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
@@ -867,7 +899,7 @@
               {/* Raw score */}
               <div className="bg-indigo-50 rounded-lg p-6 mb-8 text-center border-2 border-indigo-200">
                 <div className="text-5xl font-bold text-indigo-600 mb-2">
-                  {rawScore}
+                  {safeRawScore}
                 </div>
                 <div className="text-gray-600 font-medium">
                   Raw score (out of 12)
@@ -921,6 +953,29 @@
               </div>
 
               {/* Restart button */}
+              <button
+                onClick={onRestart}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              >
+                Restart test
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ResultsFallback({ onRestart }) {
+      return (
+        <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="tg-card bg-white rounded-lg shadow-lg p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-800 mb-4 text-center">
+                Results unavailable
+              </h2>
+              <p className="text-gray-700 leading-relaxed mb-8 text-center">
+                We could not load your score safely. Please restart the test and try again.
+              </p>
               <button
                 onClick={onRestart}
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
@@ -1003,13 +1058,13 @@
       }
 
       if (screen === 'results') {
-        const rawScore = answers.reduce((sum, answer, idx) => {
-          if (answer === ITEMS[idx].correctOptionIndex) {
-            return sum + 1;
-          }
-          return sum;
-        }, 0);
-        return <ResultsScreen rawScore={rawScore} onRestart={handleRestart} />;
+        try {
+          const rawScore = computeRawScore(answers, ITEMS);
+          return <ResultsScreen rawScore={rawScore} onRestart={handleRestart} />;
+        } catch (error) {
+          console.error('[SgS-12B] Failed to render results', error);
+          return <ResultsFallback onRestart={handleRestart} />;
+        }
       }
 
       return null;
