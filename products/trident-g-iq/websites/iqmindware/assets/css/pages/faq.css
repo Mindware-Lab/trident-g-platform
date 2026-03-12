@@ -286,6 +286,17 @@ body.faq   { background: var(--faq-surface); }
   font-size: 13.5px; color: var(--tlm); line-height: 1.74;
 }
 .faq-a-text strong { color: var(--tl); }
+.faq-a-benefits {
+  margin: 10px 0 0 18px;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.faq-a-benefits li {
+  font-size: 13.5px;
+  color: var(--tlm);
+  line-height: 1.65;
+}
 .faq-a-text a {
   color: var(--blue-dp); text-decoration: none;
   border-bottom: 1px solid rgba(39,100,183,.25);
