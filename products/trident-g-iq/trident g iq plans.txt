@@ -1,0 +1,116 @@
+GTRACKER_STANDARD_2026      = USD 29.99 (GBP 24.00)
+GTRACKER_EARLYBIRD_2026     = USD 23.99 (GBP 19.20)
+GTRACKER_EXISTING_2026      = USD 9.99  (GBP 8.00)
+GTRACKER_STUDENT_2026       = USD 14.99 (GBP 12.00)
+
+ZONECOACH_STANDARD_2026     = USD 39.99 (GBP 32.00)
+ZONECOACH_EARLYBIRD_2026    = USD 31.99 (GBP 25.60)
+ZONECOACH_EXISTING_2026     = USD 13.33 (GBP 10.66)
+ZONECOACH_STUDENT_2026      = USD 19.99 (GBP 16.00)
+
+CAPACITYGYM_STANDARD_2026   = USD 49.99 (GBP 40.00)
+CAPACITYGYM_EARLYBIRD_2026  = USD 39.99 (GBP 32.00)
+CAPACITYGYM_EXISTING_2026   = USD 16.66 (GBP 13.33)
+CAPACITYGYM_STUDENT_2026    = USD 24.99 (GBP 20.00)
+
+IQCORE_STANDARD_2026        = USD 89.99 (GBP 72.00)
+IQCORE_EARLYBIRD_2026       = USD 71.99 (GBP 57.60)
+IQCORE_EXISTING_2026        = USD 29.99 (GBP 24.00)
+IQCORE_STUDENT_2026         = USD 44.99 (GBP 36.00)
+
+LIVECOHORT_FIXED_2026       = USD 199.00 (GBP 160.00)
+PREMIUM1TO1_FIXED_2026      = USD 499.00 (GBP 400.00)
+
+
+---
+
+Access your app here:
+https://iqmindware.com/go/cohort
+https://iqmindware.com/go/premium
+https://iqmindware.com/go/iqcore
+https://iqmindware.com/go/capacity
+https://iqmindware.com/go/zone
+https://iqmindware.com/go/gtracker
+
+
+
+---
+
+
+GTRACKER_STANDARD_2026      = USD 29.99 (GBP 24.00)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/g-tracker/
+Password: GTRACKER-2026
+
+https://buy.stripe.com/test_9B614m9a17w4dYddhE9ws06
+
+GTRACKER_EARLYBIRD_2026     = USD 23.99 (GBP 19.20)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/g-tracker/
+Password: EARLY-GTRACKER-2026
+
+GTRACKER_EXISTING_2026      = USD 9.99 (GBP 8.00)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/g-tracker/
+Password: LEGACY-GTRACKER-2026
+
+GTRACKER_STUDENT_2026       = USD 14.99 (GBP 12.00)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/g-tracker/
+Password: STUDENT-GTRACKER-2026
+
+
+ZONECOACH_STANDARD_2026     = USD 39.99 (GBP 32.00)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/zone-coach/
+Password: ZONE-2026
+
+ZONECOACH_EARLYBIRD_2026    = USD 31.99 (GBP 25.60)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/zone-coach/
+Password: EARLY-ZONE-2026
+
+ZONECOACH_EXISTING_2026     = USD 13.33 (GBP 10.66)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/zone-coach/
+Password: LEGACY-ZONE-2026
+
+ZONECOACH_STUDENT_2026      = USD 19.99 (GBP 16.00)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/zone-coach/
+Password: STUDENT-ZONE-2026
+
+
+CAPACITYGYM_STANDARD_2026   = USD 49.99 (GBP 40.00)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/capacity-gym/
+Password: CAPACITY-2026
+
+CAPACITYGYM_EARLYBIRD_2026  = USD 39.99 (GBP 32.00)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/capacity-gym/
+Password: EARLY-CAPACITY-2026
+
+CAPACITYGYM_EXISTING_2026   = USD 16.66 (GBP 13.33)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/capacity-gym/
+Password: LEGACY-CAPACITY-2026
+
+CAPACITYGYM_STUDENT_2026    = USD 24.99 (GBP 20.00)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/capacity-gym/
+Password: STUDENT-CAPACITY-2026
+
+
+IQCORE_STANDARD_2026        = USD 89.99 (GBP 72.00)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/iq-core/
+Password: IQCORE-2026
+
+IQCORE_EARLYBIRD_2026       = USD 71.99 (GBP 57.60)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/iq-core/
+Password: EARLY-IQCORE-2026
+
+IQCORE_EXISTING_2026        = USD 29.99 (GBP 24.00)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/iq-core/
+Password: EXISTING-IQCORE-2026
+
+IQCORE_STUDENT_2026         = USD 44.99 (GBP 36.00)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/iq-core/
+Password: STUDENT-IQCORE-2026
+
+
+LIVECOHORT_FIXED_2026       = USD 199.00 (GBP 160.00)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/live-cohort/
+Password: COHORT-2026 (alias: LIVECOHORT-2026)
+
+PREMIUM1TO1_FIXED_2026      = USD 499.00 (GBP 400.00)
+URL: https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq/apps/premium-1to1/
+Password: PREMIUM-2026 (alias: PREMIUM1TO1-2026)
