@@ -144,6 +144,12 @@
       "required_template_blocks": []
     },
     {
+      "route": "/learn/blog/human-led-ai-reasoning-protocol-10-day-challenge/",
+      "intent": "education_article",
+      "primary_cta": "Read article content",
+      "required_template_blocks": []
+    },
+    {
       "route": "/learn/blog/the-bell-curve-cognitive-elites/",
       "intent": "education_article",
       "primary_cta": "Read article content",

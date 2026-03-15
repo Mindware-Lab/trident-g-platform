@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1520 680" role="img" aria-labelledby="title desc">
+  <title id="title">The 5-step human-led AI reasoning protocol</title>
+  <desc id="desc">A five-step flow: Own, Refine, Stress-test, Audit, Re-write.</desc>
+  <defs>
+    <linearGradient id="stepBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7cb7ea" />
+      <stop offset="100%" stop-color="#5e9fd9" />
+    </linearGradient>
+    <marker id="arrowHead" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5e9fd9" />
+    </marker>
+  </defs>
+
+  <rect width="1520" height="680" fill="#ececef" />
+  <text x="700" y="120" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="62" fill="#2f2f33">
+    The 5-step human-led AI reasoning protocol
+  </text>
+
+  <line x1="260" y1="380" x2="382" y2="380" stroke="#5e9fd9" stroke-width="12" marker-end="url(#arrowHead)" />
+  <line x1="560" y1="380" x2="682" y2="380" stroke="#5e9fd9" stroke-width="12" marker-end="url(#arrowHead)" />
+  <line x1="860" y1="380" x2="982" y2="380" stroke="#5e9fd9" stroke-width="12" marker-end="url(#arrowHead)" />
+  <line x1="1160" y1="380" x2="1282" y2="380" stroke="#5e9fd9" stroke-width="12" marker-end="url(#arrowHead)" />
+
+  <g transform="translate(160,380)">
+    <circle r="92" fill="#f2f2f2" stroke="#6f6f72" stroke-width="3" />
+    <circle r="82" fill="url(#stepBlue)" />
+    <text text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="44" fill="#ffffff" y="14">Own</text>
+  </g>
+  <g transform="translate(460,380)">
+    <circle r="92" fill="#f2f2f2" stroke="#6f6f72" stroke-width="3" />
+    <circle r="82" fill="url(#stepBlue)" />
+    <text text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="44" fill="#ffffff" y="14">Refine</text>
+  </g>
+  <g transform="translate(760,380)">
+    <circle r="92" fill="#f2f2f2" stroke="#6f6f72" stroke-width="3" />
+    <circle r="82" fill="url(#stepBlue)" />
+    <text text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="44" fill="#ffffff" y="14">Stress-test</text>
+  </g>
+  <g transform="translate(1060,380)">
+    <circle r="92" fill="#f2f2f2" stroke="#6f6f72" stroke-width="3" />
+    <circle r="82" fill="url(#stepBlue)" />
+    <text text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="44" fill="#ffffff" y="14">Audit</text>
+  </g>
+  <g transform="translate(1360,380)">
+    <circle r="92" fill="#f2f2f2" stroke="#6f6f72" stroke-width="3" />
+    <circle r="82" fill="url(#stepBlue)" />
+    <text text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="44" fill="#ffffff" y="14">Re-write</text>
+  </g>
+</svg>
