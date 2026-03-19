@@ -145,6 +145,61 @@
       ]
     }
   ],
+  "subscription_preview": {
+    "phase": "Phase 1 later",
+    "status": "estimated",
+    "notes": "Preview values are indicative and may be updated before release.",
+    "plans": [
+      {
+        "id": "g_tracker",
+        "label": "G Tracker",
+        "monthly": {
+          "usd": 9.99,
+          "gbp": 8.0
+        },
+        "yearly": {
+          "usd": 79.0,
+          "gbp": 63.0
+        }
+      },
+      {
+        "id": "zone_coach",
+        "label": "Zone Coach",
+        "monthly": {
+          "usd": 12.99,
+          "gbp": 10.0
+        },
+        "yearly": {
+          "usd": 99.0,
+          "gbp": 79.0
+        }
+      },
+      {
+        "id": "capacity_gym",
+        "label": "Capacity Gym",
+        "monthly": {
+          "usd": 16.99,
+          "gbp": 14.0
+        },
+        "yearly": {
+          "usd": 149.0,
+          "gbp": 119.0
+        }
+      },
+      {
+        "id": "iq_core",
+        "label": "IQ Core",
+        "monthly": {
+          "usd": 29.99,
+          "gbp": 24.0
+        },
+        "yearly": {
+          "usd": 249.0,
+          "gbp": 199.0
+        }
+      }
+    ]
+  },
   "refund_and_cancel": {
     "software": "14-day software guarantee.",
     "coaching": "Full refund up to 48h before first session; then remainder excluding delivered session.",

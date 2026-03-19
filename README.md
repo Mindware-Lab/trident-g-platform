@@ -17,7 +17,7 @@ This repo is the **root** for two sister products that share a common architectu
 
 ### A. Trainable zone (state control + fast re-entry)
 
-Your best strategies don‚Äôt help if you can‚Äôt access them under fatigue, stress, interruptions, or pressure. The suite treats ‚Äústate‚Äù as a first-class variable: you learn to **enter**, **stay**, and **re-enter** a workable band.
+Your best strategies donít help if you canít access them under fatigue, stress, interruptions, or pressure. The suite treats ìstateî as a first-class variable: you learn to **enter**, **stay**, and **re-enter** a workable band.
 
 **Zone labels (internal, consistent across apps):**
 - `too_hot` (overloaded, reactive, tunnel vision)
@@ -27,17 +27,17 @@ Your best strategies don‚Äôt help if you can‚Äôt access them under fatigue, stre
 
 ### B. Far transfer as the product  
 
-Most training improves performance inside the training wrapper. Trident-G only counts a ‚Äúwin‚Äù when the learning survives:
+Most training improves performance inside the training wrapper. Trident-G only counts a ìwinî when the learning survives:
 
 - a **wrapper swap** (same deep demand, different surface),
 - a **constraint change** (time, stakes, missing info, etc.),
 - a **delayed re-check**, and
 - at least one **real-world cue-fired use**.
 
-### C. The intelligence cycle (Gf ‚Üí Gc ‚Üí Gf)
+### C. The intelligence cycle (Gf ? Gc ? Gf)
 
-Solve (fluid) ‚Üí **crystallise into a tool** (portable card) ‚Üí redeploy under novelty (fluid again).  
-This is how ‚Äúinsight‚Äù becomes a repeatable operator rather than a one-off moment.
+Solve (fluid) ? **crystallise into a tool** (portable card) ? redeploy under novelty (fluid again).  
+This is how ìinsightî becomes a repeatable operator rather than a one-off moment.
 
 ---
 
@@ -45,25 +45,25 @@ This is how ‚Äúinsight‚Äù becomes a repeatable operator rather than a one-off mo
 
 ### Standalone apps
 
-- **Cognitive Tracking Battery** ‚Äî **$19.99**  
-  A lightweight assessment hub and repeatable ‚Äúdifference report‚Äù engine.
-- **Zone Coach** ‚Äî **$19.99**  
+- **Cognitive Tracking Battery** ó **$19.99**  
+  A lightweight assessment hub and repeatable ìdifference reportî engine.
+- **Zone Coach** ó **$19.99**  
   State check-ins, re-entry operators, and basic corridor metrics.
 
 ### Bundles (Trident-G-IQ / Trident-G-Resilience)
 
-- **IQ Core ‚Äî $59.99**  
+- **IQ Core ó $59.99**  
   Capacity training + Zone Coach + Tracking.  
-  ‚ÄúTrain capacity, regulate state, track score trends.‚Äù
-- **IQ Pro ‚Äî $149**  
+  ìTrain capacity, regulate state, track score trends.î
+- **IQ Pro ó $149**  
   Everything in Core + Mindware Operator Coach + GPT practice apps.  
-  ‚ÄúFull self-guided far-transfer loop.‚Äù
-- **IQ Live ‚Äî $299**  
+  ìFull self-guided far-transfer loop.î
+- **IQ Live ó $299**  
   Everything in Pro + 4 live webinar sessions with me as the cognitive coach.  
-  ‚ÄúCohort troubleshooting + calibration engine.‚Äù
-- **IQ 1:1 Premium ‚Äî $499**  
+  ìCohort troubleshooting + calibration engine.î
+- **IQ 1:1 Premium ó $499**  
   Everything in Pro + 4 private coaching sessions with me.  
-  ‚ÄúPersonalised fastest path.‚Äù
+  ìPersonalised fastest path.î
 
 > **Note:** This is **performance and self-regulation training**, not diagnosis or a medical device.
 
@@ -71,7 +71,7 @@ This is how ‚Äúinsight‚Äù becomes a repeatable operator rather than a one-off mo
 
 ## 3) Four-phase development plan  
 
-### Phase 1 ‚Äî Deliver now (hybrid stack)
+### Phase 1 ó Deliver now (hybrid stack)
 
 - N-back games delivered via the **legacy Adobe AIR desktop app** (downloadable).
 - Web apps on GitHub Pages provide:
@@ -80,25 +80,25 @@ This is how ‚Äúinsight‚Äù becomes a repeatable operator rather than a one-off mo
   - Capacity/Mindware coaches that guide the loop, log progress, and bridge training into real life
 - Data storage: **localStorage** (+ simple export)
 
-### Phase 2 ‚Äî Replace AIR with web relational n-backs
+### Phase 2 ó Replace AIR with web relational n-backs
 
 - AIR app retired (or kept as optional legacy)
-- Add **3‚Äì4 relational n-back** web apps (GitHub Pages hosted)
+- Add **3ñ4 relational n-back** web apps (GitHub Pages hosted)
 - Integrate them into the same session routing:
-  - Zone gate ‚Üí training block(s) ‚Üí micro-log ‚Üí optional mindware capture
+  - Zone gate ? training block(s) ? micro-log ? optional mindware capture
 
-### Phase 3 ‚Äî Platform upgrade (auth + DB + commerce)
+### Phase 3 ó Platform upgrade (auth + DB + commerce)
 
 - Add **Supabase** (or equivalent) for:
   - user accounts (email/password)
   - subscription gating
   - centralised telemetry + dashboards
   - cohort/coaching features
-- Keep ‚Äúlocal-first‚Äù principles where possible (privacy + resilience), but stop relying on localStorage for core tracking.
+- Keep ìlocal-firstî principles where possible (privacy + resilience), but stop relying on localStorage for core tracking.
 
-### Phase 4 ‚Äî Derive Trident-G-Resilience from the IQ platform
+### Phase 4 ó Derive Trident-G-Resilience from the IQ platform
 
-- Use the now-stable Trident-G-IQ platform (Phases 1‚Äì3) as the **shared base**.
+- Use the now-stable Trident-G-IQ platform (Phases 1ñ3) as the **shared base**.
 - Create the **Resilience product variant** by swapping **content and configuration**, not by rewriting apps:
   - Capacity training uses **resilience-oriented n-back variants** (e.g., emotional/interoceptive load management) rather than IQ-oriented relational sets.
   - Mindware packs shift towards **self-regulation and reframing operators** (burnout/anxiety contexts, re-entry under stress, coping planning, etc.).
@@ -113,11 +113,11 @@ This is how ‚Äúinsight‚Äù becomes a repeatable operator rather than a one-off mo
 ## 4) Architecture: the shared Trident-G loop (how apps fit together)
 
 **Universal loop unit (runs at micro/meso/macro scales):**  
-**Gate ‚Üí Frame ‚Üí Map ‚Üí Choose mode ‚Üí Test ‚Üí Update ‚Üí Compile (or reframe)**
+**Gate ? Frame ? Map ? Choose mode ? Test ? Update ? Compile (or reframe)**
 
 ### Gate (MVP deliverables)
 
-Gate is not just ‚Äúhow you feel‚Äù. It is a small, explicit control layer that prevents panic-grind and avoidant wandering.
+Gate is not just ìhow you feelî. It is a small, explicit control layer that prevents panic-grind and avoidant wandering.
 
 At minimum, Gate records:
 - `corridorState` (`too_hot | in_band | too_cold | shaky`)
@@ -134,11 +134,11 @@ At minimum, Gate records:
 - **Capacity Coach (training hub)**  
   Type-1 primitives that make operators cheaper to run: interference control, updating/switching, calibration, relational fluency.
 - **Mindware Coach**  
-  Type-2 operator installation: map/tether ‚Üí discriminating test ‚Üí compression into a portable card ‚Üí portability checks ‚Üí cue-fired mission.
+  Type-2 operator installation: map/tether ? discriminating test ? compression into a portable card ? portability checks ? cue-fired mission.
 - **Tracking Battery**  
-  Pre/post and longitudinal probes for ‚Äúdifference reports‚Äù (not just in-app scores).
+  Pre/post and longitudinal probes for ìdifference reportsî (not just in-app scores).
 
-### ‚ÄúTransfer tether‚Äù (portable invariant Y)
+### ìTransfer tetherî (portable invariant Y)
 
 To make far transfer auditable, Mindware Coach (and occasionally Capacity Coach) asks for a one-line **transfer tether**:
 
@@ -150,7 +150,7 @@ This becomes the anchor for portability checks and delayed re-checks.
 
 ## 5) Repo layout (root)
 
-This repo is organised as a **single ‚Äúplatform root‚Äù** with shared assets and two product ‚Äúsites‚Äù.
+This repo is organised as a **single ìplatform rootî** with shared assets and two product ìsitesî.
 
 > The folder tree below is a **code block** on purpose so it stays visually distinct from the README headings and text.
 
@@ -163,13 +163,13 @@ trident-g-platform/
     Trident-Icon.svg
     ...
 
-  shared/                        # Shared code/data used by both products (Phase 1‚Äì2: lightweight)
+  shared/                        # Shared code/data used by both products (Phase 1ñ2: lightweight)
     lib/                         # Shared JS helpers (storage keys, logging, routing, UI helpers)
     schemas/                     # JSON schemas for logs, scenario packs, exports
     content/                     # Shared copy blocks, legal/disclaimer snippets, onboarding text
 
   products/
-    trident-g-iq/                # ‚ÄúIQ‚Äù product site (GitHub Pages path)
+    trident-g-iq/                # ìIQî product site (GitHub Pages path)
       index.html                 # IQ hub entry
       apps/                      # IQ app suite
         zone-coach/              # Zone Coach (shared app, IQ skin)
@@ -185,7 +185,7 @@ trident-g-platform/
         edhs/
       docs/                      # Product-specific notes, release notes, research notes
 
-    trident-g-recovery/          # ‚ÄúResilience‚Äù product site (GitHub Pages path)
+    trident-g-recovery/          # ìResilienceî product site (GitHub Pages path)
       index.html                 # Resilience hub entry
       apps/
         zone-coach/              # Same engine, resilience framing + prompts
@@ -201,7 +201,7 @@ trident-g-platform/
     iq-assessments/              # Old repo/path mirrors with meta refresh + location.replace
     ...
 
-  tools/                         # Dev utilities (optional in Phase 1‚Äì2)
+  tools/                         # Dev utilities (optional in Phase 1ñ2)
     scripts/                     # Build/copy scripts for shared assets, pack versioning, export helpers
     qa/                          # Link checklists, smoke-test steps, release checklists
 ````
@@ -218,7 +218,7 @@ trident-g-platform/
 
 ---
 
-## 6) Data model (Phase 1‚Äì2: local-first)
+## 6) Data model (Phase 1ñ2: local-first)
 
 ### Local storage (MVP)
 
@@ -232,7 +232,7 @@ trident-g-platform/
 * stop rule fired (`stopRuleFired`) + reason (`stopRuleReason`)
 * mode choice (explore/exploit)
 * task results and drift markers
-* mindware card outputs (trigger ‚Üí steps ‚Üí self-check ‚Üí near-miss/boundary)
+* mindware card outputs (trigger ? steps ? self-check ? near-miss/boundary)
 * transfer tether (`tetherY`)
 * end-of-block drift summary:
 
@@ -248,7 +248,7 @@ trident-g-platform/
 
 Keep the same schemas, change the sink:
 
-* local-first buffering ‚Üí sync when signed in
+* local-first buffering ? sync when signed in
 * cohort dashboards + coaching review tools
 
 ---
@@ -282,7 +282,7 @@ If needed later: split into separate repos, but keep this mono-root while iterat
 
 ### Phase 2
 
-* Ship 3‚Äì4 relational n-back web apps
+* Ship 3ñ4 relational n-back web apps
 * Integrate with Zone gating + session routing
 * Add portability probes + delayed re-check flows
 
@@ -306,13 +306,13 @@ Ship Trident-G-Resilience as a profile-driven variant:
 
 * This platform is for **performance and self-regulation training**, not diagnosis.
 * Biosignals (HR/HRV) are treated as **sensitive** and should be minimised, consented, and optional.
-* Stop rules and dose control are built in to avoid ‚Äúpanic-grind‚Äù and avoidant wandering.
+* Stop rules and dose control are built in to avoid ìpanic-grindî and avoidant wandering.
 
 ---
 
 ## 10) Licence and ownership
 
-* ¬© Mark Ashton Smith / Mindware Lab. All rights reserved unless stated otherwise.
+* © Mark Ashton Smith / Mindware Lab. All rights reserved unless stated otherwise.
 * Third-party libraries retain their own licences.
 
 ---
@@ -323,7 +323,7 @@ Ship Trident-G-Resilience as a profile-driven variant:
 * **State drift:** sliding out of the band (hot/cold/volatile).
 * **Wrapper:** the surface format of a task or situation.
 * **Far transfer:** a skill that still works after the wrapper changes.
-* **Mindware card:** a compact reusable tool (trigger ‚Üí steps ‚Üí self-check ‚Üí boundary).
+* **Mindware card:** a compact reusable tool (trigger ? steps ? self-check ? boundary).
 
 ```
 ::contentReference[oaicite:0]{index=0}
