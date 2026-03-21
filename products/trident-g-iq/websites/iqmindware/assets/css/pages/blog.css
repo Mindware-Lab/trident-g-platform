@@ -200,6 +200,13 @@ body.blog    { background: var(--pg-alt); }
   font-size: clamp(22px, 3vw, 38px);
   font-weight: 800; letter-spacing: -.022em; line-height: 1.1; color: var(--tl); margin-bottom: 14px;
 }
+.bl-article-subtitle {
+  font-size: 15px;
+  color: var(--tlm);
+  line-height: 1.7;
+  max-width: 74ch;
+  margin: 0 0 14px;
+}
 .bl-article-meta-row {
   display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
   padding: 12px 0; border-top: 1px solid rgba(0,0,0,.08); border-bottom: 1px solid rgba(0,0,0,.08);
