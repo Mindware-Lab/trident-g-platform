@@ -245,6 +245,9 @@ body.blog    { background: var(--pg-alt); }
   background: #fff;
   padding: 10px;
 }
+.bl-article-lead-img--raven {
+  max-height: min(62vh, 460px);
+}
 .bl-article-lead-cap {
   margin-top: 8px;
   font-family: 'DM Mono', monospace;
