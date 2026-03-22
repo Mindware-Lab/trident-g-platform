@@ -1,0 +1,1291 @@
+{
+  "generated_at": "2026-03-22T11:27:20.716002+00:00",
+  "canonical_host": "https://www.iqmindware.com",
+  "mirror_public_redirects": false,
+  "known_strip_allowlist": [
+    "admitad_uid",
+    "advcake_params",
+    "amp",
+    "cat",
+    "erid",
+    "goback",
+    "hop",
+    "noamp",
+    "source",
+    "utm_campaign",
+    "utm_content",
+    "utm_medium",
+    "utm_source",
+    "utm_term"
+  ],
+  "rules": [
+    {
+      "match_type": "exact",
+      "old_path": "/",
+      "action": "normalize_query",
+      "target_path": "/",
+      "strip_params": [
+        "hop"
+      ],
+      "notes": "strip legacy hop param on home"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/trident-brain-training/intelligence-research/the-bell-curve-cognitive-elites/",
+      "action": "301",
+      "target_path": "/learn/blog/the-bell-curve-cognitive-elites/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy article"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/intelligence-trackers/iq-tests/how-to-do-a-raven-matrices-test/",
+      "action": "301",
+      "target_path": "/learn/blog/how-to-do-a-raven-matrices-test/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy article"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/improve-executive-control/capacity-training/training-strategies/",
+      "action": "301",
+      "target_path": "/learn/blog/dual-n-back-training-strategies/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy article"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/wiki/what-is-an-iq-score-what-does-my-iq-score-mean/",
+      "action": "301",
+      "target_path": "/learn/wiki/what-does-my-iq-score-mean/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy wiki entry"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/123-sigma-rule/",
+      "action": "301",
+      "target_path": "/learn/blog/123-sigma-rule/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy article"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/increase-cognitive-resilience/emotional-dual-n-back-science/",
+      "action": "301",
+      "target_path": "/learn/blog/emotional-dual-n-back-science/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy article"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/trident-brain-training/intelligence-research/jordan-peterson-iq/",
+      "action": "301",
+      "target_path": "/learn/blog/jordan-peterson-iq/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy article"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/brain-training-plan/",
+      "action": "301",
+      "target_path": "/pricing/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy pricing"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/mark-ashton-smith-ph-d/",
+      "action": "301",
+      "target_path": "/about/#founder",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped founder profile"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/iq-mindware-about/",
+      "action": "301",
+      "target_path": "/about/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped about page"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/blog/",
+      "action": "301",
+      "target_path": "/learn/blog/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source",
+        "tag"
+      ],
+      "notes": "mapped legacy blog hub"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/blog/the-bell-curve-cognitive-elites/",
+      "action": "301",
+      "target_path": "/learn/blog/the-bell-curve-cognitive-elites/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy blog article"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/wiki/",
+      "action": "301",
+      "target_path": "/learn/wiki/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy wiki hub"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/wiki/what-is-bioenergetics/",
+      "action": "301",
+      "target_path": "/learn/wiki/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/wiki/what-is-processing-speed/",
+      "action": "301",
+      "target_path": "/learn/wiki/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/wiki/what-is-the-g-factor/",
+      "action": "301",
+      "target_path": "/learn/wiki/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/wiki/what-is-visual-intelligence/",
+      "action": "301",
+      "target_path": "/learn/wiki/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/cognitive-training-apps/emotional-dual-n-back/",
+      "action": "301",
+      "target_path": "/learn/blog/emotional-dual-n-back-science/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy emotional dual n back page to close successor"
+    },
+    {
+      "match_type": "exact",
+      "old_path": "/dual-n-back/",
+      "action": "301",
+      "target_path": "/learn/blog/dual-n-back-training-strategies/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy dual n back route to dedicated successor"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/tag/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired tag family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/category/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired category family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/product/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired product family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/blog/page/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired blog archive pages"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/blog/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired unmatched legacy blog paths"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/dual-n-back/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired dual n back legacy family"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/trident-brain-training/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired legacy brain training family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/improve-bioq/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired improve bioq family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/increase-iq/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired increase iq family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/intelligence-trackers/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired intelligence trackers family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/wiki/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired unmatched legacy wiki pages"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/brain-iq-science/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired legacy brain iq science family"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/cognitive-training-apps/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired cognitive training app legacy family"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/increase-fluid-intelligence-iq/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired fluid intelligence legacy family"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/research-opportunities/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired research opportunities legacy family"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/iq-tests/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired iq tests legacy family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/iq-training-goals/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired iq training goals legacy family"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/iqmindware-affiliates/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired affiliate legacy route"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/iq-mindware-app-testimonials/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired testimonials legacy route"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/iq-mindware-privacy-policy/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired privacy legacy route"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/can-you-increase-iq/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired can you increase iq legacy route"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/evidence-based-brain-training-for-iq/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired evidence based legacy route"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/far-transfer-brain-training/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired far transfer legacy route"
+    }
+  ],
+  "exact": {
+    "/": {
+      "match_type": "exact",
+      "old_path": "/",
+      "action": "normalize_query",
+      "target_path": "/",
+      "strip_params": [
+        "hop"
+      ],
+      "notes": "strip legacy hop param on home"
+    },
+    "/trident-brain-training/intelligence-research/the-bell-curve-cognitive-elites/": {
+      "match_type": "exact",
+      "old_path": "/trident-brain-training/intelligence-research/the-bell-curve-cognitive-elites/",
+      "action": "301",
+      "target_path": "/learn/blog/the-bell-curve-cognitive-elites/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy article"
+    },
+    "/intelligence-trackers/iq-tests/how-to-do-a-raven-matrices-test/": {
+      "match_type": "exact",
+      "old_path": "/intelligence-trackers/iq-tests/how-to-do-a-raven-matrices-test/",
+      "action": "301",
+      "target_path": "/learn/blog/how-to-do-a-raven-matrices-test/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy article"
+    },
+    "/improve-executive-control/capacity-training/training-strategies/": {
+      "match_type": "exact",
+      "old_path": "/improve-executive-control/capacity-training/training-strategies/",
+      "action": "301",
+      "target_path": "/learn/blog/dual-n-back-training-strategies/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy article"
+    },
+    "/wiki/what-is-an-iq-score-what-does-my-iq-score-mean/": {
+      "match_type": "exact",
+      "old_path": "/wiki/what-is-an-iq-score-what-does-my-iq-score-mean/",
+      "action": "301",
+      "target_path": "/learn/wiki/what-does-my-iq-score-mean/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy wiki entry"
+    },
+    "/123-sigma-rule/": {
+      "match_type": "exact",
+      "old_path": "/123-sigma-rule/",
+      "action": "301",
+      "target_path": "/learn/blog/123-sigma-rule/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy article"
+    },
+    "/increase-cognitive-resilience/emotional-dual-n-back-science/": {
+      "match_type": "exact",
+      "old_path": "/increase-cognitive-resilience/emotional-dual-n-back-science/",
+      "action": "301",
+      "target_path": "/learn/blog/emotional-dual-n-back-science/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy article"
+    },
+    "/trident-brain-training/intelligence-research/jordan-peterson-iq/": {
+      "match_type": "exact",
+      "old_path": "/trident-brain-training/intelligence-research/jordan-peterson-iq/",
+      "action": "301",
+      "target_path": "/learn/blog/jordan-peterson-iq/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy article"
+    },
+    "/brain-training-plan/": {
+      "match_type": "exact",
+      "old_path": "/brain-training-plan/",
+      "action": "301",
+      "target_path": "/pricing/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy pricing"
+    },
+    "/mark-ashton-smith-ph-d/": {
+      "match_type": "exact",
+      "old_path": "/mark-ashton-smith-ph-d/",
+      "action": "301",
+      "target_path": "/about/#founder",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped founder profile"
+    },
+    "/iq-mindware-about/": {
+      "match_type": "exact",
+      "old_path": "/iq-mindware-about/",
+      "action": "301",
+      "target_path": "/about/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped about page"
+    },
+    "/blog/": {
+      "match_type": "exact",
+      "old_path": "/blog/",
+      "action": "301",
+      "target_path": "/learn/blog/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source",
+        "tag"
+      ],
+      "notes": "mapped legacy blog hub"
+    },
+    "/blog/the-bell-curve-cognitive-elites/": {
+      "match_type": "exact",
+      "old_path": "/blog/the-bell-curve-cognitive-elites/",
+      "action": "301",
+      "target_path": "/learn/blog/the-bell-curve-cognitive-elites/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy blog article"
+    },
+    "/wiki/": {
+      "match_type": "exact",
+      "old_path": "/wiki/",
+      "action": "301",
+      "target_path": "/learn/wiki/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy wiki hub"
+    },
+    "/wiki/what-is-bioenergetics/": {
+      "match_type": "exact",
+      "old_path": "/wiki/what-is-bioenergetics/",
+      "action": "301",
+      "target_path": "/learn/wiki/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+    },
+    "/wiki/what-is-processing-speed/": {
+      "match_type": "exact",
+      "old_path": "/wiki/what-is-processing-speed/",
+      "action": "301",
+      "target_path": "/learn/wiki/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+    },
+    "/wiki/what-is-the-g-factor/": {
+      "match_type": "exact",
+      "old_path": "/wiki/what-is-the-g-factor/",
+      "action": "301",
+      "target_path": "/learn/wiki/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+    },
+    "/wiki/what-is-visual-intelligence/": {
+      "match_type": "exact",
+      "old_path": "/wiki/what-is-visual-intelligence/",
+      "action": "301",
+      "target_path": "/learn/wiki/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+    },
+    "/cognitive-training-apps/emotional-dual-n-back/": {
+      "match_type": "exact",
+      "old_path": "/cognitive-training-apps/emotional-dual-n-back/",
+      "action": "301",
+      "target_path": "/learn/blog/emotional-dual-n-back-science/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy emotional dual n back page to close successor"
+    },
+    "/dual-n-back/": {
+      "match_type": "exact",
+      "old_path": "/dual-n-back/",
+      "action": "301",
+      "target_path": "/learn/blog/dual-n-back-training-strategies/",
+      "strip_params": [
+        "amp",
+        "noamp",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+        "hop",
+        "cat",
+        "admitad_uid",
+        "advcake_params",
+        "erid",
+        "goback",
+        "source"
+      ],
+      "notes": "mapped legacy dual n back route to dedicated successor"
+    }
+  },
+  "prefix": [
+    {
+      "match_type": "prefix",
+      "old_path": "/evidence-based-brain-training-for-iq/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired evidence based legacy route"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/increase-fluid-intelligence-iq/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired fluid intelligence legacy family"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/iq-mindware-app-testimonials/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired testimonials legacy route"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/far-transfer-brain-training/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired far transfer legacy route"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/iq-mindware-privacy-policy/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired privacy legacy route"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/cognitive-training-apps/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired cognitive training app legacy family"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/trident-brain-training/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired legacy brain training family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/research-opportunities/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired research opportunities legacy family"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/intelligence-trackers/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired intelligence trackers family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/iqmindware-affiliates/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired affiliate legacy route"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/can-you-increase-iq/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired can you increase iq legacy route"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/iq-training-goals/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired iq training goals legacy family"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/brain-iq-science/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired legacy brain iq science family"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/improve-bioq/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired improve bioq family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/dual-n-back/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired dual n back legacy family"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/increase-iq/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired increase iq family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/blog/page/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired blog archive pages"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/category/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired category family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/iq-tests/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired iq tests legacy family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/product/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired product family without strong replacement"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/blog/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired unmatched legacy blog paths"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/wiki/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired unmatched legacy wiki pages"
+    },
+    {
+      "match_type": "prefix",
+      "old_path": "/tag/",
+      "action": "410",
+      "target_path": "",
+      "strip_params": [],
+      "notes": "retired tag family without strong replacement"
+    }
+  ]
+}

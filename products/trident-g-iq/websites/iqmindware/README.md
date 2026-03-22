@@ -58,6 +58,10 @@ Run:
 ```powershell
 python scripts/validate_contracts.py
 python scripts/audit_redirects.py
+node scripts/build-legacy-routing.mjs
+node scripts/validate-legacy-routing.mjs
+# Optional preview smoke test:
+node scripts/smoke-test-legacy-routing.mjs https://<preview-domain>
 ```
 
 The script checks mandatory copy, transparency links, pricing collapsed block, and forbidden claims terms.

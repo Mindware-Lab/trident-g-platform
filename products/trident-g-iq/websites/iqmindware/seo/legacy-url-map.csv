@@ -1,0 +1,49 @@
+﻿match_type,old_path,action,target_path,strip_params,notes
+exact,/,normalize_query,/,hop,strip legacy hop param on home
+exact,/app/,301,/tools/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,legacy app route
+exact,/membership/,301,/pricing/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,legacy pricing route
+exact,/refund-policy/,301,/refunds/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,legacy refund route
+exact,/g-tracker-validation/,301,/proof/g-tracker/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,legacy validation route
+exact,/insights/,301,/learn/blog/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,legacy insights route
+exact,/trident-brain-training/intelligence-research/the-bell-curve-cognitive-elites/,301,/learn/blog/the-bell-curve-cognitive-elites/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy article
+exact,/intelligence-trackers/iq-tests/how-to-do-a-raven-matrices-test/,301,/learn/blog/how-to-do-a-raven-matrices-test/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy article
+exact,/improve-executive-control/capacity-training/training-strategies/,301,/learn/blog/dual-n-back-training-strategies/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy article
+exact,/wiki/what-is-an-iq-score-what-does-my-iq-score-mean/,301,/learn/wiki/what-does-my-iq-score-mean/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy wiki entry
+exact,/123-sigma-rule/,301,/learn/blog/123-sigma-rule/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy article
+exact,/increase-cognitive-resilience/emotional-dual-n-back-science/,301,/learn/blog/emotional-dual-n-back-science/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy article
+exact,/trident-brain-training/intelligence-research/jordan-peterson-iq/,301,/learn/blog/jordan-peterson-iq/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy article
+exact,/brain-training-plan/,301,/pricing/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy pricing
+exact,/mark-ashton-smith-ph-d/,301,/about/#founder,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped founder profile
+exact,/iq-mindware-about/,301,/about/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped about page
+exact,/blog/,301,/learn/blog/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source|tag,mapped legacy blog hub
+exact,/blog/the-bell-curve-cognitive-elites/,301,/learn/blog/the-bell-curve-cognitive-elites/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy blog article
+exact,/wiki/,301,/learn/wiki/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy wiki hub
+exact,/wiki/what-is-bioenergetics/,301,/learn/wiki/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy wiki topic to closest live wiki explainer hub
+exact,/wiki/what-is-processing-speed/,301,/learn/wiki/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy wiki topic to closest live wiki explainer hub
+exact,/wiki/what-is-the-g-factor/,301,/learn/wiki/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy wiki topic to closest live wiki explainer hub
+exact,/wiki/what-is-visual-intelligence/,301,/learn/wiki/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy wiki topic to closest live wiki explainer hub
+exact,/cognitive-training-apps/emotional-dual-n-back/,301,/learn/blog/emotional-dual-n-back-science/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy emotional dual n back page to close successor
+exact,/dual-n-back/,301,/learn/blog/dual-n-back-training-strategies/,amp|noamp|utm_source|utm_medium|utm_campaign|utm_term|utm_content|hop|cat|admitad_uid|advcake_params|erid|goback|source,mapped legacy dual n back route to dedicated successor
+prefix,/tag/,410,,,retired tag family without strong replacement
+prefix,/category/,410,,,retired category family without strong replacement
+prefix,/product/,410,,,retired product family without strong replacement
+prefix,/blog/page/,410,,,retired blog archive pages
+prefix,/blog/,410,,,retired unmatched legacy blog paths
+prefix,/dual-n-back/,410,,,retired dual n back legacy family
+prefix,/trident-brain-training/,410,,,retired legacy brain training family without strong replacement
+prefix,/improve-bioq/,410,,,retired improve bioq family without strong replacement
+prefix,/increase-iq/,410,,,retired increase iq family without strong replacement
+prefix,/intelligence-trackers/,410,,,retired intelligence trackers family without strong replacement
+prefix,/wiki/,410,,,retired unmatched legacy wiki pages
+prefix,/brain-iq-science/,410,,,retired legacy brain iq science family
+prefix,/cognitive-training-apps/,410,,,retired cognitive training app legacy family
+prefix,/increase-fluid-intelligence-iq/,410,,,retired fluid intelligence legacy family
+prefix,/research-opportunities/,410,,,retired research opportunities legacy family
+prefix,/iq-tests/,410,,,retired iq tests legacy family without strong replacement
+prefix,/iq-training-goals/,410,,,retired iq training goals legacy family
+prefix,/iqmindware-affiliates/,410,,,retired affiliate legacy route
+prefix,/iq-mindware-app-testimonials/,410,,,retired testimonials legacy route
+prefix,/iq-mindware-privacy-policy/,410,,,retired privacy legacy route
+prefix,/can-you-increase-iq/,410,,,retired can you increase iq legacy route
+prefix,/evidence-based-brain-training-for-iq/,410,,,retired evidence based legacy route
+prefix,/far-transfer-brain-training/,410,,,retired far transfer legacy route
