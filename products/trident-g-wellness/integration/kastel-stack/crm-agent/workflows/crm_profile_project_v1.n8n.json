@@ -1,0 +1,29 @@
+{
+  "name": "crm_profile_project_v1",
+  "nodes": [
+    {"parameters":{},"id":"n1","name":"Manual Trigger","type":"n8n-nodes-base.manualTrigger","typeVersion":1,"position":[220,260]},
+    {"parameters":{"mode":"manual","assignments":{"assignments":[{"name":"workspace_id","value":"={{$env.WORKSPACE_ID || 'wellness_sa'}}","type":"string"},{"name":"mission_id","value":"={{$json.mission_id || ''}}","type":"string"},{"name":"run_id","value":"={{$json.run_id || ''}}","type":"string"}]}},"id":"n2","name":"Build Context","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[460,260]},
+    {
+      "parameters":{
+        "method":"POST",
+        "url":"={{$env.KERNEL_BASE_URL + '/kernel/crm/runs/' + $json.run_id + '/project-profile'}}",
+        "sendHeaders":true,
+        "headerParameters":{"parameters":[{"name":"Authorization","value":"={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"}]},
+        "sendBody":true,
+        "specifyBody":"json",
+        "jsonBody":"={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmProfileProjectionUpdated.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.crm.profile_projection.updated\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-profile-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"map\",\n  \"producer_domain\": \"n8n.crm.profile\",\n  \"consumer_domain\": \"kernel.crm.profile\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_profile_project_v1\"],\n  \"payload\": {\n    \"customer_key\": $json.customer_key || null,\n    \"fields_updated\": $json.fields_updated || []\n  }\n}"
+      },
+      "id":"n3","name":"Project Profile","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[760,260]
+    },
+    {"parameters":{"mode":"raw","jsonOutput":"={\"status\":\"ok\",\"note\":\"Profile projection updated.\"}"},"id":"n4","name":"Review Gate","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[1020,260]}
+  ],
+  "connections": {
+    "Manual Trigger": {"main": [[{"node":"Build Context","type":"main","index":0}]]},
+    "Build Context": {"main": [[{"node":"Project Profile","type":"main","index":0}]]},
+    "Project Profile": {"main": [[{"node":"Review Gate","type":"main","index":0}]]}
+  },
+  "active": false,
+  "settings": {"executionOrder":"v1"},
+  "pinData": {},
+  "versionId": "1"
+}

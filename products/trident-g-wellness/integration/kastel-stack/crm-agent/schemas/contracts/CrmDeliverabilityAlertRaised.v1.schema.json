@@ -1,0 +1,33 @@
+{
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "https://mindware-lab.github.io/schemas/contracts/CrmDeliverabilityAlertRaised.v1.schema.json",
+    "title":  "CrmDeliverabilityAlertRaised.v1",
+    "allOf":  [
+                  {
+                      "$ref":  "../crm-envelope.schema.json"
+                  },
+                  {
+                      "type":  "object",
+                      "properties":  {
+                                         "contract_name":  {
+                                                               "const":  "CrmDeliverabilityAlertRaised.v1"
+                                                           },
+                                         "contract_version":  {
+                                                                  "const":  "v1"
+                                                              },
+                                         "event_name":  {
+                                                            "const":  "ks.observe.metrics_recorded"
+                                                        },
+                                         "payload":  {
+                                                         "type":  "object",
+                                                         "required":  [
+                                                                          "alert_type",
+                                                                          "severity",
+                                                                          "message"
+                                                                      ],
+                                                         "additionalProperties":  true
+                                                     }
+                                     }
+                  }
+              ]
+}

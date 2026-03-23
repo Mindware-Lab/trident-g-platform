@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/crm-marketing-eligibility.schema.json",
+  "title": "CrmMarketingEligibility",
+  "type": "object",
+  "required": [
+    "customer_key",
+    "workspace_id",
+    "consent_state",
+    "marketing_eligibility"
+  ],
+  "properties": {
+    "customer_key": { "type": "string", "format": "uuid" },
+    "workspace_id": { "type": "string" },
+    "consent_state": { "type": "string" },
+    "consent_basis": { "type": "string" },
+    "consent_source": { "type": "string" },
+    "marketing_eligibility": {
+      "type": "string",
+      "enum": ["eligible", "suppressed_unsubscribed", "suppressed_bounced", "suppressed_complaint", "review_required", "transactional_only"]
+    },
+    "eligibility_reason": { "type": "string" }
+  },
+  "additionalProperties": false
+}

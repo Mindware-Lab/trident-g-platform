@@ -1,0 +1,140 @@
+{
+  "name": "crm_digest_gmail_v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "n1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [200, 260]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "name": "workspace_id",
+              "value": "={{$env.WORKSPACE_ID || 'wellness_sa'}}",
+              "type": "string"
+            },
+            {
+              "name": "mission_id",
+              "value": "={{$json.mission_id || ''}}",
+              "type": "string"
+            },
+            {
+              "name": "run_id",
+              "value": "={{$json.run_id || ''}}",
+              "type": "string"
+            },
+            {
+              "name": "top_n",
+              "value": 10,
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "id": "n2",
+      "name": "Build Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [430, 260]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/crm/runs/' + $json.run_id + '/summary?workspace_id=' + $json.workspace_id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        }
+      },
+      "id": "n3",
+      "name": "Fetch Summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 260]
+    },
+    {
+      "parameters": {
+        "jsCode": "const summary = $json || {};\nreturn [{json:{\n  subject: `CRM Weekly Digest - Run ${summary.run_id || ''}`,\n  body: `Profiles: ${summary.profile_count || 0} | Eligible: ${summary.eligible_count || 0} | Open conflicts: ${summary.conflict_open || 0}`,\n  workspace_id: summary.workspace_id || $env.WORKSPACE_ID || 'wellness_sa',\n  mission_id: summary.mission_id || '',\n  run_id: summary.run_id || '',\n  event_name: 'ks.observe.metrics_recorded',\n  contract_name: 'CrmDeliverabilityAlertRaised.v1',\n  contract_version: 'v1',\n  event_id: summary.run_id || '',\n  idempotency_key: `crm-digest-${summary.run_id || 'pending'}`,\n  risk_level: 'low',\n  psi_state: 'map',\n  producer_domain: 'n8n.crm.digest',\n  consumer_domain: 'kernel.crm.digest',\n  occurred_at: $now.toISO(),\n  trace_refs: ['n8n:crm_digest_gmail_v1'],\n  payload: {\n    alert_type: 'weekly_digest',\n    severity: 'info',\n    message: 'weekly crm digest prepared'\n  }\n}}];"
+      },
+      "id": "n4",
+      "name": "Build Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [930, 260]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\"note\":\"Attach to Gmail node\",\"to\":$env.GMAIL_TO,\"subject\":$json.subject,\"body\":$json.body}"
+      },
+      "id": "n5",
+      "name": "Gmail Adapter Note",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1180, 260]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Context": {
+      "main": [
+        [
+          {
+            "node": "Fetch Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Summary": {
+      "main": [
+        [
+          {
+            "node": "Build Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Digest": {
+      "main": [
+        [
+          {
+            "node": "Gmail Adapter Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "1"
+}

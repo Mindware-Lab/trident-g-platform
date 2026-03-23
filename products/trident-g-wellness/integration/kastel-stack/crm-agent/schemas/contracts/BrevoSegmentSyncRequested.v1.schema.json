@@ -1,0 +1,32 @@
+{
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "https://mindware-lab.github.io/schemas/contracts/BrevoSegmentSyncRequested.v1.schema.json",
+    "title":  "BrevoSegmentSyncRequested.v1",
+    "allOf":  [
+                  {
+                      "$ref":  "../crm-envelope.schema.json"
+                  },
+                  {
+                      "type":  "object",
+                      "properties":  {
+                                         "contract_name":  {
+                                                               "const":  "BrevoSegmentSyncRequested.v1"
+                                                           },
+                                         "contract_version":  {
+                                                                  "const":  "v1"
+                                                              },
+                                         "event_name":  {
+                                                            "const":  "ks.crm.brevo.sync_requested"
+                                                        },
+                                         "payload":  {
+                                                         "type":  "object",
+                                                         "required":  [
+                                                                          "segment_key",
+                                                                          "member_count"
+                                                                      ],
+                                                         "additionalProperties":  true
+                                                     }
+                                     }
+                  }
+              ]
+}

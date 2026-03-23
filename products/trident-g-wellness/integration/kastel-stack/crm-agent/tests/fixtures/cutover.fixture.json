@@ -1,0 +1,12 @@
+{
+  "metrics": {
+    "high_conflicts_open": 0,
+    "suppression_parity_verified": true,
+    "send_traceability_verified": true
+  },
+  "required": {
+    "high_conflicts_open_max": 0,
+    "suppression_parity_verified": true,
+    "send_traceability_verified": true
+  }
+}

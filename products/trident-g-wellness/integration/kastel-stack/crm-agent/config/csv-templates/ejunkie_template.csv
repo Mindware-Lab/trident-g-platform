@@ -1,0 +1,2 @@
+email,first_name,last_name,order_id,product_name,purchase_date,gross_amount,currency,payment_status
+jane@example.com,Jane,Doe,ej_987,Capacity Pack,2026-02-10,49.00,USD,paid

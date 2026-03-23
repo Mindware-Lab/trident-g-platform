@@ -1,0 +1,24 @@
+{
+  "name": "crm_sync_brevo_v1",
+  "nodes": [
+    {"parameters":{},"id":"n1","name":"Manual Trigger","type":"n8n-nodes-base.manualTrigger","typeVersion":1,"position":[200,260]},
+    {"parameters":{"mode":"manual","assignments":{"assignments":[{"name":"workspace_id","value":"={{$env.WORKSPACE_ID || 'wellness_sa'}}","type":"string"},{"name":"mission_id","value":"={{$json.mission_id || ''}}","type":"string"},{"name":"run_id","value":"={{$json.run_id || ''}}","type":"string"}]}},"id":"n2","name":"Build Context","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[430,260]},
+    {"parameters":{"method":"GET","url":"={{$env.KERNEL_BASE_URL + '/kernel/crm/runs/' + $json.run_id + '/intents?type=sync_contact_to_brevo'}}","sendHeaders":true,"headerParameters":{"parameters":[{"name":"Authorization","value":"={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"}]}},"id":"n3","name":"Fetch Sync Intents","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[680,260]},
+    {"parameters":{"jsCode":"const status = String($json.status || $json.gate_status || '').toLowerCase();\nif (status === 'approved' || status === 'auto_approved') { return [{json:$json}]; }\nreturn [];"},"id":"n4","name":"Filter Approved Intents","type":"n8n-nodes-base.code","typeVersion":2,"position":[930,260]},
+    {"parameters":{"method":"POST","url":"={{$env.BREVO_CONTACTS_ENDPOINT || 'https://api.brevo.com/v3/contacts'}}","sendHeaders":true,"headerParameters":{"parameters":[{"name":"api-key","value":"={{$env.BREVO_API_KEY}}"},{"name":"Content-Type","value":"application/json"}]},"sendBody":true,"specifyBody":"json","jsonBody":"={\n  \"email\": $json.email,\n  \"attributes\": $json.attributes || {},\n  \"updateEnabled\": true\n}"},"id":"n5","name":"Sync Contact to Brevo","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[1180,260]},
+    {"parameters":{"method":"POST","url":"={{$env.KERNEL_BASE_URL + '/kernel/crm/brevo/sync/log'}}","sendHeaders":true,"headerParameters":{"parameters":[{"name":"Authorization","value":"={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"}]},"sendBody":true,"specifyBody":"json","jsonBody":"={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"BrevoContactSynced.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.crm.brevo.synced\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-brevo-sync-\" + $json.run_id + \"-\" + ($json.id || \"contact\"),\n  \"risk_level\": \"low\",\n  \"psi_state\": \"execute\",\n  \"producer_domain\": \"n8n.crm.sync\",\n  \"consumer_domain\": \"kernel.crm.sync\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_sync_brevo_v1\"],\n  \"payload\": {\n    \"customer_key\": $json.customer_key || null,\n    \"brevo_contact_id\": $json.id || null,\n    \"status\": \"synced\"\n  }\n}"},"id":"n6","name":"Record Sync Event","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[1430,260]},
+    {"parameters":{"mode":"raw","jsonOutput":"={\"status\":\"ok\",\"note\":\"Brevo sync completed for approved intents only.\"}"},"id":"n7","name":"Review Gate","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[1680,260]}
+  ],
+  "connections": {
+    "Manual Trigger": {"main": [[{"node":"Build Context","type":"main","index":0}]]},
+    "Build Context": {"main": [[{"node":"Fetch Sync Intents","type":"main","index":0}]]},
+    "Fetch Sync Intents": {"main": [[{"node":"Filter Approved Intents","type":"main","index":0}]]},
+    "Filter Approved Intents": {"main": [[{"node":"Sync Contact to Brevo","type":"main","index":0}]]},
+    "Sync Contact to Brevo": {"main": [[{"node":"Record Sync Event","type":"main","index":0}]]},
+    "Record Sync Event": {"main": [[{"node":"Review Gate","type":"main","index":0}]]}
+  },
+  "active": false,
+  "settings": {"executionOrder":"v1"},
+  "pinData": {},
+  "versionId": "1"
+}

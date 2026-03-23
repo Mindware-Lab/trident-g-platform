@@ -1,0 +1,33 @@
+{
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "https://mindware-lab.github.io/schemas/contracts/CrmSourceBatchReceived.v1.schema.json",
+    "title":  "CrmSourceBatchReceived.v1",
+    "allOf":  [
+                  {
+                      "$ref":  "../crm-envelope.schema.json"
+                  },
+                  {
+                      "type":  "object",
+                      "properties":  {
+                                         "contract_name":  {
+                                                               "const":  "CrmSourceBatchReceived.v1"
+                                                           },
+                                         "contract_version":  {
+                                                                  "const":  "v1"
+                                                              },
+                                         "event_name":  {
+                                                            "const":  "ks.crm.source.received"
+                                                        },
+                                         "payload":  {
+                                                         "type":  "object",
+                                                         "required":  [
+                                                                          "source_system",
+                                                                          "batch_size",
+                                                                          "records"
+                                                                      ],
+                                                         "additionalProperties":  true
+                                                     }
+                                     }
+                  }
+              ]
+}

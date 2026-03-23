@@ -1,0 +1,8 @@
+{
+  "records": [
+    {"workspace_id":"wellness_sa","run_id":"r1","idempotency_key":"k1"},
+    {"workspace_id":"wellness_sa","run_id":"r1","idempotency_key":"k2"},
+    {"workspace_id":"wellness_sa","run_id":"r1","idempotency_key":"k1"}
+  ],
+  "expected_unique": 2
+}

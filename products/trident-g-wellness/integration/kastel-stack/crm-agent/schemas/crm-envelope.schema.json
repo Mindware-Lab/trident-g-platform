@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/crm-envelope.schema.json",
+  "title": "CrmLaneEventEnvelope",
+  "type": "object",
+  "required": [
+    "contract_name",
+    "contract_version",
+    "event_name",
+    "event_id",
+    "idempotency_key",
+    "workspace_id",
+    "mission_id",
+    "run_id",
+    "risk_level",
+    "psi_state",
+    "producer_domain",
+    "consumer_domain",
+    "occurred_at",
+    "trace_refs",
+    "payload"
+  ],
+  "properties": {
+    "contract_name": { "type": "string", "minLength": 3 },
+    "contract_version": { "type": "string", "pattern": "^v[0-9]+$" },
+    "event_name": { "type": "string", "pattern": "^ks\\.[a-z0-9_.]+$" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "idempotency_key": { "type": "string", "minLength": 8 },
+    "workspace_id": { "type": "string", "minLength": 2 },
+    "mission_id": { "type": "string", "format": "uuid" },
+    "run_id": { "type": "string", "format": "uuid" },
+    "risk_level": { "type": "string", "enum": ["low", "medium", "high"] },
+    "psi_state": {
+      "type": "string",
+      "enum": ["salience", "lens", "map", "explore", "probe", "commit", "execute", "swap"]
+    },
+    "producer_domain": { "type": "string", "minLength": 2 },
+    "consumer_domain": { "type": "string", "minLength": 2 },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "trace_refs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "default": []
+    },
+    "payload": { "type": "object" }
+  },
+  "additionalProperties": false
+}

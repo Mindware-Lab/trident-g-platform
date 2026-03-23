@@ -1,0 +1,9 @@
+{
+  "intents": [
+    {"status":"approved","should_dispatch":true},
+    {"status":"auto_approved","should_dispatch":true},
+    {"status":"draft","should_dispatch":false},
+    {"status":"pending_approval","should_dispatch":false},
+    {"status":"rejected","should_dispatch":false}
+  ]
+}

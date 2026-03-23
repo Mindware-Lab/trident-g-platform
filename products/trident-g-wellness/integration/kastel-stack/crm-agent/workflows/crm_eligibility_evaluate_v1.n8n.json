@@ -1,0 +1,29 @@
+{
+  "name": "crm_eligibility_evaluate_v1",
+  "nodes": [
+    {"parameters":{},"id":"n1","name":"Manual Trigger","type":"n8n-nodes-base.manualTrigger","typeVersion":1,"position":[220,260]},
+    {"parameters":{"mode":"manual","assignments":{"assignments":[{"name":"workspace_id","value":"={{$env.WORKSPACE_ID || 'wellness_sa'}}","type":"string"},{"name":"mission_id","value":"={{$json.mission_id || ''}}","type":"string"},{"name":"run_id","value":"={{$json.run_id || ''}}","type":"string"}]}},"id":"n2","name":"Build Context","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[460,260]},
+    {
+      "parameters":{
+        "method":"POST",
+        "url":"={{$env.KERNEL_BASE_URL + '/kernel/crm/runs/' + $json.run_id + '/evaluate-eligibility'}}",
+        "sendHeaders":true,
+        "headerParameters":{"parameters":[{"name":"Authorization","value":"={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"}]},
+        "sendBody":true,
+        "specifyBody":"json",
+        "jsonBody":"={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmEligibilityEvaluated.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.crm.eligibility.evaluated\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-eligibility-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"probe\",\n  \"producer_domain\": \"n8n.crm.eligibility\",\n  \"consumer_domain\": \"kernel.crm.eligibility\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_eligibility_evaluate_v1\"],\n  \"payload\": {\n    \"customer_key\": $json.customer_key || null,\n    \"marketing_eligibility\": $json.marketing_eligibility || \"review_required\",\n    \"eligibility_reason\": $json.eligibility_reason || \"projection\"\n  }\n}"
+      },
+      "id":"n3","name":"Evaluate Eligibility","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[760,260]
+    },
+    {"parameters":{"mode":"raw","jsonOutput":"={\"status\":\"ok\",\"note\":\"Eligibility updated.\"}"},"id":"n4","name":"Review Gate","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[1020,260]}
+  ],
+  "connections": {
+    "Manual Trigger": {"main": [[{"node":"Build Context","type":"main","index":0}]]},
+    "Build Context": {"main": [[{"node":"Evaluate Eligibility","type":"main","index":0}]]},
+    "Evaluate Eligibility": {"main": [[{"node":"Review Gate","type":"main","index":0}]]}
+  },
+  "active": false,
+  "settings": {"executionOrder":"v1"},
+  "pinData": {},
+  "versionId": "1"
+}

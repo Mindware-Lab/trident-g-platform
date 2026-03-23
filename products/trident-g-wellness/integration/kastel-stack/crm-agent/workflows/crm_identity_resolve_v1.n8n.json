@@ -1,0 +1,36 @@
+{
+  "name": "crm_identity_resolve_v1",
+  "nodes": [
+    {"parameters":{},"id":"n1","name":"Manual Trigger","type":"n8n-nodes-base.manualTrigger","typeVersion":1,"position":[220,260]},
+    {
+      "parameters":{"mode":"manual","assignments":{"assignments":[
+        {"name":"workspace_id","value":"={{$env.WORKSPACE_ID || 'wellness_sa'}}","type":"string"},
+        {"name":"mission_id","value":"={{$json.mission_id || ''}}","type":"string"},
+        {"name":"run_id","value":"={{$json.run_id || ''}}","type":"string"}
+      ]}},
+      "id":"n2","name":"Build Context","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[460,260]
+    },
+    {
+      "parameters":{
+        "method":"POST",
+        "url":"={{$env.KERNEL_BASE_URL + '/kernel/crm/runs/' + $json.run_id + '/resolve'}}",
+        "sendHeaders":true,
+        "headerParameters":{"parameters":[{"name":"Authorization","value":"={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"}]},
+        "sendBody":true,
+        "specifyBody":"json",
+        "jsonBody":"={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmIdentityResolved.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.crm.identity.resolved\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-identity-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"probe\",\n  \"producer_domain\": \"n8n.crm.identity\",\n  \"consumer_domain\": \"kernel.crm.identity\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_identity_resolve_v1\"],\n  \"payload\": {\n    \"resolved_count\": Number($json.resolved_count || 0),\n    \"conflict_count\": Number($json.conflict_count || 0)\n  }\n}"
+      },
+      "id":"n3","name":"Resolve Identity","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[760,260]
+    },
+    {"parameters":{"mode":"raw","jsonOutput":"={\"status\":\"ok\",\"note\":\"Identity resolved. Review crm_conflict_review_queue.\"}"},"id":"n4","name":"Review Gate","type":"n8n-nodes-base.set","typeVersion":3.4,"position":[1020,260]}
+  ],
+  "connections": {
+    "Manual Trigger": {"main": [[{"node":"Build Context","type":"main","index":0}]]},
+    "Build Context": {"main": [[{"node":"Resolve Identity","type":"main","index":0}]]},
+    "Resolve Identity": {"main": [[{"node":"Review Gate","type":"main","index":0}]]}
+  },
+  "active": false,
+  "settings": {"executionOrder":"v1"},
+  "pinData": {},
+  "versionId": "1"
+}

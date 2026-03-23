@@ -1,0 +1,44 @@
+[
+  {
+    "contract_name": "CrmSourceBatchReceived.v1",
+    "contract_version": "v1",
+    "event_name": "ks.crm.source.received",
+    "event_id": "11111111-1111-4111-8111-111111111111",
+    "idempotency_key": "crm-source-run-2026-03-23",
+    "workspace_id": "wellness_sa",
+    "mission_id": "22222222-2222-4222-8222-222222222222",
+    "run_id": "33333333-3333-4333-8333-333333333333",
+    "risk_level": "low",
+    "psi_state": "map",
+    "producer_domain": "n8n.crm.collect",
+    "consumer_domain": "kernel.crm.ingest",
+    "occurred_at": "2026-03-23T10:00:00Z",
+    "trace_refs": ["n8n:crm_collect_sources_v1"],
+    "payload": {
+      "source_system": "manual_csv",
+      "batch_size": 3,
+      "records": [{"email":"a@example.com"}]
+    }
+  },
+  {
+    "contract_name": "CrmEligibilityEvaluated.v1",
+    "contract_version": "v1",
+    "event_name": "ks.crm.eligibility.evaluated",
+    "event_id": "44444444-4444-4444-8444-444444444444",
+    "idempotency_key": "crm-eligibility-run-2026-03-23",
+    "workspace_id": "wellness_sa",
+    "mission_id": "22222222-2222-4222-8222-222222222222",
+    "run_id": "33333333-3333-4333-8333-333333333333",
+    "risk_level": "low",
+    "psi_state": "probe",
+    "producer_domain": "n8n.crm.eligibility",
+    "consumer_domain": "kernel.crm.eligibility",
+    "occurred_at": "2026-03-23T10:05:00Z",
+    "trace_refs": ["n8n:crm_eligibility_evaluate_v1"],
+    "payload": {
+      "customer_key": "55555555-5555-4555-8555-555555555555",
+      "marketing_eligibility": "eligible",
+      "eligibility_reason": "verified consent"
+    }
+  }
+]

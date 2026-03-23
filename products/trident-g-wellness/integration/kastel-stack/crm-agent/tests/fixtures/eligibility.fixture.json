@@ -1,0 +1,10 @@
+{
+  "cases": [
+    {"state":"eligible","can_send_promotional":true},
+    {"state":"suppressed_unsubscribed","can_send_promotional":false},
+    {"state":"suppressed_bounced","can_send_promotional":false},
+    {"state":"suppressed_complaint","can_send_promotional":false},
+    {"state":"review_required","can_send_promotional":false},
+    {"state":"transactional_only","can_send_promotional":false}
+  ]
+}

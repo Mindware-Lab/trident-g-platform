@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/crm-profile-projection.schema.json",
+  "title": "CrmProfileProjection",
+  "type": "object",
+  "required": [
+    "customer_key",
+    "workspace_id",
+    "primary_email_normalized",
+    "lifecycle_state_projection",
+    "review_required",
+    "provenance_json"
+  ],
+  "properties": {
+    "customer_key": { "type": "string", "format": "uuid" },
+    "workspace_id": { "type": "string" },
+    "primary_email_normalized": { "type": "string" },
+    "first_name": { "type": "string" },
+    "last_name": { "type": "string" },
+    "source_flags_json": { "type": "object" },
+    "total_spend": { "type": "number", "minimum": 0 },
+    "purchase_count": { "type": "integer", "minimum": 0 },
+    "lifecycle_state_projection": { "type": "string" },
+    "review_required": { "type": "boolean" },
+    "provenance_json": { "type": "object" }
+  },
+  "additionalProperties": false
+}

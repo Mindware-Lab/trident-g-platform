@@ -1,0 +1,10 @@
+{
+  "inputs": [
+    {"email_raw":"Alice@Example.com","expected":"alice@example.com"},
+    {"email_raw":"  bob@example.com  ","expected":"bob@example.com"}
+  ],
+  "conflict_case": {
+    "same_email_conflicting_consent": true,
+    "expected_review_required": true
+  }
+}

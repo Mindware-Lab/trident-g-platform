@@ -1,0 +1,33 @@
+{
+  "workspace_id": "wellness_sa",
+  "mission_defaults": {
+    "mission_type": "crm_lifecycle_weekly",
+    "ingest_mode": "api_csv_hybrid",
+    "bootstrap_mode": "manual_csv_first"
+  },
+  "sources": {
+    "substack": {
+      "enabled": true,
+      "mode": "csv_first",
+      "api_enabled_after_bootstrap": true,
+      "csv_drop_pattern": "substack-subscribers-*.csv"
+    },
+    "podia": {
+      "enabled": true,
+      "mode": "csv_first",
+      "api_enabled_after_bootstrap": true,
+      "csv_drop_pattern": "podia-customers-*.csv"
+    },
+    "ejunkie": {
+      "enabled": true,
+      "mode": "csv_first",
+      "api_enabled_after_bootstrap": true,
+      "csv_drop_pattern": "ejunkie-orders-*.csv"
+    },
+    "brevo_pullback": {
+      "enabled": false,
+      "mode": "api",
+      "purpose": "reconciliation_only"
+    }
+  }
+}

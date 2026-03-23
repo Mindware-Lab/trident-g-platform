@@ -1,0 +1,27 @@
+{
+  "segment_definitions": [
+    {
+      "segment_key": "new_buyers",
+      "version": "v1",
+      "rule": "purchase_count > 0 and lifecycle_state_projection = 'new_unactivated'",
+      "priority": 1
+    },
+    {
+      "segment_key": "course_started_no_progress",
+      "version": "v1",
+      "rule": "last_activation_at is not null and last_progress_at is null",
+      "priority": 2
+    },
+    {
+      "segment_key": "lapsed_paid",
+      "version": "v1",
+      "rule": "purchase_count > 0 and lifecycle_state_projection in ('at_risk_14d','lapsed_paid')",
+      "priority": 3
+    }
+  ],
+  "retention_thresholds": {
+    "no_progress_days": 7,
+    "risk_14d_days": 14,
+    "retained_window_days": 30
+  }
+}

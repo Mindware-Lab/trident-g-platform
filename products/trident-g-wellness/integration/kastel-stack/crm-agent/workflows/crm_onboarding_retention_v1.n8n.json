@@ -1,0 +1,151 @@
+{
+  "name": "crm_onboarding_retention_v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "n1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [220, 260]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "name": "workspace_id",
+              "value": "={{$env.WORKSPACE_ID || 'wellness_sa'}}",
+              "type": "string"
+            },
+            {
+              "name": "mission_id",
+              "value": "={{$json.mission_id || ''}}",
+              "type": "string"
+            },
+            {
+              "name": "run_id",
+              "value": "={{$json.run_id || ''}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "n2",
+      "name": "Build Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 260]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/crm/runs/' + $json.run_id + '/intents/lifecycle'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"OnboardingSequenceTriggerRequested.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.intent.created\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-onboarding-intent-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"commit\",\n  \"producer_domain\": \"n8n.crm.lifecycle\",\n  \"consumer_domain\": \"kernel.crm.intent\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_onboarding_retention_v1\"],\n  \"payload\": {\n    \"customer_key\": $json.customer_key || null,\n    \"sequence_key\": \"onboarding_v1\",\n    \"intent_type\": \"trigger_onboarding_sequence\"\n  }\n}"
+      },
+      "id": "n3",
+      "name": "Create Lifecycle Intents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 260]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/crm/intents/gate'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"RetentionNudgeTriggerRequested.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.intent.created\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-retention-gate-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"commit\",\n  \"producer_domain\": \"n8n.crm.lifecycle\",\n  \"consumer_domain\": \"kernel.crm.intent_gate\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_onboarding_retention_v1\"],\n  \"payload\": {\n    \"intent_type\": \"trigger_retention_nudge\",\n    \"allow_auto\": [\"trigger_onboarding_sequence\"],\n    \"force_draft\": [\"trigger_retention_nudge\"],\n    \"force_escalate\": [\"consent_override\", \"suppression_override\"]\n  }\n}"
+      },
+      "id": "n4",
+      "name": "Gate Lifecycle Intents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1030, 260]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\"status\":\"ok\",\"note\":\"Lifecycle intents proposed and gated.\"}"
+      },
+      "id": "n5",
+      "name": "Review Gate",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1280, 260]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Context": {
+      "main": [
+        [
+          {
+            "node": "Create Lifecycle Intents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Lifecycle Intents": {
+      "main": [
+        [
+          {
+            "node": "Gate Lifecycle Intents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate Lifecycle Intents": {
+      "main": [
+        [
+          {
+            "node": "Review Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "1"
+}

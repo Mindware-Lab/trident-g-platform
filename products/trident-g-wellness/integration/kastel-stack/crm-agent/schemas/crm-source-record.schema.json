@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/crm-source-record.schema.json",
+  "title": "CrmSourceRecord",
+  "type": "object",
+  "required": [
+    "workspace_id",
+    "mission_id",
+    "run_id",
+    "source_system",
+    "source_record_id",
+    "record_type",
+    "payload_json",
+    "idempotency_key"
+  ],
+  "properties": {
+    "workspace_id": { "type": "string" },
+    "mission_id": { "type": "string", "format": "uuid" },
+    "run_id": { "type": "string", "format": "uuid" },
+    "source_system": { "type": "string", "enum": ["substack", "podia", "ejunkie", "brevo", "manual_csv"] },
+    "source_record_id": { "type": "string" },
+    "record_type": { "type": "string" },
+    "email_raw": { "type": "string" },
+    "payload_json": { "type": "object" },
+    "idempotency_key": { "type": "string", "minLength": 8 }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,29 @@
+{
+  "contact_attributes": {
+    "EXT_ID": "customer_key",
+    "EMAIL": "primary_email_normalized",
+    "FIRSTNAME": "first_name",
+    "LASTNAME": "last_name",
+    "SOURCE_FLAGS": "source_flags_json",
+    "PURCHASE_COUNT": "purchase_count",
+    "TOTAL_SPEND": "total_spend",
+    "LAST_PURCHASE_AT": "last_purchase_at",
+    "LAST_ACTIVATION_AT": "last_activation_at",
+    "LAST_PROGRESS_AT": "last_progress_at",
+    "LIFECYCLE_STATE": "lifecycle_state_projection",
+    "MARKETING_ELIGIBILITY": "marketing_eligibility",
+    "REVIEW_REQUIRED": "review_required",
+    "SEGMENT_KEYS": "segment_keys"
+  },
+  "required_for_send": [
+    "EXT_ID",
+    "EMAIL",
+    "MARKETING_ELIGIBILITY"
+  ],
+  "eligibility_blockers": [
+    "suppressed_unsubscribed",
+    "suppressed_bounced",
+    "suppressed_complaint",
+    "review_required"
+  ]
+}

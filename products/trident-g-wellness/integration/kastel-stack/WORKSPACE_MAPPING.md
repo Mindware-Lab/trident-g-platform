@@ -59,3 +59,73 @@ This module is review-gated and designed for:
 3. weighted issue scoring and diagnosis linked to `missions`/`runs`
 4. AI-assisted recommendations written to PR artifacts
 5. Action Intent-gated task creation into GitHub Projects
+
+## CRM Agent Module
+
+CRM automation for Brevo cutover and lifecycle control now lives in:
+
+- `products/trident-g-wellness/integration/kastel-stack/crm-agent/`
+
+### CRM Mission Types
+
+1. `crm_cutover_readiness`
+2. `crm_realtime_ingest`
+3. `crm_lifecycle_weekly`
+4. `crm_recheck_due`
+
+### CRM Contracts
+
+1. `CrmSourceBatchReceived.v1`
+2. `CrmIdentityResolved.v1`
+3. `CrmConflictQueued.v1`
+4. `CrmProfileProjectionUpdated.v1`
+5. `CrmEligibilityEvaluated.v1`
+6. `CrmSegmentProjectionUpdated.v1`
+7. `BrevoContactSyncRequested.v1`
+8. `BrevoContactSynced.v1`
+9. `BrevoSegmentSyncRequested.v1`
+10. `OnboardingSequenceTriggerRequested.v1`
+11. `RetentionNudgeTriggerRequested.v1`
+12. `CrmDispatchObserved.v1`
+13. `CrmConversionObserved.v1`
+14. `CrmRecheckCompleted.v1`
+15. `CrmDeliverabilityAlertRaised.v1`
+
+### CRM Events (append-only `events`)
+
+1. `ks.crm.source.received`
+2. `ks.crm.identity.resolved`
+3. `ks.crm.conflict.queued`
+4. `ks.crm.profile_projection.updated`
+5. `ks.crm.eligibility.evaluated`
+6. `ks.crm.segment_projection.updated`
+7. `ks.crm.brevo.sync_requested`
+8. `ks.crm.brevo.synced`
+9. `ks.crm.dispatch.observed`
+10. `ks.crm.conversion.observed`
+11. `ks.crm.recheck.completed`
+12. `ks.intent.created`
+13. `ks.execute.email_dispatched`
+14. `ks.observe.metrics_recorded`
+
+### CRM Workflow References
+
+1. `crm_collect_sources_v1.n8n.json`
+2. `crm_identity_resolve_v1.n8n.json`
+3. `crm_profile_project_v1.n8n.json`
+4. `crm_eligibility_evaluate_v1.n8n.json`
+5. `crm_sync_brevo_v1.n8n.json`
+6. `crm_segment_project_v1.n8n.json`
+7. `crm_onboarding_retention_v1.n8n.json`
+8. `crm_digest_gmail_v1.n8n.json`
+9. `crm_recheck_v1.n8n.json`
+
+### Shared CRM Intent Types
+
+1. `sync_contact_to_brevo`
+2. `sync_segment_to_brevo`
+3. `trigger_onboarding_sequence`
+4. `trigger_retention_nudge`
+5. `raise_deliverability_alert`
+6. `create_crm_review_task`
+7. `send_weekly_crm_digest`
