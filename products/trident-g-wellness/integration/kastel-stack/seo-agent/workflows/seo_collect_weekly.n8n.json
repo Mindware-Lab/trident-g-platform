@@ -1,5 +1,5 @@
 {
-  "name": "seo_collect_weekly",
+  "name": "seo_collect_weekly_deprecated",
   "nodes": [
     {
       "parameters": {
@@ -135,7 +135,7 @@
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "={\"note\":\"Review output from both normalization nodes. Next workflow can combine and write report files.\",\"next\":\"Run seo_keyword_expand after validating this snapshot.\"}"
+        "jsonOutput": "={\"note\":\"Deprecated by seo_collect_weekly_v2. Use mission/run envelopes and kernel ingest endpoint in the v2 workflow.\"}"
       },
       "id": "n7",
       "name": "Review Gate",

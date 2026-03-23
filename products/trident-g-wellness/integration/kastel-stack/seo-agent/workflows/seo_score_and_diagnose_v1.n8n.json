@@ -1,0 +1,207 @@
+{
+  "name": "seo_score_and_diagnose_v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "n1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "name": "workspace_id",
+              "value": "={{$env.WORKSPACE_ID || 'iqmindware'}}",
+              "type": "string"
+            },
+            {
+              "name": "mission_id",
+              "value": "={{$json.mission_id || $env.SEO_MISSION_ID || ''}}",
+              "type": "string"
+            },
+            {
+              "name": "run_id",
+              "value": "={{$json.run_id || $env.SEO_RUN_ID || ''}}",
+              "type": "string"
+            },
+            {
+              "name": "producer_domain",
+              "value": "seo_agent.n8n.scorer",
+              "type": "string"
+            },
+            {
+              "name": "consumer_domain",
+              "value": "kernel.seo.scoring",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "n2",
+      "name": "Build Scoring Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/seo/runs/' + $json.run_id + '/score'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"SeoScoresComputed.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.seo.score.computed\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"score-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"probe\",\n  \"producer_domain\": $json.producer_domain,\n  \"consumer_domain\": $json.consumer_domain,\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:seo_score_and_diagnose_v1\"],\n  \"payload\": {\n    \"mode\": \"kernel_scoring\",\n    \"run_id\": $json.run_id\n  }\n}"
+      },
+      "id": "n3",
+      "name": "Kernel Score Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        760,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/seo/runs/' + $json.run_id + '/recommend'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"SeoRecommendationsGenerated.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.seo.recommendation.generated\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"recommend-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"commit\",\n  \"producer_domain\": $json.producer_domain,\n  \"consumer_domain\": \"kernel.seo.recommend\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:seo_score_and_diagnose_v1\"],\n  \"payload\": {\n    \"bucket_types\": [\"near_win\", \"ctr_rescue\", \"decay_page\", \"hidden_winner\"]\n  }\n}"
+      },
+      "id": "n4",
+      "name": "Kernel Diagnose Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1030,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $json.rows || [];\nconst mapStatus = (v) => (v === true ? 'pass' : (v === false ? 'fail' : 'partial'));\nconst statusScore = { pass: 1, partial: 0.5, fail: 0 };\nconst fallback = rows.slice(0, 20).map((row, idx) => {\n  const status = mapStatus(row.pass);\n  const weight = Number(row.weight ?? 0.05);\n  const normalized = statusScore[status];\n  return {\n    rank: idx + 1,\n    bucket: row.bucket || 'near_win',\n    issue_type: row.issue_type || 'heuristic_fallback',\n    weighted_contribution: weight * normalized,\n    remaining_opportunity: weight * (1 - normalized)\n  };\n});\nreturn [{ json: {\n  mode: 'fallback_heuristic',\n  note: 'Use only when kernel score endpoint unavailable. Keep kernel contract shape stable.',\n  results: fallback\n}}];"
+      },
+      "id": "n5",
+      "name": "Fallback Heuristic Scorer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\"status\":\"draft_ready\",\"next\":\"Run seo_intent_and_tasking_v1\",\"enforcement\":\"Tasks must be created from approved action intents only.\"}"
+      },
+      "id": "n6",
+      "name": "Scoring Review Gate",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1300,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Scoring Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Scoring Context": {
+      "main": [
+        [
+          {
+            "node": "Kernel Score Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fallback Heuristic Scorer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kernel Score Request": {
+      "main": [
+        [
+          {
+            "node": "Kernel Diagnose Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kernel Diagnose Request": {
+      "main": [
+        [
+          {
+            "node": "Scoring Review Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fallback Heuristic Scorer": {
+      "main": [
+        [
+          {
+            "node": "Scoring Review Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "1"
+}

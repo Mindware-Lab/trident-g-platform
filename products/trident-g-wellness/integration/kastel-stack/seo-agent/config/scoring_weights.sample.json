@@ -1,4 +1,10 @@
 {
+  "mission_defaults": {
+    "mission_type": "seo_local_weekly",
+    "cadence": "weekly",
+    "rigour": "medium",
+    "stop_rule": "produce ranked fixes and three testable next actions"
+  },
   "weights": {
     "impressions": 0.25,
     "ctr_gap": 0.25,
@@ -9,6 +15,26 @@
   "thresholds": {
     "min_impressions": 100,
     "max_position_for_win": 8,
+    "bucket_rules": {
+      "near_win": {
+        "position_min": 4,
+        "position_max": 12,
+        "min_impressions": 150
+      },
+      "ctr_rescue": {
+        "position_min": 1,
+        "position_max": 10,
+        "ctr_gap_min": 0.02
+      },
+      "decay_page": {
+        "lookback_days": 56,
+        "impression_drop_min": 0.2
+      },
+      "hidden_winner": {
+        "position_max": 5,
+        "impression_growth_min": 0.15
+      }
+    },
     "target_ctr_by_position": {
       "1": 0.28,
       "2": 0.18,

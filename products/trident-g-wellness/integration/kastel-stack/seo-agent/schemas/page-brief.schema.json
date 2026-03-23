@@ -4,6 +4,9 @@
   "title": "PageKeywordBrief",
   "type": "object",
   "required": [
+    "workspace_id",
+    "mission_id",
+    "run_id",
     "page_url",
     "intent",
     "primary_keyword",
@@ -17,6 +20,9 @@
     "notes"
   ],
   "properties": {
+    "workspace_id": { "type": "string", "minLength": 2 },
+    "mission_id": { "type": "string", "format": "uuid" },
+    "run_id": { "type": "string", "format": "uuid" },
     "page_url": { "type": "string", "format": "uri" },
     "intent": { "type": "string", "enum": ["commercial", "informational", "navigational", "transactional"] },
     "primary_keyword": { "type": "string", "minLength": 2 },

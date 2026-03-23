@@ -1,0 +1,478 @@
+{
+  "name": "seo_collect_weekly_v2",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "n1",
+      "name": "Weekly Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "name": "workspace_id",
+              "value": "={{$env.WORKSPACE_ID || 'iqmindware'}}",
+              "type": "string"
+            },
+            {
+              "name": "site_id",
+              "value": "={{$env.SEO_SITE_ID || 'iqmindware-prod'}}",
+              "type": "string"
+            },
+            {
+              "name": "mission_type",
+              "value": "seo_local_weekly",
+              "type": "string"
+            },
+            {
+              "name": "mission_id",
+              "value": "={{$json.mission_id || $env.SEO_MISSION_ID || ''}}",
+              "type": "string"
+            },
+            {
+              "name": "run_id",
+              "value": "={{$json.run_id || $env.SEO_RUN_ID || ''}}",
+              "type": "string"
+            },
+            {
+              "name": "run_date",
+              "value": "={{$now.toISODate()}}",
+              "type": "string"
+            },
+            {
+              "name": "start_date",
+              "value": "={{$now.minus({ days: 28 }).toISODate()}}",
+              "type": "string"
+            },
+            {
+              "name": "end_date",
+              "value": "={{$now.minus({ days: 1 }).toISODate()}}",
+              "type": "string"
+            },
+            {
+              "name": "gsc_site_url_encoded",
+              "value": "={{encodeURIComponent($env.GSC_SITE_URL || 'sc-domain:iqmindware.com')}}",
+              "type": "string"
+            },
+            {
+              "name": "audit_url",
+              "value": "={{$env.SEO_AUDIT_URL || 'https://www.iqmindware.com/'}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "n2",
+      "name": "Build Runtime Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/seo/runs/start'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"site_id\": $json.site_id,\n  \"mission_type\": $json.mission_type,\n  \"mission_name\": $env.SEO_MISSION_NAME || 'Weekly local SEO optimisation',\n  \"window_start\": $json.start_date,\n  \"window_end\": $json.end_date,\n  \"contract_name\": \"SeoSignalBatchReceived.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.seo.run.started\",\n  \"event_id\": $json.event_id || (\"run-start-\" + $json.site_id + \"-\" + $json.run_date),\n  \"idempotency_key\": \"run-start-\" + $json.site_id + \"-\" + $json.run_date,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"salience\",\n  \"producer_domain\": \"seo_agent.n8n.collector\",\n  \"consumer_domain\": \"kernel.seo.run\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:seo_collect_weekly_v2\"],\n  \"payload\": {\n    \"site_id\": $json.site_id,\n    \"window_start\": $json.start_date,\n    \"window_end\": $json.end_date\n  }\n}"
+      },
+      "id": "n3",
+      "name": "Start Mission Run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        740,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://searchconsole.googleapis.com/webmasters/v3/sites/{{$json.gsc_site_url_encoded}}/searchAnalytics/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"startDate\": $json.start_date,\n  \"endDate\": $json.end_date,\n  \"dimensions\": [\"page\", \"query\"],\n  \"rowLimit\": 2500\n}"
+      },
+      "id": "n4",
+      "name": "GSC Search Analytics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1020,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.googleapis.com/pagespeedonline/v5/runPagespeed",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{$json.audit_url}}"
+            },
+            {
+              "name": "category",
+              "value": "performance"
+            },
+            {
+              "name": "strategy",
+              "value": "mobile"
+            },
+            {
+              "name": "key",
+              "value": "={{$env.PAGESPEED_API_KEY}}"
+            }
+          ]
+        }
+      },
+      "id": "n5",
+      "name": "PageSpeed Mobile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1020,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SEO_CRAWL_ENDPOINT}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"site_url\": $json.audit_url,\n  \"include_features\": [\"title\", \"h1\", \"word_count\", \"alt_coverage\", \"internal_links\", \"schema\", \"nap\"],\n  \"max_pages\": 250\n}"
+      },
+      "id": "n6",
+      "name": "Crawl Features",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1020,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $json.rows || [];\nconst eventId = $json.event_id || crypto.randomUUID();\nreturn [{json: {\n  contract_name: 'SeoSignalBatchReceived.v1',\n  contract_version: 'v1',\n  event_name: 'ks.seo.observation.recorded',\n  event_id: eventId,\n  idempotency_key: `gsc-${$json.run_id || 'pending'}-${$json.run_date || ''}`,\n  workspace_id: $json.workspace_id,\n  mission_id: $json.mission_id,\n  run_id: $json.run_id,\n  risk_level: 'low',\n  psi_state: 'map',\n  producer_domain: 'seo_agent.n8n.collector',\n  consumer_domain: 'kernel.seo.ingest',\n  occurred_at: $now.toISO(),\n  trace_refs: ['n8n:seo_collect_weekly_v2', 'source:gsc'],\n  payload: {\n    source_method: 'gsc',\n    batch_size: rows.length,\n    records: rows\n  }\n}}];"
+      },
+      "id": "n7",
+      "name": "Envelope GSC Signals",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1290,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $json || {};\nconst eventId = $json.event_id || crypto.randomUUID();\nreturn [{json: {\n  contract_name: 'SeoSignalBatchReceived.v1',\n  contract_version: 'v1',\n  event_name: 'ks.seo.observation.recorded',\n  event_id: eventId,\n  idempotency_key: `psi-${$json.run_id || 'pending'}-${$json.run_date || ''}`,\n  workspace_id: $json.workspace_id,\n  mission_id: $json.mission_id,\n  run_id: $json.run_id,\n  risk_level: 'low',\n  psi_state: 'map',\n  producer_domain: 'seo_agent.n8n.collector',\n  consumer_domain: 'kernel.seo.ingest',\n  occurred_at: $now.toISO(),\n  trace_refs: ['n8n:seo_collect_weekly_v2', 'source:pagespeed'],\n  payload: {\n    source_method: 'pagespeed',\n    batch_size: 1,\n    records: [result]\n  }\n}}];"
+      },
+      "id": "n8",
+      "name": "Envelope PageSpeed Signals",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1290,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $json || {};\nconst records = result.records || result.pages || [];\nconst eventId = $json.event_id || crypto.randomUUID();\nreturn [{json: {\n  contract_name: 'SeoSignalBatchReceived.v1',\n  contract_version: 'v1',\n  event_name: 'ks.seo.observation.recorded',\n  event_id: eventId,\n  idempotency_key: `crawl-${$json.run_id || 'pending'}-${$json.run_date || ''}`,\n  workspace_id: $json.workspace_id,\n  mission_id: $json.mission_id,\n  run_id: $json.run_id,\n  risk_level: 'low',\n  psi_state: 'map',\n  producer_domain: 'seo_agent.n8n.collector',\n  consumer_domain: 'kernel.seo.ingest',\n  occurred_at: $now.toISO(),\n  trace_refs: ['n8n:seo_collect_weekly_v2', 'source:crawl'],\n  payload: {\n    source_method: 'crawl',\n    batch_size: records.length,\n    records\n  }\n}}];"
+      },
+      "id": "n9",
+      "name": "Envelope Crawl Signals",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1290,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/seo/signals/batch'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}"
+      },
+      "id": "n10",
+      "name": "Post GSC Signals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1550,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/seo/signals/batch'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}"
+      },
+      "id": "n11",
+      "name": "Post PageSpeed Signals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1550,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/seo/signals/batch'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}"
+      },
+      "id": "n12",
+      "name": "Post Crawl Signals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1550,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\"status\":\"ok\",\"next\":\"Run seo_score_and_diagnose_v1\",\"note\":\"Signals ingested and envelope fields attached for kernel processing.\"}"
+      },
+      "id": "n13",
+      "name": "Collect Review Gate",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1800,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Weekly Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Runtime Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Runtime Config": {
+      "main": [
+        [
+          {
+            "node": "Start Mission Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Mission Run": {
+      "main": [
+        [
+          {
+            "node": "GSC Search Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PageSpeed Mobile",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Crawl Features",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSC Search Analytics": {
+      "main": [
+        [
+          {
+            "node": "Envelope GSC Signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PageSpeed Mobile": {
+      "main": [
+        [
+          {
+            "node": "Envelope PageSpeed Signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crawl Features": {
+      "main": [
+        [
+          {
+            "node": "Envelope Crawl Signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envelope GSC Signals": {
+      "main": [
+        [
+          {
+            "node": "Post GSC Signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envelope PageSpeed Signals": {
+      "main": [
+        [
+          {
+            "node": "Post PageSpeed Signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envelope Crawl Signals": {
+      "main": [
+        [
+          {
+            "node": "Post Crawl Signals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post GSC Signals": {
+      "main": [
+        [
+          {
+            "node": "Collect Review Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post PageSpeed Signals": {
+      "main": [
+        [
+          {
+            "node": "Collect Review Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Crawl Signals": {
+      "main": [
+        [
+          {
+            "node": "Collect Review Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "1"
+}

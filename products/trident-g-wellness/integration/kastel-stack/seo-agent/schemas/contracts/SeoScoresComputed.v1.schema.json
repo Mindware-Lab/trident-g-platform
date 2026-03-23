@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/contracts/SeoScoresComputed.v1.schema.json",
+  "title": "SeoScoresComputed.v1",
+  "allOf": [
+    {
+      "$ref": "../seo-envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_name": {
+          "const": "SeoScoresComputed"
+        },
+        "contract_version": {
+          "const": "v1"
+        },
+        "event_name": {
+          "const": "ks.seo.score.computed"
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "score_count",
+            "scores"
+          ],
+          "properties": {
+            "score_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "scores": {
+              "type": "array",
+              "items": {
+                "$ref": "../seo-score.schema.json"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

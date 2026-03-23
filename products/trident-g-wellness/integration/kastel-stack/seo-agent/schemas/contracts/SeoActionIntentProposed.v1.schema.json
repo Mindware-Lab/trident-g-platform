@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/contracts/SeoActionIntentProposed.v1.schema.json",
+  "title": "SeoActionIntentProposed.v1",
+  "allOf": [
+    {
+      "$ref": "../seo-envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_name": {
+          "const": "SeoActionIntentProposed"
+        },
+        "contract_version": {
+          "const": "v1"
+        },
+        "event_name": {
+          "const": "ks.intent.created"
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "action_intent_id",
+            "intent_type",
+            "approval_state",
+            "recommended_by"
+          ],
+          "properties": {
+            "action_intent_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "intent_type": {
+              "type": "string",
+              "minLength": 3
+            },
+            "approval_state": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "approved",
+                "rejected",
+                "escalated"
+              ]
+            },
+            "recommended_by": {
+              "type": "string",
+              "enum": [
+                "kernel",
+                "n8n_fallback"
+              ]
+            },
+            "recommendation_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

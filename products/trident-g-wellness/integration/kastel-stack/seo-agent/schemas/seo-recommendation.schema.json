@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/seo-recommendation.schema.json",
+  "title": "SeoRecommendation",
+  "type": "object",
+  "required": [
+    "workspace_id",
+    "mission_id",
+    "run_id",
+    "site_id",
+    "page_url",
+    "query",
+    "pillar",
+    "bucket",
+    "issue_type",
+    "priority_score",
+    "recommended_action",
+    "confidence",
+    "risk_level",
+    "evidence_refs"
+  ],
+  "properties": {
+    "workspace_id": {
+      "type": "string"
+    },
+    "mission_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "page_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "query": {
+      "type": "string"
+    },
+    "pillar": {
+      "type": "string",
+      "minLength": 2
+    },
+    "bucket": {
+      "type": "string",
+      "enum": [
+        "near_win",
+        "ctr_rescue",
+        "decay_page",
+        "hidden_winner"
+      ]
+    },
+    "issue_type": {
+      "type": "string"
+    },
+    "priority_score": {
+      "type": "number",
+      "minimum": 0
+    },
+    "recommended_action": {
+      "type": "string",
+      "minLength": 3
+    },
+    "diagnosis_template": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "autonomy_level": {
+      "type": "string",
+      "enum": [
+        "observe",
+        "draft",
+        "limited_execute",
+        "escalate"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "additionalProperties": false
+}

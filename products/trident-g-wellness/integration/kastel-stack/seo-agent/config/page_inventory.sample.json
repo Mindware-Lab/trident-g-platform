@@ -1,4 +1,7 @@
 {
+  "workspace_id": "iqmindware",
+  "site_id": "iqmindware-prod",
+  "mission_type": "seo_local_weekly",
   "pages": [
     {
       "url": "https://iqmindware.com/",

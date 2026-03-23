@@ -4,6 +4,9 @@
   "title": "KeywordOpportunity",
   "type": "object",
   "required": [
+    "workspace_id",
+    "mission_id",
+    "run_id",
     "page_url",
     "target_keyword",
     "source_query",
@@ -17,6 +20,9 @@
     "recommended_action"
   ],
   "properties": {
+    "workspace_id": { "type": "string", "minLength": 2 },
+    "mission_id": { "type": "string", "format": "uuid" },
+    "run_id": { "type": "string", "format": "uuid" },
     "page_url": { "type": "string", "format": "uri" },
     "target_keyword": { "type": "string", "minLength": 2 },
     "source_query": { "type": "string", "minLength": 2 },

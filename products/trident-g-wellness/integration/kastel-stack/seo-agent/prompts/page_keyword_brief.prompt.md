@@ -16,6 +16,7 @@ Output requirements:
 4. Suggested H2 updates for clarity and search intent alignment.
 5. Internal links to strengthen topical relevance.
 6. Confidence score and rationale.
+7. Recommendation only (do not perform execution; Action Intents are created by kernel gates).
 
 Hard constraints:
 - No keyword stuffing.
@@ -23,5 +24,6 @@ Hard constraints:
 - No duplicate page recommendations across domains.
 - Keep claims conservative (skills training, not diagnosis/treatment).
 - Keep copy readable and people-first.
+- Never suggest auto-publishing or direct profile mutations.
 
 Return JSON that conforms to `schemas/page-brief.schema.json`.

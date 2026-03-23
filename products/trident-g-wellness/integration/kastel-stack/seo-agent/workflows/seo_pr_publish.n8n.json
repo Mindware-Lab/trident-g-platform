@@ -1,5 +1,5 @@
 {
-  "name": "seo_pr_publish",
+  "name": "seo_pr_publish_deprecated",
   "nodes": [
     {
       "parameters": {},
@@ -12,7 +12,7 @@
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "={\"todo\":\"Commit report files to a branch and open PR; never push directly to main\"}"
+        "jsonOutput": "={\"note\":\"Deprecated in v1 SEO lane. Task sink is GitHub Projects via approved action intents; no direct publish path.\"}"
       },
       "id": "n2",
       "name": "PR Notes",

@@ -1,0 +1,188 @@
+{
+  "name": "seo_recheck_v1",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "n1",
+      "name": "Daily Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/seo/rechecks/due?workspace_id=' + ($env.WORKSPACE_ID || 'iqmindware')}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        }
+      },
+      "id": "n2",
+      "name": "Fetch Due Rechecks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        470,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $json.rechecks || [];\nreturn rows.map((row) => ({ json: row }));"
+      },
+      "id": "n3",
+      "name": "Split Rechecks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        710,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/seo/rechecks/' + $json.id + '/evaluate'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        }
+      },
+      "id": "n4",
+      "name": "Evaluate Recheck Outcome",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/seo/rechecks/' + $json.id + '/complete'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"SeoOutcomeRechecked.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.seo.recheck.completed\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"recheck-\" + ($json.id || \"pending\") + \"-\" + ($json.run_id || \"unknown\"),\n  \"risk_level\": \"low\",\n  \"psi_state\": \"swap\",\n  \"producer_domain\": \"n8n.seo.recheck\",\n  \"consumer_domain\": \"kernel.seo.recheck\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:seo_recheck_v1\"],\n  \"payload\": {\n    \"result\": $json\n  }\n}"
+      },
+      "id": "n5",
+      "name": "Record Recheck Outcome",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1230,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\"status\":\"completed\",\"note\":\"Recheck outcome persisted. Bank reusable scripts only after repeated validation.\"}"
+      },
+      "id": "n6",
+      "name": "Recheck Gate",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1480,
+        260
+      ]
+    }
+  ],
+  "connections": {
+    "Daily Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Due Rechecks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Due Rechecks": {
+      "main": [
+        [
+          {
+            "node": "Split Rechecks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Rechecks": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Recheck Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Recheck Outcome": {
+      "main": [
+        [
+          {
+            "node": "Record Recheck Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Recheck Outcome": {
+      "main": [
+        [
+          {
+            "node": "Recheck Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "1"
+}

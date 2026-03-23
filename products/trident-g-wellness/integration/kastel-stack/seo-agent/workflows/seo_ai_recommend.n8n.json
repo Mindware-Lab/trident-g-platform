@@ -1,5 +1,5 @@
 {
-  "name": "seo_ai_recommend",
+  "name": "seo_ai_recommend_deprecated",
   "nodes": [
     {
       "parameters": {},
@@ -12,7 +12,7 @@
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "={\"todo\":\"Load prompt template + keyword opportunities, call LLM, validate JSON against page-brief schema, write reports/page_briefs_YYYY-MM-DD.json\"}"
+        "jsonOutput": "={\"note\":\"Deprecated by kernel-owned scoring/intent lane. Use seo_score_and_diagnose_v1 + seo_intent_and_tasking_v1 + seo_digest_gmail_v1.\"}"
       },
       "id": "n2",
       "name": "AI Notes",

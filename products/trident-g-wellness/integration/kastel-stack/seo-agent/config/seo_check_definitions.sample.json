@@ -1,0 +1,201 @@
+{
+  "version": "1.0.0",
+  "generated_for": "iqmindware",
+  "checks": [
+    {
+      "check_id": "onpage_title_present",
+      "label": "Title tag exists",
+      "pillar": "on_page",
+      "weight": 0.06,
+      "scope": "page",
+      "answer_type": "boolean",
+      "source_method": "crawl",
+      "autonomy_level": "observe",
+      "risk_class": "low",
+      "pass_rule": {
+        "operator": "equals",
+        "value": true
+      },
+      "evidence_required": [
+        "page_url",
+        "title"
+      ]
+    },
+    {
+      "check_id": "onpage_h1_present",
+      "label": "H1 exists",
+      "pillar": "on_page",
+      "weight": 0.05,
+      "scope": "page",
+      "answer_type": "boolean",
+      "source_method": "crawl",
+      "autonomy_level": "observe",
+      "risk_class": "low",
+      "pass_rule": {
+        "operator": "equals",
+        "value": true
+      },
+      "evidence_required": [
+        "page_url",
+        "h1"
+      ]
+    },
+    {
+      "check_id": "onpage_alt_text_coverage",
+      "label": "Image alt-text coverage",
+      "pillar": "on_page",
+      "weight": 0.07,
+      "scope": "page",
+      "answer_type": "numeric",
+      "source_method": "crawl",
+      "autonomy_level": "observe",
+      "risk_class": "low",
+      "pass_rule": {
+        "operator": "gte",
+        "value": 0.9
+      },
+      "evidence_required": [
+        "page_url",
+        "image_count",
+        "alt_coverage_ratio"
+      ]
+    },
+    {
+      "check_id": "onpage_internal_links_support",
+      "label": "Contextual internal links present",
+      "pillar": "on_page",
+      "weight": 0.08,
+      "scope": "page",
+      "answer_type": "count",
+      "source_method": "crawl",
+      "autonomy_level": "draft",
+      "risk_class": "low",
+      "pass_rule": {
+        "operator": "gte",
+        "value": 3
+      },
+      "evidence_required": [
+        "page_url",
+        "internal_link_targets"
+      ]
+    },
+    {
+      "check_id": "performance_mobile_score",
+      "label": "Mobile performance score",
+      "pillar": "technical",
+      "weight": 0.1,
+      "scope": "page",
+      "answer_type": "numeric",
+      "source_method": "pagespeed",
+      "autonomy_level": "observe",
+      "risk_class": "low",
+      "pass_rule": {
+        "operator": "gte",
+        "value": 0.75
+      },
+      "evidence_required": [
+        "page_url",
+        "performance_score"
+      ]
+    },
+    {
+      "check_id": "gsc_ctr_gap",
+      "label": "CTR under expected baseline",
+      "pillar": "search_performance",
+      "weight": 0.12,
+      "scope": "page",
+      "answer_type": "numeric",
+      "source_method": "gsc",
+      "autonomy_level": "draft",
+      "risk_class": "low",
+      "pass_rule": {
+        "operator": "lte",
+        "value": 0
+      },
+      "evidence_required": [
+        "page_url",
+        "query",
+        "ctr",
+        "expected_ctr"
+      ]
+    },
+    {
+      "check_id": "gsc_position_near_win",
+      "label": "Position is near-win range",
+      "pillar": "search_performance",
+      "weight": 0.12,
+      "scope": "query_page",
+      "answer_type": "numeric",
+      "source_method": "gsc",
+      "autonomy_level": "draft",
+      "risk_class": "low",
+      "pass_rule": {
+        "operator": "between",
+        "min": 4,
+        "max": 12
+      },
+      "evidence_required": [
+        "page_url",
+        "query",
+        "avg_position"
+      ]
+    },
+    {
+      "check_id": "content_freshness_days",
+      "label": "Page freshness recency",
+      "pillar": "content",
+      "weight": 0.08,
+      "scope": "page",
+      "answer_type": "numeric",
+      "source_method": "crawl",
+      "autonomy_level": "draft",
+      "risk_class": "medium",
+      "pass_rule": {
+        "operator": "lte",
+        "value": 180
+      },
+      "evidence_required": [
+        "page_url",
+        "last_modified_days"
+      ]
+    },
+    {
+      "check_id": "reviews_response_latency",
+      "label": "Review response latency",
+      "pillar": "reviews",
+      "weight": 0.16,
+      "scope": "location",
+      "answer_type": "numeric",
+      "source_method": "manual_import",
+      "autonomy_level": "draft",
+      "risk_class": "medium",
+      "pass_rule": {
+        "operator": "lte",
+        "value": 7
+      },
+      "evidence_required": [
+        "location_id",
+        "avg_response_days"
+      ]
+    },
+    {
+      "check_id": "citations_consistency_rate",
+      "label": "Citation consistency",
+      "pillar": "citations",
+      "weight": 0.16,
+      "scope": "location",
+      "answer_type": "numeric",
+      "source_method": "manual_import",
+      "autonomy_level": "draft",
+      "risk_class": "medium",
+      "pass_rule": {
+        "operator": "gte",
+        "value": 0.95
+      },
+      "evidence_required": [
+        "location_id",
+        "consistency_ratio"
+      ]
+    }
+  ]
+}

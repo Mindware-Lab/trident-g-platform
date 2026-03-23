@@ -1,0 +1,275 @@
+{
+  "name": "seo_intent_and_tasking_v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "n1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        220,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "name": "workspace_id",
+              "value": "={{$env.WORKSPACE_ID || 'iqmindware'}}",
+              "type": "string"
+            },
+            {
+              "name": "mission_id",
+              "value": "={{$json.mission_id || ''}}",
+              "type": "string"
+            },
+            {
+              "name": "run_id",
+              "value": "={{$json.run_id || ''}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "n2",
+      "name": "Build Intent Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/seo/runs/' + $json.run_id + '/intents'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"SeoActionIntentProposed.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.intent.created\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"intent-proposed-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"commit\",\n  \"producer_domain\": \"kernel.seo.intent\",\n  \"consumer_domain\": \"n8n.seo.tasking\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:seo_intent_and_tasking_v1\"],\n  \"payload\": {\n    \"mode\": \"draft_first\",\n    \"source\": \"seo_recommendations\"\n  }\n}"
+      },
+      "id": "n3",
+      "name": "Generate Action Intents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        760,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/seo/intents/gate'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"SeoActionIntentProposed.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.intent.created\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"intent-gate-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"commit\",\n  \"producer_domain\": \"n8n.seo.tasking\",\n  \"consumer_domain\": \"kernel.seo.intent_gate\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:seo_intent_and_tasking_v1\"],\n  \"payload\": {\n    \"allow_auto\": [\"create_github_issue\", \"notify_digest\"],\n    \"force_draft\": [\"draft_title_meta\", \"draft_internal_link_plan\", \"draft_content_brief\"],\n    \"force_escalate\": [\"publish_page_changes\", \"mutate_gbp_profile\", \"external_content_edits\"]\n  }\n}"
+      },
+      "id": "n4",
+      "name": "Gate Action Intents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1020,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{'https://api.github.com/repos/' + $env.GITHUB_OWNER + '/' + $env.GITHUB_REPO + '/issues'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{'Bearer ' + $credentials.githubApi.accessToken}}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"title\": $json.issue_title || 'SEO Action Intent',\n  \"body\": $json.issue_body || 'Generated from approved SEO action intent',\n  \"labels\": [\"seo\", \"intent-approved\", ($json.bucket || 'near_win')]\n}"
+      },
+      "id": "n5",
+      "name": "Create GitHub Issue (Approved Only)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/seo/tasks/sync'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"event_name\": \"ks.execute.task_created\",\n  \"contract_name\": \"SeoActionIntentProposed.v1\",\n  \"contract_version\": \"v1\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"task-sync-\" + $json.run_id + \"-\" + ($json.number || \"pending\"),\n  \"risk_level\": \"low\",\n  \"psi_state\": \"execute\",\n  \"producer_domain\": \"n8n.seo.tasking\",\n  \"consumer_domain\": \"kernel.seo.tasks\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:seo_intent_and_tasking_v1\"],\n  \"payload\": {\n    \"github_issue\": $json\n  }\n}"
+      },
+      "id": "n6",
+      "name": "Record Task Sync",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\"status\":\"ok\",\"rule\":\"No GitHub task is created unless action_intent has passed gate checks.\"}"
+      },
+      "id": "n7",
+      "name": "Tasking Review Gate",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1540,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const status = String($json.gate_status || $json.decision || $json.intent_status || '').toLowerCase();\nif (status === 'approved' || status === 'auto_approved') {\n  return [{ json: $json }];\n}\nreturn [];"
+      },
+      "id": "n8",
+      "name": "Filter Approved Intents",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        180
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Intent Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Intent Context": {
+      "main": [
+        [
+          {
+            "node": "Generate Action Intents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Action Intents": {
+      "main": [
+        [
+          {
+            "node": "Gate Action Intents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate Action Intents": {
+      "main": [
+        [
+          {
+            "node": "Filter Approved Intents",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tasking Review Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create GitHub Issue (Approved Only)": {
+      "main": [
+        [
+          {
+            "node": "Record Task Sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Task Sync": {
+      "main": [
+        [
+          {
+            "node": "Tasking Review Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Approved Intents": {
+      "main": [
+        [
+          {
+            "node": "Create GitHub Issue (Approved Only)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "1"
+}

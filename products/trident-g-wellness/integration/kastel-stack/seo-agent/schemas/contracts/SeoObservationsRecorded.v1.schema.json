@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/contracts/SeoObservationsRecorded.v1.schema.json",
+  "title": "SeoObservationsRecorded.v1",
+  "allOf": [
+    {
+      "$ref": "../seo-envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_name": {
+          "const": "SeoObservationsRecorded"
+        },
+        "contract_version": {
+          "const": "v1"
+        },
+        "event_name": {
+          "const": "ks.seo.observation.recorded"
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "inserted_count",
+            "observations"
+          ],
+          "properties": {
+            "inserted_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "observations": {
+              "type": "array",
+              "items": {
+                "$ref": "../seo-observation.schema.json"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

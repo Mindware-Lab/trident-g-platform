@@ -32,6 +32,13 @@ Recommended records:
 6. `SessionCompleted.v1`
 7. `RetentionRiskDetected.v1`
 8. `OutcomeSnapshotRecorded.v1`
+9. `SeoSignalBatchReceived.v1`
+10. `SeoObservationsRecorded.v1`
+11. `SeoScoresComputed.v1`
+12. `SeoRecommendationsGenerated.v1`
+13. `SeoActionIntentProposed.v1`
+14. `SeoRecheckScheduled.v1`
+15. `SeoOutcomeRechecked.v1`
 
 ## Governance Defaults
 
@@ -49,4 +56,6 @@ This module is review-gated and designed for:
 
 1. weekly search/performance snapshot collection
 2. keyword opportunity scoring by page intent
-3. AI-assisted recommendations written to PR artifacts
+3. weighted issue scoring and diagnosis linked to `missions`/`runs`
+4. AI-assisted recommendations written to PR artifacts
+5. Action Intent-gated task creation into GitHub Projects

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/contracts/SeoRecommendationsGenerated.v1.schema.json",
+  "title": "SeoRecommendationsGenerated.v1",
+  "allOf": [
+    {
+      "$ref": "../seo-envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_name": {
+          "const": "SeoRecommendationsGenerated"
+        },
+        "contract_version": {
+          "const": "v1"
+        },
+        "event_name": {
+          "const": "ks.seo.recommendation.generated"
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "recommendation_count",
+            "recommendations"
+          ],
+          "properties": {
+            "recommendation_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "recommendations": {
+              "type": "array",
+              "items": {
+                "$ref": "../seo-recommendation.schema.json"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

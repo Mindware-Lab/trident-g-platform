@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/contracts/SeoSignalBatchReceived.v1.schema.json",
+  "title": "SeoSignalBatchReceived.v1",
+  "allOf": [
+    {
+      "$ref": "../seo-envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_name": {
+          "const": "SeoSignalBatchReceived"
+        },
+        "contract_version": {
+          "const": "v1"
+        },
+        "event_name": {
+          "const": "ks.seo.observation.recorded"
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "source_method",
+            "batch_size",
+            "records"
+          ],
+          "properties": {
+            "source_method": {
+              "type": "string",
+              "enum": [
+                "gsc",
+                "pagespeed",
+                "crawl",
+                "manual_import"
+              ]
+            },
+            "batch_size": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "records": {
+              "type": "array",
+              "minItems": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

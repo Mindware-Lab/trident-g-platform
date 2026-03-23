@@ -1,5 +1,5 @@
 {
-  "name": "seo_keyword_expand",
+  "name": "seo_keyword_expand_deprecated",
   "nodes": [
     {
       "parameters": {},
@@ -12,7 +12,7 @@
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "={\"todo\":\"Read winning queries, call Google Ads GenerateKeywordIdeas, and write reports/keyword_opportunities_YYYY-MM-DD.json\"}"
+        "jsonOutput": "={\"note\":\"Deprecated in ontology-aligned lane. If needed, run keyword expansion as a draft-only subflow after seo_score_and_diagnose_v1.\"}"
       },
       "id": "n2",
       "name": "Expansion Notes",

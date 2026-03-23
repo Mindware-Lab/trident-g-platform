@@ -1,0 +1,61 @@
+{
+  "status_score": {
+    "pass": 1.0,
+    "partial": 0.5,
+    "fail": 0.0
+  },
+  "rows": [
+    {
+      "issue_id": "title_missing",
+      "pillar": "on_page",
+      "weight": 0.2,
+      "status": "fail",
+      "business_priority": 100
+    },
+    {
+      "issue_id": "weak_internal_links",
+      "pillar": "on_page",
+      "weight": 0.15,
+      "status": "partial",
+      "business_priority": 90
+    },
+    {
+      "issue_id": "ctr_gap",
+      "pillar": "search_performance",
+      "weight": 0.25,
+      "status": "fail",
+      "business_priority": 95
+    },
+    {
+      "issue_id": "position_near_win",
+      "pillar": "search_performance",
+      "weight": 0.2,
+      "status": "partial",
+      "business_priority": 90
+    },
+    {
+      "issue_id": "pagespeed_mobile",
+      "pillar": "technical",
+      "weight": 0.2,
+      "status": "pass",
+      "business_priority": 75
+    }
+  ],
+  "expected": {
+    "total_weight": 1.0,
+    "site_weighted_score": 0.375,
+    "remaining_opportunity": 0.625,
+    "issue_priority_order": [
+      "ctr_gap",
+      "title_missing",
+      "position_near_win",
+      "weak_internal_links",
+      "pagespeed_mobile"
+    ],
+    "pillar_scores": {
+      "on_page": 0.2143,
+      "search_performance": 0.2222,
+      "technical": 1.0
+    }
+  }
+}

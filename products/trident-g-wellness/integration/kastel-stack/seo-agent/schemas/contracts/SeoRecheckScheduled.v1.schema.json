@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/contracts/SeoRecheckScheduled.v1.schema.json",
+  "title": "SeoRecheckScheduled.v1",
+  "allOf": [
+    {
+      "$ref": "../seo-envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_name": {
+          "const": "SeoRecheckScheduled"
+        },
+        "contract_version": {
+          "const": "v1"
+        },
+        "event_name": {
+          "const": "ks.observe.metrics_recorded"
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "action_intent_id",
+            "recheck_dates"
+          ],
+          "properties": {
+            "action_intent_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "recheck_dates": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date"
+              },
+              "minItems": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

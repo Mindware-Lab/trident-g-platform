@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/contracts/SeoOutcomeRechecked.v1.schema.json",
+  "title": "SeoOutcomeRechecked.v1",
+  "allOf": [
+    {
+      "$ref": "../seo-envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_name": {
+          "const": "SeoOutcomeRechecked"
+        },
+        "contract_version": {
+          "const": "v1"
+        },
+        "event_name": {
+          "const": "ks.seo.recheck.completed"
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "action_intent_id",
+            "outcome_status",
+            "metric_deltas"
+          ],
+          "properties": {
+            "action_intent_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "outcome_status": {
+              "type": "string",
+              "enum": [
+                "validated",
+                "inconclusive",
+                "rejected"
+              ]
+            },
+            "metric_deltas": {
+              "type": "object",
+              "properties": {
+                "ctr_delta": {
+                  "type": "number"
+                },
+                "position_delta": {
+                  "type": "number"
+                },
+                "impressions_delta": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}
