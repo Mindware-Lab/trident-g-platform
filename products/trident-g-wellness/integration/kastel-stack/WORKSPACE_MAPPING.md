@@ -92,6 +92,7 @@ CRM automation for Brevo cutover and lifecycle control now lives in:
 15. `CrmDeliverabilityAlertRaised.v1`
 16. `CrmStrategyRecommendationsGenerated.v1`
 17. `CrmStrategyIntentProposed.v1`
+18. `CrmStrategyApprovalRequested.v1`
 
 ### CRM Events (append-only `events`)
 
@@ -108,8 +109,9 @@ CRM automation for Brevo cutover and lifecycle control now lives in:
 11. `ks.crm.recheck.completed`
 12. `ks.crm.strategy.recommendations_generated`
 13. `ks.intent.created`
-14. `ks.execute.email_dispatched`
-15. `ks.observe.metrics_recorded`
+14. `ks.intent.approval_requested`
+15. `ks.execute.email_dispatched`
+16. `ks.observe.metrics_recorded`
 
 ### CRM Workflow References
 

@@ -63,7 +63,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmStrategyRecommendationsGenerated.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.crm.strategy.recommendations_generated\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-strategy-reco-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"map\",\n  \"producer_domain\": \"n8n.crm.strategy\",\n  \"consumer_domain\": \"kernel.crm.strategy\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_strategy_intel_v1\"],\n  \"payload\": {\n    \"strategy_window_days\": Number($json.strategy_window_days || 28),\n    \"high_value_spend_min\": Number($json.high_value_spend_min || 300),\n    \"segments_in_scope\": [\"high_value_spend\", \"new_buyers\", \"lapsed_paid\", \"course_started_no_progress\"],\n    \"focus_areas\": [\"products\", \"pricing\", \"promotions\", \"messaging\", \"conversion_pipeline\"]\n  }\n}"
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmStrategyRecommendationsGenerated.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.crm.strategy.recommendations_generated\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-strategy-reco-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"map\",\n  \"producer_domain\": \"n8n.crm.strategy\",\n  \"consumer_domain\": \"kernel.crm.strategy\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_strategy_intel_v1\"],\n  \"payload\": {\n    \"strategy_window_days\": Number($json.strategy_window_days || 28),\n    \"high_value_spend_min\": Number($json.high_value_spend_min || 300),\n    \"segments_in_scope\": [\"high_value_spend\", \"new_buyers\", \"lapsed_paid\", \"course_started_no_progress\"],\n    \"focus_areas\": [\"products\", \"pricing\", \"promotions\", \"messaging\", \"conversion_pipeline\"],\n    \"recommendations\": ($json.recommendations || []).map((r, idx) => ({\n      \"id\": r.id || ('rec-' + (idx + 1)),\n      \"theme\": r.theme || 'unspecified',\n      \"confidence\": Number(r.confidence || 0),\n      \"expected_lift\": {\n        \"metric\": (r.expected_lift && r.expected_lift.metric) || 'conversion_rate',\n        \"relative_lift\": Number((r.expected_lift && r.expected_lift.relative_lift) || 0),\n        \"expected_delta\": Number((r.expected_lift && r.expected_lift.expected_delta) || 0)\n      },\n      \"risk\": {\n        \"level\": (r.risk && r.risk.level) || 'medium',\n        \"rationale\": (r.risk && r.risk.rationale) || 'review_required'\n      }\n    })),\n    \"recommendation_count\": (($json.recommendations || []).length)\n  }\n}"
       },
       "id": "n3",
       "name": "Generate Strategy Recommendations",
@@ -86,7 +86,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmStrategyIntentProposed.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.intent.created\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-strategy-intent-\" + $json.run_id,\n  \"risk_level\": \"medium\",\n  \"psi_state\": \"commit\",\n  \"producer_domain\": \"n8n.crm.strategy\",\n  \"consumer_domain\": \"kernel.crm.intent\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_strategy_intel_v1\"],\n  \"payload\": {\n    \"intent_type\": $json.intent_type || \"draft_strategy_message_offer\",\n    \"strategy_theme\": $json.strategy_theme || \"segment_message_offer_pricing\",\n    \"target_segments\": $json.target_segments || [\"high_value_spend\", \"lapsed_paid\"],\n    \"recommendation_ids\": $json.recommendation_ids || []\n  }\n}"
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmStrategyIntentProposed.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.intent.created\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-strategy-intent-\" + $json.run_id,\n  \"risk_level\": \"medium\",\n  \"psi_state\": \"commit\",\n  \"producer_domain\": \"n8n.crm.strategy\",\n  \"consumer_domain\": \"kernel.crm.intent\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_strategy_intel_v1\"],\n  \"payload\": {\n    \"intent_type\": $json.intent_type || \"draft_strategy_message_offer\",\n    \"strategy_theme\": $json.strategy_theme || \"segment_message_offer_pricing\",\n    \"target_segments\": $json.target_segments || [\"high_value_spend\", \"lapsed_paid\"],\n    \"recommendation_ids\": $json.recommendation_ids || [],\n    \"approval\": {\n      \"required\": true,\n      \"scope\": $json.approval_scope || \"offer_promo\",\n      \"reason\": $json.approval_reason || \"Offer, pricing, and promotion strategy intents require human approval before execution.\",\n      \"default_status\": \"pending_approval\",\n      \"required_approver_roles\": $json.required_approver_roles || [\"crm_owner\", \"growth_lead\"]\n    }\n  }\n}"
       },
       "id": "n4",
       "name": "Propose Strategy Intents",
@@ -109,13 +109,46 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmStrategyIntentProposed.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.intent.created\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-strategy-gate-\" + $json.run_id,\n  \"risk_level\": \"medium\",\n  \"psi_state\": \"commit\",\n  \"producer_domain\": \"n8n.crm.strategy\",\n  \"consumer_domain\": \"kernel.crm.intent_gate\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_strategy_intel_v1\"],\n  \"payload\": {\n    \"intent_type\": $json.intent_type || \"draft_strategy_message_offer\",\n    \"allow_auto\": [],\n    \"force_draft\": [\"draft_strategy_message_offer\", \"draft_strategy_pricing_experiment\", \"draft_strategy_promotion_plan\", \"draft_strategy_conversion_pipeline\"],\n    \"force_escalate\": [\"apply_live_price_change\", \"launch_unreviewed_promotion\", \"consent_override\", \"suppression_override\"]\n  }\n}"
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmStrategyIntentProposed.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.intent.created\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-strategy-gate-\" + $json.run_id,\n  \"risk_level\": \"medium\",\n  \"psi_state\": \"commit\",\n  \"producer_domain\": \"n8n.crm.strategy\",\n  \"consumer_domain\": \"kernel.crm.intent_gate\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_strategy_intel_v1\"],\n  \"payload\": {\n    \"intent_type\": $json.intent_type || \"draft_strategy_message_offer\",\n    \"allow_auto\": [],\n    \"force_draft\": [\"draft_strategy_message_offer\", \"draft_strategy_pricing_experiment\", \"draft_strategy_promotion_plan\", \"draft_strategy_conversion_pipeline\"],\n    \"force_escalate\": [\"apply_live_price_change\", \"launch_unreviewed_promotion\", \"consent_override\", \"suppression_override\"],\n    \"approval\": {\n      \"required\": true,\n      \"scope\": $json.approval_scope || \"offer_promo\",\n      \"reason\": $json.approval_reason || \"Offer, pricing, and promotion strategy intents require human approval before execution.\",\n      \"default_status\": \"pending_approval\",\n      \"required_approver_roles\": $json.required_approver_roles || [\"crm_owner\", \"growth_lead\"]\n    }\n  }\n}"
       },
       "id": "n5",
       "name": "Gate Strategy Intents",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [1280, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const intentType = String($json.intent_type || $json.payload?.intent_type || '').toLowerCase();\nconst approvalTypes = new Set([\n  'draft_strategy_message_offer',\n  'draft_strategy_pricing_experiment',\n  'draft_strategy_promotion_plan'\n]);\nif (!approvalTypes.has(intentType)) return [];\nreturn [{\n  json: {\n    ...$json,\n    intent_type: intentType,\n    approval_scope: 'offer_promo',\n    approval_reason: 'Offer, pricing, and promotion strategy intents require human approval before execution.',\n    approval_status: 'pending_approval',\n    required_approver_roles: ['crm_owner', 'growth_lead']\n  }\n}];"
+      },
+      "id": "n8",
+      "name": "Filter Offer/Promo Approval Intents",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1530, 390]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/crm/intents/approval'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmStrategyApprovalRequested.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.intent.approval_requested\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-strategy-approval-\" + $json.run_id + \"-\" + ($json.intent_type || \"intent\"),\n  \"risk_level\": \"medium\",\n  \"psi_state\": \"commit\",\n  \"producer_domain\": \"n8n.crm.strategy\",\n  \"consumer_domain\": \"kernel.crm.approval\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_strategy_intel_v1\"],\n  \"payload\": {\n    \"intent_type\": $json.intent_type || \"draft_strategy_message_offer\",\n    \"strategy_theme\": $json.strategy_theme || \"segment_message_offer_pricing\",\n    \"target_segments\": $json.target_segments || [\"high_value_spend\", \"lapsed_paid\"],\n    \"recommendation_ids\": $json.recommendation_ids || [],\n    \"approval_scope\": $json.approval_scope || \"offer_promo\",\n    \"approval_reason\": $json.approval_reason || \"Offer, pricing, and promotion strategy intents require human approval before execution.\",\n    \"approval_status\": $json.approval_status || \"pending_approval\",\n    \"required_approver_roles\": $json.required_approver_roles || [\"crm_owner\", \"growth_lead\"],\n    \"recommendation_snapshot\": {\n      \"confidence\": Number($json.confidence || 0),\n      \"expected_lift\": {\n        \"metric\": ($json.expected_lift && $json.expected_lift.metric) || \"conversion_rate\",\n        \"relative_lift\": Number(($json.expected_lift && $json.expected_lift.relative_lift) || 0),\n        \"expected_delta\": Number(($json.expected_lift && $json.expected_lift.expected_delta) || 0)\n      },\n      \"risk\": {\n        \"level\": ($json.risk && $json.risk.level) || \"medium\",\n        \"rationale\": ($json.risk && $json.risk.rationale) || \"human_review_required\"\n      }\n    }\n  }\n}"
+      },
+      "id": "n9",
+      "name": "Request Offer/Promo Approval",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 390]
     },
     {
       "parameters": {
@@ -191,6 +224,11 @@
             "node": "Filter Approved Intents",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Filter Offer/Promo Approval Intents",
+            "type": "main",
+            "index": 0
           }
         ],
         [
@@ -203,6 +241,28 @@
       ]
     },
     "Filter Approved Intents": {
+      "main": [
+        [
+          {
+            "node": "Strategy Review Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Offer/Promo Approval Intents": {
+      "main": [
+        [
+          {
+            "node": "Request Offer/Promo Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Offer/Promo Approval": {
       "main": [
         [
           {

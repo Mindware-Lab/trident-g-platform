@@ -19,9 +19,11 @@ Generate draft-first strategic recommendations for segment messaging, offers, pr
    - optional `strategy_window_days`
    - optional `high_value_spend_min`
 2. Ensure kernel endpoint returns `CrmStrategyRecommendationsGenerated.v1`.
+   - each recommendation should include `confidence`, `expected_lift`, and `risk`
 3. Ensure strategy intents are proposed as `CrmStrategyIntentProposed.v1`.
-4. Confirm gate outcomes are `draft`/`approved`/`auto_approved` per policy.
-5. Execute only approved intents through existing execution path.
+4. For offer/promo/pricing intents, confirm `CrmStrategyApprovalRequested.v1` is emitted.
+5. Confirm gate outcomes are `draft`/`approved`/`auto_approved` per policy.
+6. Execute only approved intents through existing execution path.
 
 ## Guardrails
 

@@ -354,6 +354,7 @@ Consumers must be idempotent on `idempotency_key`.
 
 - `CrmStrategyRecommendationsGenerated.v1`
 - `CrmStrategyIntentProposed.v1`
+- `CrmStrategyApprovalRequested.v1`
 
 ---
 
@@ -377,6 +378,7 @@ Recommended CRM-related events:
 - `ks.crm.conversion.observed`
 - `ks.crm.recheck.completed`
 - `ks.crm.strategy.recommendations_generated`
+- `ks.intent.approval_requested`
 - `ks.observe.metrics_recorded`
 - `ks.psi.state_estimated`
 - `ks.psi.permission_set`
@@ -608,7 +610,9 @@ Purpose:
 Purpose:
 
 - generate strategic segment intelligence for products, pricing, promotions, messaging, and conversion pipeline decisions
+- require recommendation evidence fields (`confidence`, `expected_lift`, `risk`) for each strategy recommendation
 - propose strategy intents in draft-first mode and route through kernel gate policy
+- emit explicit offer/promo approval requests with scope/reason/approver roles
 
 ---
 

@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/contracts/CrmStrategyApprovalRequested.v1.schema.json",
+  "title": "CrmStrategyApprovalRequested.v1",
+  "allOf": [
+    {
+      "$ref": "../crm-envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_name": {
+          "const": "CrmStrategyApprovalRequested.v1"
+        },
+        "contract_version": {
+          "const": "v1"
+        },
+        "event_name": {
+          "const": "ks.intent.approval_requested"
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "intent_type",
+            "strategy_theme",
+            "approval_scope",
+            "approval_reason",
+            "approval_status",
+            "required_approver_roles",
+            "recommendation_snapshot"
+          ],
+          "properties": {
+            "intent_type": {
+              "type": "string",
+              "minLength": 1
+            },
+            "strategy_theme": {
+              "type": "string",
+              "minLength": 1
+            },
+            "approval_scope": {
+              "type": "string",
+              "enum": [
+                "offer_promo",
+                "pricing",
+                "messaging",
+                "conversion_pipeline",
+                "other"
+              ]
+            },
+            "approval_reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "approval_status": {
+              "type": "string",
+              "enum": [
+                "pending_approval",
+                "approved",
+                "rejected"
+              ]
+            },
+            "required_approver_roles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "recommendation_snapshot": {
+              "type": "object",
+              "required": [
+                "confidence",
+                "expected_lift",
+                "risk"
+              ],
+              "properties": {
+                "confidence": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "expected_lift": {
+                  "type": "object",
+                  "required": [
+                    "metric",
+                    "relative_lift"
+                  ],
+                  "properties": {
+                    "metric": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "relative_lift": {
+                      "type": "number"
+                    },
+                    "expected_delta": {
+                      "type": "number"
+                    }
+                  },
+                  "additionalProperties": true
+                },
+                "risk": {
+                  "type": "object",
+                  "required": [
+                    "level",
+                    "rationale"
+                  ],
+                  "properties": {
+                    "level": {
+                      "type": "string",
+                      "enum": [
+                        "low",
+                        "medium",
+                        "high"
+                      ]
+                    },
+                    "rationale": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              },
+              "additionalProperties": true
+            },
+            "target_segments": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "recommendation_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    }
+  ]
+}

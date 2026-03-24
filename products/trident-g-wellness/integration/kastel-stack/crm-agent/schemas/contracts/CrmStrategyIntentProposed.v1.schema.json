@@ -1,32 +1,99 @@
 {
-    "$schema":  "https://json-schema.org/draft/2020-12/schema",
-    "$id":  "https://mindware-lab.github.io/schemas/contracts/CrmStrategyIntentProposed.v1.schema.json",
-    "title":  "CrmStrategyIntentProposed.v1",
-    "allOf":  [
-                  {
-                      "$ref":  "../crm-envelope.schema.json"
-                  },
-                  {
-                      "type":  "object",
-                      "properties":  {
-                                         "contract_name":  {
-                                                               "const":  "CrmStrategyIntentProposed.v1"
-                                                           },
-                                         "contract_version":  {
-                                                                  "const":  "v1"
-                                                              },
-                                         "event_name":  {
-                                                            "const":  "ks.intent.created"
-                                                        },
-                                         "payload":  {
-                                                         "type":  "object",
-                                                         "required":  [
-                                                                          "intent_type",
-                                                                          "strategy_theme"
-                                                                      ],
-                                                         "additionalProperties":  true
-                                                     }
-                                     }
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mindware-lab.github.io/schemas/contracts/CrmStrategyIntentProposed.v1.schema.json",
+  "title": "CrmStrategyIntentProposed.v1",
+  "allOf": [
+    {
+      "$ref": "../crm-envelope.schema.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "contract_name": {
+          "const": "CrmStrategyIntentProposed.v1"
+        },
+        "contract_version": {
+          "const": "v1"
+        },
+        "event_name": {
+          "const": "ks.intent.created"
+        },
+        "payload": {
+          "type": "object",
+          "required": [
+            "intent_type",
+            "strategy_theme",
+            "target_segments",
+            "recommendation_ids",
+            "approval"
+          ],
+          "properties": {
+            "intent_type": {
+              "type": "string",
+              "minLength": 1
+            },
+            "strategy_theme": {
+              "type": "string",
+              "minLength": 1
+            },
+            "target_segments": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "recommendation_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "approval": {
+              "type": "object",
+              "required": [
+                "required",
+                "scope",
+                "reason",
+                "default_status"
+              ],
+              "properties": {
+                "required": {
+                  "type": "boolean"
+                },
+                "scope": {
+                  "type": "string",
+                  "enum": [
+                    "offer_promo",
+                    "pricing",
+                    "messaging",
+                    "conversion_pipeline",
+                    "other"
+                  ]
+                },
+                "reason": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "default_status": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "pending_approval"
+                  ]
+                },
+                "required_approver_roles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
                   }
-              ]
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    }
+  ]
 }

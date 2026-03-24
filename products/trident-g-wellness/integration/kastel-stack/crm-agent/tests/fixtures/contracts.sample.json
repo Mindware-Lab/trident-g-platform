@@ -60,9 +60,84 @@
       "strategy_window_days": 28,
       "recommendation_count": 2,
       "recommendations": [
-        {"id": "rec-1", "theme": "high_value_spend_offers"},
-        {"id": "rec-2", "theme": "lapsed_paid_reactivation"}
+        {
+          "id": "rec-1",
+          "theme": "high_value_spend_offers",
+          "confidence": 0.86,
+          "expected_lift": {
+            "metric": "revenue_per_contact",
+            "relative_lift": 0.14,
+            "expected_delta": 0.31
+          },
+          "risk": {
+            "level": "medium",
+            "rationale": "offer copy and pricing claims require review"
+          }
+        },
+        {
+          "id": "rec-2",
+          "theme": "lapsed_paid_reactivation",
+          "confidence": 0.74,
+          "expected_lift": {
+            "metric": "conversion_rate",
+            "relative_lift": 0.11,
+            "expected_delta": 0.07
+          },
+          "risk": {
+            "level": "low",
+            "rationale": "reactivation nudge aligns with existing suppression policy"
+          }
+        }
       ]
+    }
+  },
+  {
+    "contract_name": "CrmStrategyApprovalRequested.v1",
+    "contract_version": "v1",
+    "event_name": "ks.intent.approval_requested",
+    "event_id": "77777777-7777-4777-8777-777777777777",
+    "idempotency_key": "crm-strategy-approval-run-2026-03-24",
+    "workspace_id": "wellness_sa",
+    "mission_id": "22222222-2222-4222-8222-222222222222",
+    "run_id": "33333333-3333-4333-8333-333333333333",
+    "risk_level": "medium",
+    "psi_state": "commit",
+    "producer_domain": "n8n.crm.strategy",
+    "consumer_domain": "kernel.crm.approval",
+    "occurred_at": "2026-03-24T10:12:00Z",
+    "trace_refs": [
+      "n8n:crm_strategy_intel_v1"
+    ],
+    "payload": {
+      "intent_type": "draft_strategy_promotion_plan",
+      "strategy_theme": "segment_message_offer_pricing",
+      "target_segments": [
+        "high_value_spend",
+        "lapsed_paid"
+      ],
+      "recommendation_ids": [
+        "rec-1",
+        "rec-2"
+      ],
+      "approval_scope": "offer_promo",
+      "approval_reason": "Offer, pricing, and promotion strategy intents require human approval before execution.",
+      "approval_status": "pending_approval",
+      "required_approver_roles": [
+        "crm_owner",
+        "growth_lead"
+      ],
+      "recommendation_snapshot": {
+        "confidence": 0.86,
+        "expected_lift": {
+          "metric": "revenue_per_contact",
+          "relative_lift": 0.14,
+          "expected_delta": 0.31
+        },
+        "risk": {
+          "level": "medium",
+          "rationale": "offer copy and pricing claims require review"
+        }
+      }
     }
   }
 ]

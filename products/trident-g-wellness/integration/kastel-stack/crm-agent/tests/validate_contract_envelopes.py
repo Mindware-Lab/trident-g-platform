@@ -39,6 +39,7 @@ KNOWN_CONTRACTS = {
     "CrmDeliverabilityAlertRaised.v1",
     "CrmStrategyRecommendationsGenerated.v1",
     "CrmStrategyIntentProposed.v1",
+    "CrmStrategyApprovalRequested.v1",
 }
 
 

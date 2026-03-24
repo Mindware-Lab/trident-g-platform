@@ -85,6 +85,8 @@ Notes:
    - +7/+14/+28 delayed checks
 10. `crm_strategy_intel_v1.n8n.json`
    - draft-first strategy recommendations for products/pricing/promotions/messaging/pipeline
+   - recommendation payload now requires `confidence`, `expected_lift`, and `risk`
+   - offer/promo/pricing intents emit `CrmStrategyApprovalRequested.v1` with approval metadata
    - strategy intents must pass kernel gate before execution
 
 ## V1 live segments
