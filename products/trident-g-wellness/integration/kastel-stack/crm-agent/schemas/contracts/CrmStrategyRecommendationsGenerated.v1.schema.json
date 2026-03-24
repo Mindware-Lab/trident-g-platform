@@ -1,0 +1,33 @@
+{
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "https://mindware-lab.github.io/schemas/contracts/CrmStrategyRecommendationsGenerated.v1.schema.json",
+    "title":  "CrmStrategyRecommendationsGenerated.v1",
+    "allOf":  [
+                  {
+                      "$ref":  "../crm-envelope.schema.json"
+                  },
+                  {
+                      "type":  "object",
+                      "properties":  {
+                                         "contract_name":  {
+                                                               "const":  "CrmStrategyRecommendationsGenerated.v1"
+                                                           },
+                                         "contract_version":  {
+                                                                  "const":  "v1"
+                                                              },
+                                         "event_name":  {
+                                                            "const":  "ks.crm.strategy.recommendations_generated"
+                                                        },
+                                         "payload":  {
+                                                         "type":  "object",
+                                                         "required":  [
+                                                                          "strategy_window_days",
+                                                                          "recommendation_count",
+                                                                          "recommendations"
+                                                                      ],
+                                                         "additionalProperties":  true
+                                                     }
+                                     }
+                  }
+              ]
+}

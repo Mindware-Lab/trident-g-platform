@@ -1,0 +1,32 @@
+{
+    "$schema":  "https://json-schema.org/draft/2020-12/schema",
+    "$id":  "https://mindware-lab.github.io/schemas/contracts/CrmStrategyIntentProposed.v1.schema.json",
+    "title":  "CrmStrategyIntentProposed.v1",
+    "allOf":  [
+                  {
+                      "$ref":  "../crm-envelope.schema.json"
+                  },
+                  {
+                      "type":  "object",
+                      "properties":  {
+                                         "contract_name":  {
+                                                               "const":  "CrmStrategyIntentProposed.v1"
+                                                           },
+                                         "contract_version":  {
+                                                                  "const":  "v1"
+                                                              },
+                                         "event_name":  {
+                                                            "const":  "ks.intent.created"
+                                                        },
+                                         "payload":  {
+                                                         "type":  "object",
+                                                         "required":  [
+                                                                          "intent_type",
+                                                                          "strategy_theme"
+                                                                      ],
+                                                         "additionalProperties":  true
+                                                     }
+                                     }
+                  }
+              ]
+}

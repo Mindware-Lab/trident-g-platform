@@ -1,0 +1,223 @@
+{
+  "name": "crm_strategy_intel_v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "n1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "name": "workspace_id",
+              "value": "={{$env.WORKSPACE_ID || 'wellness_sa'}}",
+              "type": "string"
+            },
+            {
+              "name": "mission_id",
+              "value": "={{$json.mission_id || ''}}",
+              "type": "string"
+            },
+            {
+              "name": "run_id",
+              "value": "={{$json.run_id || ''}}",
+              "type": "string"
+            },
+            {
+              "name": "strategy_window_days",
+              "value": 28,
+              "type": "number"
+            },
+            {
+              "name": "high_value_spend_min",
+              "value": 300,
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "id": "n2",
+      "name": "Build Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/crm/runs/' + $json.run_id + '/strategy/recommendations'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmStrategyRecommendationsGenerated.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.crm.strategy.recommendations_generated\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-strategy-reco-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"map\",\n  \"producer_domain\": \"n8n.crm.strategy\",\n  \"consumer_domain\": \"kernel.crm.strategy\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_strategy_intel_v1\"],\n  \"payload\": {\n    \"strategy_window_days\": Number($json.strategy_window_days || 28),\n    \"high_value_spend_min\": Number($json.high_value_spend_min || 300),\n    \"segments_in_scope\": [\"high_value_spend\", \"new_buyers\", \"lapsed_paid\", \"course_started_no_progress\"],\n    \"focus_areas\": [\"products\", \"pricing\", \"promotions\", \"messaging\", \"conversion_pipeline\"]\n  }\n}"
+      },
+      "id": "n3",
+      "name": "Generate Strategy Recommendations",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/crm/runs/' + $json.run_id + '/intents/strategy'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmStrategyIntentProposed.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.intent.created\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-strategy-intent-\" + $json.run_id,\n  \"risk_level\": \"medium\",\n  \"psi_state\": \"commit\",\n  \"producer_domain\": \"n8n.crm.strategy\",\n  \"consumer_domain\": \"kernel.crm.intent\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_strategy_intel_v1\"],\n  \"payload\": {\n    \"intent_type\": $json.intent_type || \"draft_strategy_message_offer\",\n    \"strategy_theme\": $json.strategy_theme || \"segment_message_offer_pricing\",\n    \"target_segments\": $json.target_segments || [\"high_value_spend\", \"lapsed_paid\"],\n    \"recommendation_ids\": $json.recommendation_ids || []\n  }\n}"
+      },
+      "id": "n4",
+      "name": "Propose Strategy Intents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1030, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/crm/intents/gate'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmStrategyIntentProposed.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.intent.created\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-strategy-gate-\" + $json.run_id,\n  \"risk_level\": \"medium\",\n  \"psi_state\": \"commit\",\n  \"producer_domain\": \"n8n.crm.strategy\",\n  \"consumer_domain\": \"kernel.crm.intent_gate\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_strategy_intel_v1\"],\n  \"payload\": {\n    \"intent_type\": $json.intent_type || \"draft_strategy_message_offer\",\n    \"allow_auto\": [],\n    \"force_draft\": [\"draft_strategy_message_offer\", \"draft_strategy_pricing_experiment\", \"draft_strategy_promotion_plan\", \"draft_strategy_conversion_pipeline\"],\n    \"force_escalate\": [\"apply_live_price_change\", \"launch_unreviewed_promotion\", \"consent_override\", \"suppression_override\"]\n  }\n}"
+      },
+      "id": "n5",
+      "name": "Gate Strategy Intents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1280, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const status = String($json.status || $json.gate_status || '').toLowerCase();\nif (status === 'approved' || status === 'auto_approved') { return [{json:$json}]; }\nreturn [];"
+      },
+      "id": "n6",
+      "name": "Filter Approved Intents",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1530, 220]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\"status\":\"ok\",\"note\":\"Strategy intents generated and gated. Execution remains approval-driven.\"}"
+      },
+      "id": "n7",
+      "name": "Strategy Review Gate",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1780, 300]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Context": {
+      "main": [
+        [
+          {
+            "node": "Generate Strategy Recommendations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Strategy Recommendations": {
+      "main": [
+        [
+          {
+            "node": "Propose Strategy Intents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Propose Strategy Intents": {
+      "main": [
+        [
+          {
+            "node": "Gate Strategy Intents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate Strategy Intents": {
+      "main": [
+        [
+          {
+            "node": "Filter Approved Intents",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Strategy Review Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Approved Intents": {
+      "main": [
+        [
+          {
+            "node": "Strategy Review Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "1"
+}

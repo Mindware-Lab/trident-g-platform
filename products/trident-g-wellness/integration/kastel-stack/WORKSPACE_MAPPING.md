@@ -90,6 +90,8 @@ CRM automation for Brevo cutover and lifecycle control now lives in:
 13. `CrmConversionObserved.v1`
 14. `CrmRecheckCompleted.v1`
 15. `CrmDeliverabilityAlertRaised.v1`
+16. `CrmStrategyRecommendationsGenerated.v1`
+17. `CrmStrategyIntentProposed.v1`
 
 ### CRM Events (append-only `events`)
 
@@ -104,9 +106,10 @@ CRM automation for Brevo cutover and lifecycle control now lives in:
 9. `ks.crm.dispatch.observed`
 10. `ks.crm.conversion.observed`
 11. `ks.crm.recheck.completed`
-12. `ks.intent.created`
-13. `ks.execute.email_dispatched`
-14. `ks.observe.metrics_recorded`
+12. `ks.crm.strategy.recommendations_generated`
+13. `ks.intent.created`
+14. `ks.execute.email_dispatched`
+15. `ks.observe.metrics_recorded`
 
 ### CRM Workflow References
 
@@ -119,6 +122,7 @@ CRM automation for Brevo cutover and lifecycle control now lives in:
 7. `crm_onboarding_retention_v1.n8n.json`
 8. `crm_digest_gmail_v1.n8n.json`
 9. `crm_recheck_v1.n8n.json`
+10. `crm_strategy_intel_v1.n8n.json`
 
 ### Shared CRM Intent Types
 
@@ -129,3 +133,7 @@ CRM automation for Brevo cutover and lifecycle control now lives in:
 5. `raise_deliverability_alert`
 6. `create_crm_review_task`
 7. `send_weekly_crm_digest`
+8. `draft_strategy_message_offer`
+9. `draft_strategy_pricing_experiment`
+10. `draft_strategy_promotion_plan`
+11. `draft_strategy_conversion_pipeline`

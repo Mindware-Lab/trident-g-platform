@@ -350,6 +350,11 @@ Consumers must be idempotent on `idempotency_key`.
 - `CrmRecheckCompleted.v1`
 - `CrmDeliverabilityAlertRaised.v1`
 
+### 11.5 Strategic intelligence
+
+- `CrmStrategyRecommendationsGenerated.v1`
+- `CrmStrategyIntentProposed.v1`
+
 ---
 
 ## 12. Event naming
@@ -371,6 +376,7 @@ Recommended CRM-related events:
 - `ks.crm.dispatch.observed`
 - `ks.crm.conversion.observed`
 - `ks.crm.recheck.completed`
+- `ks.crm.strategy.recommendations_generated`
 - `ks.observe.metrics_recorded`
 - `ks.psi.state_estimated`
 - `ks.psi.permission_set`
@@ -597,6 +603,13 @@ Purpose:
 - complete delayed re-checks at +7 / +14 / +28 days
 - record activation, progression, unsubs and anomalies
 
+### `crm_strategy_intel_v1`
+
+Purpose:
+
+- generate strategic segment intelligence for products, pricing, promotions, messaging, and conversion pipeline decisions
+- propose strategy intents in draft-first mode and route through kernel gate policy
+
 ---
 
 ## 18. Action intent types
@@ -612,6 +625,10 @@ Recommended V1 intent types:
 - `raise_deliverability_alert`
 - `create_crm_review_task`
 - `send_weekly_crm_digest`
+- `draft_strategy_message_offer`
+- `draft_strategy_pricing_experiment`
+- `draft_strategy_promotion_plan`
+- `draft_strategy_conversion_pipeline`
 
 ### 18.1 Intent status lifecycle
 
@@ -680,6 +697,8 @@ Prefer internal job functions over a broad public CRM API:
 - `syncBrevo(run_id)`
 - `projectCrmSegments(run_id)`
 - `proposeLifecycleIntents(run_id)`
+- `generateCrmStrategyRecommendations(run_id)`
+- `proposeCrmStrategyIntents(run_id)`
 - `executeApprovedIntent(intent_id)`
 - `runCrmRechecks()`
 

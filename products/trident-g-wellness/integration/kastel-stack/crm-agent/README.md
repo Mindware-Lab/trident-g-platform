@@ -83,6 +83,9 @@ Notes:
    - weekly KPI and exception digest
 9. `crm_recheck_v1.n8n.json`
    - +7/+14/+28 delayed checks
+10. `crm_strategy_intel_v1.n8n.json`
+   - draft-first strategy recommendations for products/pricing/promotions/messaging/pipeline
+   - strategy intents must pass kernel gate before execution
 
 ## V1 live segments
 
@@ -140,6 +143,10 @@ Shared action intent types:
 - `raise_deliverability_alert`
 - `create_crm_review_task`
 - `send_weekly_crm_digest`
+- `draft_strategy_message_offer`
+- `draft_strategy_pricing_experiment`
+- `draft_strategy_promotion_plan`
+- `draft_strategy_conversion_pipeline`
 
 ## Required environment variables
 
@@ -170,6 +177,7 @@ In v1, no direct recommendation-to-send path is allowed. Execution requires appr
 5. Execute identity -> projection -> eligibility -> segment workflows.
 6. Gate and run Brevo sync.
 7. Enable onboarding/retention path once cutover readiness checks pass.
+8. Run `crm_strategy_intel_v1` for draft-first strategic recommendations and gated strategy intents.
 
 ## Core telemetry views
 

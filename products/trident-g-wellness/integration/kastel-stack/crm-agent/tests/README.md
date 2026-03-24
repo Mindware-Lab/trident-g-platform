@@ -17,6 +17,7 @@ This folder provides dependency-light checks for the CRM lane scaffold.
 11. Segment definition validation (including high_value_spend)
 12. Segment policy evaluator parity checks (including spend threshold override)
 13. Segment workflow payload checks for policy metadata
+14. Strategy-intel scaffold checks (workflow + strategy contracts)
 
 ## Run
 
@@ -33,4 +34,5 @@ python validate_source_normalizer.py
 python validate_segment_definitions.py
 python validate_segment_policy_evaluator.py
 python validate_segment_workflow_payload.py
+python validate_strategy_intel_scaffold.py
 ```
