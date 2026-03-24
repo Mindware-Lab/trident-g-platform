@@ -142,3 +142,22 @@ In v1, no direct recommendation-to-send path is allowed. Execution requires appr
 5. Execute identity -> projection -> eligibility -> segment workflows.
 6. Gate and run Brevo sync.
 7. Enable onboarding/retention path once cutover readiness checks pass.
+
+## Core telemetry views
+
+These are built into `supabase/crm_lane_v1.sql` for direct workspace-level KPI pulls:
+
+1. `v_crm_send_rates`:
+   delivery/open/click/CTOR/unsubscribe/bounce/complaint rates
+2. `v_crm_source_overlap`:
+   profile overlap across Substack/Podia/e-junkie source flags
+3. `v_crm_activity_cohorts`:
+   normalized activity cohorts plus 30-day activation/progress counts
+4. `v_crm_pipeline_quality`:
+   ingest/identity/eligibility/conflict quality rates
+
+Example query:
+
+```sql
+select * from public.v_crm_source_overlap where workspace_id = 'acme';
+```

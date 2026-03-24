@@ -13,6 +13,7 @@ This folder provides dependency-light checks for the CRM lane scaffold.
 7. Cutover readiness fixture validation
 8. Reporting view existence checks in SQL migration
 9. Source export normalization and mislabeled-file detection
+10. Telemetry view declarations for overlap, activity, send rates, and pipeline quality
 
 ## Run
 

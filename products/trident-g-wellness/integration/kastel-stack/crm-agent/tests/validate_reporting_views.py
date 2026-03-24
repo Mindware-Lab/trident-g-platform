@@ -9,6 +9,10 @@ REQUIRED_VIEWS = [
     "v_crm_retention_risk",
     "v_crm_send_health",
     "v_crm_cutover_readiness",
+    "v_crm_send_rates",
+    "v_crm_source_overlap",
+    "v_crm_activity_cohorts",
+    "v_crm_pipeline_quality",
 ]
 
 
