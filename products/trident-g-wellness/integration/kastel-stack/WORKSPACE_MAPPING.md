@@ -126,6 +126,11 @@ CRM automation for Brevo cutover and lifecycle control now lives in:
 9. `crm_recheck_v1.n8n.json`
 10. `crm_strategy_intel_v1.n8n.json`
 
+### CRM Closed-Loop Cadence Reference
+
+- `crm-agent/config/loop_cadence.sample.json`
+- `crm-agent/runbooks/closed-loop-cadence-v1.md`
+
 ### Shared CRM Intent Types
 
 1. `sync_contact_to_brevo`

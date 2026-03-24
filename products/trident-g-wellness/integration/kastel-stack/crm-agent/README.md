@@ -181,6 +181,24 @@ In v1, no direct recommendation-to-send path is allowed. Execution requires appr
 7. Enable onboarding/retention path once cutover readiness checks pass.
 8. Run `crm_strategy_intel_v1` for draft-first strategic recommendations and gated strategy intents.
 
+## Closed-loop cadence (looking ahead)
+
+Use `config/loop_cadence.sample.json` as the explicit target steady-state loop:
+
+1. Daily ingest refresh:
+   `collect -> identity -> profile -> eligibility -> segment`
+2. Daily recheck refresh:
+   run due +7/+14/+28 checks via `crm_recheck_v1`
+3. Weekly measurement refresh:
+   pull KPI views and compare current 28-day vs prior 28-day performance
+4. Weekly strategy refresh:
+   run `crm_strategy_intel_v1`, gate intents, request approval where required
+5. Execution:
+   run only approved intents; never bypass kernel gate policy
+
+This keeps the loop explicit: updated interactions change observations, observations
+change metrics, metrics change recommendations, recommendations create gated intents.
+
 ## Core telemetry views
 
 These are built into `supabase/crm_lane_v1.sql` for direct workspace-level KPI pulls:
@@ -193,6 +211,8 @@ These are built into `supabase/crm_lane_v1.sql` for direct workspace-level KPI p
    normalized activity cohorts plus 30-day activation/progress counts
 4. `v_crm_pipeline_quality`:
    ingest/identity/eligibility/conflict quality rates
+5. `v_crm_strategy_measurement_loop`:
+   current-vs-prior window deltas for conversion lift, revenue/contact, unsubscribe delta, complaint delta
 
 Example query:
 

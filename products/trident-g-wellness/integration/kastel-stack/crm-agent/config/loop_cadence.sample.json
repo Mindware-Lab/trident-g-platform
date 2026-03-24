@@ -1,0 +1,66 @@
+{
+  "version": "crm-loop-cadence-v1",
+  "windows": {
+    "strategy_window_days": 28,
+    "comparison_window_days": 28
+  },
+  "daily_cycle": [
+    {
+      "stage": "ingest_refresh",
+      "workflows": [
+        "crm_collect_sources_v1.n8n.json",
+        "crm_identity_resolve_v1.n8n.json",
+        "crm_profile_project_v1.n8n.json",
+        "crm_eligibility_evaluate_v1.n8n.json",
+        "crm_segment_project_v1.n8n.json"
+      ],
+      "kernel_authority": "projection_update",
+      "n8n_role": "connector_execution_only"
+    },
+    {
+      "stage": "recheck_refresh",
+      "workflows": [
+        "crm_recheck_v1.n8n.json"
+      ],
+      "kernel_authority": "recheck_result_evaluation",
+      "n8n_role": "scheduled_recheck_execution"
+    }
+  ],
+  "weekly_cycle": [
+    {
+      "stage": "measurement_refresh",
+      "sources": [
+        "v_crm_send_rates",
+        "v_crm_activity_cohorts",
+        "v_crm_pipeline_quality",
+        "v_crm_strategy_measurement_loop"
+      ],
+      "kernel_authority": "metric_interpretation",
+      "n8n_role": "data_pull_and_summary"
+    },
+    {
+      "stage": "strategy_refresh",
+      "workflows": [
+        "crm_strategy_intel_v1.n8n.json",
+        "crm_digest_gmail_v1.n8n.json"
+      ],
+      "kernel_authority": "recommend_and_gate",
+      "n8n_role": "execute_approved_actions_only"
+    }
+  ],
+  "guardrails": {
+    "allow_auto": [],
+    "force_draft": [
+      "draft_strategy_message_offer",
+      "draft_strategy_pricing_experiment",
+      "draft_strategy_promotion_plan",
+      "draft_strategy_conversion_pipeline"
+    ],
+    "force_escalate": [
+      "apply_live_price_change",
+      "launch_unreviewed_promotion",
+      "consent_override",
+      "suppression_override"
+    ]
+  }
+}

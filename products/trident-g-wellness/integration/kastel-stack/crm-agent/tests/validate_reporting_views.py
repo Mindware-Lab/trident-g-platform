@@ -13,6 +13,7 @@ REQUIRED_VIEWS = [
     "v_crm_source_overlap",
     "v_crm_activity_cohorts",
     "v_crm_pipeline_quality",
+    "v_crm_strategy_measurement_loop",
 ]
 
 

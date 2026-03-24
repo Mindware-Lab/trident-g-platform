@@ -421,6 +421,7 @@ Use projection-oriented names.
 - `v_crm_source_overlap`
 - `v_crm_activity_cohorts`
 - `v_crm_pipeline_quality`
+- `v_crm_strategy_measurement_loop`
 
 ---
 
@@ -780,6 +781,24 @@ Rechecks should record:
 - progressed
 - retained
 - anomaly_flag
+
+### 22.1 Closed-loop cadence (target steady-state)
+
+Use `config/loop_cadence.sample.json` as the explicit loop template:
+
+1. Daily ingest refresh (`collect -> identity -> profile -> eligibility -> segment`)
+2. Daily recheck refresh (`crm_recheck_v1`)
+3. Weekly measurement refresh (windowed KPI deltas from `v_crm_strategy_measurement_loop`)
+4. Weekly strategy refresh (`crm_strategy_intel_v1`, then gate + approval path)
+5. Execution only for approved intents
+
+Loop invariant:
+
+- interaction updates -> observation tables
+- observation tables -> telemetry views
+- telemetry deltas -> strategy recommendations
+- recommendations -> gated action intents
+- approved intents -> execution
 
 ---
 

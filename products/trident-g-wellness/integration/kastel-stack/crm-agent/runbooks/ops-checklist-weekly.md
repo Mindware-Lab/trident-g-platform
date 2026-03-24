@@ -19,3 +19,5 @@
    `select * from public.v_crm_pipeline_quality where workspace_id = '<workspace>';`
 5. Segment proof checks:
    run `runbooks/sql-proof-high-value-spend-segment.sql` for `high_value_spend` parity/mismatch tracking.
+6. Closed-loop measurement deltas:
+   `select * from public.v_crm_strategy_measurement_loop where workspace_id = '<workspace>';`

@@ -39,3 +39,5 @@ Generate draft-first strategic recommendations for segment messaging, offers, pr
    `select * from public.v_crm_source_overlap where workspace_id = '<workspace>';`
 3. High-value parity:
    run `runbooks/sql-proof-high-value-spend-segment.sql`
+4. Measurement loop deltas:
+   `select * from public.v_crm_strategy_measurement_loop where workspace_id = '<workspace>';`

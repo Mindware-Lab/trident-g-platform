@@ -605,3 +605,178 @@ left join eligibility_rollup e
   on e.workspace_id = w.workspace_id
 left join conflict_rollup c
   on c.workspace_id = w.workspace_id;
+
+create or replace view public.v_crm_strategy_measurement_loop as
+with conversion_values as (
+  select
+    workspace_id,
+    observed_at,
+    case
+      when coalesce(
+        payload_json ->> 'revenue',
+        payload_json ->> 'amount',
+        payload_json ->> 'total',
+        payload_json #>> '{order,revenue}',
+        payload_json #>> '{order,amount}',
+        payload_json #>> '{order,total}'
+      ) ~ '^-?[0-9]+(\\.[0-9]+)?$'
+      then coalesce(
+        payload_json ->> 'revenue',
+        payload_json ->> 'amount',
+        payload_json ->> 'total',
+        payload_json #>> '{order,revenue}',
+        payload_json #>> '{order,amount}',
+        payload_json #>> '{order,total}'
+      )::numeric
+      else 0::numeric
+    end as revenue
+  from public.crm_conversion_observations
+),
+send_rollup as (
+  select
+    workspace_id,
+    count(*) filter (where delivered_at >= now() - interval '28 days') as delivered_current_28d,
+    count(*) filter (
+      where delivered_at >= now() - interval '56 days'
+        and delivered_at < now() - interval '28 days'
+    ) as delivered_prior_28d,
+    count(*) filter (where unsubscribed_at >= now() - interval '28 days') as unsubscribed_current_28d,
+    count(*) filter (
+      where unsubscribed_at >= now() - interval '56 days'
+        and unsubscribed_at < now() - interval '28 days'
+    ) as unsubscribed_prior_28d,
+    count(*) filter (where complaint_at >= now() - interval '28 days') as complaints_current_28d,
+    count(*) filter (
+      where complaint_at >= now() - interval '56 days'
+        and complaint_at < now() - interval '28 days'
+    ) as complaints_prior_28d
+  from public.crm_dispatch_observations
+  group by workspace_id
+),
+conversion_rollup as (
+  select
+    workspace_id,
+    count(*) filter (where observed_at >= now() - interval '28 days') as conversions_current_28d,
+    count(*) filter (
+      where observed_at >= now() - interval '56 days'
+        and observed_at < now() - interval '28 days'
+    ) as conversions_prior_28d,
+    coalesce(sum(revenue) filter (where observed_at >= now() - interval '28 days'), 0) as revenue_current_28d,
+    coalesce(
+      sum(revenue) filter (
+        where observed_at >= now() - interval '56 days'
+          and observed_at < now() - interval '28 days'
+      ),
+      0
+    ) as revenue_prior_28d
+  from conversion_values
+  group by workspace_id
+),
+workspace_ids as (
+  select workspace_id from send_rollup
+  union
+  select workspace_id from conversion_rollup
+)
+select
+  w.workspace_id,
+  (now() - interval '28 days') as current_window_start,
+  now() as current_window_end,
+  (now() - interval '56 days') as prior_window_start,
+  (now() - interval '28 days') as prior_window_end,
+  coalesce(s.delivered_current_28d, 0) as delivered_current_28d,
+  coalesce(s.delivered_prior_28d, 0) as delivered_prior_28d,
+  coalesce(c.conversions_current_28d, 0) as conversions_current_28d,
+  coalesce(c.conversions_prior_28d, 0) as conversions_prior_28d,
+  coalesce(c.revenue_current_28d, 0) as revenue_current_28d,
+  coalesce(c.revenue_prior_28d, 0) as revenue_prior_28d,
+  round(
+    coalesce(c.conversions_current_28d, 0)::numeric / nullif(coalesce(s.delivered_current_28d, 0), 0),
+    4
+  ) as conversion_rate_current_28d,
+  round(
+    coalesce(c.conversions_prior_28d, 0)::numeric / nullif(coalesce(s.delivered_prior_28d, 0), 0),
+    4
+  ) as conversion_rate_prior_28d,
+  round(
+    (
+      (coalesce(c.conversions_current_28d, 0)::numeric / nullif(coalesce(s.delivered_current_28d, 0), 0))
+      - (coalesce(c.conversions_prior_28d, 0)::numeric / nullif(coalesce(s.delivered_prior_28d, 0), 0))
+    ),
+    4
+  ) as conversion_rate_delta,
+  round(
+    (
+      (coalesce(c.conversions_current_28d, 0)::numeric / nullif(coalesce(s.delivered_current_28d, 0), 0))
+      - (coalesce(c.conversions_prior_28d, 0)::numeric / nullif(coalesce(s.delivered_prior_28d, 0), 0))
+    ) / nullif(
+      (coalesce(c.conversions_prior_28d, 0)::numeric / nullif(coalesce(s.delivered_prior_28d, 0), 0)),
+      0
+    ),
+    4
+  ) as conversion_rate_lift,
+  round(
+    coalesce(c.revenue_current_28d, 0)::numeric / nullif(coalesce(s.delivered_current_28d, 0), 0),
+    4
+  ) as revenue_per_contact_current_28d,
+  round(
+    coalesce(c.revenue_prior_28d, 0)::numeric / nullif(coalesce(s.delivered_prior_28d, 0), 0),
+    4
+  ) as revenue_per_contact_prior_28d,
+  round(
+    (
+      coalesce(c.revenue_current_28d, 0)::numeric / nullif(coalesce(s.delivered_current_28d, 0), 0)
+    ) - (
+      coalesce(c.revenue_prior_28d, 0)::numeric / nullif(coalesce(s.delivered_prior_28d, 0), 0)
+    ),
+    4
+  ) as revenue_per_contact_delta,
+  round(
+    (
+      (
+        coalesce(c.revenue_current_28d, 0)::numeric / nullif(coalesce(s.delivered_current_28d, 0), 0)
+      ) - (
+        coalesce(c.revenue_prior_28d, 0)::numeric / nullif(coalesce(s.delivered_prior_28d, 0), 0)
+      )
+    ) / nullif(
+      (coalesce(c.revenue_prior_28d, 0)::numeric / nullif(coalesce(s.delivered_prior_28d, 0), 0)),
+      0
+    ),
+    4
+  ) as revenue_per_contact_lift,
+  round(
+    coalesce(s.unsubscribed_current_28d, 0)::numeric / nullif(coalesce(s.delivered_current_28d, 0), 0),
+    4
+  ) as unsubscribe_rate_current_28d,
+  round(
+    coalesce(s.unsubscribed_prior_28d, 0)::numeric / nullif(coalesce(s.delivered_prior_28d, 0), 0),
+    4
+  ) as unsubscribe_rate_prior_28d,
+  round(
+    (
+      coalesce(s.unsubscribed_current_28d, 0)::numeric / nullif(coalesce(s.delivered_current_28d, 0), 0)
+    ) - (
+      coalesce(s.unsubscribed_prior_28d, 0)::numeric / nullif(coalesce(s.delivered_prior_28d, 0), 0)
+    ),
+    4
+  ) as unsubscribe_rate_delta,
+  round(
+    coalesce(s.complaints_current_28d, 0)::numeric / nullif(coalesce(s.delivered_current_28d, 0), 0),
+    4
+  ) as complaint_rate_current_28d,
+  round(
+    coalesce(s.complaints_prior_28d, 0)::numeric / nullif(coalesce(s.delivered_prior_28d, 0), 0),
+    4
+  ) as complaint_rate_prior_28d,
+  round(
+    (
+      coalesce(s.complaints_current_28d, 0)::numeric / nullif(coalesce(s.delivered_current_28d, 0), 0)
+    ) - (
+      coalesce(s.complaints_prior_28d, 0)::numeric / nullif(coalesce(s.delivered_prior_28d, 0), 0)
+    ),
+    4
+  ) as complaint_rate_delta
+from workspace_ids w
+left join send_rollup s
+  on s.workspace_id = w.workspace_id
+left join conversion_rollup c
+  on c.workspace_id = w.workspace_id;
