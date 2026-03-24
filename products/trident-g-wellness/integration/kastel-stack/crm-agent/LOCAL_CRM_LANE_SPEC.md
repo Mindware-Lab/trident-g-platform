@@ -205,6 +205,11 @@ Use only these segments in V1:
 - `lapsed_paid`
 - `high_value_spend`
 
+Segment policy note:
+
+- kernel policy version for segment projection: `crm-segment-policy-v1`
+- `high_value_spend` threshold: `total_spend >= 300` (default; workspace override allowed)
+
 Defer these to later:
 
 - `high_intent_substack`
@@ -568,6 +573,9 @@ Purpose:
 
 - compute internal segment projection
 - sync approved segment memberships to Brevo
+- apply kernel-side policy metadata:
+  - `segment_policy_version = crm-segment-policy-v1`
+  - `segment_thresholds.high_value_spend_min` (default `300`)
 
 ### `crm_onboarding_retention_v1`
 

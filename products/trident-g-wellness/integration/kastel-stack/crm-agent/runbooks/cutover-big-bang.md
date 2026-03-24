@@ -19,6 +19,7 @@
 - Freeze Podia automations.
 - Final delta import.
 - Verify dedupe and suppression parity gates.
+- Run `runbooks/sql-proof-high-value-spend-segment.sql` and confirm mismatch count is zero (or explained).
 
 ## T0
 

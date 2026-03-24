@@ -15,6 +15,8 @@ This folder provides dependency-light checks for the CRM lane scaffold.
 9. Source export normalization and mislabeled-file detection
 10. Telemetry view declarations for overlap, activity, send rates, and pipeline quality
 11. Segment definition validation (including high_value_spend)
+12. Segment policy evaluator parity checks (including spend threshold override)
+13. Segment workflow payload checks for policy metadata
 
 ## Run
 
@@ -29,4 +31,6 @@ python validate_cutover_readiness.py
 python validate_reporting_views.py
 python validate_source_normalizer.py
 python validate_segment_definitions.py
+python validate_segment_policy_evaluator.py
+python validate_segment_workflow_payload.py
 ```

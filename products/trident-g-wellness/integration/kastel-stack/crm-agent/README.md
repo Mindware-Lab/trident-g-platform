@@ -91,6 +91,27 @@ Notes:
 3. `lapsed_paid`
 4. `high_value_spend`
 
+`high_value_spend` is evaluated in the kernel segment policy (`crm-segment-policy-v1`)
+using `total_spend >= high_value_spend_min` (default: `300`).
+
+## Kernel segment policy reference
+
+Reference evaluator:
+
+```powershell
+python tools/segment_policy_evaluator.py `
+  --profile-json "{\"purchase_count\":2,\"total_spend\":420,\"lifecycle_state_projection\":\"retained_30d\"}"
+```
+
+The segment workflow payload now passes policy metadata to kernel:
+
+1. `segment_policy_version = crm-segment-policy-v1`
+2. `segment_thresholds.high_value_spend_min` (default `300`)
+
+Proof query pack:
+
+- `runbooks/sql-proof-high-value-spend-segment.sql`
+
 ## Internal handlers, ingress points, and shared intent types
 
 Handler/job interfaces:

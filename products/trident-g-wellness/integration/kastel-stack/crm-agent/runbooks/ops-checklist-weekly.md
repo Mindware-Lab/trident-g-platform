@@ -17,3 +17,5 @@
    `select * from public.v_crm_activity_cohorts where workspace_id = '<workspace>';`
 4. Pipeline and identity quality:
    `select * from public.v_crm_pipeline_quality where workspace_id = '<workspace>';`
+5. Segment proof checks:
+   run `runbooks/sql-proof-high-value-spend-segment.sql` for `high_value_spend` parity/mismatch tracking.
