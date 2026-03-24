@@ -18,6 +18,30 @@ Required order:
 
 `CSV export -> raw batch ingest -> identity resolution -> profile projection -> eligibility evaluation -> segment projection -> conflict review -> approved Brevo sync -> limited automation activation`
 
+### CSV normalization helper (mislabeled-file guard)
+
+Use the helper before ingest if exported files are mixed, mislabeled, or in
+provider-native TSV format:
+
+```powershell
+python tools/normalize_crm_source_exports.py `
+  --inputs "C:\path\substack-2026-03-23.txt" "C:\path\podia-2026-03-23.txt" "C:\path\e-junkie-2026-03-23.txt" `
+  --out-dir ".\imports\normalized" `
+  --report-path ".\imports\normalization_report.json"
+```
+
+What it does:
+
+1. detects source from header signature (substack/podia/ejunkie)
+2. flags filename/source mismatches automatically
+3. normalizes records into lane templates in `config/csv-templates/`
+4. writes a JSON report for operator review and audit trail
+
+Notes:
+
+- for Substack, it also detects UI-style headers (`Subscriber`, `Type`, `Activity`, `Start date`) and maps `Type`/`Start date` into the normalized shape
+- activity stars can be retained in source payload/provenance even when open/click timestamps are absent
+
 ## Folder layout
 
 - `workflows/`: importable n8n JSON workflows

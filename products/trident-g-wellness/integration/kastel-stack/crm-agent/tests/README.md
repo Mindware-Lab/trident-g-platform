@@ -12,6 +12,7 @@ This folder provides dependency-light checks for the CRM lane scaffold.
 6. End-to-end sequence fixture validation
 7. Cutover readiness fixture validation
 8. Reporting view existence checks in SQL migration
+9. Source export normalization and mislabeled-file detection
 
 ## Run
 
@@ -24,4 +25,5 @@ python validate_action_gate.py
 python validate_end_to_end_fixture.py
 python validate_cutover_readiness.py
 python validate_reporting_views.py
+python validate_source_normalizer.py
 ```

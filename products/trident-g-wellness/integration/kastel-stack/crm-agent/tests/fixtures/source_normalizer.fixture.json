@@ -1,0 +1,83 @@
+{
+  "detect_source_cases": [
+    {
+      "name": "substack template headers",
+      "headers": [
+        "email",
+        "first_name",
+        "last_name",
+        "subscriber_state",
+        "subscription_tier",
+        "subscribed_at",
+        "last_open_at",
+        "last_click_at"
+      ],
+      "expected_source": "substack"
+    },
+    {
+      "name": "substack ui table headers",
+      "headers": [
+        "Subscriber",
+        "Type",
+        "Activity",
+        "Start date",
+        "Revenue"
+      ],
+      "expected_source": "substack"
+    },
+    {
+      "name": "podia template headers",
+      "headers": [
+        "email",
+        "first_name",
+        "last_name",
+        "customer_id",
+        "product_title",
+        "enrolled_at",
+        "last_activity_at",
+        "purchase_amount",
+        "currency"
+      ],
+      "expected_source": "podia"
+    },
+    {
+      "name": "ejunkie export headers",
+      "headers": [
+        "Payment Date (MST)",
+        "Processed by E-j (MST)",
+        "Transaction ID",
+        "E-j Internal Txn ID",
+        "Payment Status",
+        "Payer E-mail",
+        "Item Name",
+        "Amount",
+        "Currency"
+      ],
+      "expected_source": "ejunkie"
+    }
+  ],
+  "normalize_ejunkie_case": {
+    "row": {
+      "Payment Date (MST)": "2026-03-09 20:53:20",
+      "Transaction ID": "47B60299M3501532X",
+      "Payment Status": "Completed",
+      "First Name": "Joosep",
+      "Last Name": "Raim",
+      "Payer E-mail": "joosepraim@gmail.com",
+      "Currency": "USD",
+      "Item Name": "Trident G Platinum Coaching x4 Sessions I IQ Mindware",
+      "Amount": "249.99"
+    },
+    "expected": {
+      "email": "joosepraim@gmail.com",
+      "first_name": "Joosep",
+      "last_name": "Raim",
+      "order_id": "47B60299M3501532X",
+      "product_name": "Trident G Platinum Coaching x4 Sessions I IQ Mindware",
+      "purchase_date": "2026-03-09 20:53:20",
+      "gross_amount": "249.99",
+      "currency": "USD",
+      "payment_status": "Completed"
+    }
+  }
+}
