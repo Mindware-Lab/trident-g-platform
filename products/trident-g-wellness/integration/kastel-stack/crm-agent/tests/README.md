@@ -14,6 +14,7 @@ This folder provides dependency-light checks for the CRM lane scaffold.
 8. Reporting view existence checks in SQL migration
 9. Source export normalization and mislabeled-file detection
 10. Telemetry view declarations for overlap, activity, send rates, and pipeline quality
+11. Segment definition validation (including high_value_spend)
 
 ## Run
 
@@ -27,4 +28,5 @@ python validate_end_to_end_fixture.py
 python validate_cutover_readiness.py
 python validate_reporting_views.py
 python validate_source_normalizer.py
+python validate_segment_definitions.py
 ```

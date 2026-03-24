@@ -24,7 +24,7 @@
 
 - Brevo becomes outbound lifecycle executor.
 - Podia shifts to read-only source.
-- Activate only `new_buyers`, `course_started_no_progress`, and weekly digest.
+- Activate only `new_buyers`, `course_started_no_progress`, `high_value_spend`, and weekly digest.
 
 ## T+1 to T+8
 

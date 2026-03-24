@@ -203,6 +203,7 @@ Use only these segments in V1:
 - `new_buyers`
 - `course_started_no_progress`
 - `lapsed_paid`
+- `high_value_spend`
 
 Defer these to later:
 
@@ -710,6 +711,7 @@ Prefer internal job functions over a broad public CRM API:
 - activate only:
   - `new_buyers` onboarding
   - `course_started_no_progress` recovery
+  - `high_value_spend` (VIP/customer-care audience)
   - weekly digest
 
 ### T+1 to T+7

@@ -17,11 +17,21 @@
       "version": "v1",
       "rule": "purchase_count > 0 and lifecycle_state_projection in ('at_risk_14d','lapsed_paid')",
       "priority": 3
+    },
+    {
+      "segment_key": "high_value_spend",
+      "version": "v1",
+      "rule": "total_spend >= 300",
+      "priority": 4
     }
   ],
   "retention_thresholds": {
     "no_progress_days": 7,
     "risk_14d_days": 14,
     "retained_window_days": 30
+  },
+  "spend_thresholds": {
+    "high_value_spend_min": 300,
+    "vip_spend_min": 1000
   }
 }

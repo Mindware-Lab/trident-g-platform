@@ -84,6 +84,13 @@ Notes:
 9. `crm_recheck_v1.n8n.json`
    - +7/+14/+28 delayed checks
 
+## V1 live segments
+
+1. `new_buyers`
+2. `course_started_no_progress`
+3. `lapsed_paid`
+4. `high_value_spend`
+
 ## Internal handlers, ingress points, and shared intent types
 
 Handler/job interfaces:
