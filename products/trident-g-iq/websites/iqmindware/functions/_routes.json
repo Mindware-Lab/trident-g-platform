@@ -2,6 +2,10 @@
   "version": 1,
   "include": [
     "/",
+    "/pricing",
+    "/pricing/*",
+    "/za/pricing",
+    "/za/pricing/*",
     "/tag/*",
     "/category/*",
     "/product/*",
@@ -58,7 +62,6 @@
     "/how-it-works/*",
     "/learn/*",
     "/login/*",
-    "/pricing/*",
     "/privacy/*",
     "/proof/*",
     "/refunds/*",
