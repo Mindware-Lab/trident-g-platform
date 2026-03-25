@@ -134,6 +134,8 @@ The segment workflow payload now passes policy metadata to kernel:
 Proof query pack:
 
 - `runbooks/sql-proof-high-value-spend-segment.sql`
+- `runbooks/sql-export-engaged-brevo-import.sql` (engaged `<5000` Brevo import list)
+- `runbooks/engaged-audience-brevo-import-v1.md` (n8n setup patterns)
 
 ## Internal handlers, ingress points, and shared intent types
 

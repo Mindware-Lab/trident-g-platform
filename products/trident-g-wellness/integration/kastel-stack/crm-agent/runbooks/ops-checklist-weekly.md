@@ -23,3 +23,5 @@
    `select * from public.v_crm_strategy_measurement_loop where workspace_id = '<workspace>';`
 7. Privacy suppression/erasure intake status:
    `select * from public.v_crm_privacy_requests where workspace_id = '<workspace>';`
+8. Engaged audience export readiness (<5000):
+   run `runbooks/sql-export-engaged-brevo-import.sql` before Brevo rebuild imports.
