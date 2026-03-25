@@ -21,3 +21,5 @@
    run `runbooks/sql-proof-high-value-spend-segment.sql` for `high_value_spend` parity/mismatch tracking.
 6. Closed-loop measurement deltas:
    `select * from public.v_crm_strategy_measurement_loop where workspace_id = '<workspace>';`
+7. Privacy suppression/erasure intake status:
+   `select * from public.v_crm_privacy_requests where workspace_id = '<workspace>';`

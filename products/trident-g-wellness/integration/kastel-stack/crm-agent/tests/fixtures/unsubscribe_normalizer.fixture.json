@@ -1,0 +1,20 @@
+{
+  "lines": [
+    "ValidUser@example.com",
+    "validuser@example.com",
+    "another.user@domain.org",
+    "not-an-email",
+    ""
+  ],
+  "request_type": "erase",
+  "source_system": "manual_unsubscribe_list",
+  "expected": {
+    "accepted_rows": 2,
+    "duplicate_rows": 1,
+    "invalid_rows": 1,
+    "emails": [
+      "validuser@example.com",
+      "another.user@domain.org"
+    ]
+  }
+}

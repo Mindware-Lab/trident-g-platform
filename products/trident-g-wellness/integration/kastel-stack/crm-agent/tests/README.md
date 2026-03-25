@@ -18,6 +18,8 @@ This folder provides dependency-light checks for the CRM lane scaffold.
 12. Segment policy evaluator parity checks (including spend threshold override)
 13. Segment workflow payload checks for policy metadata
 14. Strategy-intel scaffold checks (workflow + strategy contracts + approval payload)
+15. Privacy suppression scaffold checks (workflow + privacy contract)
+16. Unsubscribe privacy normalizer checks
 
 ## Run
 
@@ -36,4 +38,6 @@ python validate_segment_policy_evaluator.py
 python validate_segment_workflow_payload.py
 python validate_strategy_intel_scaffold.py
 python validate_loop_cadence.py
+python validate_privacy_workflow_scaffold.py
+python validate_privacy_normalizer.py
 ```

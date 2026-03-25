@@ -17,15 +17,15 @@ def main() -> None:
 
     daily = data.get("daily_cycle") or []
     weekly = data.get("weekly_cycle") or []
-    if len(daily) < 2:
-        fail("daily_cycle must include ingest_refresh and recheck_refresh")
+    if len(daily) < 3:
+        fail("daily_cycle must include ingest_refresh, recheck_refresh, and privacy_intake")
     if len(weekly) < 2:
         fail("weekly_cycle must include measurement_refresh and strategy_refresh")
 
     daily_stages = {row.get("stage") for row in daily if isinstance(row, dict)}
     weekly_stages = {row.get("stage") for row in weekly if isinstance(row, dict)}
 
-    for stage in ("ingest_refresh", "recheck_refresh"):
+    for stage in ("ingest_refresh", "recheck_refresh", "privacy_intake"):
         if stage not in daily_stages:
             fail(f"daily_cycle missing stage: {stage}")
 

@@ -139,5 +139,38 @@
         }
       }
     }
+  },
+  {
+    "contract_name": "CrmPrivacyRequestReceived.v1",
+    "contract_version": "v1",
+    "event_name": "ks.crm.privacy.request.received",
+    "event_id": "88888888-8888-4888-8888-888888888888",
+    "idempotency_key": "crm-privacy-run-2026-03-25",
+    "workspace_id": "wellness_sa",
+    "mission_id": "22222222-2222-4222-8222-222222222222",
+    "run_id": "33333333-3333-4333-8333-333333333333",
+    "risk_level": "high",
+    "psi_state": "probe",
+    "producer_domain": "n8n.crm.privacy",
+    "consumer_domain": "kernel.crm.privacy",
+    "occurred_at": "2026-03-25T09:00:00Z",
+    "trace_refs": [
+      "n8n:crm_privacy_suppression_v1"
+    ],
+    "payload": {
+      "request_type": "erase",
+      "source_system": "manual_unsubscribe_list",
+      "batch_size": 2,
+      "records": [
+        {
+          "email": "example1@example.com",
+          "requested_at": "2026-03-25T09:00:00Z"
+        },
+        {
+          "email": "example2@example.com",
+          "requested_at": "2026-03-25T09:00:00Z"
+        }
+      ]
+    }
   }
 ]

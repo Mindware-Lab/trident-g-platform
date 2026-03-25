@@ -1,0 +1,127 @@
+{
+  "name": "crm_privacy_suppression_v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "n1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [220, 260]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "name": "workspace_id",
+              "value": "={{$env.WORKSPACE_ID || 'wellness_sa'}}",
+              "type": "string"
+            },
+            {
+              "name": "mission_id",
+              "value": "={{$json.mission_id || ''}}",
+              "type": "string"
+            },
+            {
+              "name": "run_id",
+              "value": "={{$json.run_id || ''}}",
+              "type": "string"
+            },
+            {
+              "name": "request_type",
+              "value": "={{$json.request_type || 'erase'}}",
+              "type": "string"
+            },
+            {
+              "name": "source_system",
+              "value": "={{$json.source_system || 'manual_unsubscribe_list'}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "n2",
+      "name": "Build Context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 260]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.KERNEL_BASE_URL + '/kernel/crm/privacy/requests/batch'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmPrivacyRequestReceived.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.crm.privacy.request.received\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-privacy-\" + $json.run_id,\n  \"risk_level\": \"high\",\n  \"psi_state\": \"probe\",\n  \"producer_domain\": \"n8n.crm.privacy\",\n  \"consumer_domain\": \"kernel.crm.privacy\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_privacy_suppression_v1\"],\n  \"payload\": {\n    \"request_type\": $json.request_type || \"erase\",\n    \"source_system\": $json.source_system || \"manual_unsubscribe_list\",\n    \"batch_size\": Number($json.batch_size || ($json.records || []).length || 0),\n    \"records\": $json.records || []\n  }\n}"
+      },
+      "id": "n3",
+      "name": "Post Privacy Batch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 260]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\"status\":\"ok\",\"note\":\"Privacy suppression/erasure intake submitted. Block sends and apply deletion policy.\"}"
+      },
+      "id": "n4",
+      "name": "Review Gate",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1020, 260]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Context": {
+      "main": [
+        [
+          {
+            "node": "Post Privacy Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Privacy Batch": {
+      "main": [
+        [
+          {
+            "node": "Review Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "1"
+}

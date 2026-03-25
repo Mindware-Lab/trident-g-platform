@@ -42,6 +42,7 @@ Notes:
 - for Substack, it also detects UI-style headers (`Subscriber`, `Type`, `Activity`, `Start date`) and maps `Type`/`Start date` into the normalized shape
 - activity stars can be retained in source payload/provenance even when open/click timestamps are absent
 - Stripe customer rollups (for example `unified_customers.csv`) are normalized into `stripe_customer_id`, `total_spend`, `payment_count`, `refunded_volume`, `dispute_losses`, and computed `net_spend`
+- one-email-per-line unsubscribe/privacy lists can be normalized with `tools/normalize_unsubscribe_list.py` into hard `unsubscribe` or `erase` intake payloads
 
 ## Folder layout
 
@@ -90,6 +91,10 @@ Notes:
    - recommendation payload now requires `confidence`, `expected_lift`, and `risk`
    - offer/promo/pricing intents emit `CrmStrategyApprovalRequested.v1` with approval metadata
    - strategy intents must pass kernel gate before execution
+11. `crm_privacy_suppression_v1.n8n.json`
+   - intake hard privacy requests (`unsubscribe` or `erase`)
+   - emit `CrmPrivacyRequestReceived.v1`
+   - route into high-risk suppression/deletion handling
 
 ## V1 live segments
 
@@ -129,6 +134,7 @@ Handler/job interfaces:
 - `evaluateCrmEligibility(run_id)`
 - `syncBrevo(run_id)`
 - `projectCrmSegments(run_id)`
+- `handleCrmPrivacyRequests(run_id)`
 - `proposeLifecycleIntents(run_id)`
 - `executeApprovedIntent(intent_id)`
 - `runCrmRechecks()`
@@ -178,10 +184,11 @@ In v1, no direct recommendation-to-send path is allowed. Execution requires appr
 2. Import workflows in `workflows/`.
 3. Configure connector credentials and env vars in n8n.
 4. Run CSV bootstrap with `crm_collect_sources_v1`.
-5. Execute identity -> projection -> eligibility -> segment workflows.
-6. Gate and run Brevo sync.
-7. Enable onboarding/retention path once cutover readiness checks pass.
-8. Run `crm_strategy_intel_v1` for draft-first strategic recommendations and gated strategy intents.
+5. If privacy lists exist, run `crm_privacy_suppression_v1` (`request_type = erase` or `unsubscribe`) before lifecycle sends.
+6. Execute identity -> projection -> eligibility -> segment workflows.
+7. Gate and run Brevo sync.
+8. Enable onboarding/retention path once cutover readiness checks pass.
+9. Run `crm_strategy_intel_v1` for draft-first strategic recommendations and gated strategy intents.
 
 ## Closed-loop cadence (looking ahead)
 
@@ -191,11 +198,13 @@ Use `config/loop_cadence.sample.json` as the explicit target steady-state loop:
    `collect -> identity -> profile -> eligibility -> segment`
 2. Daily recheck refresh:
    run due +7/+14/+28 checks via `crm_recheck_v1`
-3. Weekly measurement refresh:
+3. Daily/near-real-time privacy intake:
+   run `crm_privacy_suppression_v1` for unsubscribe/deletion request batches
+4. Weekly measurement refresh:
    pull KPI views and compare current 28-day vs prior 28-day performance
-4. Weekly strategy refresh:
+5. Weekly strategy refresh:
    run `crm_strategy_intel_v1`, gate intents, request approval where required
-5. Execution:
+6. Execution:
    run only approved intents; never bypass kernel gate policy
 
 This keeps the loop explicit: updated interactions change observations, observations
@@ -215,6 +224,8 @@ These are built into `supabase/crm_lane_v1.sql` for direct workspace-level KPI p
    ingest/identity/eligibility/conflict quality rates
 5. `v_crm_strategy_measurement_loop`:
    current-vs-prior window deltas for conversion lift, revenue/contact, unsubscribe delta, complaint delta
+6. `v_crm_privacy_requests`:
+   workspace-level privacy request volume/status for `unsubscribe` and `erase`
 
 Example query:
 

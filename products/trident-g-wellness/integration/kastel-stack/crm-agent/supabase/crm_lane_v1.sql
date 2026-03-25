@@ -265,6 +265,33 @@ create table if not exists public.crm_conflict_review_queue (
   resolved_at timestamptz
 );
 
+create table if not exists public.crm_privacy_requests (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id text not null,
+  mission_id uuid,
+  run_id uuid,
+  email_normalized text not null,
+  request_type text not null check (request_type in ('unsubscribe','erase')),
+  source_system text not null,
+  reason text,
+  status text not null default 'pending' check (status in ('pending','applied','rejected')),
+  requested_at timestamptz not null default now(),
+  applied_at timestamptz,
+  payload_json jsonb not null default '{}'::jsonb,
+  contract_name text,
+  contract_version text,
+  event_id uuid,
+  idempotency_key text,
+  risk_level text,
+  psi_state text,
+  producer_domain text,
+  consumer_domain text,
+  occurred_at timestamptz,
+  trace_refs jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default now(),
+  unique (workspace_id, email_normalized, request_type)
+);
+
 create index if not exists crm_source_records_run_idx on public.crm_source_records(run_id);
 create index if not exists crm_identity_resolution_run_idx on public.crm_identity_resolution(run_id);
 create index if not exists crm_profile_projection_lifecycle_idx on public.crm_profile_projection(workspace_id, lifecycle_state_projection);
@@ -273,6 +300,7 @@ create index if not exists crm_segment_projection_segment_idx on public.crm_segm
 create index if not exists crm_dispatch_observations_campaign_idx on public.crm_dispatch_observations(workspace_id, campaign_key);
 create index if not exists crm_rechecks_due_idx on public.crm_rechecks(workspace_id, due_at, status);
 create index if not exists crm_conflict_review_queue_status_idx on public.crm_conflict_review_queue(workspace_id, status, severity);
+create index if not exists crm_privacy_requests_status_idx on public.crm_privacy_requests(workspace_id, request_type, status);
 
 -- Optional foreign keys to shared tables when available.
 do $$
@@ -605,6 +633,18 @@ left join eligibility_rollup e
   on e.workspace_id = w.workspace_id
 left join conflict_rollup c
   on c.workspace_id = w.workspace_id;
+
+create or replace view public.v_crm_privacy_requests as
+select
+  workspace_id,
+  request_type,
+  status,
+  count(*) as requests,
+  count(*) filter (where status = 'applied') as requests_applied,
+  max(requested_at) as last_requested_at,
+  max(applied_at) as last_applied_at
+from public.crm_privacy_requests
+group by workspace_id, request_type, status;
 
 create or replace view public.v_crm_strategy_measurement_loop as
 with conversion_values as (

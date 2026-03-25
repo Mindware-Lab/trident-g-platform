@@ -356,6 +356,10 @@ Consumers must be idempotent on `idempotency_key`.
 - `CrmStrategyIntentProposed.v1`
 - `CrmStrategyApprovalRequested.v1`
 
+### 11.6 Privacy and suppression intake
+
+- `CrmPrivacyRequestReceived.v1`
+
 ---
 
 ## 12. Event naming
@@ -378,6 +382,7 @@ Recommended CRM-related events:
 - `ks.crm.conversion.observed`
 - `ks.crm.recheck.completed`
 - `ks.crm.strategy.recommendations_generated`
+- `ks.crm.privacy.request.received`
 - `ks.intent.approval_requested`
 - `ks.observe.metrics_recorded`
 - `ks.psi.state_estimated`
@@ -409,6 +414,7 @@ Use projection-oriented names.
 - `crm_rechecks`
 - `crm_brevo_sync_log`
 - `crm_conflict_review_queue`
+- `crm_privacy_requests`
 
 ### 13.3 Reporting views
 
@@ -422,6 +428,7 @@ Use projection-oriented names.
 - `v_crm_activity_cohorts`
 - `v_crm_pipeline_quality`
 - `v_crm_strategy_measurement_loop`
+- `v_crm_privacy_requests`
 
 ---
 
@@ -491,6 +498,7 @@ Never send promotional lifecycle messages when:
 - bounced hard
 - marked complaint/abuse
 - consent basis unclear and policy requires explicit review
+- explicit privacy request exists (`unsubscribe` or `erase`)
 
 ### 15.3 Soft-legacy handling for V1
 
@@ -615,6 +623,14 @@ Purpose:
 - propose strategy intents in draft-first mode and route through kernel gate policy
 - emit explicit offer/promo approval requests with scope/reason/approver roles
 
+### `crm_privacy_suppression_v1`
+
+Purpose:
+
+- intake explicit privacy requests from unsubscribe/deletion lists
+- emit `CrmPrivacyRequestReceived.v1` with `request_type` = `unsubscribe` or `erase`
+- enforce high-risk handling for suppression/deletion actions
+
 ---
 
 ## 18. Action intent types
@@ -701,6 +717,7 @@ Prefer internal job functions over a broad public CRM API:
 - `evaluateCrmEligibility(run_id)`
 - `syncBrevo(run_id)`
 - `projectCrmSegments(run_id)`
+- `handleCrmPrivacyRequests(run_id)`
 - `proposeLifecycleIntents(run_id)`
 - `generateCrmStrategyRecommendations(run_id)`
 - `proposeCrmStrategyIntents(run_id)`
@@ -788,9 +805,10 @@ Use `config/loop_cadence.sample.json` as the explicit loop template:
 
 1. Daily ingest refresh (`collect -> identity -> profile -> eligibility -> segment`)
 2. Daily recheck refresh (`crm_recheck_v1`)
-3. Weekly measurement refresh (windowed KPI deltas from `v_crm_strategy_measurement_loop`)
-4. Weekly strategy refresh (`crm_strategy_intel_v1`, then gate + approval path)
-5. Execution only for approved intents
+3. Privacy intake refresh (`crm_privacy_suppression_v1`) for `unsubscribe` / `erase` lists
+4. Weekly measurement refresh (windowed KPI deltas from `v_crm_strategy_measurement_loop`)
+5. Weekly strategy refresh (`crm_strategy_intel_v1`, then gate + approval path)
+6. Execution only for approved intents
 
 Loop invariant:
 

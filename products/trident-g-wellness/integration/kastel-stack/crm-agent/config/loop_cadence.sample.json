@@ -24,6 +24,14 @@
       ],
       "kernel_authority": "recheck_result_evaluation",
       "n8n_role": "scheduled_recheck_execution"
+    },
+    {
+      "stage": "privacy_intake",
+      "workflows": [
+        "crm_privacy_suppression_v1.n8n.json"
+      ],
+      "kernel_authority": "privacy_suppression_and_erasure",
+      "n8n_role": "ingest_requests_no_marketing_bypass"
     }
   ],
   "weekly_cycle": [
@@ -33,7 +41,8 @@
         "v_crm_send_rates",
         "v_crm_activity_cohorts",
         "v_crm_pipeline_quality",
-        "v_crm_strategy_measurement_loop"
+        "v_crm_strategy_measurement_loop",
+        "v_crm_privacy_requests"
       ],
       "kernel_authority": "metric_interpretation",
       "n8n_role": "data_pull_and_summary"

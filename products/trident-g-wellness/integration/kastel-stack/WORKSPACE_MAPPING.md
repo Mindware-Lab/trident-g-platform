@@ -93,6 +93,7 @@ CRM automation for Brevo cutover and lifecycle control now lives in:
 16. `CrmStrategyRecommendationsGenerated.v1`
 17. `CrmStrategyIntentProposed.v1`
 18. `CrmStrategyApprovalRequested.v1`
+19. `CrmPrivacyRequestReceived.v1`
 
 ### CRM Events (append-only `events`)
 
@@ -110,8 +111,9 @@ CRM automation for Brevo cutover and lifecycle control now lives in:
 12. `ks.crm.strategy.recommendations_generated`
 13. `ks.intent.created`
 14. `ks.intent.approval_requested`
-15. `ks.execute.email_dispatched`
-16. `ks.observe.metrics_recorded`
+15. `ks.crm.privacy.request.received`
+16. `ks.execute.email_dispatched`
+17. `ks.observe.metrics_recorded`
 
 ### CRM Workflow References
 
@@ -125,6 +127,7 @@ CRM automation for Brevo cutover and lifecycle control now lives in:
 8. `crm_digest_gmail_v1.n8n.json`
 9. `crm_recheck_v1.n8n.json`
 10. `crm_strategy_intel_v1.n8n.json`
+11. `crm_privacy_suppression_v1.n8n.json`
 
 ### CRM Closed-Loop Cadence Reference
 
