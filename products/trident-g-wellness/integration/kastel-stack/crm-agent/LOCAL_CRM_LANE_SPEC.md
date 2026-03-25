@@ -196,26 +196,33 @@ ImportedContact
 -> RecheckRecorded
 ```
 
-### 7.2 First live segments only
+### 7.2 Named segment rules (v1)
 
-Use only these segments in V1:
+Capture these segments explicitly in V1 policy and telemetry:
 
-- `new_buyers`
+- `high_value_spend`
+- `high_value_engaged`
+- `high_value_at_risk`
+- `new_buyers_30d`
+- `repeat_buyers`
+- `engaged_non_buyers`
 - `course_started_no_progress`
 - `lapsed_paid`
-- `high_value_spend`
+- `suppressed_privacy_or_unsubscribed`
+- `new_buyers` (compatibility alias)
 
 Segment policy note:
 
 - kernel policy version for segment projection: `crm-segment-policy-v1`
 - `high_value_spend` threshold: `total_spend >= 300` (default; workspace override allowed)
+- `high_engagement_score_min`: `0.8` (default normalized activity threshold)
+- `repeat_buyer_purchase_count_min`: `2` (default)
+- `new_buyer_window_days`: `30` (default)
 
-Defer these to later:
+Conservative activation note:
 
-- `high_intent_substack`
-- `multi_purchase_customers`
-- aggressive upgrade prompts
-- broad reactivation branches
+- start live outbound automation with `new_buyers`, `course_started_no_progress`, `high_value_spend`
+- use the other segments first for targeting intelligence, drafting, and approved pilots
 
 ---
 
@@ -419,6 +426,8 @@ Use projection-oriented names.
 ### 13.3 Reporting views
 
 - `v_crm_segment_counts`
+- `v_crm_segment_rulebook`
+- `v_crm_named_segments_v1`
 - `v_crm_onboarding_funnel`
 - `v_crm_retention_risk`
 - `v_crm_send_health`
@@ -593,6 +602,9 @@ Purpose:
 - apply kernel-side policy metadata:
   - `segment_policy_version = crm-segment-policy-v1`
   - `segment_thresholds.high_value_spend_min` (default `300`)
+  - `segment_thresholds.high_engagement_score_min` (default `0.8`)
+  - `segment_thresholds.repeat_buyer_purchase_count_min` (default `2`)
+  - `segment_thresholds.new_buyer_window_days` (default `30`)
 
 ### `crm_onboarding_retention_v1`
 

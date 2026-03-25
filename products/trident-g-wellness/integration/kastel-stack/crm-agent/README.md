@@ -96,15 +96,23 @@ Notes:
    - emit `CrmPrivacyRequestReceived.v1`
    - route into high-risk suppression/deletion handling
 
-## V1 live segments
+## V1 named segments (rulebook)
 
-1. `new_buyers`
-2. `course_started_no_progress`
-3. `lapsed_paid`
-4. `high_value_spend`
+1. `high_value_spend`
+2. `high_value_engaged`
+3. `high_value_at_risk`
+4. `new_buyers_30d`
+5. `repeat_buyers`
+6. `engaged_non_buyers`
+7. `course_started_no_progress`
+8. `lapsed_paid`
+9. `suppressed_privacy_or_unsubscribed`
+10. `new_buyers` (compatibility alias)
 
-`high_value_spend` is evaluated in the kernel segment policy (`crm-segment-policy-v1`)
-using `total_spend >= high_value_spend_min` (default: `300`).
+Rulebook and computed memberships are queryable in Supabase via:
+
+1. `v_crm_segment_rulebook`
+2. `v_crm_named_segments_v1`
 
 ## Kernel segment policy reference
 
@@ -119,6 +127,9 @@ The segment workflow payload now passes policy metadata to kernel:
 
 1. `segment_policy_version = crm-segment-policy-v1`
 2. `segment_thresholds.high_value_spend_min` (default `300`)
+3. `segment_thresholds.high_engagement_score_min` (default `0.8`)
+4. `segment_thresholds.repeat_buyer_purchase_count_min` (default `2`)
+5. `segment_thresholds.new_buyer_window_days` (default `30`)
 
 Proof query pack:
 
@@ -216,15 +227,19 @@ These are built into `supabase/crm_lane_v1.sql` for direct workspace-level KPI p
 
 1. `v_crm_send_rates`:
    delivery/open/click/CTOR/unsubscribe/bounce/complaint rates
-2. `v_crm_source_overlap`:
+2. `v_crm_segment_rulebook`:
+   canonical rule expressions and default thresholds for named segments
+3. `v_crm_named_segments_v1`:
+   computed customer-level segment memberships for strategy and campaign targeting
+4. `v_crm_source_overlap`:
    profile overlap across Substack/Podia/e-junkie source flags
-3. `v_crm_activity_cohorts`:
+5. `v_crm_activity_cohorts`:
    normalized activity cohorts plus 30-day activation/progress counts
-4. `v_crm_pipeline_quality`:
+6. `v_crm_pipeline_quality`:
    ingest/identity/eligibility/conflict quality rates
-5. `v_crm_strategy_measurement_loop`:
+7. `v_crm_strategy_measurement_loop`:
    current-vs-prior window deltas for conversion lift, revenue/contact, unsubscribe delta, complaint delta
-6. `v_crm_privacy_requests`:
+8. `v_crm_privacy_requests`:
    workspace-level privacy request volume/status for `unsubscribe` and `erase`
 
 Example query:

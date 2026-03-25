@@ -1,47 +1,78 @@
 {
   "default_thresholds": {
-    "high_value_spend_min": 300
+    "high_value_spend_min": 300,
+    "high_engagement_score_min": 0.8,
+    "repeat_buyer_purchase_count_min": 2,
+    "new_buyer_window_days": 30
   },
   "cases": [
     {
-      "name": "new_buyer_high_value",
+      "name": "new_buyer_high_value_engaged",
       "profile": {
         "purchase_count": 1,
         "total_spend": 349.99,
         "lifecycle_state_projection": "new_unactivated",
+        "marketing_eligibility": "eligible",
+        "substack_engagement_score": 0.9,
+        "first_purchase_at": null,
         "last_activation_at": null,
         "last_progress_at": null
       },
       "expected_segment_keys": [
-        "new_buyers",
-        "high_value_spend"
+        "high_value_spend",
+        "high_value_engaged",
+        "new_buyers_30d",
+        "new_buyers"
       ]
     },
     {
-      "name": "active_no_progress",
-      "profile": {
-        "purchase_count": 1,
-        "total_spend": 99.0,
-        "lifecycle_state_projection": "active_learning",
-        "last_activation_at": "2026-03-20T10:00:00Z",
-        "last_progress_at": null
-      },
-      "expected_segment_keys": [
-        "course_started_no_progress"
-      ]
-    },
-    {
-      "name": "lapsed_paid_high_value",
+      "name": "high_value_at_risk_repeat",
       "profile": {
         "purchase_count": 3,
         "total_spend": 1200.0,
         "lifecycle_state_projection": "at_risk_14d",
+        "marketing_eligibility": "eligible",
+        "substack_engagement_score": 0.55,
         "last_activation_at": "2026-02-10T10:00:00Z",
         "last_progress_at": "2026-02-12T10:00:00Z"
       },
       "expected_segment_keys": [
-        "lapsed_paid",
-        "high_value_spend"
+        "high_value_spend",
+        "high_value_at_risk",
+        "repeat_buyers",
+        "lapsed_paid"
+      ]
+    },
+    {
+      "name": "engaged_non_buyer_eligible",
+      "profile": {
+        "purchase_count": 0,
+        "total_spend": 0,
+        "lifecycle_state_projection": "prospect",
+        "marketing_eligibility": "eligible",
+        "substack_engagement_score": 4.6,
+        "last_activation_at": null,
+        "last_progress_at": null
+      },
+      "expected_segment_keys": [
+        "engaged_non_buyers"
+      ]
+    },
+    {
+      "name": "course_no_progress_and_suppressed",
+      "profile": {
+        "purchase_count": 1,
+        "total_spend": 50,
+        "lifecycle_state_projection": "active_learning",
+        "marketing_eligibility": "suppressed_unsubscribed",
+        "has_active_privacy_request": true,
+        "substack_engagement_score": 0.3,
+        "last_activation_at": "2026-03-20T10:00:00Z",
+        "last_progress_at": null
+      },
+      "expected_segment_keys": [
+        "course_started_no_progress",
+        "suppressed_privacy_or_unsubscribed"
       ]
     },
     {
@@ -58,13 +89,20 @@
   ],
   "override_threshold_case": {
     "high_value_spend_min": 500,
+    "high_engagement_score_min": 0.8,
+    "repeat_buyer_purchase_count_min": 2,
+    "new_buyer_window_days": 30,
     "profile": {
       "purchase_count": 2,
       "total_spend": 420,
       "lifecycle_state_projection": "retained_30d",
+      "marketing_eligibility": "eligible",
+      "substack_engagement_score": 0.95,
       "last_activation_at": "2026-03-01T10:00:00Z",
       "last_progress_at": "2026-03-02T10:00:00Z"
     },
-    "expected_segment_keys": []
+    "expected_segment_keys": [
+      "repeat_buyers"
+    ]
   }
 }

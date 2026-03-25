@@ -9,6 +9,9 @@ REQUIRED_TOKENS = [
     '"segment_policy_version": "crm-segment-policy-v1"',
     '"segment_thresholds": {',
     '"high_value_spend_min": Number($json.high_value_spend_min || 300)',
+    '"high_engagement_score_min": Number($json.high_engagement_score_min || 0.8)',
+    '"repeat_buyer_purchase_count_min": Number($json.repeat_buyer_purchase_count_min || 2)',
+    '"new_buyer_window_days": Number($json.new_buyer_window_days || 30)',
 ]
 
 
@@ -34,7 +37,7 @@ def main() -> None:
         if token not in body:
             fail(f"workflow payload missing token: {token}")
 
-    ok("segment projection workflow payload includes policy version and spend threshold")
+    ok("segment projection workflow payload includes policy version and full threshold metadata")
 
 
 if __name__ == "__main__":

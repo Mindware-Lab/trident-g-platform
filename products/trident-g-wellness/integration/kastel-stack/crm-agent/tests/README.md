@@ -14,9 +14,9 @@ This folder provides dependency-light checks for the CRM lane scaffold.
 8. Reporting view existence checks in SQL migration
 9. Source export normalization and mislabeled-file detection
 10. Telemetry view declarations for overlap, activity, send rates, pipeline quality, and strategy measurement loop deltas
-11. Segment definition validation (including high_value_spend)
-12. Segment policy evaluator parity checks (including spend threshold override)
-13. Segment workflow payload checks for policy metadata
+11. Segment definition validation for the named segment rulebook
+12. Segment policy evaluator parity checks (including threshold overrides)
+13. Segment workflow payload checks for full segment policy metadata
 14. Strategy-intel scaffold checks (workflow + strategy contracts + approval payload)
 15. Privacy suppression scaffold checks (workflow + privacy contract)
 16. Unsubscribe privacy normalizer checks

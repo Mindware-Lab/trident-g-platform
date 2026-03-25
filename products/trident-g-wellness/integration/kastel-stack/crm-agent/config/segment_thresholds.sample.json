@@ -1,37 +1,80 @@
 {
   "segment_definitions": [
     {
-      "segment_key": "new_buyers",
+      "segment_key": "high_value_spend",
       "version": "v1",
-      "rule": "purchase_count > 0 and lifecycle_state_projection = 'new_unactivated'",
+      "rule": "total_spend >= high_value_spend_min",
       "priority": 1
+    },
+    {
+      "segment_key": "high_value_engaged",
+      "version": "v1",
+      "rule": "total_spend >= high_value_spend_min and activity_score_norm >= high_engagement_score_min and marketing_eligibility = 'eligible'",
+      "priority": 2
+    },
+    {
+      "segment_key": "high_value_at_risk",
+      "version": "v1",
+      "rule": "total_spend >= high_value_spend_min and purchase_count > 0 and lifecycle_state_projection in ('at_risk_7d','at_risk_14d','lapsed_paid')",
+      "priority": 3
+    },
+    {
+      "segment_key": "new_buyers_30d",
+      "version": "v1",
+      "rule": "purchase_count > 0 and first_purchase_at >= now() - interval 'new_buyer_window_days days'",
+      "priority": 4
+    },
+    {
+      "segment_key": "repeat_buyers",
+      "version": "v1",
+      "rule": "purchase_count >= repeat_buyer_purchase_count_min",
+      "priority": 5
+    },
+    {
+      "segment_key": "engaged_non_buyers",
+      "version": "v1",
+      "rule": "purchase_count = 0 and activity_score_norm >= high_engagement_score_min and marketing_eligibility = 'eligible'",
+      "priority": 6
     },
     {
       "segment_key": "course_started_no_progress",
       "version": "v1",
       "rule": "last_activation_at is not null and last_progress_at is null",
-      "priority": 2
+      "priority": 7
     },
     {
       "segment_key": "lapsed_paid",
       "version": "v1",
       "rule": "purchase_count > 0 and lifecycle_state_projection in ('at_risk_14d','lapsed_paid')",
-      "priority": 3
+      "priority": 8
     },
     {
-      "segment_key": "high_value_spend",
+      "segment_key": "suppressed_privacy_or_unsubscribed",
       "version": "v1",
-      "rule": "total_spend >= 300",
-      "priority": 4
+      "rule": "marketing_eligibility = 'suppressed_unsubscribed' or has_active_privacy_request = true",
+      "priority": 9
+    },
+    {
+      "segment_key": "new_buyers",
+      "version": "v1",
+      "rule": "purchase_count > 0 and lifecycle_state_projection = 'new_unactivated'",
+      "priority": 10
     }
   ],
   "retention_thresholds": {
     "no_progress_days": 7,
     "risk_14d_days": 14,
-    "retained_window_days": 30
+    "retained_window_days": 30,
+    "new_buyer_window_days": 30
   },
   "spend_thresholds": {
     "high_value_spend_min": 300,
     "vip_spend_min": 1000
+  },
+  "engagement_thresholds": {
+    "high_engagement_score_min": 0.8
+  },
+  "purchase_thresholds": {
+    "repeat_buyer_purchase_count_min": 2
   }
 }

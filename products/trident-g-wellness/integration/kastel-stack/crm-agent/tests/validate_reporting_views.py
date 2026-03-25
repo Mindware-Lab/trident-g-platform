@@ -5,6 +5,8 @@ from _common import CRM_AGENT_DIR, fail, ok, run_guard
 
 REQUIRED_VIEWS = [
     "v_crm_segment_counts",
+    "v_crm_segment_rulebook",
+    "v_crm_named_segments_v1",
     "v_crm_onboarding_funnel",
     "v_crm_retention_risk",
     "v_crm_send_health",

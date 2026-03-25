@@ -378,6 +378,283 @@ select
 from public.crm_segment_projection
 group by workspace_id, segment_key;
 
+create or replace view public.v_crm_segment_rulebook as
+select
+  segment_key,
+  segment_version,
+  priority,
+  rule_expression,
+  default_thresholds_json
+from (
+  values
+    (
+      'high_value_spend'::text,
+      'v1'::text,
+      1::integer,
+      'total_spend >= high_value_spend_min'::text,
+      '{"high_value_spend_min":300}'::jsonb
+    ),
+    (
+      'high_value_engaged'::text,
+      'v1'::text,
+      2::integer,
+      'total_spend >= high_value_spend_min and activity_score_norm >= high_engagement_score_min and marketing_eligibility = eligible'::text,
+      '{"high_value_spend_min":300,"high_engagement_score_min":0.8}'::jsonb
+    ),
+    (
+      'high_value_at_risk'::text,
+      'v1'::text,
+      3::integer,
+      'total_spend >= high_value_spend_min and purchase_count > 0 and lifecycle_state_projection in (at_risk_7d, at_risk_14d, lapsed_paid)'::text,
+      '{"high_value_spend_min":300}'::jsonb
+    ),
+    (
+      'new_buyers_30d'::text,
+      'v1'::text,
+      4::integer,
+      'purchase_count > 0 and first/last purchase within new_buyer_window_days (fallback lifecycle_state_projection = new_unactivated)'::text,
+      '{"new_buyer_window_days":30}'::jsonb
+    ),
+    (
+      'repeat_buyers'::text,
+      'v1'::text,
+      5::integer,
+      'purchase_count >= repeat_buyer_purchase_count_min'::text,
+      '{"repeat_buyer_purchase_count_min":2}'::jsonb
+    ),
+    (
+      'engaged_non_buyers'::text,
+      'v1'::text,
+      6::integer,
+      'purchase_count = 0 and activity_score_norm >= high_engagement_score_min and marketing_eligibility = eligible'::text,
+      '{"high_engagement_score_min":0.8}'::jsonb
+    ),
+    (
+      'course_started_no_progress'::text,
+      'v1'::text,
+      7::integer,
+      'last_activation_at is not null and last_progress_at is null'::text,
+      '{}'::jsonb
+    ),
+    (
+      'lapsed_paid'::text,
+      'v1'::text,
+      8::integer,
+      'purchase_count > 0 and lifecycle_state_projection in (at_risk_14d, lapsed_paid)'::text,
+      '{}'::jsonb
+    ),
+    (
+      'suppressed_privacy_or_unsubscribed'::text,
+      'v1'::text,
+      9::integer,
+      'marketing_eligibility = suppressed_unsubscribed or has_active_privacy_request = true'::text,
+      '{}'::jsonb
+    ),
+    (
+      'new_buyers'::text,
+      'v1'::text,
+      10::integer,
+      'purchase_count > 0 and lifecycle_state_projection = new_unactivated'::text,
+      '{}'::jsonb
+    )
+) as segment_rules(segment_key, segment_version, priority, rule_expression, default_thresholds_json);
+
+create or replace view public.v_crm_named_segments_v1 as
+with thresholds as (
+  select
+    300::numeric as high_value_spend_min,
+    0.80::numeric as high_engagement_score_min,
+    2::integer as repeat_buyer_purchase_count_min,
+    30::integer as new_buyer_window_days
+),
+privacy as (
+  select
+    workspace_id,
+    email_normalized,
+    bool_or(status in ('pending', 'applied') and request_type in ('unsubscribe', 'erase')) as has_active_privacy_request
+  from public.crm_privacy_requests
+  group by workspace_id, email_normalized
+),
+base as (
+  select
+    p.workspace_id,
+    p.customer_key,
+    p.primary_email_normalized,
+    p.total_spend,
+    p.purchase_count,
+    p.first_purchase_at,
+    p.last_purchase_at,
+    p.last_activation_at,
+    p.last_progress_at,
+    p.lifecycle_state_projection,
+    case
+      when p.substack_engagement_score is null then null
+      when p.substack_engagement_score > 1 then least(p.substack_engagement_score / 5.0, 1)
+      when p.substack_engagement_score < 0 then 0
+      else p.substack_engagement_score
+    end as activity_score_norm,
+    lower(coalesce(e.marketing_eligibility, 'review_required')) as marketing_eligibility,
+    coalesce(pr.has_active_privacy_request, false) as has_active_privacy_request
+  from public.crm_profile_projection p
+  left join public.crm_marketing_eligibility e
+    on e.customer_key = p.customer_key and e.workspace_id = p.workspace_id
+  left join privacy pr
+    on pr.workspace_id = p.workspace_id
+   and pr.email_normalized = p.primary_email_normalized
+),
+scored as (
+  select
+    b.*,
+    (
+      (
+        b.first_purchase_at is not null
+        and b.first_purchase_at >= now() - make_interval(days => t.new_buyer_window_days)
+      )
+      or (
+        b.first_purchase_at is null
+        and b.last_purchase_at is not null
+        and b.last_purchase_at >= now() - make_interval(days => t.new_buyer_window_days)
+      )
+      or (
+        b.first_purchase_at is null
+        and b.last_purchase_at is null
+        and b.purchase_count > 0
+        and b.lifecycle_state_projection = 'new_unactivated'
+      )
+    ) as new_buyer_30d
+  from base b
+  cross join thresholds t
+)
+select
+  s.workspace_id,
+  s.customer_key,
+  seg.segment_key,
+  'v1'::text as segment_version,
+  true as active,
+  seg.reason_json,
+  now() as computed_at
+from scored s
+cross join thresholds t
+cross join lateral (
+  values
+    (
+      'high_value_spend'::text,
+      s.total_spend >= t.high_value_spend_min,
+      jsonb_build_object(
+        'rule', 'total_spend >= high_value_spend_min',
+        'total_spend', s.total_spend,
+        'high_value_spend_min', t.high_value_spend_min
+      )
+    ),
+    (
+      'high_value_engaged'::text,
+      (
+        s.total_spend >= t.high_value_spend_min
+        and s.activity_score_norm is not null
+        and s.activity_score_norm >= t.high_engagement_score_min
+        and s.marketing_eligibility = 'eligible'
+      ),
+      jsonb_build_object(
+        'rule', 'high_value and high engagement and eligible',
+        'total_spend', s.total_spend,
+        'activity_score_norm', s.activity_score_norm,
+        'marketing_eligibility', s.marketing_eligibility,
+        'high_value_spend_min', t.high_value_spend_min,
+        'high_engagement_score_min', t.high_engagement_score_min
+      )
+    ),
+    (
+      'high_value_at_risk'::text,
+      (
+        s.total_spend >= t.high_value_spend_min
+        and s.purchase_count > 0
+        and s.lifecycle_state_projection in ('at_risk_7d', 'at_risk_14d', 'lapsed_paid')
+      ),
+      jsonb_build_object(
+        'rule', 'high_value and at_risk lifecycle',
+        'total_spend', s.total_spend,
+        'purchase_count', s.purchase_count,
+        'lifecycle_state_projection', s.lifecycle_state_projection
+      )
+    ),
+    (
+      'new_buyers_30d'::text,
+      (s.purchase_count > 0 and s.new_buyer_30d),
+      jsonb_build_object(
+        'rule', 'purchase_count > 0 and recent purchase within window',
+        'purchase_count', s.purchase_count,
+        'first_purchase_at', s.first_purchase_at,
+        'last_purchase_at', s.last_purchase_at,
+        'new_buyer_window_days', t.new_buyer_window_days
+      )
+    ),
+    (
+      'repeat_buyers'::text,
+      s.purchase_count >= t.repeat_buyer_purchase_count_min,
+      jsonb_build_object(
+        'rule', 'purchase_count >= repeat_buyer_purchase_count_min',
+        'purchase_count', s.purchase_count,
+        'repeat_buyer_purchase_count_min', t.repeat_buyer_purchase_count_min
+      )
+    ),
+    (
+      'engaged_non_buyers'::text,
+      (
+        s.purchase_count = 0
+        and s.activity_score_norm is not null
+        and s.activity_score_norm >= t.high_engagement_score_min
+        and s.marketing_eligibility = 'eligible'
+      ),
+      jsonb_build_object(
+        'rule', 'purchase_count = 0 and high engagement and eligible',
+        'purchase_count', s.purchase_count,
+        'activity_score_norm', s.activity_score_norm,
+        'marketing_eligibility', s.marketing_eligibility,
+        'high_engagement_score_min', t.high_engagement_score_min
+      )
+    ),
+    (
+      'course_started_no_progress'::text,
+      s.last_activation_at is not null and s.last_progress_at is null,
+      jsonb_build_object(
+        'rule', 'last_activation_at is not null and last_progress_at is null',
+        'last_activation_at', s.last_activation_at,
+        'last_progress_at', s.last_progress_at
+      )
+    ),
+    (
+      'lapsed_paid'::text,
+      (
+        s.purchase_count > 0
+        and s.lifecycle_state_projection in ('at_risk_14d', 'lapsed_paid')
+      ),
+      jsonb_build_object(
+        'rule', 'purchase_count > 0 and lifecycle in at_risk_14d/lapsed_paid',
+        'purchase_count', s.purchase_count,
+        'lifecycle_state_projection', s.lifecycle_state_projection
+      )
+    ),
+    (
+      'suppressed_privacy_or_unsubscribed'::text,
+      s.marketing_eligibility = 'suppressed_unsubscribed' or s.has_active_privacy_request,
+      jsonb_build_object(
+        'rule', 'suppressed_unsubscribed or active privacy request',
+        'marketing_eligibility', s.marketing_eligibility,
+        'has_active_privacy_request', s.has_active_privacy_request
+      )
+    ),
+    (
+      'new_buyers'::text,
+      s.purchase_count > 0 and s.lifecycle_state_projection = 'new_unactivated',
+      jsonb_build_object(
+        'rule', 'purchase_count > 0 and lifecycle_state_projection = new_unactivated',
+        'purchase_count', s.purchase_count,
+        'lifecycle_state_projection', s.lifecycle_state_projection
+      )
+    )
+) as seg(segment_key, matched, reason_json)
+where seg.matched;
+
 create or replace view public.v_crm_onboarding_funnel as
 select
   p.workspace_id,

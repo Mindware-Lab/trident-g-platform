@@ -18,12 +18,19 @@ from segment_policy_evaluator import (  # type: ignore  # noqa: E402
 
 def main() -> None:
     fixture = load_json("segment_policy.fixture.json")
-    default_threshold = float(fixture["default_thresholds"]["high_value_spend_min"])
+    default_thresholds = fixture["default_thresholds"]
+    high_value_spend_min = float(default_thresholds["high_value_spend_min"])
+    high_engagement_score_min = float(default_thresholds["high_engagement_score_min"])
+    repeat_buyer_purchase_count_min = int(default_thresholds["repeat_buyer_purchase_count_min"])
+    new_buyer_window_days = int(default_thresholds["new_buyer_window_days"])
 
     for case in fixture.get("cases", []):
         result = evaluate_profile_segments(
             case["profile"],
-            high_value_spend_min=default_threshold,
+            high_value_spend_min=high_value_spend_min,
+            high_engagement_score_min=high_engagement_score_min,
+            repeat_buyer_purchase_count_min=repeat_buyer_purchase_count_min,
+            new_buyer_window_days=new_buyer_window_days,
         )
         expected = list(case["expected_segment_keys"])
         got = list(result["segment_keys"])
@@ -40,7 +47,14 @@ def main() -> None:
     override = fixture.get("override_threshold_case", {})
     override_result = evaluate_profile_segments(
         override.get("profile", {}),
-        high_value_spend_min=float(override.get("high_value_spend_min", default_threshold)),
+        high_value_spend_min=float(override.get("high_value_spend_min", high_value_spend_min)),
+        high_engagement_score_min=float(
+            override.get("high_engagement_score_min", high_engagement_score_min)
+        ),
+        repeat_buyer_purchase_count_min=int(
+            override.get("repeat_buyer_purchase_count_min", repeat_buyer_purchase_count_min)
+        ),
+        new_buyer_window_days=int(override.get("new_buyer_window_days", new_buyer_window_days)),
     )
     override_expected = list(override.get("expected_segment_keys", []))
     if list(override_result["segment_keys"]) != override_expected:
@@ -49,7 +63,7 @@ def main() -> None:
             f"expected {override_expected}, got {override_result['segment_keys']}"
         )
 
-    ok("segment policy evaluator validated (including high_value_spend threshold)")
+    ok("segment policy evaluator validated (named segments + threshold overrides)")
 
 
 if __name__ == "__main__":
