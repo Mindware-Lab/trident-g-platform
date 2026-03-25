@@ -12,9 +12,10 @@ from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 SOURCE_SUBSTACK = "substack"
 SOURCE_PODIA = "podia"
 SOURCE_EJUNKIE = "ejunkie"
+SOURCE_STRIPE = "stripe"
 SOURCE_UNKNOWN = "unknown"
 
-SUPPORTED_SOURCES = (SOURCE_SUBSTACK, SOURCE_PODIA, SOURCE_EJUNKIE)
+SUPPORTED_SOURCES = (SOURCE_SUBSTACK, SOURCE_PODIA, SOURCE_EJUNKIE, SOURCE_STRIPE)
 
 TEMPLATE_HEADERS: Dict[str, List[str]] = {
     SOURCE_SUBSTACK: [
@@ -49,6 +50,19 @@ TEMPLATE_HEADERS: Dict[str, List[str]] = {
         "currency",
         "payment_status",
     ],
+    SOURCE_STRIPE: [
+        "email",
+        "first_name",
+        "last_name",
+        "stripe_customer_id",
+        "created_at",
+        "total_spend",
+        "payment_count",
+        "refunded_volume",
+        "dispute_losses",
+        "net_spend",
+        "currency",
+    ],
 }
 
 
@@ -61,6 +75,17 @@ EJUNKIE_SIGNATURE_HEADERS = {
     "payer e-mail",
     "item name",
     "amount",
+}
+
+STRIPE_SIGNATURE_HEADERS = {
+    "id",
+    "email",
+    "name",
+    "created (utc)",
+    "total spend",
+    "payment count",
+    "refunded volume",
+    "dispute losses",
 }
 
 SUBSTACK_SIGNATURE_HEADERS = set(TEMPLATE_HEADERS[SOURCE_SUBSTACK])
@@ -100,12 +125,24 @@ FIELD_ALIASES: Dict[str, Dict[str, List[str]]] = {
         "currency": ["currency"],
         "payment_status": ["payment status", "payment_status"],
     },
+    SOURCE_STRIPE: {
+        "stripe_customer_id": ["id", "customer id", "customer_id"],
+        "email": ["email", "customer email", "payer e-mail"],
+        "name": ["name", "customer name"],
+        "created_at": ["created (utc)", "created_at", "created"],
+        "total_spend": ["total spend", "total_spend", "lifetime value"],
+        "payment_count": ["payment count", "payment_count"],
+        "refunded_volume": ["refunded volume", "refunded_volume", "refund total"],
+        "dispute_losses": ["dispute losses", "dispute_losses"],
+        "currency": ["currency"],
+    },
 }
 
 CRITICAL_OUTPUT_FIELDS: Dict[str, List[str]] = {
     SOURCE_SUBSTACK: ["email"],
     SOURCE_PODIA: ["email", "customer_id"],
     SOURCE_EJUNKIE: ["email", "order_id"],
+    SOURCE_STRIPE: ["email", "stripe_customer_id"],
 }
 
 
@@ -160,6 +197,8 @@ def _expected_from_filename(path: Path) -> str:
         "e_junkie"
     ):
         return SOURCE_EJUNKIE
+    if stem.startswith("stripe"):
+        return SOURCE_STRIPE
     return SOURCE_UNKNOWN
 
 
@@ -209,6 +248,26 @@ def _extract_email(text: str) -> str:
     return text.strip().lower()
 
 
+def _split_name(full_name: str) -> Tuple[str, str]:
+    raw = full_name.strip()
+    if not raw:
+        return "", ""
+    parts = [part for part in raw.split() if part]
+    if len(parts) == 1:
+        return parts[0], ""
+    return parts[0], " ".join(parts[1:])
+
+
+def _to_float(value: str) -> float:
+    cleaned = value.strip().replace(",", "")
+    if not cleaned:
+        return 0.0
+    try:
+        return float(cleaned)
+    except ValueError:
+        return 0.0
+
+
 def detect_source(headers: Sequence[str]) -> str:
     canonical = {_canonical_key(h.split("__", 1)[0]) for h in headers}
 
@@ -216,11 +275,13 @@ def detect_source(headers: Sequence[str]) -> str:
     substack_ui_score = len(canonical.intersection(SUBSTACK_UI_SIGNATURE_HEADERS))
     podia_score = len(canonical.intersection(PODIA_SIGNATURE_HEADERS))
     ejunkie_score = len(canonical.intersection(EJUNKIE_SIGNATURE_HEADERS))
+    stripe_score = len(canonical.intersection(STRIPE_SIGNATURE_HEADERS))
 
     scores = {
         SOURCE_SUBSTACK: substack_score + substack_ui_score,
         SOURCE_PODIA: podia_score,
         SOURCE_EJUNKIE: ejunkie_score,
+        SOURCE_STRIPE: stripe_score,
     }
     best_source = max(scores, key=scores.get)
     best_score = scores[best_source]
@@ -231,6 +292,8 @@ def detect_source(headers: Sequence[str]) -> str:
     # e-junkie should win only if strong signature exists.
     if best_source == SOURCE_EJUNKIE and ejunkie_score >= 4:
         return SOURCE_EJUNKIE
+    if best_source == SOURCE_STRIPE and stripe_score >= 4:
+        return SOURCE_STRIPE
     if best_source == SOURCE_SUBSTACK and (substack_score >= 4 or substack_ui_score >= 3):
         return SOURCE_SUBSTACK
     if best_source == SOURCE_PODIA and podia_score >= 4:
@@ -323,6 +386,41 @@ def normalize_rows(source: str, rows: Sequence[Dict[str, str]]) -> List[Dict[str
                     lookup, FIELD_ALIASES[SOURCE_PODIA]["purchase_amount"]
                 ),
                 "currency": _first_value(lookup, FIELD_ALIASES[SOURCE_PODIA]["currency"]),
+            }
+        elif source == SOURCE_STRIPE:
+            full_name = _first_value(lookup, FIELD_ALIASES[SOURCE_STRIPE]["name"])
+            first_name, last_name = _split_name(full_name)
+            total_spend = _to_float(
+                _first_value(lookup, FIELD_ALIASES[SOURCE_STRIPE]["total_spend"])
+            )
+            refunded_volume = _to_float(
+                _first_value(lookup, FIELD_ALIASES[SOURCE_STRIPE]["refunded_volume"])
+            )
+            dispute_losses = _to_float(
+                _first_value(lookup, FIELD_ALIASES[SOURCE_STRIPE]["dispute_losses"])
+            )
+            net_spend = total_spend - refunded_volume - dispute_losses
+            record = {
+                "email": _extract_email(
+                    _first_value(lookup, FIELD_ALIASES[SOURCE_STRIPE]["email"])
+                ),
+                "first_name": first_name,
+                "last_name": last_name,
+                "stripe_customer_id": _first_value(
+                    lookup, FIELD_ALIASES[SOURCE_STRIPE]["stripe_customer_id"]
+                ),
+                "created_at": _first_value(
+                    lookup, FIELD_ALIASES[SOURCE_STRIPE]["created_at"]
+                ),
+                "total_spend": f"{total_spend:.2f}",
+                "payment_count": _first_value(
+                    lookup, FIELD_ALIASES[SOURCE_STRIPE]["payment_count"]
+                ),
+                "refunded_volume": f"{refunded_volume:.2f}",
+                "dispute_losses": f"{dispute_losses:.2f}",
+                "net_spend": f"{net_spend:.2f}",
+                "currency": _first_value(lookup, FIELD_ALIASES[SOURCE_STRIPE]["currency"])
+                or "USD",
             }
         else:
             # Unknown source: keep row empty to force operator review.

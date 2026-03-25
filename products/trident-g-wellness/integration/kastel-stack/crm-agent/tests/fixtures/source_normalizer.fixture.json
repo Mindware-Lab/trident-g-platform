@@ -54,6 +54,22 @@
         "Currency"
       ],
       "expected_source": "ejunkie"
+    },
+    {
+      "name": "stripe customer rollup headers",
+      "headers": [
+        "id",
+        "Description",
+        "Email",
+        "Name",
+        "Created (UTC)",
+        "Card ID",
+        "Total Spend",
+        "Payment Count",
+        "Refunded Volume",
+        "Dispute Losses"
+      ],
+      "expected_source": "stripe"
     }
   ],
   "normalize_ejunkie_case": {
@@ -78,6 +94,31 @@
       "gross_amount": "249.99",
       "currency": "USD",
       "payment_status": "Completed"
+    }
+  },
+  "normalize_stripe_case": {
+    "row": {
+      "id": "gcus_1TEveSAZLCi6B66bpMihnlhs",
+      "Email": "12.summons.gauges@icloud.com",
+      "Name": "Robert Schuh",
+      "Created (UTC)": "2026-03-25 17:55",
+      "Total Spend": "22.41",
+      "Payment Count": "1",
+      "Refunded Volume": "0.00",
+      "Dispute Losses": "0.00"
+    },
+    "expected": {
+      "email": "12.summons.gauges@icloud.com",
+      "first_name": "Robert",
+      "last_name": "Schuh",
+      "stripe_customer_id": "gcus_1TEveSAZLCi6B66bpMihnlhs",
+      "created_at": "2026-03-25 17:55",
+      "total_spend": "22.41",
+      "payment_count": "1",
+      "refunded_volume": "0.00",
+      "dispute_losses": "0.00",
+      "net_spend": "22.41",
+      "currency": "USD"
     }
   }
 }

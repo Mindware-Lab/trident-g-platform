@@ -25,14 +25,14 @@ provider-native TSV format:
 
 ```powershell
 python tools/normalize_crm_source_exports.py `
-  --inputs "C:\path\substack-2026-03-23.txt" "C:\path\podia-2026-03-23.txt" "C:\path\e-junkie-2026-03-23.txt" `
+  --inputs "C:\path\substack-2026-03-23.txt" "C:\path\podia-2026-03-23.txt" "C:\path\e-junkie-2026-03-23.txt" "C:\path\unified_customers.csv" `
   --out-dir ".\imports\normalized" `
   --report-path ".\imports\normalization_report.json"
 ```
 
 What it does:
 
-1. detects source from header signature (substack/podia/ejunkie)
+1. detects source from header signature (substack/podia/ejunkie/stripe)
 2. flags filename/source mismatches automatically
 3. normalizes records into lane templates in `config/csv-templates/`
 4. writes a JSON report for operator review and audit trail
@@ -41,6 +41,7 @@ Notes:
 
 - for Substack, it also detects UI-style headers (`Subscriber`, `Type`, `Activity`, `Start date`) and maps `Type`/`Start date` into the normalized shape
 - activity stars can be retained in source payload/provenance even when open/click timestamps are absent
+- Stripe customer rollups (for example `unified_customers.csv`) are normalized into `stripe_customer_id`, `total_spend`, `payment_count`, `refunded_volume`, `dispute_losses`, and computed `net_spend`
 
 ## Folder layout
 

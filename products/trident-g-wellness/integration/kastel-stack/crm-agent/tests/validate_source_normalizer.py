@@ -41,6 +41,21 @@ def main() -> None:
                 f"expected '{expected_value}', got '{got_value}'"
             )
 
+    stripe_sample = fixture.get("normalize_stripe_case", {})
+    stripe_row = stripe_sample.get("row", {})
+    stripe_expected = stripe_sample.get("expected", {})
+    stripe_normalized_rows = normalizer.normalize_rows(normalizer.SOURCE_STRIPE, [stripe_row])
+    if len(stripe_normalized_rows) != 1:
+        fail("expected one normalized row for stripe sample")
+    stripe_got = stripe_normalized_rows[0]
+    for key, expected_value in stripe_expected.items():
+        got_value = stripe_got.get(key)
+        if got_value != expected_value:
+            fail(
+                f"stripe normalized field mismatch for '{key}': "
+                f"expected '{expected_value}', got '{got_value}'"
+            )
+
     missing = normalizer._required_missing(  # pylint: disable=protected-access
         normalizer.SOURCE_EJUNKIE,
         [sample["row"]],
