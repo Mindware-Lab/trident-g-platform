@@ -61,6 +61,7 @@ Notes:
 1. `crm_collect_sources_v1.n8n.json`
    - ingest CSV/API source batches
    - default operator path is CSV bootstrap
+   - supports `source_system` override (for example `stripe_customer_rollup`)
    - emit `CrmSourceBatchReceived.v1`
 2. `crm_identity_resolve_v1.n8n.json`
    - deterministic email normalization + identity resolution

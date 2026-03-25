@@ -17,6 +17,7 @@
             {"name":"workspace_id","value":"={{$env.WORKSPACE_ID || 'wellness_sa'}}","type":"string"},
             {"name":"mission_id","value":"={{$json.mission_id || $env.CRM_MISSION_ID || ''}}","type":"string"},
             {"name":"run_id","value":"={{$json.run_id || $env.CRM_RUN_ID || ''}}","type":"string"},
+            {"name":"source_system","value":"={{$json.source_system || 'manual_csv'}}","type":"string"},
             {"name":"source_mode","value":"manual_csv_bootstrap","type":"string"}
           ]
         }
@@ -35,7 +36,7 @@
         "headerParameters": {"parameters":[{"name":"Authorization","value":"={{$env.KERNEL_API_KEY ? 'Bearer ' + $env.KERNEL_API_KEY : ''}}"}]},
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmSourceBatchReceived.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.crm.source.received\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-source-batch-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"map\",\n  \"producer_domain\": \"n8n.crm.collect\",\n  \"consumer_domain\": \"kernel.crm.ingest\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_collect_sources_v1\"],\n  \"payload\": {\n    \"source_system\": \"manual_csv\",\n    \"batch_size\": Number($json.batch_size || 1),\n    \"records\": $json.records || [],\n    \"bootstrap_mode\": true,\n    \"note\": \"manual CSV bootstrap is the default first-run path in V1; API syncs are secondary until bootstrap is proven\"\n  }\n}"
+        "jsonBody": "={\n  \"workspace_id\": $json.workspace_id,\n  \"mission_id\": $json.mission_id,\n  \"run_id\": $json.run_id,\n  \"contract_name\": \"CrmSourceBatchReceived.v1\",\n  \"contract_version\": \"v1\",\n  \"event_name\": \"ks.crm.source.received\",\n  \"event_id\": $json.run_id,\n  \"idempotency_key\": \"crm-source-batch-\" + $json.run_id,\n  \"risk_level\": \"low\",\n  \"psi_state\": \"map\",\n  \"producer_domain\": \"n8n.crm.collect\",\n  \"consumer_domain\": \"kernel.crm.ingest\",\n  \"occurred_at\": $now.toISO(),\n  \"trace_refs\": [\"n8n:crm_collect_sources_v1\"],\n  \"payload\": {\n    \"source_system\": $json.source_system || \"manual_csv\",\n    \"batch_size\": Number($json.batch_size || 1),\n    \"records\": $json.records || [],\n    \"bootstrap_mode\": true,\n    \"note\": \"manual CSV bootstrap is the default first-run path in V1; API syncs are secondary until bootstrap is proven\"\n  }\n}"
       },
       "id": "n3",
       "name": "Post Source Batch",
