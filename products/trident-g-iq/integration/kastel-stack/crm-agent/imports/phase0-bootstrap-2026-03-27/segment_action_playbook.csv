@@ -1,0 +1,15 @@
+match_type,match_key,recommended_action,campaign_type,action_priority,operator_notes
+marketing_eligibility,suppressed_unsubscribed,suppress_do_not_contact,suppression,critical,Hard suppression. Keep excluded from all promotional messaging.
+marketing_eligibility,suppressed_privacy_request,suppress_do_not_contact,suppression,critical,Hard suppression. Respect privacy request and do not campaign.
+marketing_eligibility,suppressed_bounced,suppress_do_not_contact,suppression,critical,Do not resend until deliverability status is manually cleared.
+marketing_eligibility,suppressed_complaint,suppress_do_not_contact,suppression,critical,Complaint suppression. Exclude from all promotional sends.
+marketing_eligibility,review_required,manual_review_required,manual_ops_review,critical,"Inspect conflicting, refunded-only, failed-only, or ambiguous records before use."
+marketing_eligibility,transactional_only,transactional_only_no_promo,transactional_only,high,"Relationship evidence exists, but not enough confidence for promotional campaigning."
+segment,high_value_at_risk,retention_high_value_at_risk,retention,high,"Use proactive retention, coaching outreach, or concierge check-ins."
+segment,launch_promo_buyers,launch_promo_followup,launch_followup,high,"Use launch follow-up, activation nudges, and feedback/interview asks."
+segment,post_launch_stripe_buyers,post_launch_onboarding,onboarding,high,Use onboarding and activation sequences for recent post-launch buyers.
+segment,high_value_spend,vip_premium_offer,vip_offer,medium,"Use premium asks, VIP offers, or advisory-panel outreach."
+segment,new_buyers_30d,new_buyer_onboarding,onboarding,medium,Use onboarding and second-purchase nudges.
+segment,new_buyers,new_buyer_onboarding,onboarding,medium,Use onboarding and second-purchase nudges.
+segment,repeat_buyers,repeat_buyer_upsell,upsell_cross_sell,medium,"Use bundle offers, cross-sell, and loyalty-style campaigns."
+segment,lapsed_paid,win_back_lapsed_paid,win_back,medium,Use controlled win-back offers for lapsed paid contacts.

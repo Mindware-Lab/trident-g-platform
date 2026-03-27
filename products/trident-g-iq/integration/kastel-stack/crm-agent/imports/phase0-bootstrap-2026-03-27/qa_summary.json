@@ -1,0 +1,160 @@
+{
+  "summary": {
+    "customer_universe_count": 9463,
+    "eligible_paid_count": 9225,
+    "suppressed_count": 11,
+    "review_or_transactional_count": 227,
+    "top_export_count": 4500,
+    "reserve_export_count": 500,
+    "eligible_shortfall": 0,
+    "as_of_utc": "2026-03-27T14:07:11.031681Z"
+  },
+  "config": {
+    "config_path": "C:\\Users\\admin\\OneDrive\\Documents\\GitHub\\trident-g-platform\\products\\trident-g-iq\\integration\\kastel-stack\\crm-agent\\config\\segment_thresholds.sample.json",
+    "launch_start_utc": "2026-03-10T00:00:00Z",
+    "launch_end_utc": "2026-03-15T23:59:59Z",
+    "top_limit": 4500,
+    "reserve_limit": 500,
+    "best_user_score_note": "Deterministic review score derived from the published ranking tuple only.",
+    "thresholds": {
+      "high_value_spend_min": "300.00",
+      "repeat_buyer_purchase_count_min": 2,
+      "new_buyer_window_days": 30,
+      "risk_7d_days": 7,
+      "risk_14d_days": 14,
+      "lapsed_days": 30
+    }
+  },
+  "files": [
+    {
+      "logical_source": "stripe_payments",
+      "input_path": "C:\\Users\\admin\\Downloads\\unified_payments.csv",
+      "detected_source": "stripe_payments",
+      "parse_source": "stripe_payments",
+      "row_count": 75,
+      "delimiter": "COMMA",
+      "mismatched_label": false,
+      "warnings": []
+    },
+    {
+      "logical_source": "stripe",
+      "input_path": "C:\\Users\\admin\\Downloads\\Stripe_customers.csv",
+      "detected_source": "stripe",
+      "parse_source": "stripe",
+      "row_count": 118,
+      "delimiter": "COMMA",
+      "mismatched_label": false,
+      "warnings": []
+    },
+    {
+      "logical_source": "ejunkie",
+      "input_path": "C:\\Users\\admin\\Downloads\\e-junkie-2026-03-23.txt",
+      "detected_source": "ejunkie",
+      "parse_source": "ejunkie",
+      "row_count": 13243,
+      "delimiter": "TAB",
+      "mismatched_label": false,
+      "warnings": []
+    },
+    {
+      "logical_source": "podia",
+      "input_path": "C:\\Users\\admin\\Downloads\\podia-2026-03-23.txt",
+      "detected_source": "ejunkie",
+      "parse_source": "ejunkie",
+      "row_count": 5,
+      "delimiter": "TAB",
+      "mismatched_label": true,
+      "warnings": [
+        "Filename label/source mismatch: expected 'podia' from filename but detected 'ejunkie' from header signature."
+      ]
+    },
+    {
+      "logical_source": "substack",
+      "input_path": "C:\\Users\\admin\\Downloads\\substack-2026-03-23.txt",
+      "detected_source": "ejunkie",
+      "parse_source": "ejunkie",
+      "row_count": 892,
+      "delimiter": "TAB",
+      "mismatched_label": true,
+      "warnings": [
+        "Filename label/source mismatch: expected 'substack' from filename but detected 'ejunkie' from header signature."
+      ]
+    }
+  ],
+  "suppression_inputs": [
+    {
+      "label": "unsubscribe",
+      "input_path": "C:\\Users\\admin\\Downloads\\Unsubscribe list - Sheet1 (1).csv",
+      "loaded_count": 11,
+      "invalid_count": 0,
+      "duplicate_count": 0
+    },
+    {
+      "label": "privacy_request",
+      "input_path": null,
+      "loaded_count": 0,
+      "invalid_count": 0,
+      "duplicate_count": 0
+    },
+    {
+      "label": "bounce",
+      "input_path": null,
+      "loaded_count": 0,
+      "invalid_count": 0,
+      "duplicate_count": 0
+    },
+    {
+      "label": "complaint",
+      "input_path": null,
+      "loaded_count": 0,
+      "invalid_count": 0,
+      "duplicate_count": 0
+    }
+  ],
+  "counts": {
+    "marketing_eligibility": {
+      "eligible_paid": 9225,
+      "review_required": 227,
+      "suppressed_unsubscribed": 11
+    },
+    "source_overlap": {
+      "ejunkie_only": 8550,
+      "stripe_only": 35,
+      "ejunkie_plus_substack": 793,
+      "ejunkie_plus_stripe": 71,
+      "ejunkie_plus_stripe_plus_substack": 8,
+      "ejunkie_plus_podia": 4,
+      "ejunkie_plus_podia_plus_stripe": 1,
+      "no_source": 1
+    },
+    "segments": {
+      "lapsed_paid": 9194,
+      "repeat_buyers": 2347,
+      "post_launch_stripe_buyers": 65,
+      "new_buyers_30d": 21,
+      "new_buyers": 17,
+      "high_value_spend": 33,
+      "high_value_at_risk": 33,
+      "launch_promo_buyers": 42,
+      "suppressed_privacy_or_unsubscribed": 11
+    },
+    "actions": {
+      "win_back_lapsed_paid": 6864,
+      "manual_review_required": 227,
+      "repeat_buyer_upsell": 2261,
+      "post_launch_onboarding": 23,
+      "retention_high_value_at_risk": 33,
+      "launch_promo_followup": 40,
+      "suppress_do_not_contact": 11,
+      "new_buyer_onboarding": 4
+    },
+    "launch_windows": {
+      "post_launch_stripe_buyers": 65,
+      "launch_promo_buyers": 42
+    }
+  },
+  "warnings": [
+    "Filename label/source mismatch: expected 'podia' from filename but detected 'ejunkie' from header signature.",
+    "Filename label/source mismatch: expected 'substack' from filename but detected 'ejunkie' from header signature."
+  ]
+}
