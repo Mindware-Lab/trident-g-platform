@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-04",
+  "generated_at": "2026-03-29",
   "routes": [
     {
       "route": "/",
@@ -141,6 +141,12 @@
       "route": "/learn/blog/",
       "intent": "education_blog",
       "primary_cta": "Read blog content",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/learn/blog/orsar-framework-how-to-use-ai-without-losing-your-mind/",
+      "intent": "education_article",
+      "primary_cta": "Read article content",
       "required_template_blocks": []
     },
     {

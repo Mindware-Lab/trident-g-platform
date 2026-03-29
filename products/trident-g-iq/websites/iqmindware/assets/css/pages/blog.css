@@ -278,6 +278,33 @@ body.blog    { background: var(--pg-alt); }
 .bl-article-prose a:hover { border-bottom-color: var(--blue-dp); }
 .bl-article-prose ul, .bl-article-prose ol { padding-left: 22px; margin-bottom: 18px; }
 .bl-article-prose li { margin-bottom: 7px; }
+.bl-article-table-wrap {
+  overflow-x: auto;
+  margin: 0 0 18px;
+}
+.bl-article-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  font-size: 14px;
+}
+.bl-article-prose th,
+.bl-article-prose td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  text-align: left;
+  vertical-align: top;
+}
+.bl-article-prose th {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--tl);
+  background: rgba(0,0,0,.03);
+}
+.bl-article-prose tbody tr:last-child td { border-bottom: 0; }
 .bl-article-prose blockquote {
   border-left: 3px solid var(--cyan);
   padding: 12px 20px; margin: 24px 0;

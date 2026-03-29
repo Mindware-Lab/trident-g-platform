@@ -1,7 +1,7 @@
 ﻿# IQMindware Website Inventory
 
-Generated: 2026-03-22 10:05:56 +00:00
-Total pages: 40
+Generated: 2026-03-29 00:00:00 +00:00
+Total pages: 41
 
 | Title | URL | Source file |
 |---|---|---|
@@ -15,6 +15,7 @@ Total pages: 40
 | How it works \\| IQMindware | https://www.iqmindware.com/how-it-works/ | how-it-works/index.html |
 | Learn - Methods, Blog and Wiki \\| IQMindware | https://www.iqmindware.com/learn/ | learn/index.html |
 | Blog - Method Updates and Protocol Notes \\| IQMindware | https://www.iqmindware.com/learn/blog/ | learn/blog/index.html |
+| The ORSAR Framework: How to Use AI Without Losing Your Mind \\| IQMindware | https://www.iqmindware.com/learn/blog/orsar-framework-how-to-use-ai-without-losing-your-mind/ | learn/blog/orsar-framework-how-to-use-ai-without-losing-your-mind/index.html |
 | The 123 Sigma Rule: 1-2-3 Sigma Framing for IQ and Performance | https://www.iqmindware.com/learn/blog/123-sigma-rule/ | learn/blog/123-sigma-rule/index.html |
 | Why Far Transfer Is Harder Than It Looks \\| IQMindware | https://www.iqmindware.com/learn/blog/article/ | learn/blog/article/index.html |
 | Dual N-Back Training Strategies: Progression, Plateaus, and Transfer | https://www.iqmindware.com/learn/blog/dual-n-back-training-strategies/ | learn/blog/dual-n-back-training-strategies/index.html |
