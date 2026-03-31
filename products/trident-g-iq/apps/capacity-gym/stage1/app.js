@@ -2651,6 +2651,8 @@ function renderBottomTab(activeTab) {
 
 function renderHome(state) {
   const unlockProgress = deriveRelationalUnlockProgress(state.history);
+  const progression = getProgressionState(state);
+  const emotionProgression = getEmotionProgressionState(state);
   const coachRecommendation = getCoachCapacityRecommendation(state);
   const zone = coachRecommendation.family === "emotion"
     ? getSavedZoneForNow(state, Date.now(), "emotion")
