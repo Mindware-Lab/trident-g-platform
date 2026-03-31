@@ -719,7 +719,7 @@
           </div>
         </div>
 
-        <div class="block">
+        <div class="block" id="resultHistoryBlock">
           <div class="small muted">History (local): <span id="histCount">0</span> valid checks saved.<span id="histBps" class="user-hidden">-</span></div>
           <div class="small muted" id="lastLine" style="margin-top:4px;">Last: -</div>
         </div>
@@ -867,7 +867,7 @@
       stateBadge: $('stateBadge'), stateWhy: $('stateWhy'), gateBadge: $('gateBadge'), gateChips: $('gateChips'), reasonChips: $('reasonChips'), moduleCard: $('moduleCard'),
       sessionPanel: $('sessionPanel'), sessionPanelTitle: $('sessionPanelTitle'), sessionPanelWhy: $('sessionPanelWhy'), sessionPanelMeta: $('sessionPanelMeta'),
       sessionPanelGateChips: $('sessionPanelGateChips'), sessionPanelSteps: $('sessionPanelSteps'), sessionPanelCloseBtn: $('sessionPanelCloseBtn'), sessionPanelResetChecksBtn: $('sessionPanelResetChecksBtn'),
-      histCount: $('histCount'), histBps: $('histBps'), lastLine: $('lastLine'),
+      histCount: $('histCount'), histBps: $('histBps'), lastLine: $('lastLine'), resultHistoryBlock: $('resultHistoryBlock'),
       touchLeftBtn: $('touchLeftBtn'), touchRightBtn: $('touchRightBtn'),
       instructionsBtn: $('instructionsBtn'), learnAboutTestBtn: $('learnAboutTestBtn'), feelStatesBtn: $('feelStatesBtn'),
       startBpsTraceMeta: $('startBpsTraceMeta'), startBpsTraceSummary: $('startBpsTraceSummary'), startBpsTraceBand: $('startBpsTraceBand'), startBpsTraceSvgWrap: $('startBpsTraceSvgWrap'),
@@ -1553,7 +1553,7 @@
       dom.histBps.textContent = fmt(e, 2);
       const last = rows[rows.length-1];
       const lastState = normState(last?.router?.state);
-      dom.lastLine.textContent = last ? `Last check: ${ROUTER_STATE_UI[lastState]?.label || lastState || '-'} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ ${last.router?.confidence || '-'} confidence` : 'Last check: -';
+      dom.lastLine.textContent = last ? `Last check: ${ROUTER_STATE_UI[lastState]?.label || lastState || '-'} | ${last.router?.confidence || '-'} confidence` : 'Last check: -';
       renderStartBpsTraceCard(rows);
       return { rows, base: b };
     }
@@ -1782,6 +1782,7 @@
       show('result'); setPhase('Result'); setStatus(summary.valid ? 'Complete' : 'Invalid');
       dom.invalidPanel.classList.toggle('hidden', summary.valid);
       dom.validPanel.classList.toggle('hidden', !summary.valid);
+      if (dom.resultHistoryBlock) dom.resultHistoryBlock.classList.toggle('hidden', !summary.valid);
       const showMetricRow = !!(summary.valid && summary.mode === 'single_probe_router');
       if (!showMetricRow) {
         dom.mBps.textContent = '-';
@@ -2642,22 +2643,4 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
