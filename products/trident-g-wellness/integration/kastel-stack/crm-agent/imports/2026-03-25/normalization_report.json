@@ -1,0 +1,24 @@
+{
+  "summary": {
+    "files_processed": 1,
+    "mismatched_labels": 0,
+    "warnings": 0,
+    "dry_run": false,
+    "out_dir": "C:\\Users\\admin\\OneDrive\\Documents\\GitHub\\trident-g-platform\\products\\trident-g-wellness\\integration\\kastel-stack\\crm-agent\\imports\\2026-03-25\\normalized"
+  },
+  "files": [
+    {
+      "input_path": "C:\\Users\\admin\\Downloads\\unified_customers.csv",
+      "expected_source_from_filename": "unknown",
+      "detected_source_from_header": "stripe",
+      "header_count": 10,
+      "row_count": 118,
+      "delimiter": "COMMA",
+      "mismatched_label": false,
+      "duplicate_headers": [],
+      "missing_required_for_detected": [],
+      "output_path": "C:\\Users\\admin\\OneDrive\\Documents\\GitHub\\trident-g-platform\\products\\trident-g-wellness\\integration\\kastel-stack\\crm-agent\\imports\\2026-03-25\\normalized\\unified_customers.normalized.stripe.csv",
+      "warnings": []
+    }
+  ]
+}

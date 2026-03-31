@@ -1,0 +1,74 @@
+{
+  "records": [
+    {
+      "email": "almogjigga@gmail.com",
+      "request_type": "erase",
+      "source_system": "manual_unsubscribe_list",
+      "requested_at": "2026-03-27T10:17:52.182147+00:00",
+      "note": "manual unsubscribe/privacy list import"
+    },
+    {
+      "email": "kvnbdvs@gmail.com",
+      "request_type": "erase",
+      "source_system": "manual_unsubscribe_list",
+      "requested_at": "2026-03-27T10:17:52.182147+00:00",
+      "note": "manual unsubscribe/privacy list import"
+    },
+    {
+      "email": "matej@matejpacan.com",
+      "request_type": "erase",
+      "source_system": "manual_unsubscribe_list",
+      "requested_at": "2026-03-27T10:17:52.182147+00:00",
+      "note": "manual unsubscribe/privacy list import"
+    },
+    {
+      "email": "anthony.jiang987@gmail.com",
+      "request_type": "erase",
+      "source_system": "manual_unsubscribe_list",
+      "requested_at": "2026-03-27T10:17:52.182147+00:00",
+      "note": "manual unsubscribe/privacy list import"
+    },
+    {
+      "email": "jzamani@fleaux.com",
+      "request_type": "erase",
+      "source_system": "manual_unsubscribe_list",
+      "requested_at": "2026-03-27T10:17:52.182147+00:00",
+      "note": "manual unsubscribe/privacy list import"
+    },
+    {
+      "email": "frase20@gmail.com",
+      "request_type": "erase",
+      "source_system": "manual_unsubscribe_list",
+      "requested_at": "2026-03-27T10:17:52.182147+00:00",
+      "note": "manual unsubscribe/privacy list import"
+    },
+    {
+      "email": "eran@arbel.me",
+      "request_type": "erase",
+      "source_system": "manual_unsubscribe_list",
+      "requested_at": "2026-03-27T10:17:52.182147+00:00",
+      "note": "manual unsubscribe/privacy list import"
+    },
+    {
+      "email": "matthew.checkley@btinternet.com",
+      "request_type": "erase",
+      "source_system": "manual_unsubscribe_list",
+      "requested_at": "2026-03-27T10:17:52.182147+00:00",
+      "note": "manual unsubscribe/privacy list import"
+    },
+    {
+      "email": "exploreclimbing@gmail.com",
+      "request_type": "erase",
+      "source_system": "manual_unsubscribe_list",
+      "requested_at": "2026-03-27T10:17:52.182147+00:00",
+      "note": "manual unsubscribe/privacy list import"
+    },
+    {
+      "email": "perringqvist@gmail.com",
+      "request_type": "erase",
+      "source_system": "manual_unsubscribe_list",
+      "requested_at": "2026-03-27T10:17:52.182147+00:00",
+      "note": "manual unsubscribe/privacy list import"
+    }
+  ]
+}

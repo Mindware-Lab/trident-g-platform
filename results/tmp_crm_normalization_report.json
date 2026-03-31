@@ -1,0 +1,73 @@
+{
+  "summary": {
+    "files_processed": 4,
+    "mismatched_labels": 2,
+    "warnings": 2,
+    "dry_run": true,
+    "out_dir": "C:\\Users\\admin\\OneDrive\\Documents\\GitHub\\trident-g-platform\\normalized"
+  },
+  "files": [
+    {
+      "input_path": "C:\\Users\\admin\\Downloads\\Stripe_customers.csv",
+      "expected_source_from_filename": "stripe",
+      "detected_source_from_header": "stripe",
+      "header_count": 10,
+      "row_count": 118,
+      "delimiter": "COMMA",
+      "mismatched_label": false,
+      "duplicate_headers": [],
+      "missing_required_for_detected": [],
+      "output_path": null,
+      "warnings": []
+    },
+    {
+      "input_path": "C:\\Users\\admin\\Downloads\\e-junkie-2026-03-23.txt",
+      "expected_source_from_filename": "ejunkie",
+      "detected_source_from_header": "ejunkie",
+      "header_count": 60,
+      "row_count": 13243,
+      "delimiter": "TAB",
+      "mismatched_label": false,
+      "duplicate_headers": [
+        "Shipping Phone"
+      ],
+      "missing_required_for_detected": [],
+      "output_path": null,
+      "warnings": []
+    },
+    {
+      "input_path": "C:\\Users\\admin\\Downloads\\podia-2026-03-23.txt",
+      "expected_source_from_filename": "podia",
+      "detected_source_from_header": "ejunkie",
+      "header_count": 60,
+      "row_count": 5,
+      "delimiter": "TAB",
+      "mismatched_label": true,
+      "duplicate_headers": [
+        "Shipping Phone"
+      ],
+      "missing_required_for_detected": [],
+      "output_path": null,
+      "warnings": [
+        "Filename label/source mismatch: expected 'podia' from filename but detected 'ejunkie' from header signature."
+      ]
+    },
+    {
+      "input_path": "C:\\Users\\admin\\Downloads\\substack-2026-03-23.txt",
+      "expected_source_from_filename": "substack",
+      "detected_source_from_header": "ejunkie",
+      "header_count": 60,
+      "row_count": 892,
+      "delimiter": "TAB",
+      "mismatched_label": true,
+      "duplicate_headers": [
+        "Shipping Phone"
+      ],
+      "missing_required_for_detected": [],
+      "output_path": null,
+      "warnings": [
+        "Filename label/source mismatch: expected 'substack' from filename but detected 'ejunkie' from header signature."
+      ]
+    }
+  ]
+}

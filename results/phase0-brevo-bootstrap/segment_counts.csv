@@ -1,0 +1,13 @@
+segment_key,status,count
+post_launch_stripe_buyers,active,65
+launch_promo_buyers,active,42
+high_value_spend,active,33
+high_value_at_risk,active,33
+new_buyers_30d,active,21
+repeat_buyers,active,2347
+lapsed_paid,active,9193
+suppressed_privacy_or_unsubscribed,active,11
+new_buyers,active,17
+high_value_engaged,deferred,0
+engaged_non_buyers,deferred,0
+course_started_no_progress,deferred,0
