@@ -8,17 +8,32 @@
   <link rel="stylesheet" href="../shared-ui/shell.css">
   <link rel="stylesheet" href="../shared-ui/components.css">
   <style>
+    @import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Exo+2:wght@400;500;600;700&family=Orbitron:wght@500;700;800&display=swap");
+
     :root {
+      --font: "Exo 2", "Segoe UI", Arial, sans-serif;
+      --iq-font: "Exo 2", "Segoe UI", Arial, sans-serif;
+      --suite-display-font: "Orbitron", "Segoe UI", Arial, sans-serif;
+      --suite-ui-font: "Chakra Petch", "Segoe UI", Arial, sans-serif;
+      --suite-body-font: "Exo 2", "Segoe UI", Arial, sans-serif;
       --suite-pink: #ff2bb8;
       --suite-pink-glow: rgba(255, 43, 184, 0.36);
       --suite-lime-filter: invert(89%) sepia(49%) saturate(1179%) hue-rotate(23deg) brightness(105%) contrast(102%);
       --suite-lime-glow: drop-shadow(0 0 7px rgba(204, 255, 102, 0.42));
     }
+
+    body.suite-rebrand,
+    body.suite-rebrand p,
+    body.suite-rebrand li {
+      font-family: var(--suite-body-font);
+    }
+
     .suite-title {
       font-size: clamp(26px, 4vw, 34px);
       font-weight: 900;
       margin: 0;
       letter-spacing: -0.03em;
+      font-family: var(--suite-display-font);
     }
     .suite-subtitle {
       margin: 8px 0 0 0;
@@ -53,6 +68,7 @@
       margin: 0;
       font-size: 1.02rem;
       line-height: 1.2;
+      font-family: var(--suite-display-font);
     }
     .suite-app p {
       margin: 0;
@@ -64,9 +80,20 @@
       margin-top: 12px;
       color: var(--iq-text-quiet);
       font-size: 0.82rem;
+      font-family: var(--suite-ui-font);
     }
     .suite-back {
       margin-top: 10px;
+    }
+    .suite-brand-site,
+    .suite-brand-pill,
+    .suite-tab,
+    .ui-btn,
+    .ui-link,
+    .ui-chip,
+    .suite-dev-details > summary,
+    .suite-help-title {
+      font-family: var(--suite-ui-font);
     }
     body.suite-rebrand {
       height: 100vh;
@@ -286,6 +313,7 @@
       margin: 0;
       font-size: 1.05rem;
       font-weight: 900;
+      font-family: var(--suite-display-font);
     }
     body.suite-rebrand .suite-help-list {
       margin: 0;

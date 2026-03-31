@@ -17,6 +17,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 
   <style>
+    @import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Exo+2:wght@400;500;600;700&family=Orbitron:wght@500;700;800&display=swap");
+
+    :root{
+      --font: "Exo 2", "Segoe UI", Arial, sans-serif;
+      --iq-font: "Exo 2", "Segoe UI", Arial, sans-serif;
+      --gt-display-font: "Orbitron", "Segoe UI", Arial, sans-serif;
+      --gt-ui-font: "Chakra Petch", "Segoe UI", Arial, sans-serif;
+      --gt-body-font: "Exo 2", "Segoe UI", Arial, sans-serif;
+    }
+
     /* Hub-specific helpers (keeps brand.css clean) */
     html, body{
       height: 100%;
@@ -36,6 +46,52 @@
       color: var(--iq-text);
       margin: 0;
       overflow: hidden;
+    }
+
+    body.gt-rebrand,
+    body.gt-rebrand input,
+    body.gt-rebrand select,
+    body.gt-rebrand option,
+    body.gt-rebrand textarea,
+    body.gt-rebrand p,
+    body.gt-rebrand li,
+    body.gt-rebrand .panelHint,
+    body.gt-rebrand .scopeLine,
+    body.gt-rebrand .dualPanelHint,
+    body.gt-rebrand .compactMeta,
+    body.gt-rebrand .compactHistory,
+    body.gt-rebrand .validationText,
+    body.gt-rebrand .howLine,
+    body.gt-rebrand .nextAction {
+      font-family: var(--gt-body-font);
+    }
+
+    body.gt-rebrand h1,
+    body.gt-rebrand h2,
+    body.gt-rebrand h3,
+    body.gt-rebrand .compactTitle,
+    body.gt-rebrand .howTitle,
+    body.gt-rebrand .validationTitle,
+    body.gt-rebrand .adminHelpTitle,
+    body.gt-rebrand .gt-brand-pill {
+      font-family: var(--gt-display-font);
+    }
+
+    body.gt-rebrand .btn,
+    body.gt-rebrand .btnSecondary,
+    body.gt-rebrand .deckLabel,
+    body.gt-rebrand .deckCount,
+    body.gt-rebrand .deckBtn,
+    body.gt-rebrand .panelModeLabel,
+    body.gt-rebrand .compactMetricLabel,
+    body.gt-rebrand .validationBadge,
+    body.gt-rebrand .gt-brand-site,
+    body.gt-rebrand .gt-suite-back,
+    body.gt-rebrand .gt-brand-pill,
+    body.gt-rebrand .programLabel,
+    body.gt-rebrand .programToggle,
+    body.gt-rebrand .adminHelpLabel {
+      font-family: var(--gt-ui-font);
     }
 
     .gt-shell{
