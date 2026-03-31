@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IQ Core Hub</title>
+  <link rel="stylesheet" href="../shared-ui/tokens.css">
+  <link rel="stylesheet" href="../shared-ui/shell.css">
+  <link rel="stylesheet" href="../shared-ui/components.css">
+  <style>
+    :root {
+      --suite-pink: #ff2bb8;
+      --suite-pink-glow: rgba(255, 43, 184, 0.36);
+      --suite-lime-filter: invert(89%) sepia(49%) saturate(1179%) hue-rotate(23deg) brightness(105%) contrast(102%);
+      --suite-lime-glow: drop-shadow(0 0 7px rgba(204, 255, 102, 0.42));
+    }
+    .suite-title {
+      font-size: clamp(26px, 4vw, 34px);
+      font-weight: 900;
+      margin: 0;
+      letter-spacing: -0.03em;
+    }
+    .suite-subtitle {
+      margin: 8px 0 0 0;
+      color: var(--iq-text-muted);
+      line-height: 1.45;
+    }
+    .suite-grid {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .suite-app {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+      min-height: 190px;
+    }
+    .suite-app-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .suite-icon {
+      width: 34px;
+      height: 34px;
+      color: var(--suite-pink);
+      filter: drop-shadow(0 0 9px var(--suite-pink-glow));
+      flex-shrink: 0;
+    }
+    .suite-app h3 {
+      margin: 0;
+      font-size: 1.02rem;
+      line-height: 1.2;
+    }
+    .suite-app p {
+      margin: 0;
+      color: var(--iq-text-muted);
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    .suite-foot {
+      margin-top: 12px;
+      color: var(--iq-text-quiet);
+      font-size: 0.82rem;
+    }
+    .suite-back {
+      margin-top: 10px;
+    }
+    body.suite-rebrand {
+      height: 100vh;
+      overflow: hidden;
+      background:
+        radial-gradient(920px 460px at 50% -24%, rgba(110,198,255,.24), transparent 58%),
+        linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%);
+      padding: 16px 14px 24px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    body.suite-rebrand .suite-shell {
+      width: min(470px, calc(100% - 12px));
+      height: calc(100vh - 36px);
+      border-radius: 42px;
+      border: 1.5px solid rgba(255,255,255,.45);
+      overflow: hidden;
+      background:
+        radial-gradient(700px 420px at 50% -10%, rgba(110,198,255,.18), transparent 62%),
+        linear-gradient(180deg, #081326 0%, #050e1f 45%, #031029 100%);
+      box-shadow: 0 22px 44px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08);
+      position: relative;
+    }
+    @media (min-width: 960px) {
+      body.suite-rebrand .suite-shell {
+        width: min(900px, calc(100% - 24px));
+      }
+    }
+    @media (max-height: 940px) {
+      body.suite-rebrand .suite-shell {
+        height: calc(100vh - 18px);
+      }
+    }
+    body.suite-rebrand .suite-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(460px 460px at 50% -15%, rgba(255,255,255,.18), transparent 62%),
+        linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(221,234,248,.38) 47%, rgba(130,154,181,.32) 50%, rgba(221,234,248,.34) 53%, rgba(255,255,255,0) 100%);
+      opacity: .56;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body.suite-rebrand .suite-shell::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 132px;
+      height: 20px;
+      border-radius: 0 0 16px 16px;
+      background: rgba(6, 12, 23, 0.95);
+      z-index: 3;
+      pointer-events: none;
+    }
+    body.suite-rebrand .suite-shell > * {
+      position: relative;
+      z-index: 1;
+    }
+    body.suite-rebrand .tg-desktop-chrome {
+      display: none;
+    }
+    body.suite-rebrand .ui-screen {
+      min-height: 0;
+      height: 100%;
+      padding-top: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    body.suite-rebrand .ui-content {
+      width: 100%;
+      padding: 16px 12px 94px;
+      min-height: 0;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    body.suite-rebrand .suite-brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding: 4px 2px 2px;
+      position: relative;
+    }
+    body.suite-rebrand .suite-brand-site {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #9ed3ff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid rgba(110,198,255,.30);
+      background: rgba(16,30,52,.58);
+      border-radius: 999px;
+      padding: 6px 10px;
+      line-height: 1;
+      white-space: nowrap;
+      max-width: 44%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    body.suite-rebrand .suite-brand-site:hover {
+      border-color: rgba(158,211,255,.56);
+      color: #c8e8ff;
+    }
+    body.suite-rebrand .suite-brand-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      border: 1px solid rgba(110,198,255,.22);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)), rgba(15,18,26,.94);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    body.suite-rebrand .suite-brand-icon img {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      display: block;
+    }
+    body.suite-rebrand .suite-brand-pill {
+      border-radius: 999px;
+      background: var(--iq-primary);
+      color: #0b1a0b;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    body.suite-rebrand .ui-card {
+      border-radius: 22px;
+      border-color: rgba(120,167,222,.22);
+      background:
+        radial-gradient(620px 300px at 50% 8%, rgba(110,198,255,.13), transparent 65%),
+        linear-gradient(180deg, rgba(255,255,255,.026), rgba(255,255,255,.01)),
+        rgba(10,22,42,.92);
+      box-shadow: 0 14px 30px rgba(2,6,15,.35), inset 0 1px 0 rgba(255,255,255,.04);
+      padding: 12px;
+    }
+    body.suite-rebrand .suite-title {
+      font-size: clamp(32px, 8vw, 44px);
+    }
+    body.suite-rebrand .suite-subtitle {
+      font-size: 0.98rem;
+    }
+    body.suite-rebrand .suite-controls {
+      margin-top: 10px;
+      gap: 8px;
+    }
+    body.suite-rebrand .suite-main-stack {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: hidden;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+    body.suite-rebrand .suite-dev-details {
+      border: 1px solid var(--iq-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.012));
+      padding: 8px;
+    }
+    body.suite-rebrand .suite-dev-details > summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: 800;
+      color: var(--iq-text);
+      font-size: 0.95rem;
+    }
+    body.suite-rebrand .suite-dev-details > summary::-webkit-details-marker {
+      display: none;
+    }
+    body.suite-rebrand .suite-dev-inner {
+      margin-top: 10px;
+      display: grid;
+      gap: 10px;
+    }
+    body.suite-rebrand .suite-help-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(8,11,16,.76);
+    }
+    body.suite-rebrand .suite-help-overlay[hidden] {
+      display: none;
+    }
+    body.suite-rebrand .suite-help-card {
+      width: min(560px, calc(100% - 12px));
+      border: 1px solid var(--iq-border-crisp);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.012)), rgba(15,18,26,.96);
+      box-shadow: 0 12px 28px rgba(0,0,0,.34);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+    body.suite-rebrand .suite-help-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 900;
+    }
+    body.suite-rebrand .suite-help-list {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 6px;
+      color: var(--iq-text-muted);
+      line-height: 1.4;
+      font-size: 0.92rem;
+    }
+    body.suite-rebrand .suite-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    @media (min-width: 1120px) {
+      body.suite-rebrand .suite-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    body.suite-rebrand .suite-app {
+      min-height: 148px;
+      border-radius: 16px;
+    }
+    body.suite-rebrand .suite-app .ui-chip.suite-chip-included {
+      border-color: rgba(232, 240, 252, 0.78);
+      background: linear-gradient(180deg, rgba(196, 208, 224, 0.32), rgba(140, 156, 182, 0.24));
+      color: #edf5ff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    }
+    body.suite-rebrand .suite-app .ui-chip.suite-chip-activated {
+      border-color: rgba(176, 226, 255, 0.82);
+      background: linear-gradient(180deg, rgba(142, 205, 255, 0.34), rgba(94, 166, 240, 0.22));
+      color: #f2f9ff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+    body.suite-rebrand .ui-btn {
+      min-height: 46px;
+      border-radius: 14px;
+    }
+    body.suite-rebrand .suite-bottom-nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 2px;
+      padding: 8px 8px 12px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(16,22,35,.94), rgba(9,14,24,.97));
+      z-index: 5;
+    }
+    body.suite-rebrand .suite-tab {
+      border: 1px solid transparent;
+      background: transparent;
+      color: #9fb4d0;
+      display: grid;
+      justify-items: center;
+      gap: 4px;
+      text-decoration: none;
+      font: 700 11px/1.1 var(--iq-font);
+      min-height: 60px;
+      padding: 6px 2px;
+      border-radius: 10px;
+      appearance: none;
+      cursor: pointer;
+    }
+    body.suite-rebrand .suite-tab-icon {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    body.suite-rebrand .suite-tab-icon img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      display: block;
+      opacity: 1;
+      filter: var(--suite-lime-filter) var(--suite-lime-glow);
+    }
+    body.suite-rebrand .suite-tab-icon svg {
+      width: 28px;
+      height: 28px;
+      display: block;
+      color: #ccff66;
+      filter: drop-shadow(0 0 7px rgba(204,255,102,.4));
+    }
+    body.suite-rebrand .suite-tab span:last-child {
+      font-size: .72rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    body.suite-rebrand .suite-tab-active {
+      color: #9bd7ff;
+      border-color: rgba(110,198,255,.36);
+      background: rgba(110,198,255,.08);
+    }
+    body.suite-rebrand .suite-tab-active .suite-tab-icon img {
+      opacity: 1;
+      filter: var(--suite-lime-filter) drop-shadow(0 0 9px rgba(204,255,102,.56));
+    }
+    body.suite-rebrand .suite-tab-active .suite-tab-icon svg {
+      filter: drop-shadow(0 0 9px rgba(204,255,102,.56));
+    }
+    @media (max-width: 820px) {
+      .suite-grid {
+        grid-template-columns: 1fr;
+      }
+      .ui-content {
+        padding: 12px;
+      }
+    }
+    @media (max-width: 520px) {
+      body.suite-rebrand {
+        padding: 0;
+        height: 100dvh;
+        overflow: hidden;
+      }
+      body.suite-rebrand .suite-shell {
+        width: 100%;
+        height: 100dvh;
+        border-radius: 0;
+        border: none;
+      }
+      body.suite-rebrand .ui-content {
+        padding: 10px 10px calc(112px + env(safe-area-inset-bottom));
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+      }
+      body.suite-rebrand .suite-shell::after {
+        display: none;
+      }
+      body.suite-rebrand .suite-brand-site {
+        font-size: 10.5px;
+        padding: 5px 8px;
+        max-width: 48%;
+      }
+      body.suite-rebrand .suite-bottom-nav {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 50;
+        padding: 8px 8px calc(12px + env(safe-area-inset-bottom));
+      }
+      body.suite-rebrand .suite-main-stack {
+        overflow: visible;
+      }
+    }
+  </style>
+</head>
+<body class="suite-rebrand">
+  <div class="suite-shell">
+    <header class="tg-desktop-chrome" aria-hidden="true">
+      <div class="tg-topbar">
+        <div class="tg-topbar__inner">
+          <span class="tg-topbar__icon"><img src="/branding/Trident-G-Icon.svg" alt=""></span>
+          <span class="tg-topbar__pill">Trident G - IQ</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="ui-screen">
+      <section class="ui-content">
+        <div class="suite-brand-row" aria-label="Suite branding">
+          <span class="suite-brand-icon"><img src="/branding/Trident-G-Icon.svg" alt=""></span>
+          <a class="suite-brand-site" href="https://iqmindware.com/" target="_blank" rel="noopener noreferrer">IQMindware.com</a>
+          <span class="suite-brand-pill">Trident G - IQ</span>
+        </div>
+        <div class="suite-main-stack">
+        <article id="suiteHomeCard" class="ui-card">
+          <h1 class="suite-title">IQ Core Hub</h1>
+          <p class="suite-subtitle">Open your three core apps from one place: Zone Coach, Capacity Gym, and G Tracker.</p>
+          <div class="ui-notice" style="margin-top:10px;">Next step: open one app below. If an app is locked, activate your plan code on this device.</div>
+          <div id="bundleContext" class="ui-notice" style="margin-top:12px; display:none;"></div>
+          <div id="activationContext" class="ui-notice" style="margin-top:12px; display:none;"></div>
+          <div class="ui-row suite-controls">
+            <button id="openHelpBtn" class="ui-btn ui-btn-info" type="button">How IQ Core works</button>
+            <button id="resetActivationBtn" class="ui-btn ui-btn-ghost" type="button">Reset activation on this device</button>
+          </div>
+          <div class="suite-grid" id="suiteGrid"></div>
+          <p class="suite-foot">Use this for skills training and progress tracking. It is not a medical or clinical service.</p>
+        </article>
+        <article id="suiteSettingsCard" class="ui-card">
+          <h2 class="ui-title" style="font-size:1rem;">Settings and data guidance</h2>
+          <div class="ui-row" style="margin-top:8px;">
+            <span class="ui-chip ui-chip-info">Local data mode</span>
+            <span class="ui-chip ui-chip-info">Device-based activation</span>
+          </div>
+          <p class="ui-text">Your app data is stored on this device/browser using local storage for this launch phase (GDPR-aligned local-data handling: data stays on-device unless you choose to share it).</p>
+          <p class="ui-text">For stable progress tracking, train and log on the same device and OS until account sync is rolled out in the subscription upgrade.</p>
+          <p class="ui-text">This app provides skills tracking, not medical diagnosis.</p>
+          <div class="ui-row" style="margin-top:10px;">
+            <a class="ui-btn ui-btn-info" href="https://iqmindware.com/proof/" target="_blank" rel="noopener noreferrer">Open protocol and proof page</a>
+            <a class="ui-btn ui-btn-ghost" href="https://iqmindware.pages.dev/proof/" target="_blank" rel="noopener noreferrer">Fallback proof link</a>
+          </div>
+          <p class="suite-foot">If you clear browser data or switch device, re-enter your activation code.</p>
+        </article>
+        <div class="suite-back">
+          <a class="ui-link" href="/tools/">Back to Apps</a>
+        </div>
+        </div>
+      </section>
+    </main>
+    <nav class="suite-bottom-nav" aria-label="IQ Core quick actions">
+      <button id="navApps" class="suite-tab suite-tab-active" type="button"><span class="suite-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../shared-ui/icons.svg#iq-icon-home"></use></svg></span><span>Apps</span></button>
+      <a id="navProtocol" class="suite-tab" href="https://iqmindware.com/proof/" target="_blank" rel="noopener noreferrer"><span class="suite-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../shared-ui/icons.svg#iq-icon-capacity"></use></svg></span><span>Protocol</span></a>
+      <button id="navHelp" class="suite-tab" type="button"><span class="suite-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../shared-ui/icons.svg#iq-icon-zone"></use></svg></span><span>How to use</span></button>
+      <button id="navSettings" class="suite-tab" type="button"><span class="suite-tab-icon"><img src="../capacity-gym/brandingUI/icons/tab-bar/settings.svg" alt=""></span><span>Settings</span></button>
+    </nav>
+  </div>
+
+  <div id="suiteHelpOverlay" class="suite-help-overlay" hidden>
+    <section class="suite-help-card" role="dialog" aria-modal="true" aria-labelledby="suiteHelpTitle">
+      <h2 id="suiteHelpTitle" class="suite-help-title">How IQ Core works</h2>
+      <ol class="suite-help-list">
+        <li>Choose one app and start there: Zone Coach, Capacity Gym, or G Tracker.</li>
+        <li>If an app is locked, enter your activation code when prompted.</li>
+        <li>Use Zone Coach for readiness, Capacity Gym for training, and G Tracker for progress logging.</li>
+        <li>Complete sessions in stable conditions and use notes for context.</li>
+      </ol>
+      <div class="ui-row">
+        <button id="closeHelpBtn" class="ui-btn ui-btn-primary" type="button">Got it</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="../shared-ui/entitlements-client.js"></script>
+  <script src="../shared-ui/activation-gate.js"></script>
+  <script>
+    const APP_REGISTRY_FALLBACK = [
+      { appId: "zone_coach", label: "Zone Coach", route: "../zone-coach/", iconRef: "iq-icon-zone", category: "readiness" },
+      { appId: "capacity_gym", label: "Capacity Gym", route: "../capacity-gym/", iconRef: "iq-icon-capacity", category: "training" },
+      { appId: "g_tracker", label: "G Tracker", route: "../g-tracker/", iconRef: "iq-icon-tracker", category: "assessment" }
+    ];
+
+    const BUNDLE_MANIFESTS_FALLBACK = [
+      { bundleId: "g_tracker", label: "G Tracker", includedAppIds: ["g_tracker"] },
+      { bundleId: "zone_coach", label: "Zone Coach", includedAppIds: ["zone_coach"] },
+      { bundleId: "capacity_gym", label: "Capacity Gym", includedAppIds: ["capacity_gym"] },
+      { bundleId: "performance_bundle", label: "IQ Core (all 3 apps)", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] },
+      { bundleId: "cohort_bundle", label: "Live Cohort (4 x 1h weekly)", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] },
+      { bundleId: "premium_1to1", label: "1:1 Premium (3 x 1h flexible)", includedAppIds: ["zone_coach", "capacity_gym", "g_tracker"] }
+    ];
+
+    async function loadJson(path, fallback) {
+      try {
+        const response = await fetch(path, { cache: "no-store" });
+        if (!response.ok) {
+          return fallback;
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : fallback;
+      } catch (_) {
+        return fallback;
+      }
+    }
+
+    function buildLaunchUrl(route, appId) {
+      const params = new URLSearchParams(window.location.search);
+      params.set("from", "iq-core");
+      params.set("entryAppId", appId);
+      const url = new URL(route, window.location.href);
+      url.search = params.toString();
+      return url.toString();
+    }
+
+    function renderBundleContext(bundleId, bundleManifests) {
+      const contextEl = document.getElementById("bundleContext");
+      if (!bundleId || !contextEl) {
+        return;
+      }
+      const bundle = bundleManifests.find((item) => item.bundleId === bundleId);
+      const label = bundle && bundle.label ? bundle.label : bundleId;
+      contextEl.textContent = `Active plan: ${label}`;
+      contextEl.style.display = "block";
+    }
+
+    function renderActivationContext(bundleId, access, bundleManifests) {
+      const activationEl = document.getElementById("activationContext");
+      if (!activationEl) {
+        return;
+      }
+      if (!bundleId) {
+        activationEl.style.display = "none";
+        activationEl.textContent = "";
+        return;
+      }
+      if (access.mode === "server") {
+        activationEl.style.display = "block";
+        activationEl.className = "ui-notice";
+        activationEl.textContent = "Server entitlement mode active.";
+        return;
+      }
+      if (!access.activation || access.activation.isActive !== true || !access.activation.bundleId) {
+        activationEl.style.display = "block";
+        activationEl.className = "ui-notice ui-lock";
+        activationEl.textContent = access.serverConfigured
+          ? "Entitlement fetch unavailable. Activation fallback is enabled."
+          : "Activation needed for bundled paid apps.";
+        return;
+      }
+      const bundle = bundleManifests.find((item) => item.bundleId === access.activation.bundleId);
+      const label = bundle && bundle.label ? bundle.label : access.activation.bundleId;
+      activationEl.style.display = "block";
+      activationEl.className = "ui-notice";
+      activationEl.textContent = `Activated on this device: ${label}.`;
+    }
+
+    function wireHelpModal() {
+      const overlay = document.getElementById("suiteHelpOverlay");
+      const openBtn = document.getElementById("openHelpBtn");
+      const closeBtn = document.getElementById("closeHelpBtn");
+      if (!overlay || !openBtn || !closeBtn) {
+        return { open: () => {}, close: () => {} };
+      }
+      const close = () => { overlay.hidden = true; };
+      const open = () => { overlay.hidden = false; };
+      openBtn.addEventListener("click", () => { overlay.hidden = false; });
+      closeBtn.addEventListener("click", close);
+      overlay.addEventListener("click", (event) => {
+        if (event.target === overlay) {
+          close();
+        }
+      });
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !overlay.hidden) {
+          close();
+        }
+      });
+      return { open, close };
+    }
+
+    function scrollToSection(targetId) {
+      const target = document.getElementById(targetId);
+      const content = document.querySelector("body.suite-rebrand .ui-content");
+      if (!target) return;
+      if (content && content.scrollHeight > content.clientHeight) {
+        const offset = Math.max(target.offsetTop - 8, 0);
+        content.scrollTo({ top: offset, behavior: "smooth" });
+        return;
+      }
+      target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function wireBottomNav(openHelp) {
+      const tabs = [
+        document.getElementById("navApps"),
+        document.getElementById("navProtocol"),
+        document.getElementById("navHelp"),
+        document.getElementById("navSettings")
+      ].filter(Boolean);
+      const setActive = (tab) => {
+        tabs.forEach((item) => item.classList.remove("suite-tab-active"));
+        if (tab) {
+          tab.classList.add("suite-tab-active");
+        }
+      };
+      const navApps = document.getElementById("navApps");
+      const navProtocol = document.getElementById("navProtocol");
+      const navHelp = document.getElementById("navHelp");
+      const navSettings = document.getElementById("navSettings");
+      if (navApps) {
+        navApps.addEventListener("click", () => {
+          setActive(navApps);
+          scrollToSection("suiteGrid");
+        });
+      }
+      if (navProtocol) {
+        navProtocol.addEventListener("click", () => setActive(navProtocol));
+      }
+      if (navHelp) {
+        navHelp.addEventListener("click", () => {
+          setActive(navHelp);
+          openHelp();
+        });
+      }
+      if (navSettings) {
+        navSettings.addEventListener("click", () => {
+          setActive(navSettings);
+          scrollToSection("suiteSettingsCard");
+        });
+      }
+    }
+
+    function renderApps(apps, bundleId, bundleManifests, access) {
+      const gridEl = document.getElementById("suiteGrid");
+      if (!gridEl) {
+        return;
+      }
+      const bundle = bundleManifests.find((item) => item.bundleId === bundleId);
+      const includedSet = new Set(Array.isArray(bundle && bundle.includedAppIds) ? bundle.includedAppIds : []);
+      const showBundleHints = Boolean(bundleId);
+      const unlockedSet = access.unlockedSet;
+      gridEl.innerHTML = apps.map((app) => {
+        const inBundle = includedSet.has(app.appId);
+        const requiresActivation = showBundleHints && inBundle;
+        const isUnlocked = requiresActivation ? unlockedSet.has(app.appId) : true;
+        const bundleChip = showBundleHints
+          ? `<span class="ui-chip ${inBundle ? "suite-chip-included" : "ui-chip-info"}">${inBundle ? "Included in bundle" : "Outside bundle scope"}</span>`
+          : "";
+        const gateChip = requiresActivation
+          ? `<span class="ui-chip ${isUnlocked ? "suite-chip-activated" : "ui-lock"}">${
+              isUnlocked ? (access.mode === "server" ? "Entitled" : "Activated") : (access.mode === "server" ? "Entitlement required" : "Activation needed")
+            }</span>`
+          : "";
+        let actionMarkup = `<a class="ui-btn ui-btn-primary" href="${buildLaunchUrl(app.route, app.appId)}">Open ${app.label}</a>`;
+        if (requiresActivation && !isUnlocked) {
+          actionMarkup = access.mode === "server"
+            ? `<button class="ui-btn ui-btn-ghost" data-action="refresh-access">Refresh entitlements</button>`
+            : `<button class="ui-btn ui-btn-primary" data-action="activate-app" data-app-id="${app.appId}" data-app-label="${app.label}" data-bundle-id="${bundleId}">Activate to open</button>`;
+        }
+        return `
+          <article class="ui-card suite-app">
+            <header class="suite-app-head">
+              <svg class="suite-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="../shared-ui/icons.svg#${app.iconRef}"></use></svg>
+              <h3>${app.label}</h3>
+            </header>
+            <p>${app.category}</p>
+            <div class="ui-row">
+              ${bundleChip}
+              ${gateChip}
+            </div>
+            ${actionMarkup}
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function resolveAccessState(bundleId, bundles) {
+      const activation = window.IQActivationGate.loadActivation();
+      const access = {
+        mode: "none",
+        serverConfigured: false,
+        activation,
+        unlockedSet: new Set()
+      };
+      if (window.IQEntitlementsClient && window.IQEntitlementsClient.isConfigured()) {
+        access.serverConfigured = true;
+        const result = await window.IQEntitlementsClient.fetchEntitlements();
+        if (result && result.ok) {
+          const appIds = window.IQActivationGate.deriveAllowedAppIdsFromEntitlements(result.entitlements || [], bundles);
+          access.mode = "server";
+          access.unlockedSet = new Set(appIds);
+          return access;
+        }
+      }
+      if (activation && activation.isActive && activation.bundleId) {
+        const activationBundle = bundles.find((item) => item.bundleId === activation.bundleId);
+        access.mode = "activation";
+        access.unlockedSet = new Set(Array.isArray(activationBundle && activationBundle.includedAppIds) ? activationBundle.includedAppIds : []);
+        return access;
+      }
+      if (access.serverConfigured) {
+        access.mode = "activation_fallback";
+      }
+      return access;
+    }
+
+    function wireButtons(renderState) {
+      const buttons = Array.from(document.querySelectorAll("[data-action='activate-app']"));
+      buttons.forEach((button) => {
+        button.addEventListener("click", async () => {
+          button.disabled = true;
+          const appId = button.getAttribute("data-app-id") || "";
+          const appLabel = button.getAttribute("data-app-label") || "this app";
+          const bundleId = button.getAttribute("data-bundle-id") || "";
+          await window.IQActivationGate.requestActivation({
+            appId,
+            appLabel,
+            bundleIdHint: bundleId,
+            requiredBundleId: bundleId || "",
+            manifestUrl: "./bundle-manifests.json"
+          });
+          renderState.render();
+        });
+      });
+
+      const refreshButtons = Array.from(document.querySelectorAll("[data-action='refresh-access']"));
+      refreshButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          button.disabled = true;
+          renderState.render();
+        });
+      });
+    }
+
+    async function init() {
+      const [apps, bundles] = await Promise.all([
+        loadJson("./app-registry.json", APP_REGISTRY_FALLBACK),
+        loadJson("./bundle-manifests.json", BUNDLE_MANIFESTS_FALLBACK)
+      ]);
+      const params = new URLSearchParams(window.location.search);
+      const bundleId = params.get("bundle") || "";
+      const renderState = { apps, bundles, bundleId, render: null };
+      const helpModal = wireHelpModal();
+      wireBottomNav(helpModal.open);
+
+      renderState.render = async () => {
+        const access = await resolveAccessState(bundleId, bundles);
+        renderBundleContext(bundleId, bundles);
+        renderActivationContext(bundleId, access, bundles);
+        renderApps(apps, bundleId, bundles, access);
+        wireButtons(renderState);
+      };
+
+      await renderState.render();
+
+      const resetBtn = document.getElementById("resetActivationBtn");
+      if (resetBtn) {
+        resetBtn.addEventListener("click", async () => {
+          window.IQActivationGate.clearActivation();
+          await renderState.render();
+        });
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

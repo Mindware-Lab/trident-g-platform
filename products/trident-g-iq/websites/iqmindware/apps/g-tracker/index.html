@@ -1,0 +1,3220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>G Tracker</title>
+
+  <!-- Shared brand CSS (your deep blue header kit) -->
+  <!-- Sync marker: 2026-02-27 -->
+  <link rel="stylesheet" href="../shared-ui/tokens.css">
+  <link rel="stylesheet" href="../shared-ui/shell.css">
+  <link rel="stylesheet" href="../shared-ui/components.css">
+  <link rel="stylesheet" href="/branding/brand.css">
+
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+  <style>
+    /* Hub-specific helpers (keeps brand.css clean) */
+    html, body{
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body.gt-rebrand{
+      height: 100vh;
+      background:
+        radial-gradient(920px 460px at 50% -24%, rgba(110,198,255,.24), transparent 58%),
+        linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%) !important;
+      padding: 16px 14px 24px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      font-family: var(--iq-font);
+      color: var(--iq-text);
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .gt-shell{
+      width: min(470px, calc(100% - 12px));
+      height: calc(100vh - 36px);
+      border-radius: 42px;
+      border: 1.5px solid rgba(255,255,255,.45);
+      overflow: hidden;
+      background:
+        radial-gradient(700px 420px at 50% -10%, rgba(110,198,255,.18), transparent 62%),
+        linear-gradient(180deg, #081326 0%, #050e1f 45%, #031029 100%);
+      box-shadow: 0 22px 44px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08);
+      position: relative;
+    }
+
+    @media (min-width: 960px){
+      .gt-shell{
+        width: min(900px, calc(100% - 24px));
+      }
+    }
+
+    .gt-shell::before{
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(460px 460px at 50% -15%, rgba(255,255,255,.18), transparent 62%),
+        linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(221,234,248,.38) 47%, rgba(130,154,181,.32) 50%, rgba(221,234,248,.34) 53%, rgba(255,255,255,0) 100%);
+      opacity: .56;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .gt-shell::after{
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 132px;
+      height: 20px;
+      border-radius: 0 0 16px 16px;
+      background: rgba(6,12,23,.95);
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .gt-shell > *{
+      position: relative;
+      z-index: 1;
+    }
+
+    .ui-screen{
+      height: 100%;
+      min-height: 0;
+      padding-top: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ui-content{
+      width: 100%;
+      padding: 16px 12px 80px;
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #root{
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+    }
+
+    #root > .screen{
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      width: 100%;
+    }
+
+    #root > .screen > .content{
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .gt-panel-viewport{
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      gap: 10px;
+      overflow: hidden;
+    }
+    .gt-panel-viewport.panelResults{
+      padding-bottom: 8px;
+    }
+
+    .panelHint{
+      margin: 0;
+      padding: 2px 2px 0;
+      border: 0;
+      background: transparent;
+      color: var(--brand-text-muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .scopeLine{
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.35;
+      color: var(--brand-text-muted);
+      font-weight: 700;
+    }
+    .dualPanelHint{
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.3;
+      color: var(--brand-text-muted);
+      font-weight: 700;
+    }
+
+    .panelModeRow{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 2px;
+    }
+
+    .panelModeShell{
+      border: 0;
+      background: transparent;
+      padding: 0;
+    }
+
+    .panelModeLeft{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+
+    .panelModeLabel{
+      margin: 0;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+      color: var(--brand-text-label);
+      font-weight: 800;
+    }
+
+    .panelModeButtons{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .panelModeButtonsFocus{
+      justify-content: flex-start;
+    }
+
+    .panelModeButtonsMode{
+      margin-left: auto;
+      justify-content: flex-end;
+    }
+
+    .panelMiniBtns{
+      min-height: 30px;
+      padding: 5px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .howToUseBtn{
+      border: 1px solid rgba(110,198,255,.62) !important;
+      box-shadow: inset 0 0 0 1px rgba(110,198,255,.12);
+    }
+
+    .deckHeader{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .deckLabel{
+      margin: 0;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--brand-text-label);
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+
+    .deckControls{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .deckCount{
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--brand-text-muted);
+      min-width: 42px;
+      text-align: center;
+    }
+
+    .deckBtn{
+      min-height: 32px;
+      min-width: 36px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .compactCard{
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border-radius: var(--iq-radius-md, 16px);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border: 1px solid var(--brand-border-soft);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+      overflow: hidden;
+    }
+    .compactCardDual{
+      padding: 8px;
+      gap: 6px;
+    }
+
+    .compactCardDual .compactTitle{
+      font-size: 16px;
+      line-height: 1.1;
+    }
+
+    .compactCardDual .compactMeta{
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .dualMetricLine{
+      margin: 0;
+      font-size: 12px;
+      color: var(--brand-text-muted);
+      line-height: 1.25;
+      font-weight: 700;
+    }
+
+    .compactCardDual .btn{
+      min-height: 34px;
+      padding: 7px 10px;
+      font-size: 13px;
+      border-radius: 10px;
+    }
+    .compactCardDual .deckLabel{
+      font-size: 12px;
+    }
+    .compactCardDual .deckBtn{
+      min-height: 28px;
+      min-width: 32px;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    .compactCardDual .deckCount{
+      font-size: 11px;
+      min-width: 34px;
+    }
+    .compactCardDual .statusPill{
+      font-size: 11px;
+      padding: 3px 9px;
+    }
+    .compactCardDual .compactActions{
+      gap: 6px;
+    }
+    .compactCardDual .compactActions .btn{
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .compactTitle{
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.15;
+      font-weight: 900;
+      color: var(--z-blue-400);
+    }
+
+    .compactMeta{
+      margin: 0;
+      font-size: 13px;
+      color: var(--brand-text-muted);
+      line-height: 1.35;
+    }
+
+    .compactRow{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .compactMetric{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 10px;
+      padding: 8px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.012));
+    }
+
+    .compactMetricLabel{
+      margin: 0;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--brand-text-label);
+      letter-spacing: .02em;
+    }
+
+    .compactMetricValue{
+      margin: 4px 0 0 0;
+      font-size: 18px;
+      line-height: 1.1;
+      font-weight: 900;
+      color: var(--brand-text);
+      overflow-wrap: anywhere;
+    }
+
+    .compactHistory{
+      margin: 0;
+      font-size: 12px;
+      color: var(--brand-text-muted);
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .compactActions{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .howCard{
+      margin-top: 8px;
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.014));
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .howTitle{
+      margin: 0;
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--brand-text);
+      letter-spacing: .01em;
+      text-transform: uppercase;
+    }
+
+    .howLine{
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--brand-text-muted);
+    }
+
+    .nextAction{
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(204,255,102,.30);
+      background: rgba(204,255,102,.12);
+      color: var(--brand-text);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .validationGrid{
+      display: grid;
+      gap: 8px;
+    }
+
+    .validationRow{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.012));
+      padding: 8px 10px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .validationHead{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .validationTitle{
+      margin: 0;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--brand-text);
+    }
+
+    .validationBadge{
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+    }
+
+    .validationBadge.strong{
+      color: #d7ff97;
+      background: rgba(204,255,102,.14);
+      border-color: rgba(204,255,102,.30);
+    }
+
+    .validationBadge.moderate{
+      color: #9ed7ff;
+      background: rgba(110,198,255,.13);
+      border-color: rgba(110,198,255,.30);
+    }
+
+    .validationBadge.context{
+      color: #ffd49c;
+      background: rgba(255,196,120,.12);
+      border-color: rgba(255,196,120,.30);
+    }
+
+    .validationText{
+      margin: 0;
+      font-size: 12px;
+      color: var(--brand-text-muted);
+      line-height: 1.35;
+    }
+
+    .gt-brand-row{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding: 4px 8px 2px;
+      position: relative;
+    }
+    .gt-brand-site{
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #9ed3ff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid rgba(110,198,255,.30);
+      background: rgba(16,30,52,.58);
+      border-radius: 999px;
+      padding: 6px 10px;
+      line-height: 1;
+      white-space: nowrap;
+      max-width: 44%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .gt-brand-site:hover{
+      border-color: rgba(158,211,255,.56);
+      color: #c8e8ff;
+    }
+
+    .gt-brand-left{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .gt-brand-icon{
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      border: 1px solid rgba(110,198,255,.22);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)), rgba(15,18,26,.94);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .gt-brand-icon img{
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .gt-suite-back{
+      color: #9ed3ff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      opacity: .94;
+    }
+
+    .gt-brand-pill{
+      border-radius: 999px;
+      background: #ccff66;
+      color: #0b1a0b;
+      border: 1px solid rgba(0,0,0,.08);
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .screen{
+      min-height: 0;
+    }
+
+    .grid { display: grid; gap: 12px; }
+    .grid2 { grid-template-columns: 1fr; }
+
+    .content{
+      max-width: none;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .gt-bottom-nav{
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 2px;
+      padding: 4px 12px 6px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(16,22,35,.94), rgba(9,14,24,.97));
+      z-index: 5;
+    }
+
+    .gt-tab{
+      border: 1px solid transparent;
+      background: transparent;
+      display: grid;
+      justify-items: center;
+      justify-self: center;
+      width: calc(100% - 10px);
+      gap: 3px;
+      color: #9fb4d0;
+      text-decoration: none;
+      font: 700 11px/1.1 var(--iq-font);
+      min-height: 44px;
+      padding: 5px 2px;
+      border-radius: 10px;
+    }
+
+    .gt-tab-icon{
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gt-tab-icon svg,
+    .gt-tab-icon img{
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      display: block;
+      opacity: 1;
+      filter: drop-shadow(0 0 7px rgba(204,255,102,.42));
+    }
+
+    .gt-tab-icon svg{
+      stroke: #ccff66;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .gt-tab span:last-child{
+      font-size: .72rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .gt-tab-active{
+      color: #9bd7ff;
+      border-color: rgba(110,198,255,.36);
+      background: rgba(110,198,255,.08);
+    }
+
+    .gt-tab-active .gt-tab-icon img{
+      filter: drop-shadow(0 0 9px rgba(204,255,102,.56));
+    }
+
+    .gt-tab-active .gt-tab-icon svg{
+      stroke: #d8ff83;
+      filter: drop-shadow(0 0 9px rgba(204,255,102,.56));
+    }
+
+    .gt-tab-external-mark{
+      font-size: 11px;
+      line-height: 1;
+      font-weight: 900;
+      color: #ccff66;
+      margin-left: -2px;
+    }
+
+    .sectionTitle{
+      margin: 4px 2px 0;
+      font-weight: 900;
+      font-size: 22px;
+      line-height: 1.15;
+      letter-spacing: -0.2px;
+      color: var(--brand-text);
+      overflow-wrap: anywhere;
+    }
+
+    .sectionNote{
+      margin: 4px 2px 0;
+      font-size: 15px;
+      color: var(--brand-text-muted);
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .testRow{
+      display:flex;
+      flex-direction: column;
+      justify-content:flex-start;
+      align-items:stretch;
+      gap: 10px;
+      padding: 12px;
+      border-radius: var(--iq-radius-md, 16px);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border: 1px solid var(--brand-border-soft);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+
+    .testMeta{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width: 0;
+    }
+
+    .testName{
+      font-weight: 900;
+      font-size: 22px;
+      margin: 0;
+      color: var(--brand-text);
+      overflow-wrap: anywhere;
+    }
+
+    .testDesc{
+      margin: 0;
+      font-size: 15px;
+      color: var(--brand-text-muted);
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .tagRow{ display:flex; gap:6px; flex-wrap:wrap; margin-top: 4px; }
+    .tag{
+      font-size: 12px;
+      font-weight: 800;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(110,198,255,0.08);
+      border: 1px solid rgba(110,198,255,0.22);
+      color: var(--brand-text);
+      white-space: normal;
+      text-align: center;
+      line-height: 1.2;
+      max-width: 100%;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+    .tagDone{
+      background: rgba(204,255,102,0.95);
+      border: 1px solid rgba(0,0,0,0.08);
+      color:#0B1A0B;
+      box-shadow: 0 0 0 1px rgba(204,255,102,.14), 0 8px 22px rgba(190,239,78,.12);
+    }
+
+    .rightCol{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:flex-start;
+      flex: 0 0 auto;
+    }
+
+    .miniRow{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-start; }
+
+    .btnSmall{
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      white-space: normal;
+      line-height: 1.15;
+      text-align: center;
+    }
+
+    .input{
+      width: 100%;
+      border-radius: var(--iq-radius-sm, 12px);
+      border: 1px solid var(--brand-border);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.018));
+      color: var(--brand-text);
+      padding: 9px 10px;
+      font-size: 14px;
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+    .input:focus{
+      border-color: rgba(110,198,255,.45);
+      box-shadow: var(--brand-focus-ring);
+    }
+    .inputScoreReady{
+      border-color: rgba(110,198,255,.48);
+      box-shadow: var(--brand-focus-ring);
+    }
+    .input::placeholder{
+      color: var(--brand-text-quiet);
+      opacity: 1;
+    }
+    .input option{
+      background: #121722;
+      color: var(--brand-text);
+    }
+
+    .twoCol{
+      display:grid;
+      grid-template-columns: minmax(160px, 220px) minmax(260px, 1fr);
+      gap: 8px;
+      align-items: center;
+      max-width: 640px;
+    }
+    .twoColDual{
+      grid-template-columns: minmax(130px, 180px) minmax(180px, 1fr);
+      gap: 6px;
+      max-width: none;
+    }
+    .compactCardDual .input{
+      padding: 6px 8px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 720px){
+      .twoCol{
+        grid-template-columns: 1fr;
+        max-width: none;
+      }
+    }
+
+    .whenLine{
+      margin: 8px 0 0 0;
+      font-size: 14px;
+      color: var(--brand-text);
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .timepointRow{
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .timepointSelect{
+      max-width: 260px;
+    }
+
+    .scoreReadout{
+      margin-top: 8px;
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.014));
+      padding: 8px 10px;
+      max-width: 760px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+
+    .scoreReadoutTitle{
+      margin: 0;
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--brand-text-label);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .scoreReadoutLine{
+      margin-top: 4px;
+      font-size: 14px;
+      color: var(--brand-text-muted);
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .infoGrid{
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      max-width: 760px;
+    }
+
+    .infoBlock{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.014));
+      padding: 8px 10px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+
+    .infoBlock summary{
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 14px;
+      color: var(--brand-text);
+      user-select: none;
+    }
+    .infoBlock summary:focus-visible{
+      outline: none;
+      box-shadow: var(--brand-focus-ring);
+      border-radius: 8px;
+    }
+
+    .infoBlock p{
+      margin: 8px 0 0 0;
+    }
+
+    .checkList{
+      margin: 8px 0 0 18px;
+      padding: 0;
+      font-size: 14px;
+      color: var(--brand-text-muted);
+      line-height: 1.35;
+    }
+    .checkList li{
+      overflow-wrap: anywhere;
+    }
+
+    .contextHint{
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--z-blue-200);
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .historyHint{
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--brand-text-muted);
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .muted{
+      font-size: 14px;
+      color: var(--brand-text-muted);
+      line-height: 1.45;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .progressStrip{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(110,198,255,0.28);
+      background: rgba(110,198,255,0.08);
+      color: var(--brand-text);
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .programSetup{
+      margin-top: 10px;
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.018));
+      padding: 10px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .programGrid{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(160px, 1fr));
+      gap: 8px;
+    }
+
+    .programField{
+      display: grid;
+      gap: 6px;
+    }
+
+    .programLabel{
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--brand-text-label);
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+
+    .sectionHeader{
+      margin: 4px 0 0 0;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--brand-text);
+    }
+
+    .sectionSub{
+      margin: 4px 0 0 0;
+      font-size: 14px;
+      color: var(--brand-text-muted);
+      line-height: 1.4;
+    }
+
+    .trackerCard{
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border-radius: var(--iq-radius-md, 16px);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border: 1px solid var(--brand-border-soft);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+
+    .btn,
+    .btnPrimary,
+    .btnSecondary,
+    .btnInfo{
+      min-height: 44px;
+      border-radius: var(--iq-radius-sm, 12px);
+      font-family: var(--iq-font);
+    }
+
+    .trackerTitle{
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+      font-weight: 900;
+      color: var(--z-blue-400);
+    }
+
+    .trackerPurpose{
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.4;
+      color: var(--brand-text-muted);
+    }
+
+    .statusPill{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid transparent;
+    }
+
+    .statusUp{ background: rgba(204,255,102,.95); color: #0B1A0B; border-color: rgba(0,0,0,.08); }
+    .statusDue{ background: rgba(255,204,102,.18); color: #ffd49c; border-color: rgba(255,174,79,.45); }
+    .statusProgress{ background: rgba(110,198,255,.14); color: #9fd7ff; border-color: rgba(110,198,255,.32); }
+    .statusNeutral{ background: rgba(255,255,255,.04); color: var(--brand-text-muted); border-color: var(--brand-border-soft); }
+
+    .slotGrid{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(200px, 1fr));
+      gap: 8px;
+    }
+
+    .slotCard{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.016));
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .slotLabel{ margin: 0; font-size: 12px; font-weight: 800; color: var(--brand-text-label); text-transform: uppercase; letter-spacing: .03em; }
+    .slotMetric{ margin: 0; font-size: 24px; font-weight: 900; color: var(--brand-text); line-height: 1.1; }
+    .slotDate{ margin: 0; font-size: 12px; color: var(--brand-text-muted); }
+
+    .deltaBox{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.016));
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .deltaLine{ margin: 0; font-size: 13px; color: var(--brand-text); font-weight: 700; }
+
+    .deltaBarRow{
+      display: grid;
+      grid-template-columns: 70px 1fr 56px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .deltaBarLabel{ font-size: 12px; font-weight: 700; color: var(--brand-text-muted); }
+    .deltaBarTrack{ height: 8px; border-radius: 999px; background: rgba(110,198,255,.15); overflow: hidden; }
+    .deltaBarFill{ height: 100%; border-radius: 999px; background: linear-gradient(90deg, #6ec6ff, #4a92ff); }
+    .deltaValue{ font-size: 12px; font-weight: 700; color: var(--brand-text-muted); text-align: right; }
+
+    .cardActions{ display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .linkBtn{ border: none; background: transparent; color: #8bc5ff; font-size: 13px; font-weight: 800; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+    .inlineDivider{ color: var(--brand-text-muted); font-size: 12px; font-weight: 800; }
+    .logHint{ margin: 0; font-size: 14px; color: var(--brand-text); font-weight: 900; }
+
+    .historyBlock{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      padding: 10px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .historyLine{ margin: 0; font-size: 13px; color: var(--brand-text); line-height: 1.4; }
+
+    .metricRow{
+      display: grid;
+      grid-template-columns: minmax(150px, 1fr) minmax(240px, 2fr);
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .latestBox,
+    .sparkBox{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      padding: 10px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .latestLabel,
+    .sparkTitle{ margin: 0; font-size: 12px; font-weight: 800; color: var(--brand-text-label); letter-spacing: .03em; text-transform: uppercase; }
+    .latestValue{ margin: 0; font-size: 30px; line-height: 1.05; font-weight: 900; color: var(--brand-text); }
+    .latestDate{ margin: 0; font-size: 12px; color: var(--brand-text-muted); line-height: 1.35; }
+    .sparkSvg{ width: 100%; height: 50px; display: block; }
+    .sparkPlaceholder{ margin: 8px 0 0 0; font-size: 12px; color: var(--brand-text-muted); }
+    .dueLine{ margin: 0; font-size: 13px; font-weight: 700; color: var(--brand-text); }
+
+    .adminCard{ opacity: .95; }
+    .adminHeaderRow{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .adminHeaderRow .sectionHeader{ margin: 0; }
+    .adminHelpBtn{ min-width: 98px; }
+
+    .adminHelpOverlay{
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(3,8,14,.72);
+      backdrop-filter: blur(2px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .adminHelpModal{
+      width: min(740px, 100%);
+      max-height: min(86vh, 760px);
+      overflow: auto;
+      border-radius: 18px;
+      border: 1px solid rgba(110,198,255,.3);
+      background:
+        radial-gradient(110% 110% at -10% -20%, rgba(110,198,255,.10), transparent 55%),
+        linear-gradient(160deg, rgba(74,146,255,.10), rgba(15,18,26,.96) 58%);
+      box-shadow: 0 20px 44px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
+      color: var(--brand-text);
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .adminHelpTop{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .adminHelpTitle{
+      margin: 0;
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--brand-text);
+    }
+
+    .adminHelpLead{
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--brand-text-muted);
+    }
+
+    .adminHelpBlock{
+      border: 1px solid var(--brand-border-soft);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      padding: 10px 12px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .adminHelpLabel{
+      margin: 0;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--brand-text);
+    }
+
+    .adminHelpText{
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--brand-text-muted);
+    }
+
+    .adminHelpWarn{
+      border: 1px solid rgba(255,120,140,.34);
+      background: rgba(255,170,190,.12);
+    }
+
+    .gtNavOverlay{
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(3,8,14,.72);
+      backdrop-filter: blur(2px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .gtNavOverlay[hidden]{
+      display: none !important;
+    }
+
+    .gtNavModal{
+      width: min(680px, 100%);
+      max-height: min(86vh, 760px);
+      overflow: auto;
+      border-radius: 18px;
+      border: 1px solid rgba(110,198,255,.3);
+      background:
+        radial-gradient(110% 110% at -10% -20%, rgba(110,198,255,.10), transparent 55%),
+        linear-gradient(160deg, rgba(74,146,255,.10), rgba(15,18,26,.96) 58%);
+      box-shadow: 0 20px 44px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
+      color: var(--brand-text);
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .gtNavTop{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .gtNavTitle{
+      margin: 0;
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--brand-text);
+    }
+
+    .gtNavLead{
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--brand-text-muted);
+    }
+
+    .gtNavActions{
+      display: grid;
+      gap: 8px;
+    }
+
+    .gtNavActionBtn{
+      width: 100%;
+      justify-content: flex-start;
+      text-align: left;
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+
+    @media (max-width: 900px){
+      .programGrid{ grid-template-columns: 1fr; }
+      .slotGrid{ grid-template-columns: 1fr; }
+      .metricRow{ grid-template-columns: 1fr; }
+    }
+
+    .danger{
+      background: rgba(255,170,190,.10);
+      border: 1px solid rgba(255,120,140,.28);
+      padding: 10px 12px;
+      border-radius: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+
+    .gSplashCard{
+      max-width: 640px;
+      margin: 0 auto;
+      border-radius: 24px;
+      border: 1px solid rgba(110,198,255,.22);
+      background:
+        radial-gradient(1100px 360px at -10% -20%, rgba(110,198,255,.14), transparent 55%),
+        linear-gradient(165deg, rgba(78,160,232,.12), rgba(15,18,26,.96) 55%);
+      color: var(--brand-text);
+      text-align: center;
+      padding: 26px 22px;
+      box-shadow: 0 14px 34px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04);
+    }
+
+    .gSplashIcon{
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: #BEEF4E;
+      border: 4px solid rgba(255,255,255,.50);
+      box-shadow: 0 8px 18px rgba(190,239,78,.18);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px auto;
+      overflow: hidden;
+    }
+
+    .gSplashIcon img{
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+    }
+
+    .gSplashKicker{
+      margin: 2px 0 8px 0;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #d9ecff;
+      font-weight: 700;
+    }
+
+    .gSplashTitle{
+      margin: 0;
+      font-size: 46px;
+      line-height: 1;
+      font-weight: 900;
+      color: var(--brand-text);
+    }
+
+    .gSplashSub{
+      margin: 12px 0 0 0;
+      font-size: 20px;
+      line-height: 1.35;
+      color: var(--brand-text-muted);
+      font-weight: 600;
+    }
+
+    .gSplashBtn{
+      margin-top: 18px;
+      min-width: 230px;
+    }
+
+    .gSplashFoot{
+      margin: 14px 0 0 0;
+      color: var(--z-blue-200);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .panelAppHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--brand-border-soft);
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.012));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+    }
+
+    .panelAppBrand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex: 1 1 320px;
+    }
+
+    .panelAppIcon{
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: #BEEF4E;
+      border: 4px solid rgba(255,255,255,.45);
+      box-shadow: 0 8px 18px rgba(190,239,78,.16);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex: 0 0 auto;
+    }
+
+    .panelAppIcon img{
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+      display:block;
+    }
+
+    .panelAppKicker{
+      margin: 0;
+      font-size: 11px;
+      line-height: 1.1;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--z-blue-200);
+    }
+
+    .panelAppTitle{
+      margin: 4px 0 0 0;
+      font-weight: 900;
+      font-size: 26px;
+      line-height: 1.05;
+      color: var(--brand-info);
+      letter-spacing: -0.02em;
+    }
+
+    .panelAppSubtitle{
+      margin: 4px 0 0 0;
+      font-size: 13px;
+      line-height: 1.25;
+      color: var(--brand-text-muted);
+    }
+
+    .panelAppChip{
+      flex: 0 0 auto;
+      align-self: flex-start;
+    }
+
+    @media (max-width: 600px){
+      .gSplashCard{
+        width: 100%;
+        border-radius: 18px;
+        padding: 20px 16px;
+      }
+
+      .gSplashKicker{
+      margin: 2px 0 8px 0;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #d9ecff;
+      font-weight: 700;
+    }
+
+    .gSplashTitle{
+        font-size: clamp(34px, 11vw, 42px);
+      }
+
+      .gSplashSub{
+        font-size: 18px;
+      }
+
+      .gSplashBtn{
+        width: 100%;
+        min-width: 0;
+      }
+
+      .gSplashFoot{
+        font-size: 16px;
+      }
+
+      .panelAppHead{
+        padding: 10px;
+        border-radius: 12px;
+      }
+
+      .panelAppBrand{
+        flex-basis: 100%;
+      }
+
+      .panelAppChip{
+        align-self: auto;
+      }
+
+      .panelAppTitle{
+        font-size: 22px;
+      }
+    }
+
+    @media (max-width: 520px){
+      body.gt-rebrand{
+        padding: 0;
+        height: 100dvh;
+      }
+      .gt-shell{
+        width: 100%;
+        height: 100dvh;
+        border-radius: 0;
+        border: none;
+      }
+      .ui-content{
+        padding: 10px 10px calc(144px + env(safe-area-inset-bottom));
+        scroll-padding-bottom: calc(156px + env(safe-area-inset-bottom));
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-y: contain;
+      }
+      .ui-screen{
+        height: 100%;
+        min-height: 100%;
+      }
+      #root{
+        display: block;
+        flex: 0 0 auto;
+        min-height: auto;
+      }
+      #root > .screen{
+        display: block;
+        flex: 0 0 auto;
+        min-height: auto;
+      }
+      #root > .screen > .content{
+        display: block;
+        overflow: visible;
+        min-height: auto;
+      }
+      #root > .screen > .content > .card{
+        margin-bottom: 8px;
+      }
+      .gt-panel-viewport{
+        flex: 0 0 auto;
+        display: block;
+        overflow: visible;
+        gap: 8px;
+      }
+      .gt-panel-viewport.panelResults{
+        padding-bottom: calc(24px + env(safe-area-inset-bottom));
+      }
+      .gt-panel-viewport > *{
+        margin-bottom: 8px;
+      }
+      .gt-panel-viewport > *:last-child{
+        margin-bottom: 0;
+      }
+      .gt-bottom-nav{
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 50;
+        padding: 3px 12px calc(6px + env(safe-area-inset-bottom));
+        pointer-events: auto;
+        touch-action: manipulation;
+      }
+      .gt-shell::after{
+        display: none;
+      }
+    }
+
+    @media (max-height: 940px){
+      body.gt-rebrand{
+        padding: 8px 10px 10px;
+      }
+
+      .gt-shell{
+        height: calc(100vh - 18px);
+      }
+
+      .ui-content{
+        padding: 10px 10px 76px;
+      }
+
+      #root > .screen > .content{
+        gap: 8px;
+      }
+
+      .gt-brand-row{
+        margin-bottom: 4px;
+        padding: 2px 8px 0;
+      }
+
+      .gt-brand-icon{
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+      }
+
+      .gt-brand-icon img{
+        width: 28px;
+        height: 28px;
+      }
+
+      .gt-brand-pill{
+        padding: 8px 12px;
+        font-size: 11px;
+      }
+      .gt-brand-site{
+        font-size: 10.5px;
+        padding: 5px 8px;
+        max-width: 48%;
+      }
+
+      .card{
+        padding: 10px !important;
+      }
+
+      .panelAppBrand{
+        gap: 10px;
+      }
+
+      .panelAppIcon{
+        width: 42px;
+        height: 42px;
+        border-width: 3px;
+      }
+
+      .panelAppIcon img{
+        width: 26px;
+        height: 26px;
+      }
+
+      .panelAppKicker{
+        font-size: 10px;
+      }
+
+      .panelAppTitle{
+        font-size: 22px;
+      }
+
+      .p{
+        font-size: 13px;
+        line-height: 1.3;
+      }
+
+      .progressStrip{
+        margin-top: 6px;
+        padding: 7px 10px;
+        font-size: 13px;
+      }
+
+      .howCardOptional{
+        display: none;
+      }
+
+      .nextAction{
+        margin-top: 6px;
+        padding: 7px 10px;
+        font-size: 12px;
+      }
+
+      .scopeLine{
+        font-size: 11px;
+        line-height: 1.3;
+      }
+
+      .sectionSubOptional{
+        display: none;
+      }
+
+      .gt-panel-viewport{
+        gap: 8px;
+      }
+
+      .panelHint{
+        display: none;
+      }
+
+      .panelModeRow{
+        gap: 6px;
+      }
+
+      .panelModeLeft{
+        gap: 6px;
+      }
+
+      .panelModeButtonsMode{
+        margin-left: 0;
+      }
+
+      .compactCard{
+        padding: 8px;
+        gap: 6px;
+      }
+
+      .compactTitle{
+        font-size: 16px;
+      }
+
+      .compactMeta,
+      .compactHistory{
+        font-size: 12px;
+        line-height: 1.3;
+      }
+
+      .compactMetricValue{
+        font-size: 16px;
+      }
+
+      .input{
+        padding: 7px 9px;
+        font-size: 13px;
+      }
+
+      .btn,
+      .btnPrimary,
+      .btnSecondary,
+      .btnInfo{
+        min-height: 38px;
+      }
+
+      .gt-bottom-nav{
+        padding: 3px 12px 6px;
+      }
+
+      .gt-tab{
+        width: calc(100% - 8px);
+        min-height: 42px;
+      }
+
+      .gt-tab-icon{
+        width: 24px;
+        height: 24px;
+      }
+
+      .gt-tab-icon svg,
+      .gt-tab-icon img{
+        width: 24px;
+        height: 24px;
+      }
+
+      .gt-tab span:last-child{
+        font-size: .68rem;
+      }
+    }
+  </style>
+</head>
+
+<body class="gt-rebrand">
+  <div class="gt-shell">
+    <main class="ui-screen">
+      <section class="ui-content">
+        <div class="gt-brand-row" aria-label="G Tracker branding">
+          <div class="gt-brand-left">
+            <span class="gt-brand-icon"><img src="/branding/Trident-G-Icon.svg" alt="" /></span>
+            <a id="suiteBackLink" class="gt-suite-back" href="../iq-core/index.html">Back to IQ Core</a>
+          </div>
+          <a class="gt-brand-site" href="https://iqmindware.com/" target="_blank" rel="noopener noreferrer">IQMindware.com</a>
+          <span class="gt-brand-pill">Trident G - IQ</span>
+        </div>
+        <div id="root"></div>
+      </section>
+    </main>
+    <nav class="gt-bottom-nav" aria-label="G Tracker navigation">
+      <button class="gt-tab gt-tab-active" type="button" data-gt-nav="tests" aria-label="Open tests panel">
+        <span class="gt-tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <rect x="5" y="3" width="14" height="18" rx="2"></rect>
+            <path d="M9 8h6M9 12h6M9 16h4"></path>
+          </svg>
+        </span>
+        <span>Tests</span>
+      </button>
+      <button class="gt-tab" type="button" data-gt-nav="results" aria-label="Open results panel">
+        <span class="gt-tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 19h16"></path>
+            <path d="M7 15l3-3 3 2 4-5"></path>
+            <circle cx="7" cy="15" r="1.3"></circle>
+            <circle cx="10" cy="12" r="1.3"></circle>
+            <circle cx="13" cy="14" r="1.3"></circle>
+            <circle cx="17" cy="9" r="1.3"></circle>
+          </svg>
+        </span>
+        <span>Results</span>
+      </button>
+      <button class="gt-tab" type="button" data-gt-nav="validation" aria-label="Open validation panel">
+        <span class="gt-tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3 4.8 6v5.2c0 4.2 2.8 8 7.2 9.8 4.4-1.8 7.2-5.6 7.2-9.8V6z"></path>
+            <path d="m9.3 12.2 2 2 3.5-3.6"></path>
+          </svg>
+        </span>
+        <span>Validation</span>
+      </button>
+      <button class="gt-tab" type="button" data-gt-nav="settings" aria-label="Open settings panel">
+        <span class="gt-tab-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8z"></path>
+            <path d="m19.4 15.2 1.2-.7-1.2-2.1.7-1.3-2.1-1.2-.2-1.4h-2.4L14.6 7h-1.2L12.7 4h-1.4L10.6 7H9.4L8.6 8.5H6.2L6 9.9 3.9 11.1l.7 1.3-1.2 2.1 1.2.7.2 1.4 2.1 1.2.8 1.5h1.2l.7 3h1.4l.7-3h1.2l.8-1.5 2.1-1.2z"></path>
+          </svg>
+        </span>
+        <span>Settings</span>
+      </button>
+    </nav>
+  </div>
+  <script src="../shared-ui/entitlements-client.js"></script>
+  <script src="../shared-ui/activation-gate.js"></script>
+  <script type="text/babel" data-presets="env,react">
+    const launchBundleId = new URLSearchParams(window.location.search).get("bundle") || "";
+    if (window.IQActivationGate) {
+      window.IQActivationGate.enforceAppAccess({
+        appId: "g_tracker",
+        appLabel: "G Tracker",
+        manifestUrl: "../iq-suite/bundle-manifests.json",
+        returnTo: "/tools/g-tracker/",
+        bundleIdHint: launchBundleId,
+        requiredBundleId: launchBundleId || ""
+      });
+    }
+
+    (() => {
+      const link = document.querySelector("#suiteBackLink");
+      if (!link) return;
+      const params = new URLSearchParams(window.location.search);
+      const launchFrom = (params.get("from") || "").toLowerCase();
+      const launchedFromHub = launchFrom === "iq-suite" || launchFrom === "iq-core";
+      if (!launchedFromHub) {
+        link.style.display = "none";
+        return;
+      }
+      const hubUrl = new URL("../iq-core/index.html", window.location.href);
+      if (window.location.search || window.location.hash) {
+        hubUrl.search = window.location.search || "";
+        hubUrl.hash = window.location.hash || "";
+      }
+      link.textContent = "Back to IQ Core";
+      link.href = hubUrl.toString();
+    })();
+
+    const { useEffect, useMemo, useState } = React;
+
+    const HUB_VERSION = "ct_hub_v3";
+    const STORAGE_KEY = "ctHub_v3_state";
+    const STORAGE_KEY_V2 = "ctHub_v2_state";
+    const STORAGE_KEY_V1 = "ctHub_v1_state";
+    const APP_NAME = "G Tracker";
+    const APP_SUBTITLE = "Track cognitive change over time (not a diagnosis)";
+    const ICON_SRC = "/branding/Trident-G-Icon.svg";
+    const DAY_MS = 24 * 60 * 60 * 1000;
+
+    const FAIR_RESULTS_CHECKLIST = [
+      "Use the same time of day when possible.",
+      "Use a quiet space and turn notifications off.",
+      "Keep sleep and caffeine conditions similar.",
+      "Avoid testing right after heavy exercise or alcohol.",
+      "If you are ill, very sleep deprived, or unusually stressed, log it in notes."
+    ];
+    const TEST_CONDITIONS = [
+      "Quiet room, minimal interruptions, stable internet.",
+      "Use the same device and time-of-day where possible.",
+      "Use glasses/contacts if you normally do for screen tasks.",
+      "Avoid heavy fatigue, alcohol, or immediately post-exercise testing.",
+      "Do not use assistance during test completion."
+    ];
+    const VALIDATION_SUMMARY = [
+      {
+        id: "v-sgs",
+        test: "SgS-12 (A/B)",
+        status: "moderate",
+        label: "Internal benchmark",
+        note: "ICAR-style reasoning item set used for before/after tracking. Treat as programme outcome indicator, not a clinical diagnosis."
+      },
+      {
+        id: "v-crs",
+        test: "CRS-10",
+        status: "strong",
+        label: "Published support",
+        note: "Tracks resilience under cognitive pressure. Suitable for repeated in-program monitoring."
+      },
+      {
+        id: "v-psi",
+        test: "Psi-CBS",
+        status: "moderate",
+        label: "Operational tracker",
+        note: "Self-report bandwidth metric designed for repeatable applied-cognition logging."
+      },
+      {
+        id: "v-mensa",
+        test: "Mensa Online forms",
+        status: "context",
+        label: "External context only",
+        note: "Optional benchmark only. Use long retest spacing to reduce practice effects."
+      }
+    ];
+
+    const TIMEPOINT_LABELS = {
+      PRE: "Baseline",
+      POST: "Post",
+      MIDPOINT: "Midpoint",
+      WEEKLY: "Weekly",
+      FOLLOW_UP: "Follow-up"
+    };
+    const CADENCE_OPTIONS = [
+      { value: "weekly", label: "Weekly", days: 7 },
+      { value: "fortnightly", label: "Fortnightly", days: 14 },
+      { value: "adhoc", label: "Ad-hoc", days: null }
+    ];
+    const CADENCE_LOOKUP = Object.fromEntries(CADENCE_OPTIONS.map((item) => [item.value, item]));
+    const STATUS_META = {
+      up_to_date: { icon: "OK", label: "Up to date", className: "statusUp" },
+      due_now: { icon: "!", label: "Due now", className: "statusDue" },
+      not_started: { icon: "o", label: "Not started", className: "statusNeutral" },
+      in_progress: { icon: "...", label: "In progress", className: "statusProgress" }
+    };
+    const DEFAULT_PROGRAM = {
+      startDate: "",
+      durationDays: 24,
+      useMilestones: true
+    };
+    const DEFAULT_CADENCE = {
+      psi_cbs: "weekly",
+      crs10: "weekly"
+    };
+
+    const TESTS = [
+      {
+        id: "sgs12a",
+        name: "Short g Scale - SgS-12 A",
+        url: "/apps/assessments/sgs12a/",
+        kind: "internal",
+        timing: "10-12 mins",
+        whenText: "Take once before training.",
+        whatText: "Short internal IQ form A used as your baseline anchor.",
+        credentialsText: "This short form uses psychometric ICAR reasoning items (e.g., matrices, series, verbal and rotation tasks)."
+      },
+      {
+        id: "sgs12b",
+        name: "Short g Scale - SgS-12 B",
+        url: "/apps/assessments/sgs12b/",
+        kind: "internal",
+        timing: "10-12 mins",
+        whenText: "Take once after training.",
+        whatText: "Short internal IQ form B used at programme end for baseline vs post comparison.",
+        credentialsText: "This short form uses psychometric ICAR reasoning items (e.g., matrices, series, verbal and rotation tasks)."
+      },
+      {
+        id: "mensa_dk",
+        name: "Mensa Online (Form A)",
+        url: "https://mensa.dk/iqtest/",
+        kind: "external",
+        timing: "25-30 mins",
+        whenText: "Optional baseline only.",
+        whatText: "Unofficial online practice-style matrix test for a rough baseline indication.",
+        credentialsText: "Useful as an optional benchmark, but not a formal professional IQ assessment."
+      },
+      {
+        id: "mensa_no",
+        name: "Mensa Online (Form B)",
+        url: "https://test.mensa.no/home/test/en",
+        kind: "external",
+        timing: "20-25 mins",
+        whenText: "Optional long-delayed re-test only (e.g., months later).",
+        whatText: "Optional external matrix re-check for delayed comparison.",
+        credentialsText: "Useful as an optional benchmark, but not a formal professional IQ assessment."
+      },
+      {
+        id: "psi_cbs",
+        name: "Psi-Band Cognitive Bandwidth Scale",
+        url: "/apps/assessments/psi-cbs/",
+        kind: "internal",
+        timing: "2-4 mins",
+        whenText: "Take at PRE, weekly during training, POST, and optional 4-week follow-up.",
+        whatText: "Self-report tracker of real-world mental bandwidth across work, study, and life.",
+        credentialsText: "Designed as a practical repeatable tracker of applied cognition in daily settings."
+      },
+      {
+        id: "crs10",
+        name: "Cognitive Resilience Scale (CRS-10)",
+        url: "/apps/assessments/crs10/",
+        kind: "internal",
+        timing: "3-6 mins",
+        whenText: "Take at PRE and POST, with optional midpoint or follow-up checks.",
+        whatText: "Tracks how steadily you function under cognitive pressure.",
+        credentialsText: "Published psychometric support is available in current validation studies."
+      },
+      {
+        id: "edhs",
+        name: "Everyday Decision Habits Scale (EDHS)",
+        url: "/apps/assessments/edhs/",
+        kind: "internal",
+        timing: "5-10 mins",
+        whenText: "Take once before training and once after training.",
+        whatText: "Captures higher-level habit shift in everyday decision making across the programme.",
+        credentialsText: "EDHS is best treated as a practical habit snapshot for self-tracking over time."
+      }
+    ];
+    const TEST_BY_ID = Object.fromEntries(TESTS.map((test) => [test.id, test]));
+    const OUTCOME_CARD_DEFS = [
+      {
+        id: "outcome_sgs",
+        title: "Valid 12-item IQ (SgS)",
+        purpose: "Outcome test (take twice): baseline vs post-training.",
+        baseline: { testId: "sgs12a", timepoint: "PRE", label: "Baseline (Form A)" },
+        post: { testId: "sgs12b", timepoint: "POST", label: "Post (Form B)" }
+      },
+      {
+        id: "outcome_edhs",
+        title: "Everyday Decision Habits (EDHS)",
+        purpose: "Outcome test (take twice): baseline vs post-training.",
+        baseline: { testId: "edhs", timepoint: "PRE", label: "Baseline (Form A)" },
+        post: { testId: "edhs", timepoint: "POST", label: "Post (Form B)" }
+      },
+      {
+        id: "outcome_mensa",
+        title: "Mensa Online (Optional External)",
+        purpose: "Optional before/after benchmark.",
+        baseline: { testId: "mensa_dk", timepoint: "PRE", label: "Baseline (Form A)" },
+        post: { testId: "mensa_no", timepoint: "FOLLOW_UP", label: "Post (Form B)" }
+      }
+    ];
+    const REPEATABLE_CARD_DEFS = [
+      {
+        id: "repeat_psi_cbs",
+        testId: "psi_cbs",
+        title: "Psi-CBS",
+        purpose: "Repeatable tracker for applied general intelligence.",
+        cadenceKey: "psi_cbs"
+      },
+      {
+        id: "repeat_crs10",
+        testId: "crs10",
+        title: "Cognitive Resilience (CRS-10)",
+        purpose: "Repeatable tracker for resilience under pressure.",
+        cadenceKey: "crs10"
+      }
+    ];
+
+    const StatusPill = ({ status }) => {
+      const meta = STATUS_META[status] || STATUS_META.not_started;
+      return (
+        <span className={`statusPill ${meta.className}`} aria-label={meta.label}>
+          <span aria-hidden="true">{meta.icon}</span>
+          <span>{meta.label}</span>
+        </span>
+      );
+    };
+
+    const Sparkline = ({ values }) => {
+      if(values.length === 0){
+        return <p className="sparkPlaceholder">No numeric data yet.</p>;
+      }
+      const width = 220;
+      const height = 50;
+      const pad = 6;
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const range = max - min || 1;
+      const step = values.length > 1 ? (width - pad * 2) / (values.length - 1) : 0;
+      const points = values.map((value, idx) => {
+        const x = pad + idx * step;
+        const y = pad + (height - pad * 2) * (1 - (value - min) / range);
+        return `${x},${y}`;
+      });
+      const area = [`${pad},${height - pad}`, ...points, `${width - pad},${height - pad}`].join(" ");
+      return (
+        <svg className="sparkSvg" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Recent score trend">
+          <polyline points={area} fill="rgba(88,171,255,0.18)" stroke="none" />
+          <polyline points={points.join(" ")} fill="none" stroke="#2f7ed0" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+          {points.map((point, idx) => {
+            const [x, y] = point.split(",").map(Number);
+            return <circle key={idx} cx={x} cy={y} r="2.4" fill="#56b4ff" />;
+          })}
+        </svg>
+      );
+    };
+
+    function createDefaultState(){
+      return {
+        schemaVersion: HUB_VERSION,
+        program: { ...DEFAULT_PROGRAM },
+        cadence: { ...DEFAULT_CADENCE },
+        tests: {
+          // [testId]: { entries: [{measure_id,timepoint,date_ts,score_payload,notes}] }
+        }
+      };
+    }
+
+    const defaultState = createDefaultState();
+
+    function deepClone(value){
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function normaliseDuration(value){
+      const parsed = parseInt(value, 10);
+      if(Number.isNaN(parsed)) return DEFAULT_PROGRAM.durationDays;
+      return Math.min(365, Math.max(7, parsed));
+    }
+
+    function normaliseCadence(value, fallback){
+      if(!value || !CADENCE_LOOKUP[value]) return fallback;
+      return value;
+    }
+
+    function normaliseScore(value){
+      return String(value ?? "").trim();
+    }
+
+    function hasScore(entry){
+      return normaliseScore(entry?.score_payload?.score).length > 0;
+    }
+
+    function hasNote(entry){
+      return String(entry?.notes ?? "").trim().length > 0;
+    }
+
+    function isComplete(entry){
+      return hasScore(entry) || Boolean(entry?.score_payload?.done);
+    }
+
+    function parseNumericScore(value){
+      const clean = normaliseScore(value).replace(/,/g, "");
+      if(!clean) return null;
+      const parsed = Number(clean);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function createEntry(measureId, timepoint){
+      return {
+        measure_id: measureId,
+        timepoint,
+        date_ts: "",
+        score_payload: { score: "", done: false },
+        notes: ""
+      };
+    }
+
+    function nowISO(){
+      return new Date().toISOString();
+    }
+
+    function startOfDay(date){
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    }
+
+    function parseDateOnly(dateString){
+      if(!dateString || typeof dateString !== "string") return null;
+      const parsed = new Date(`${dateString}T00:00:00`);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    function formatDate(ts){
+      if(!ts) return "-";
+      const parsed = new Date(ts);
+      if(Number.isNaN(parsed.getTime())) return "-";
+      return parsed.toLocaleDateString();
+    }
+
+    function formatDateTime(ts){
+      if(!ts) return "-";
+      const parsed = new Date(ts);
+      if(Number.isNaN(parsed.getTime())) return "-";
+      return parsed.toLocaleString();
+    }
+
+    function ensureTestRecord(state, testId){
+      if(!state.tests[testId]){
+        state.tests[testId] = { entries: [] };
+      }
+      return state.tests[testId];
+    }
+
+    function listEntriesFor(state, testId, timepoint){
+      const entries = state?.tests?.[testId]?.entries || [];
+      if(!timepoint) return entries;
+      return entries.filter((entry) => entry.timepoint === timepoint);
+    }
+
+    function getLatest(entries){
+      if(!entries || entries.length === 0) return null;
+      return entries[entries.length - 1];
+    }
+
+    function getLatestMatching(entries, predicate){
+      if(!entries || entries.length === 0) return null;
+      for(let i = entries.length - 1; i >= 0; i -= 1){
+        if(predicate(entries[i])) return entries[i];
+      }
+      return null;
+    }
+
+    function normalizeState(rawState){
+      const base = createDefaultState();
+      if(!rawState || typeof rawState !== "object") return base;
+
+      const merged = {
+        ...base,
+        ...rawState,
+        schemaVersion: HUB_VERSION,
+        program: {
+          ...base.program,
+          ...(rawState.program || {})
+        },
+        cadence: {
+          ...base.cadence,
+          ...(rawState.cadence || {})
+        }
+      };
+
+      merged.program.startDate = typeof merged.program.startDate === "string" ? merged.program.startDate : "";
+      merged.program.durationDays = normaliseDuration(merged.program.durationDays);
+      merged.program.useMilestones = Boolean(merged.program.useMilestones);
+      merged.cadence.psi_cbs = normaliseCadence(merged.cadence.psi_cbs, DEFAULT_CADENCE.psi_cbs);
+      merged.cadence.crs10 = normaliseCadence(merged.cadence.crs10, DEFAULT_CADENCE.crs10);
+
+      if(!merged.tests || typeof merged.tests !== "object"){
+        merged.tests = {};
+      }
+
+      for(const [testId, record] of Object.entries(merged.tests)){
+        if(!record || !Array.isArray(record.entries)){
+          merged.tests[testId] = { entries: [] };
+          continue;
+        }
+        record.entries = record.entries.map((entry) => ({
+          measure_id: entry?.measure_id || testId,
+          timepoint: entry?.timepoint || "PRE",
+          date_ts: entry?.date_ts || "",
+          score_payload: {
+            score: String(entry?.score_payload?.score ?? ""),
+            done: Boolean(entry?.score_payload?.done)
+          },
+          notes: String(entry?.notes ?? "")
+        }));
+      }
+
+      return merged;
+    }
+
+    function migrateV1ToV2(v1State){
+      const migrated = createDefaultState();
+
+      for(const test of TESTS){
+        const oldRecord = v1State?.tests?.[test.id];
+        if(!oldRecord) continue;
+
+        const rec = ensureTestRecord(migrated, test.id);
+        const pushLegacy = (legacySlot, timepoint) => {
+          if(!legacySlot) return;
+          const hasValue =
+            Boolean(legacySlot.done) ||
+            Boolean((legacySlot.score || "").trim()) ||
+            Boolean((legacySlot.notes || "").trim()) ||
+            Boolean(legacySlot.ts);
+          if(!hasValue) return;
+
+          rec.entries.push({
+            measure_id: test.id,
+            timepoint,
+            date_ts: legacySlot.ts || "",
+            score_payload: {
+              score: legacySlot.score || "",
+              done: Boolean(legacySlot.done)
+            },
+            notes: legacySlot.notes || ""
+          });
+        };
+
+        pushLegacy(oldRecord.pre, "PRE");
+        pushLegacy(oldRecord.post, "POST");
+        if(oldRecord.one){
+          pushLegacy(oldRecord.one, "PRE");
+        }
+      }
+
+      return migrated;
+    }
+
+    function migrateV2ToV3(v2State){
+      return normalizeState(v2State);
+    }
+
+    function loadState(){
+      try{
+        const rawV3 = localStorage.getItem(STORAGE_KEY);
+        if(rawV3){
+          const parsed = JSON.parse(rawV3);
+          if(parsed?.schemaVersion === HUB_VERSION){
+            return normalizeState(parsed);
+          }
+        }
+
+        const rawV2 = localStorage.getItem(STORAGE_KEY_V2);
+        if(rawV2){
+          const parsedV2 = JSON.parse(rawV2);
+          if(parsedV2?.schemaVersion === "ct_hub_v2"){
+            return migrateV2ToV3(parsedV2);
+          }
+        }
+
+        const rawV1 = localStorage.getItem(STORAGE_KEY_V1);
+        if(rawV1){
+          const parsedV1 = JSON.parse(rawV1);
+          if(parsedV1?.schemaVersion === "ct_hub_v1"){
+            return migrateV2ToV3(migrateV1ToV2(parsedV1));
+          }
+        }
+      }catch{
+        return createDefaultState();
+      }
+      return createDefaultState();
+    }
+
+    function saveState(state){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function getDueInfo(cadenceValue, lastCompletedTs){
+      const cadence = CADENCE_LOOKUP[cadenceValue] || CADENCE_LOOKUP.weekly;
+      if(cadence.value === "adhoc"){
+        return { isDue: false, text: "Log when useful" };
+      }
+      if(!lastCompletedTs){
+        return { isDue: true, text: "Due now" };
+      }
+      const last = new Date(lastCompletedTs);
+      if(Number.isNaN(last.getTime())){
+        return { isDue: true, text: "Due now" };
+      }
+      const elapsed = Math.max(0, Math.floor((startOfDay(new Date()).getTime() - startOfDay(last).getTime()) / DAY_MS));
+      if(elapsed >= cadence.days){
+        return { isDue: true, text: "Due now" };
+      }
+      const remaining = cadence.days - elapsed;
+      return { isDue: false, text: `Due in ${remaining} day${remaining === 1 ? "" : "s"}` };
+    }
+
+    function getSlotSnapshot(state, slot){
+      const entries = listEntriesFor(state, slot.testId, slot.timepoint);
+      const latest = getLatest(entries);
+      const latestComplete = getLatestMatching(entries, (entry) => isComplete(entry));
+      const display = latestComplete || latest;
+      let status = "not_started";
+      if(display && !latestComplete){
+        status = "in_progress";
+      }else if(latestComplete){
+        status = "up_to_date";
+      }
+      return {
+        ...slot,
+        entries,
+        latest,
+        latestComplete,
+        score: normaliseScore(display?.score_payload?.score),
+        date: display?.date_ts || "",
+        note: String(display?.notes || ""),
+        hasCompletedScore: Boolean(latestComplete && hasScore(latestComplete)),
+        status
+      };
+    }
+
+    function getOutcomeCardStatus(baseline, post){
+      if(baseline.hasCompletedScore && post.hasCompletedScore) return "up_to_date";
+      if(baseline.hasCompletedScore && !post.hasCompletedScore) return "due_now";
+      if(baseline.status === "in_progress" || post.status === "in_progress") return "in_progress";
+      return "not_started";
+    }
+
+    function getOutcomeComparison(baselineScore, postScore){
+      const baseNum = parseNumericScore(baselineScore);
+      const postNum = parseNumericScore(postScore);
+      if(baseNum === null || postNum === null){
+        if(baselineScore && postScore){
+          return { line: "Both baseline and post entries are saved.", bars: null };
+        }
+        return { line: "", bars: null };
+      }
+      const delta = Number((postNum - baseNum).toFixed(2));
+      const maxValue = Math.max(baseNum, postNum, 1);
+      return {
+        line: `Delta: ${delta >= 0 ? "+" : ""}${delta} (${baselineScore} -> ${postScore})`,
+        bars: [
+          { label: "Baseline", value: baseNum, width: (baseNum / maxValue) * 100 },
+          { label: "Post", value: postNum, width: (postNum / maxValue) * 100 }
+        ]
+      };
+    }
+
+    function buildOutcomeCardState(def, state){
+      const baseline = getSlotSnapshot(state, def.baseline);
+      const post = getSlotSnapshot(state, def.post);
+      const complete = baseline.hasCompletedScore && post.hasCompletedScore;
+      const status = getOutcomeCardStatus(baseline, post);
+      const comparison = getOutcomeComparison(baseline.score, post.score);
+
+      let ctaLabel = "Start baseline (Form A)";
+      let ctaType = "start";
+      let ctaTestId = baseline.testId;
+      let targetSlot = baseline;
+
+      if(baseline.hasCompletedScore && !post.hasCompletedScore){
+        ctaLabel = "Start post (Form B)";
+        ctaTestId = post.testId;
+        targetSlot = post;
+      }else if(complete){
+        ctaLabel = "View results";
+        ctaType = "view";
+        ctaTestId = null;
+        targetSlot = post;
+      }
+
+      return { ...def, baseline, post, complete, status, comparison, ctaLabel, ctaType, ctaTestId, targetSlot };
+    }
+
+    function buildRepeatableCardState(def, state){
+      const entries = listEntriesFor(state, def.testId);
+      const completed = entries.filter((entry) => isComplete(entry) && hasScore(entry));
+      const latestComplete = getLatest(completed);
+      const latestDraft = getLatestMatching(entries, (entry) => !isComplete(entry) && hasNote(entry));
+      const cadenceValue = normaliseCadence(state?.cadence?.[def.cadenceKey], DEFAULT_CADENCE[def.cadenceKey]);
+      const due = getDueInfo(cadenceValue, latestComplete?.date_ts || "");
+      const numericValues = completed.map((entry) => parseNumericScore(entry?.score_payload?.score)).filter((value) => value !== null).slice(-10);
+
+      let status = "not_started";
+      if(latestDraft){
+        status = "in_progress";
+      }else if(latestComplete){
+        status = due.isDue ? "due_now" : "up_to_date";
+      }
+      return { ...def, entries, completed, latestComplete, latestDraft, latestScore: normaliseScore(latestComplete?.score_payload?.score), latestDate: latestComplete?.date_ts || "", cadenceValue, due, numericValues, status };
+    }
+
+    function getMilestoneProgress(program){
+      const start = parseDateOnly(program.startDate);
+      if(!start){
+        return { hasTimeline: false, halfway: false, ended: false, followup: false };
+      }
+      const duration = normaliseDuration(program.durationDays);
+      const elapsed = Math.max(0, Math.floor((startOfDay(new Date()).getTime() - start.getTime()) / DAY_MS));
+      const halfwayTarget = Math.max(1, Math.floor(duration / 2));
+      return {
+        hasTimeline: true,
+        halfway: elapsed >= halfwayTarget,
+        ended: elapsed >= duration,
+        followup: elapsed >= duration + 28
+      };
+    }
+
+    function hasCompletedTimepoint(state, testId, timepoint){
+      return listEntriesFor(state, testId, timepoint).some((entry) => isComplete(entry) && hasScore(entry));
+    }
+
+    function resolveRepeatableTimepoint(def, state){
+      if(!hasCompletedTimepoint(state, def.testId, "PRE")){
+        return "PRE";
+      }
+      if(!state?.program?.useMilestones){
+        return "WEEKLY";
+      }
+      const milestone = getMilestoneProgress(state.program || DEFAULT_PROGRAM);
+      if(def.testId === "crs10" && milestone.halfway && !hasCompletedTimepoint(state, def.testId, "MIDPOINT")){
+        return "MIDPOINT";
+      }
+      if(milestone.ended && !hasCompletedTimepoint(state, def.testId, "POST")){
+        return "POST";
+      }
+      if(milestone.followup && !hasCompletedTimepoint(state, def.testId, "FOLLOW_UP")){
+        return "FOLLOW_UP";
+      }
+      return "WEEKLY";
+    }
+
+    function saveEntryToState(prevState, { testId, timepoint, score, notes, mode }){
+      const scoreText = normaliseScore(score);
+      const notesText = String(notes || "").trim();
+      if(!scoreText && !notesText){
+        return prevState;
+      }
+      const next = deepClone(prevState);
+      const record = ensureTestRecord(next, testId);
+      const all = record.entries || [];
+      const matches = all.filter((entry) => entry.timepoint === timepoint);
+
+      let target = null;
+      if(mode === "repeatable"){
+        target = getLatestMatching(matches, (entry) => !isComplete(entry));
+        if(!target){
+          target = createEntry(testId, timepoint);
+          all.push(target);
+        }
+      }else{
+        target = getLatestMatching(matches, (entry) => !isComplete(entry)) || getLatest(matches);
+        if(!target){
+          target = createEntry(testId, timepoint);
+          all.push(target);
+        }
+      }
+
+      target.score_payload.score = scoreText;
+      target.notes = String(notes || "");
+      if(scoreText){
+        target.score_payload.done = true;
+        target.date_ts = nowISO();
+      }else{
+        target.score_payload.done = false;
+        target.date_ts = target.date_ts || nowISO();
+      }
+      record.entries = all;
+      return next;
+    }
+
+    function getOutcomeHistory(def, state){
+      const rows = [];
+      for(const slot of [def.baseline, def.post]){
+        const entries = listEntriesFor(state, slot.testId, slot.timepoint);
+        for(const entry of entries){
+          const score = normaliseScore(entry?.score_payload?.score);
+          const notes = String(entry?.notes || "").trim();
+          if(!score && !notes) continue;
+          rows.push({
+            key: `${slot.testId}-${slot.timepoint}-${entry.date_ts}-${score}-${notes}`,
+            label: slot.label,
+            score: score || "-",
+            notes,
+            date: formatDateTime(entry?.date_ts),
+            ts: new Date(entry?.date_ts || 0).getTime() || 0
+          });
+        }
+      }
+      return rows.sort((a, b) => b.ts - a.ts).slice(0, 8);
+    }
+
+    function getRepeatableHistory(testId, state){
+      return listEntriesFor(state, testId)
+        .filter((entry) => {
+          const score = normaliseScore(entry?.score_payload?.score);
+          const notes = String(entry?.notes || "").trim();
+          return Boolean(score || notes);
+        })
+        .map((entry, index) => ({
+          key: `${testId}-${entry.timepoint}-${entry.date_ts}-${index}`,
+          score: normaliseScore(entry?.score_payload?.score) || "-",
+          notes: String(entry?.notes || "").trim(),
+          date: formatDateTime(entry?.date_ts),
+          timepoint: TIMEPOINT_LABELS[entry?.timepoint] || entry?.timepoint || "-",
+          ts: new Date(entry?.date_ts || 0).getTime() || 0
+        }))
+        .sort((a, b) => b.ts - a.ts)
+        .slice(0, 12);
+    }
+    function App(){
+      const [state, setState] = useState(() => loadState() || defaultState);
+      const [toast, setToast] = useState("");
+      const [showSplash, setShowSplash] = useState(true);
+      const [draftByKey, setDraftByKey] = useState({});
+      const [showAdminHelp, setShowAdminHelp] = useState(false);
+      const [showUsageHelp, setShowUsageHelp] = useState(false);
+      const [activePanel, setActivePanel] = useState("tests");
+      const [repeatDeckIndex, setRepeatDeckIndex] = useState(0);
+      const [outcomeDeckIndex, setOutcomeDeckIndex] = useState(0);
+      const [testsViewMode, setTestsViewMode] = useState("guided");
+      const [testsFocus, setTestsFocus] = useState("outcome");
+      const [undoSnapshot, setUndoSnapshot] = useState(null);
+
+      useEffect(() => {
+        saveState(state);
+      }, [state]);
+
+      useEffect(() => {
+        if(!toast) return;
+        const timer = setTimeout(() => setToast(""), 2200);
+        return () => clearTimeout(timer);
+      }, [toast]);
+
+      useEffect(() => {
+        if(!showAdminHelp) return;
+        const onKeyDown = (event) => {
+          if(event.key === "Escape") setShowAdminHelp(false);
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+      }, [showAdminHelp]);
+
+      useEffect(() => {
+        if(!showUsageHelp) return;
+        const onKeyDown = (event) => {
+          if(event.key === "Escape") setShowUsageHelp(false);
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+      }, [showUsageHelp]);
+
+      const outcomeCards = useMemo(() => OUTCOME_CARD_DEFS.map((def) => buildOutcomeCardState(def, state)), [state]);
+      const repeatableCards = useMemo(() => REPEATABLE_CARD_DEFS.map((def) => buildRepeatableCardState(def, state)), [state]);
+      const outcomeCompleted = outcomeCards.filter((card) => card.complete).length;
+      const trackersDue = repeatableCards.filter((card) => card.due.isDue).length;
+      const requiredOutcomeCards = outcomeCards.filter((card) => card.id !== "outcome_mensa");
+      const requiredBaselineDone = requiredOutcomeCards.filter((card) => card.baseline.hasCompletedScore).length;
+      const requiredPostDone = requiredOutcomeCards.filter((card) => card.post.hasCompletedScore).length;
+      let nextActionText = "Next step: run your baseline tests now (SgS-12 A and EDHS), then return and save scores.";
+      if(requiredBaselineDone >= requiredOutcomeCards.length){
+        nextActionText = "Next step: keep weekly trackers current (Psi-CBS and CRS-10) during training.";
+      }
+      if(trackersDue === 0 && requiredBaselineDone >= requiredOutcomeCards.length && requiredPostDone < requiredOutcomeCards.length){
+        nextActionText = "Next step: at programme end, run post-tests (SgS-12 B and EDHS post), then save results.";
+      }
+      if(requiredPostDone >= requiredOutcomeCards.length){
+        nextActionText = "Core pre/post tests are complete. Maintain repeatables and export your progress trail.";
+      }
+
+      const panelHelpText = activePanel === "tests"
+        ? "Open test in a new tab, complete it, return here, enter score, then press Save entry."
+        : activePanel === "results"
+          ? "Use trend and pre/post deltas for practical progress only; these are non-clinical tracking outputs."
+          : activePanel === "validation"
+            ? "Validation labels summarise evidence strength for use context. Open full references for details."
+            : "Settings are local to this browser. Export regularly if you want a backup trail.";
+
+      useEffect(() => {
+        const navButtons = Array.from(document.querySelectorAll(".gt-tab[data-gt-nav]"));
+        if(navButtons.length === 0) return undefined;
+        const onNavClick = (event) => {
+          event.preventDefault();
+          const panelName = event.currentTarget?.dataset?.gtNav;
+          if(panelName){
+            setActivePanel(panelName);
+          }
+        };
+        navButtons.forEach((button) => button.addEventListener("click", onNavClick));
+        return () => {
+          navButtons.forEach((button) => button.removeEventListener("click", onNavClick));
+        };
+      }, []);
+
+      useEffect(() => {
+        const navButtons = Array.from(document.querySelectorAll(".gt-tab[data-gt-nav]"));
+        navButtons.forEach((button) => {
+          button.classList.toggle("gt-tab-active", button.dataset.gtNav === activePanel);
+        });
+      }, [activePanel]);
+
+      const getDraft = (key) => draftByKey[key] || { score: "", notes: "" };
+      const setDraftField = (key, field, value) => {
+        setDraftByKey((prev) => ({
+          ...prev,
+          [key]: {
+            score: prev[key]?.score || "",
+            notes: prev[key]?.notes || "",
+            [field]: value
+          }
+        }));
+      };
+      const clearDraft = (key) => {
+        setDraftByKey((prev) => {
+          const next = { ...prev };
+          delete next[key];
+          return next;
+        });
+      };
+
+      const openTest = (testId) => {
+        const test = TEST_BY_ID[testId];
+        if(!test) return;
+        window.open(test.url, "_blank", "noopener,noreferrer");
+      };
+
+      const saveWithUndo = (saveBuilder, undoLabel) => {
+        setState((prev) => {
+          const next = saveBuilder(prev);
+          if(next !== prev){
+            setUndoSnapshot({
+              state: deepClone(prev),
+              label: undoLabel,
+              at: nowISO()
+            });
+          }
+          return next;
+        });
+      };
+
+      const undoLastSave = () => {
+        if(!undoSnapshot?.state) return;
+        setState(normalizeState(undoSnapshot.state));
+        setUndoSnapshot(null);
+        setToast("Reverted last saved entry");
+      };
+
+      const saveOutcomeDraft = (card) => {
+        const key = `outcome_${card.id}`;
+        const draft = getDraft(key);
+        const score = normaliseScore(draft.score);
+        const notes = String(draft.notes || "").trim();
+        if(!score && !notes){
+          setToast("Enter a score or note first");
+          return;
+        }
+        saveWithUndo((prev) => saveEntryToState(prev, {
+            testId: card.targetSlot.testId,
+            timepoint: card.targetSlot.timepoint,
+            score: draft.score,
+            notes: draft.notes,
+            mode: "single"
+          }),
+          `${card.title} (${card.targetSlot.timepoint})`
+        );
+        clearDraft(key);
+        setToast(score ? "Saved and marked complete" : "Draft saved");
+      };
+
+      const saveRepeatableDraft = (card) => {
+        const key = `repeat_${card.id}`;
+        const draft = getDraft(key);
+        const score = normaliseScore(draft.score);
+        const notes = String(draft.notes || "").trim();
+        if(!score && !notes){
+          setToast("Enter a score or note first");
+          return;
+        }
+        const timepoint = resolveRepeatableTimepoint(card, state);
+        saveWithUndo((prev) => saveEntryToState(prev, {
+            testId: card.testId,
+            timepoint,
+            score: draft.score,
+            notes: draft.notes,
+            mode: "repeatable"
+          }),
+          `${card.title} (${timepoint})`
+        );
+        clearDraft(key);
+        setToast(score ? "Saved and marked complete" : "Draft saved");
+      };
+
+      const setCadence = (cadenceKey, value) => {
+        setState((prev) => ({
+          ...prev,
+          cadence: {
+            ...prev.cadence,
+            [cadenceKey]: normaliseCadence(value, DEFAULT_CADENCE[cadenceKey])
+          }
+        }));
+      };
+
+      const setProgramField = (field, value) => {
+        setState((prev) => {
+          const nextProgram = { ...prev.program, [field]: value };
+          if(field === "durationDays"){
+            nextProgram.durationDays = normaliseDuration(value);
+          }
+          return { ...prev, program: nextProgram };
+        });
+      };
+
+      const exportJSON = () => {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "g-tracker-export.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      const importJSON = () => {
+        const raw = prompt("Paste exported JSON here:");
+        if(!raw) return;
+        try{
+          const parsed = JSON.parse(raw);
+          if(parsed?.schemaVersion === HUB_VERSION){
+            setState(normalizeState(parsed));
+            setToast("Imported");
+            return;
+          }
+          if(parsed?.schemaVersion === "ct_hub_v2"){
+            setState(migrateV2ToV3(parsed));
+            setToast("Imported (migrated)");
+            return;
+          }
+          if(parsed?.schemaVersion === "ct_hub_v1"){
+            setState(migrateV2ToV3(migrateV1ToV2(parsed)));
+            setToast("Imported (migrated)");
+            return;
+          }
+          alert("That JSON does not match this hub schema.");
+        }catch{
+          alert("Could not parse JSON.");
+        }
+      };
+
+      const resetAll = () => {
+        if(!confirm("Reset all locally saved hub data?")) return;
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_KEY_V2);
+        localStorage.removeItem(STORAGE_KEY_V1);
+        setState(createDefaultState());
+        setToast("Reset");
+      };
+
+      const safeDeckIndex = (index, total) => {
+        if(!total) return 0;
+        return ((index % total) + total) % total;
+      };
+      const repeatIndex = safeDeckIndex(repeatDeckIndex, repeatableCards.length);
+      const outcomeIndex = safeDeckIndex(outcomeDeckIndex, outcomeCards.length);
+      const activeRepeatCard = repeatableCards[repeatIndex] || null;
+      const activeOutcomeCard = outcomeCards[outcomeIndex] || null;
+
+      useEffect(() => {
+        setRepeatDeckIndex((prev) => safeDeckIndex(prev, repeatableCards.length));
+      }, [repeatableCards.length]);
+
+      useEffect(() => {
+        setOutcomeDeckIndex((prev) => safeDeckIndex(prev, outcomeCards.length));
+      }, [outcomeCards.length]);
+
+      const stepDeck = (setter, delta, total) => {
+        if(!total) return;
+        setter((prev) => safeDeckIndex(prev + delta, total));
+      };
+      const activeRepeatDraftKey = activeRepeatCard ? `repeat_${activeRepeatCard.id}` : "";
+      const activeOutcomeDraftKey = activeOutcomeCard ? `outcome_${activeOutcomeCard.id}` : "";
+      const isDualTestsView = testsViewMode === "all";
+      const isTestsDualPanel = activePanel === "tests" && isDualTestsView;
+      const activeRepeatDraft = activeRepeatDraftKey ? getDraft(activeRepeatDraftKey) : { score: "", notes: "" };
+      const activeOutcomeDraft = activeOutcomeDraftKey ? getDraft(activeOutcomeDraftKey) : { score: "", notes: "" };
+      const activeRepeatHistory = activeRepeatCard ? getRepeatableHistory(activeRepeatCard.testId, state).slice(0, 4) : [];
+      const activeOutcomeHistory = activeOutcomeCard ? getOutcomeHistory(activeOutcomeCard, state).slice(0, 4) : [];
+
+      if(showSplash){
+        return (
+          <div className="screen">
+            <div className="content" style={{ justifyContent: "center", alignItems: "center" }}>
+              <section className="gSplashCard">
+                <div className="gSplashIcon">
+                  <img src={ICON_SRC} alt="G Tracker icon" onError={(e)=>{ e.target.style.display = "none"; }} />
+                </div>
+                <p className="gSplashKicker">MINDWARE LAB - TRIDENT G IQ</p>
+                <h1 className="gSplashTitle">{APP_NAME}</h1>
+                <p className="gSplashSub">Track your valued outcomes for intelligence and resilience for proof of training gains.</p>
+                <button className="btn btnPrimary gSplashBtn" onClick={() => setShowSplash(false)}>Continue</button>
+                <p className="gSplashFoot">MINDWARE LAB - TRIDENT G IQ</p>
+              </section>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="screen">
+          <div className="content">
+            <div className="card">
+              <div className="panelAppBrand" style={{ marginBottom: "8px" }}>
+                <div className="panelAppIcon">
+                  <img src={ICON_SRC} alt="Trident icon" onError={(e)=>{ e.target.style.display = "none"; }} />
+                </div>
+                <div>
+                  <p className="panelAppKicker">MINDWARE LAB - TRIDENT G IQ</p>
+                  <h1 className="panelAppTitle">G Tracker Test Battery</h1>
+                </div>
+              </div>
+              <p className="p">Use 3 steps: Baseline (once) -> Weekly trackers -> Post-tests (once).</p>
+                {!isTestsDualPanel && (
+                <div className="btnRow" style={{ marginTop: "6px" }}>
+                  <button className="btn btnSecondary panelMiniBtns howToUseBtn" onClick={() => setShowUsageHelp(true)}>How to use (30s)</button>
+                </div>
+                )}
+                <div className="progressStrip">
+                  Core baseline: {requiredBaselineDone}/{requiredOutcomeCards.length}  -  Core post: {requiredPostDone}/{requiredOutcomeCards.length}  -  Weekly due: {trackersDue}
+                </div>
+                {!isTestsDualPanel ? <p className="nextAction">{nextActionText}</p> : <p className="dualPanelHint">{nextActionText}</p>}
+                <p className="sectionSub sectionSubOptional" style={{ marginTop: "8px" }}>
+                  {activePanel === "tests" ? "Tests panel active" : activePanel === "results" ? "Results panel active" : activePanel === "validation" ? "Validation panel active" : "Settings panel active"}
+                </p>
+
+                {undoSnapshot?.state && (
+                  <div className="btnRow" style={{ marginTop: "8px" }}>
+                    <button className="btn btnSecondary" onClick={undoLastSave}>Undo last save</button>
+                    <span className="sectionSub" style={{ margin: 0 }}>Last save: {undoSnapshot.label}</span>
+                  </div>
+                )}
+
+                {toast && (
+                  <div style={{
+                  marginTop: "10px",
+                  padding: "10px 12px",
+                  borderRadius: "14px",
+                  background: "rgba(204,255,102,0.75)",
+                  fontWeight: 900,
+                  fontSize: "12px"
+                }}>
+                  {toast}
+                </div>
+              )}
+            </div>
+
+            <div className={`gt-panel-viewport ${activePanel === "results" ? "panelResults" : ""}`}>
+              {!isTestsDualPanel && <p className="panelHint">{panelHelpText}</p>}
+              {activePanel === "tests" && (
+                <>
+                  <div className="panelModeShell">
+                    <div className="panelModeRow">
+                      <div className="panelModeLeft">
+                        <p className="panelModeLabel">Tests view</p>
+                        {testsViewMode === "guided" && (
+                          <div className="panelModeButtons panelModeButtonsFocus">
+                            <button className={`btn ${testsFocus === "outcome" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsFocus("outcome")}>Pre/Post tests</button>
+                            <button className={`btn ${testsFocus === "repeatable" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsFocus("repeatable")}>Repeatables</button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="panelModeButtons panelModeButtonsMode">
+                        <button className={`btn ${testsViewMode === "guided" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsViewMode("guided")}>Guided (1 card)</button>
+                        <button className={`btn ${testsViewMode === "all" ? "btnPrimary" : "btnSecondary"} panelMiniBtns`} onClick={() => setTestsViewMode("all")}>Show both</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {activeRepeatCard && (testsViewMode === "all" || testsFocus === "repeatable") && (
+                    <div className={`compactCard ${isDualTestsView ? "compactCardDual" : ""}`}>
+                      <div className="deckHeader">
+                        <p className="deckLabel">Repeatable Tracker</p>
+                        <div className="deckControls">
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setRepeatDeckIndex, -1, repeatableCards.length)}>Prev</button>
+                          <span className="deckCount">{repeatIndex + 1}/{repeatableCards.length}</span>
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setRepeatDeckIndex, 1, repeatableCards.length)}>Next</button>
+                        </div>
+                      </div>
+                      <div className="cardActions">
+                        <StatusPill status={activeRepeatCard.status} />
+                        {!isDualTestsView && (
+                        <label className="programToggle" style={{ marginLeft: "auto" }}>
+                          Cadence
+                          <select className="input" style={{ minWidth: "130px" }} value={activeRepeatCard.cadenceValue} onChange={(e) => setCadence(activeRepeatCard.cadenceKey, e.target.value)}>
+                            {CADENCE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                          </select>
+                        </label>
+                        )}
+                      </div>
+                      <p className="compactTitle">{activeRepeatCard.title}</p>
+                      {!isDualTestsView && <p className="compactMeta">{activeRepeatCard.purpose}</p>}
+                      {isDualTestsView ? (
+                        <p className="dualMetricLine">Latest: {activeRepeatCard.latestScore || "-"} | Due: {activeRepeatCard.due.text}</p>
+                      ) : (
+                        <div className="compactRow">
+                          <div className="compactMetric">
+                            <p className="compactMetricLabel">Latest score</p>
+                            <p className="compactMetricValue">{activeRepeatCard.latestScore || "-"}</p>
+                          </div>
+                          <div className="compactMetric">
+                            <p className="compactMetricLabel">Due status</p>
+                            <p className="compactMetricValue">{activeRepeatCard.due.text}</p>
+                          </div>
+                        </div>
+                      )}
+                      <div className={isDualTestsView ? "twoCol twoColDual" : "twoCol"}>
+                        <input className="input inputScoreReady" placeholder="Score" value={activeRepeatDraft.score} onChange={(e) => setDraftField(activeRepeatDraftKey, "score", e.target.value)} />
+                        <input className="input" placeholder="Notes (optional)" value={activeRepeatDraft.notes} onChange={(e) => setDraftField(activeRepeatDraftKey, "notes", e.target.value)} />
+                      </div>
+                      <div className="compactActions">
+                        <button className="btn btnPrimary" onClick={() => openTest(activeRepeatCard.testId)}>Open test</button>
+                        <button className="btn btnSecondary" onClick={() => saveRepeatableDraft(activeRepeatCard)}>Save entry</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeOutcomeCard && (testsViewMode === "all" || testsFocus === "outcome") && (
+                    <div className={`compactCard ${isDualTestsView ? "compactCardDual" : ""}`}>
+                      <div className="deckHeader">
+                        <p className="deckLabel">Pre/Post Training Tests</p>
+                        <div className="deckControls">
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setOutcomeDeckIndex, -1, outcomeCards.length)}>Prev</button>
+                          <span className="deckCount">{outcomeIndex + 1}/{outcomeCards.length}</span>
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setOutcomeDeckIndex, 1, outcomeCards.length)}>Next</button>
+                        </div>
+                      </div>
+                      <div className="cardActions">
+                        <StatusPill status={activeOutcomeCard.status} />
+                      </div>
+                      <p className="compactTitle">{activeOutcomeCard.title}</p>
+                      {!isDualTestsView && <p className="compactMeta">{activeOutcomeCard.purpose}</p>}
+                      {isDualTestsView ? (
+                        <p className="dualMetricLine">{activeOutcomeCard.baseline.label}: {activeOutcomeCard.baseline.score || "-"} | {activeOutcomeCard.post.label}: {activeOutcomeCard.post.score || "-"}</p>
+                      ) : (
+                        <div className="compactRow">
+                          <div className="compactMetric">
+                            <p className="compactMetricLabel">{activeOutcomeCard.baseline.label}</p>
+                            <p className="compactMetricValue">{activeOutcomeCard.baseline.score || "-"}</p>
+                          </div>
+                          <div className="compactMetric">
+                            <p className="compactMetricLabel">{activeOutcomeCard.post.label}</p>
+                            <p className="compactMetricValue">{activeOutcomeCard.post.score || "-"}</p>
+                          </div>
+                        </div>
+                      )}
+                      {!isDualTestsView && <p className="compactMeta">{activeOutcomeCard.comparison.line || "No comparison yet."}</p>}
+                      <div className={isDualTestsView ? "twoCol twoColDual" : "twoCol"}>
+                        <input className="input inputScoreReady" placeholder="Score" value={activeOutcomeDraft.score} onChange={(e) => setDraftField(activeOutcomeDraftKey, "score", e.target.value)} />
+                        <input className="input" placeholder="Notes (optional)" value={activeOutcomeDraft.notes} onChange={(e) => setDraftField(activeOutcomeDraftKey, "notes", e.target.value)} />
+                      </div>
+                      <div className="compactActions">
+                        <button className="btn btnPrimary" onClick={() => {
+                          if(activeOutcomeCard.ctaType === "view"){
+                            setActivePanel("results");
+                            return;
+                          }
+                          openTest(activeOutcomeCard.ctaTestId);
+                        }}>{activeOutcomeCard.ctaLabel}</button>
+                        <button className="btn btnSecondary" onClick={() => saveOutcomeDraft(activeOutcomeCard)}>Save entry</button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {activePanel === "results" && (
+                <>
+                  {activeRepeatCard && (
+                    <div className="compactCard">
+                      <div className="deckHeader">
+                        <p className="deckLabel">Repeatable Results</p>
+                        <div className="deckControls">
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setRepeatDeckIndex, -1, repeatableCards.length)}>Prev</button>
+                          <span className="deckCount">{repeatIndex + 1}/{repeatableCards.length}</span>
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setRepeatDeckIndex, 1, repeatableCards.length)}>Next</button>
+                        </div>
+                      </div>
+                      <p className="compactTitle">{activeRepeatCard.title}</p>
+                      <div className="compactRow">
+                        <div className="compactMetric">
+                          <p className="compactMetricLabel">Latest score</p>
+                          <p className="compactMetricValue">{activeRepeatCard.latestScore || "-"}</p>
+                        </div>
+                        <div className="compactMetric">
+                          <p className="compactMetricLabel">Trend</p>
+                          <Sparkline values={activeRepeatCard.numericValues} />
+                        </div>
+                      </div>
+                      {activeRepeatHistory.length === 0 ? (
+                        <p className="compactHistory">No saved entries yet.</p>
+                      ) : activeRepeatHistory.map((row) => (
+                        <p className="compactHistory" key={row.key}><strong>{row.timepoint}:</strong> {row.score}  -  {row.date}</p>
+                      ))}
+                    </div>
+                  )}
+
+                  {activeOutcomeCard && (
+                    <div className="compactCard">
+                      <div className="deckHeader">
+                        <p className="deckLabel">Outcome Results</p>
+                        <div className="deckControls">
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setOutcomeDeckIndex, -1, outcomeCards.length)}>Prev</button>
+                          <span className="deckCount">{outcomeIndex + 1}/{outcomeCards.length}</span>
+                          <button className="btn btnSecondary deckBtn" onClick={() => stepDeck(setOutcomeDeckIndex, 1, outcomeCards.length)}>Next</button>
+                        </div>
+                      </div>
+                      <p className="compactTitle">{activeOutcomeCard.title}</p>
+                      <p className="compactMeta">{activeOutcomeCard.comparison.line || "No comparison yet."}</p>
+                      {activeOutcomeHistory.length === 0 ? (
+                        <p className="compactHistory">No saved entries yet.</p>
+                      ) : activeOutcomeHistory.map((row) => (
+                        <p className="compactHistory" key={row.key}><strong>{row.label}:</strong> {row.score}  -  {row.date}</p>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {activePanel === "validation" && (
+                <div className="card">
+                  <h2 className="sectionHeader">Validation status</h2>
+                  <p className="sectionSub">Summary labels for practical interpretation. Open full references for detail.</p>
+                  <div className="validationGrid" style={{ marginTop: "10px" }}>
+                    {VALIDATION_SUMMARY.map((item) => (
+                      <div className="validationRow" key={item.id}>
+                        <div className="validationHead">
+                          <p className="validationTitle">{item.test}</p>
+                          <span className={`validationBadge ${item.status}`}>{item.label}</span>
+                        </div>
+                        <p className="validationText">{item.note}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="btnRow" style={{ marginTop: "10px" }}>
+                    <a className="btn btnSecondary" href="https://www.iqmindware.com/g-tracker-validation" target="_blank" rel="noopener noreferrer">Open full validation page</a>
+                    <button className="btn btnSecondary" onClick={() => setActivePanel("tests")}>Back to tests</button>
+                  </div>
+                </div>
+              )}
+
+              {activePanel === "settings" && (
+                <div className="card adminCard">
+                  <div className="adminHeaderRow">
+                    <h2 className="sectionHeader">Settings</h2>
+                    <button className="btn btnInfo adminHelpBtn" onClick={() => setShowAdminHelp(true)}>Help</button>
+                  </div>
+                  <p className="sectionSub">Programme setup and local data controls.</p>
+                  <div className="programSetup">
+                    <div className="programGrid">
+                      <label className="programField">
+                        <span className="programLabel">Programme start date (optional)</span>
+                        <input
+                          className="input"
+                          type="date"
+                          value={state.program.startDate || ""}
+                          onChange={(e) => setProgramField("startDate", e.target.value)}
+                        />
+                      </label>
+                      <label className="programField">
+                        <span className="programLabel">Duration (days)</span>
+                        <input
+                          className="input"
+                          type="number"
+                          min={7}
+                          max={365}
+                          value={state.program.durationDays}
+                          onChange={(e) => setProgramField("durationDays", e.target.value)}
+                        />
+                      </label>
+                      <label className="programField">
+                        <span className="programLabel">Milestone mode</span>
+                        <span className="programToggle">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(state.program.useMilestones)}
+                            onChange={(e) => setProgramField("useMilestones", e.target.checked)}
+                          />
+                          Use milestones
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                  <div className="btnRow">
+                    <button className="btn btnSecondary" onClick={exportJSON}>Export JSON</button>
+                    <button className="btn btnSecondary" onClick={importJSON}>Import JSON</button>
+                    <button className="btn btnSecondary" onClick={resetAll}>Reset hub data</button>
+                  </div>
+                  <div className="howCard">
+                    <p className="howTitle">Test conditions checklist</p>
+                    {TEST_CONDITIONS.map((line, idx) => (
+                      <p className="howLine" key={`cond-${idx}`}>- {line}</p>
+                    ))}
+                  </div>
+                  <div className="btnRow" style={{ marginTop: "10px" }}>
+                    <a className="btn btnSecondary" href="https://www.iqmindware.com" target="_blank" rel="noopener noreferrer">Open IQMindware apps</a>
+                    <a className="btn btnSecondary" href="https://www.iqmindware.com/g-tracker-validation" target="_blank" rel="noopener noreferrer">Validation references</a>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {showAdminHelp && (
+              <div className="adminHelpOverlay" role="dialog" aria-modal="true" aria-labelledby="adminHelpTitle" onClick={() => setShowAdminHelp(false)}>
+                <div className="adminHelpModal" onClick={(event) => event.stopPropagation()}>
+                  <div className="adminHelpTop">
+                    <h3 id="adminHelpTitle" className="adminHelpTitle">Admin help</h3>
+                    <button className="btn btnSecondary" onClick={() => setShowAdminHelp(false)}>Close</button>
+                  </div>
+                  <p className="adminHelpLead">
+                    These controls apply only to this G Tracker data on this device and browser.
+                  </p>
+                  <div className="adminHelpBlock">
+                    <p className="adminHelpLabel">Export JSON</p>
+                    <p className="adminHelpText">
+                      Downloads your full tracker data file (`g-tracker-export.json`) so you can keep a backup or move data to another device.
+                    </p>
+                  </div>
+                  <div className="adminHelpBlock">
+                    <p className="adminHelpLabel">Import JSON</p>
+                    <p className="adminHelpText">
+                      Replaces the current tracker state with the JSON you paste. Use this to restore from a backup or transfer data.
+                    </p>
+                  </div>
+                  <div className="adminHelpBlock adminHelpWarn">
+                    <p className="adminHelpLabel">Reset hub data</p>
+                    <p className="adminHelpText">
+                      Permanently clears all saved tracker entries, notes, cadence settings, and programme settings for this tracker in local storage.
+                      This cannot be undone, so export first if you may need your data later.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showUsageHelp && (
+              <div className="adminHelpOverlay" role="dialog" aria-modal="true" aria-labelledby="usageHelpTitle" onClick={() => setShowUsageHelp(false)}>
+                <div className="adminHelpModal" onClick={(event) => event.stopPropagation()}>
+                  <div className="adminHelpTop">
+                    <h3 id="usageHelpTitle" className="adminHelpTitle">How to use G Tracker</h3>
+                    <button className="btn btnSecondary" onClick={() => setShowUsageHelp(false)}>Close</button>
+                  </div>
+                  <p className="adminHelpLead">Fast setup: what to do, in order.</p>
+                  <div className="adminHelpBlock">
+                    <p className="adminHelpLabel">1) Baseline (before training)</p>
+                    <p className="adminHelpText">Complete SgS-12 A and EDHS baseline once.</p>
+                  </div>
+                  <div className="adminHelpBlock">
+                    <p className="adminHelpLabel">2) Weekly while training</p>
+                    <p className="adminHelpText">Complete Psi-CBS and CRS-10 on your set cadence.</p>
+                  </div>
+                  <div className="adminHelpBlock">
+                    <p className="adminHelpLabel">3) Post-tests (programme end)</p>
+                    <p className="adminHelpText">Complete SgS-12 B and EDHS post once.</p>
+                  </div>
+                  <div className="adminHelpBlock">
+                    <p className="adminHelpLabel">Save flow (every time)</p>
+                    <p className="adminHelpText">Open test in a new tab, complete it, return here, enter score, then press Save entry.</p>
+                  </div>
+                  <div className="adminHelpBlock adminHelpWarn">
+                    <p className="adminHelpLabel">Scope and validation</p>
+                    <p className="adminHelpText">G Tracker supports non-clinical progress tracking. Open the Validation tab for evidence context and source links.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+

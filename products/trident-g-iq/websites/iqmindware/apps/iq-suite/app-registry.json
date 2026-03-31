@@ -1,0 +1,24 @@
+[
+  {
+    "appId": "zone_coach",
+    "label": "Zone Coach",
+    "route": "../zone-coach/",
+    "iconRef": "iq-icon-zone",
+    "category": "readiness"
+  },
+  {
+    "appId": "capacity_gym",
+    "label": "Capacity Gym",
+    "route": "../capacity-gym/",
+    "iconRef": "iq-icon-capacity",
+    "category": "training"
+  },
+  {
+    "appId": "g_tracker",
+    "label": "G Tracker",
+    "route": "../g-tracker/",
+    "iconRef": "iq-icon-tracker",
+    "category": "assessment"
+  }
+]
+

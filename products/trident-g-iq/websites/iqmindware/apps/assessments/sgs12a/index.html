@@ -1,0 +1,1025 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SgS-12 A - Short g Scale</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/branding/brand.css">
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+        sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background:
+        radial-gradient(1200px 520px at -10% -15%, rgba(110,198,255,.10), transparent 55%),
+        #0b1118;
+      color: #edf0f7;
+    }
+
+    .tg-theme{ color: var(--brand-text); }
+    .tg-shell{
+      background:
+        radial-gradient(1200px 520px at -10% -15%, rgba(110,198,255,.10), transparent 55%),
+        #0b1118 !important;
+    }
+    .tg-card{
+      border: 1px solid rgba(110,198,255,.22) !important;
+      background:
+        radial-gradient(1100px 360px at -10% -20%, rgba(110,198,255,.14), transparent 55%),
+        linear-gradient(165deg, rgba(78,160,232,.10), rgba(15,18,26,.96) 55%) !important;
+      box-shadow: 0 14px 34px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04) !important;
+      color: var(--brand-text) !important;
+    }
+    .tg-image-frame{
+      background: #fff !important;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,.10);
+      padding: 10px;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: min(100%, 280px);
+      box-shadow: 0 8px 18px rgba(0,0,0,.16);
+    }
+    .tg-image-loading{
+      font-size: 13px;
+      color: #334155;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .tg-image-error{
+      width: min(100%, 520px);
+      margin-bottom: 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(220,38,38,.18);
+      background: rgba(248,113,113,.08);
+      padding: 10px 12px;
+      color: #7f1d1d;
+      text-align: left;
+    }
+    .tg-image-error p{
+      margin: 0;
+      line-height: 1.35;
+      font-size: 13px;
+    }
+    .tg-image-retry{
+      margin-top: 8px;
+      border: 1px solid #6ec6ff;
+      background: #6ec6ff;
+      color: #0b0b0d;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .tg-theme button:focus-visible{
+      outline: none;
+      box-shadow: var(--brand-focus-ring) !important;
+    }
+    .tg-theme .bg-white{
+      background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.012)), rgba(15,18,26,.92) !important;
+      color: var(--brand-text) !important;
+    }
+    .tg-theme .bg-gray-50{ background: rgba(255,255,255,.03) !important; }
+    .tg-theme .bg-gray-100{ background: rgba(255,255,255,.06) !important; }
+    .tg-theme .bg-gray-200{ background: rgba(255,255,255,.10) !important; }
+    .tg-theme .bg-gray-300{ background: rgba(255,255,255,.16) !important; }
+    .tg-theme .hover\:bg-gray-200:hover{ background: rgba(255,255,255,.10) !important; }
+    .tg-theme .hover\:bg-gray-400:hover{ background: rgba(255,255,255,.20) !important; }
+    .tg-theme .text-gray-800{ color: #edf0f7 !important; }
+    .tg-theme .text-gray-700{ color: #d5dceb !important; }
+    .tg-theme .text-gray-600{ color: #b7c2d6 !important; }
+    .tg-theme .border-gray-200{ border-color: rgba(255,255,255,.12) !important; }
+    .tg-theme .border-blue-200,
+    .tg-theme .border-indigo-200{ border-color: rgba(110,198,255,.28) !important; }
+    .tg-theme .border-blue-500,
+    .tg-theme .border-indigo-600{ border-color: rgba(110,198,255,.42) !important; }
+    .tg-theme .border-t{ border-color: rgba(255,255,255,.10) !important; }
+    .tg-theme .bg-indigo-50,
+    .tg-theme .bg-blue-50{ background: rgba(110,198,255,.08) !important; }
+    .tg-theme .bg-indigo-600,
+    .tg-theme .hover\:bg-indigo-700:hover,
+    .tg-theme .bg-blue-600,
+    .tg-theme .hover\:bg-blue-700:hover{ background: #6ec6ff !important; color: #0b0b0d !important; }
+    .tg-theme .text-indigo-600,
+    .tg-theme .text-blue-600{ color: #6ec6ff !important; }
+    .tg-theme .shadow-lg,
+    .tg-theme .shadow-md{ box-shadow: 0 14px 34px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.03) !important; }
+
+
+    .tg-panel-icon{
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      border: 4px solid rgba(255,255,255,.45);
+      background: #BEEF4E !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 18px rgba(190,239,78,.18);
+      flex: 0 0 auto;
+      overflow: hidden;
+    }
+    .tg-panel-icon img{
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+      display: block;
+    }
+    .tg-panel-icon--sm{
+      width: 50px;
+      height: 50px;
+      border-radius: 13px;
+      border-width: 3px;
+    }
+    .tg-panel-icon--sm img{
+      width: 31px;
+      height: 31px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .tg-panel-kicker{
+      display: block;
+      margin: 0 0 4px 0;
+      color: #d9ecff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    .tg-front-link{
+      margin-top: 14px;
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.3;
+      color: #d5dceb;
+    }
+    .tg-front-link a{
+      color: #d9ecff;
+      font-weight: 700;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(110,198,255,.28);
+      padding-bottom: 1px;
+    }
+    .tg-front-link a:hover{ color: #6ec6ff; border-bottom-color: rgba(110,198,255,.50); }
+
+
+
+    .tg-desktop-chrome{
+      display: block;
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 50;
+    }
+    body{
+      background: #dfe3e8 !important;
+      padding-top: 72px;
+    }
+    .tg-shell{
+      background: transparent !important;
+      min-height: calc(100vh - 72px) !important;
+    }
+    .tg-topbar{
+      height: 72px;
+      background: linear-gradient(180deg, rgba(33,38,47,.98), rgba(36,42,52,.98));
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    }
+    .tg-topbar__inner{
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .tg-topbar__icon{
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid rgba(110,198,255,.22);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)), rgba(15,18,26,.94);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+      flex: 0 0 auto;
+    }
+    .tg-topbar__back{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #9ed3ff;
+      text-decoration: none;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .tg-topbar__back:hover{ opacity: .92; }
+    .tg-topbar__back:focus-visible{
+      outline: none;
+      box-shadow: var(--brand-focus-ring);
+      border-radius: 10px;
+    }
+    .tg-topbar__icon img{
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+    }
+    .tg-topbar__back-text{
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tg-topbar__pill{
+      border-radius: 999px;
+      background: #ccff66;
+      color: #0b0b0d;
+      border: 1px solid #ccff66;
+      padding: 8px 12px;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    @media (min-width: 960px){
+      body{
+        background: #dfe3e8 !important;
+        padding-top: 90px;
+      }
+      .tg-shell{
+        background: transparent !important;
+        min-height: calc(100vh - 90px) !important;
+      }
+      .tg-desktop-chrome{
+        display: block;
+        position: fixed;
+        inset: 0 0 auto 0;
+        z-index: 50;
+      }
+      .tg-topbar{
+        height: 90px;
+        background: linear-gradient(180deg, rgba(33,38,47,.98), rgba(36,42,52,.98));
+        border-bottom: 1px solid rgba(255,255,255,.07);
+        box-shadow: 0 8px 24px rgba(0,0,0,.18);
+      }
+      .tg-topbar__inner{
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .tg-topbar__brand{
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+      }
+      .tg-topbar__icon{
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        border: 1px solid rgba(110,198,255,.22);
+        background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)), rgba(15,18,26,.94);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+        flex: 0 0 auto;
+      }
+      .tg-topbar__icon img{
+        width: 30px;
+        height: 30px;
+        object-fit: contain;
+      }
+      .tg-topbar__meta{ min-width: 0; }
+      .tg-topbar__title{
+        color: #edf0f7;
+        font-weight: 800;
+        font-size: 16px;
+        line-height: 1.1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tg-topbar__subtitle{
+        margin-top: 4px;
+        color: #b7c2d6;
+        font-size: 12px;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tg-topbar__pill{
+        border-radius: 999px;
+        background: #ccff66;
+        color: #0b0b0d;
+        border: 1px solid #ccff66;
+        padding: 9px 16px;
+        font-weight: 800;
+        font-size: 12px;
+        letter-spacing: .02em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+    }
+
+  </style>
+</head>
+<body class="bg-gray-50">
+  <header class="tg-desktop-chrome">
+    <div class="tg-topbar">
+      <div class="tg-topbar__inner">
+        <a class="tg-topbar__back" href="../cognitive-tracking/index.htm">
+          <span class="tg-topbar__icon"><img src="/branding/Trident-G-Icon.svg" alt="" /></span>
+          <span class="tg-topbar__back-text">Back to G Tracker</span>
+        </a>
+        <span class="tg-topbar__pill">Trident G - IQ</span>
+      </div>
+    </div>
+  </header>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useState } = React;
+
+    // Item definitions - SgS-12 Form A
+    // Matrix items (ICAR q-IDs in comments):
+    // AM1 = q12043 (D), AM2 = q12044 (C), AM3 = q12054 (A), AM4 = q12056 (E), AM5 = q12050 (E)
+    const ITEMS = [
+      // Matrices
+      {
+        id: 'AM1',
+        kind: 'matrix',
+        stemImageUrl: './images/matrices/AM1.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
+        correctOptionIndex: 3, // D
+      },
+      {
+        id: 'AM2',
+        kind: 'matrix',
+        stemImageUrl: './images/matrices/AM2.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
+        correctOptionIndex: 2, // C
+      },
+      {
+        id: 'AM3',
+        kind: 'matrix',
+        stemImageUrl: './images/matrices/AM3.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
+        correctOptionIndex: 0, // A
+      },
+      {
+        id: 'AM4',
+        kind: 'matrix',
+        stemImageUrl: './images/matrices/AM4.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
+        correctOptionIndex: 4, // E
+      },
+      {
+        id: 'AM5',
+        kind: 'matrix',
+        stemImageUrl: './images/matrices/AM5.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'None of these', "I don't know"],
+        correctOptionIndex: 4, // E
+      },
+      // Verbal reasoning
+      {
+        id: 'VR1',
+        kind: 'verbal',
+        stemText:
+          'Joshua is 12 years old and his sister is three times as old as he. When Joshua is 23 years old, how old will his sister be?',
+        responseOptions: ['35', '39', '44', '47', '53', '57', 'None of these', "I don't know"],
+        correctOptionIndex: 3, // 47
+      },
+      {
+        id: 'VR2',
+        kind: 'verbal',
+        stemText:
+          'What number is one fifth of one fourth of one ninth of 900?',
+        responseOptions: ['2', '3', '4', '5', '6', '7', 'None of these', "I don't know"],
+        correctOptionIndex: 3, // 5
+      },
+      {
+        id: 'VR3',
+        kind: 'verbal',
+        stemText:
+          'Please mark the word that does not match the other words: (1) Sycamore (2) Buckeye (3) Elm (4) Daffodil (5) Hickory (6) Sequoia',
+        responseOptions: ['1', '2', '3', '4', '5', '6', 'None of these', "I don't know"],
+        correctOptionIndex: 3, // 4 (Daffodil)
+      },
+      // Series
+      {
+        id: 'SR1',
+        kind: 'series',
+        stemText:
+          'In the following number series, what number comes next? 64, 81, 100, 121, 144, ...',
+        responseOptions: ['154', '156', '162', '169', '178', '196', 'None of these', "I don't know"],
+        correctOptionIndex: 3, // 169
+      },
+      {
+        id: 'SR2',
+        kind: 'series',
+        stemText:
+          'In the following alphanumeric series, what letter comes next? Q, S, N, P, L, ...',
+        responseOptions: ['J', 'H', 'I', 'N', 'M', 'L', 'None of these', "I don't know"],
+        correctOptionIndex: 3, // N (FIXED)
+      },
+      // 3D rotation
+      {
+        id: 'AR1',
+        kind: 'rotation',
+        stemImageUrl: './images/rotation/AR1.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+        correctOptionIndex: 5,
+      },
+      {
+        id: 'AR2',
+        kind: 'rotation',
+        stemImageUrl: './images/rotation/AR2.jpg',
+        responseOptions: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'],
+        correctOptionIndex: 1,
+      },
+    ];
+
+    function toSafeInt(value, fallback = 0) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return fallback;
+      return Math.round(num);
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function computeRawScore(answers, items) {
+      if (!Array.isArray(items) || !items.length || !Array.isArray(answers)) {
+        return 0;
+      }
+      let score = 0;
+      for (let idx = 0; idx < items.length; idx += 1) {
+        const item = items[idx];
+        if (!item || typeof item.correctOptionIndex !== 'number') continue;
+        if (answers[idx] === item.correctOptionIndex) {
+          score += 1;
+        }
+      }
+      return clamp(score, 0, items.length);
+    }
+
+    // Scoring and interpretation functions
+    function getBand(raw) {
+      const safeRaw = clamp(toSafeInt(raw, 0), 0, ITEMS.length);
+      if (safeRaw <= 3) return 'low';
+      if (safeRaw <= 7) return 'typical';
+      if (safeRaw <= 9) return 'high';
+      return 'veryHigh';
+    }
+
+    function rsIq(raw) {
+      const mean = 5.4;
+      const sd = 1.6;
+      const safeRaw = clamp(Number(raw) || 0, 0, ITEMS.length);
+      const iq = Math.round(100 + 15 * ((safeRaw - mean) / sd));
+      return clamp(iq, 40, 160);
+    }
+
+    function getBandLabel(band) {
+      const labels = {
+        low: 'Lower than typical range',
+        typical: 'Typical range',
+        high: 'Higher than typical range',
+        veryHigh: 'Very high range',
+      };
+      return labels[band] || labels.typical;
+    }
+
+    function getBandDescription(band) {
+      const descriptions = {
+        low: 'Your score falls below the typical adult range. This could reflect tiredness, anxiety, unfamiliarity with the test format, or genuine difficulty with abstract reasoning. Consider retaking the test under less stressful conditions if you suspect external factors affected your performance.',
+        typical: 'Your score falls within the broad typical range. You demonstrate reasonable ability to spot patterns and solve novel problems. This is representative of many adults tested on this kind of task.',
+        high: 'Your score is above average. You found the pattern puzzles fairly natural once the format became clear. You perform well on abstract reasoning tasks.',
+        veryHigh: 'Your score is in the very high range, indicating strong abstract reasoning ability. At this level, small differences in raw scores are not particularly meaningful.',
+      };
+      return descriptions[band] || descriptions.typical;
+    }
+
+    const STEM_IMAGE_URLS = ITEMS.filter(item => !!item.stemImageUrl).map(item => item.stemImageUrl);
+
+    function addRetryParam(url, token) {
+      const sep = url.includes('?') ? '&' : '?';
+      return `${url}${sep}img_retry=${encodeURIComponent(token)}`;
+    }
+
+    function preloadImage(url, retries = 1) {
+      return new Promise((resolve) => {
+        let attempt = 0;
+        const seed = Date.now();
+        const run = () => {
+          const img = new Image();
+          img.decoding = 'async';
+          img.onload = () => resolve(true);
+          img.onerror = () => {
+            if (attempt < retries) {
+              attempt += 1;
+              img.src = addRetryParam(url, `${seed}_${attempt}`);
+            } else {
+              resolve(false);
+            }
+          };
+          img.src = attempt === 0 ? url : addRetryParam(url, `${seed}_${attempt}`);
+        };
+        run();
+      });
+    }
+
+    function prewarmImages(urls) {
+      const list = Array.from(new Set((urls || []).filter(Boolean)));
+      if (!list.length) return;
+      Promise.allSettled(list.map((u) => preloadImage(u, 1)))
+        .then(() => Promise.allSettled(list.map((u) => preloadImage(u, 0))))
+        .catch(() => {});
+    }
+
+    function StemImage({ src, alt }) {
+      const [attempt, setAttempt] = useState(0);
+      const [seed, setSeed] = useState(() => Date.now());
+      const [loaded, setLoaded] = useState(false);
+      const [failed, setFailed] = useState(false);
+
+      useEffect(() => {
+        setAttempt(0);
+        setSeed(Date.now());
+        setLoaded(false);
+        setFailed(false);
+      }, [src]);
+
+      const resolvedSrc = attempt === 0 ? src : addRetryParam(src, `${seed}_${attempt}`);
+
+      return (
+        <div className="tg-image-frame">
+          {!loaded && !failed && (
+            <div className="tg-image-loading" aria-live="polite">Loading image...</div>
+          )}
+          {failed && (
+            <div className="tg-image-error" role="status">
+              <p><strong>Image did not load.</strong> This can happen if the network is slow. You can retry without losing your place.</p>
+              <button
+                type="button"
+                className="tg-image-retry"
+                onClick={() => {
+                  setSeed(Date.now());
+                  setAttempt(1);
+                  setLoaded(false);
+                  setFailed(false);
+                }}
+              >
+                Retry image
+              </button>
+            </div>
+          )}
+          <img
+            src={resolvedSrc}
+            alt={alt}
+            className="max-w-full h-auto mx-auto max-h-96 object-contain"
+            loading="eager"
+            decoding="async"
+            style={{ display: failed ? 'none' : 'block', opacity: loaded ? 1 : 0.01, transition: 'opacity .12s ease' }}
+            onLoad={() => { setLoaded(true); setFailed(false); }}
+            onError={() => {
+              if (attempt < 2) {
+                setAttempt((a) => a + 1);
+                setLoaded(false);
+              } else {
+                setFailed(true);
+              }
+            }}
+          />
+        </div>
+      );
+    }
+
+    function openSgs12ATestDetails() {
+      const ua = String(navigator.userAgent || '');
+      const isMobileLike = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+      let win = null;
+      try {
+        win = isMobileLike
+          ? window.open('', '_blank')
+          : window.open('', '_blank', 'width=860,height=780,resizable=yes,scrollbars=yes');
+        if (!win) win = window.open('', '_blank');
+      } catch (_) {
+        win = null;
+      }
+      if (!win) {
+        window.alert('Please allow pop-ups to view Test Details.');
+        return;
+      }
+      const title = 'SgS-12 Test Details';
+      win.document.open();
+      win.document.write(`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>${title}</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: radial-gradient(1200px 420px at -10% -15%, rgba(110,198,255,.10), transparent 55%), #0b1118; color: #edf0f7; }
+    .wrap { width: min(920px, 100%); margin: 0 auto; padding: 18px; }
+    .card { border-radius: 18px; border: 1px solid rgba(110,198,255,.22); background: radial-gradient(1100px 360px at -10% -20%, rgba(110,198,255,.14), transparent 55%), linear-gradient(165deg, rgba(78,160,232,.10), rgba(15,18,26,.96) 55%); box-shadow: 0 14px 34px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.04); padding: 18px; }
+    .kicker { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: #d9ecff; margin: 0 0 8px 0; }
+    h1 { margin: 0; font-size: 28px; line-height: 1.08; }
+    h2 { margin: 18px 0 8px 0; font-size: 16px; }
+    p, li { color: #d5dceb; line-height: 1.45; }
+    ul { margin: 8px 0 0 18px; padding: 0; }
+    .sub { margin-top: 10px; border-radius: 12px; padding: 12px 14px; border: 1px solid rgba(255,255,255,.10); background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.012)); }
+    .note { margin-top: 12px; border-radius: 12px; padding: 12px 14px; border: 1px solid rgba(255,120,140,.30); background: rgba(255,170,190,.10); color: #edf0f7; }
+    .note p { margin: 0; color: #edf0f7; }
+    .btnRow { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+    button { border: 1px solid #6ec6ff; background: #6ec6ff; color: #0b0b0d; padding: 10px 12px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <p class="kicker">Mindware Lab - Trident G IQ</p>
+      <h1>Short g Scale (SgS-12)</h1>
+      <div class="sub"><p><strong>What it is:</strong> A brief reasoning check that looks at how well you solve unfamiliar problems using patterns and simple rules.</p></div>
+      <h2>What it measures</h2>
+      <p>SgS-12 is designed to capture <strong>fluid reasoning</strong>. That is your ability to spot patterns, infer rules, and work things out when you have not seen the problem before.</p>
+      <h2>How it works</h2>
+      <p>You answer <strong>12 multiple-choice questions</strong>. Items include things like <strong>pattern matrices</strong>, <strong>letter-number sequences</strong>, <strong>mental rotation</strong>, and a few <strong>short verbal reasoning</strong> questions. There are <strong>two versions (Form A and Form B)</strong> so you can repeat it later without seeing the exact same items.</p>
+      <h2>Taking the test</h2>
+      <p>There is <strong>no time limit</strong>, so it is about careful thinking rather than rushing. Most people finish in just a few minutes, but you can take a little longer if you need to.</p>
+      <h2>Current validation status (working summary)</h2>
+      <div class="note"><p>SgS-12 is built from public-domain items drawn from the International Cognitive Ability Resource (ICAR) test bank - specifically ICAR Matrix Reasoning items, plus the same ICAR family of Verbal Reasoning and Letter-Number Series item types, alongside ICAR's Three-Dimensional Rotation (R3D) items. These ICAR/R3D item sets have published psychometrics and large-sample norms, so the questions are not home-made puzzles but established item types with known difficulty and reliability characteristics. Because SgS-12 uses only 12 items, it is best treated as a practical reasoning snapshot and for tracking change over time, rather than as a definitive IQ test.</p></div>
+      <h2>Intended use</h2>
+      <p><strong>Good for:</strong> self-tracking, baseline vs follow-up measurement in Trident G - IQ training, and product/research use.<br /><strong>Not for:</strong> clinical diagnosis or high-stakes decisions.</p>
+      <div class="btnRow"><button type="button" onclick="window.close()">Close</button></div>
+    </div>
+  </div>
+</body>
+</html>`);
+      win.document.close();
+    }
+
+    // Start screen
+    function StartScreen({ onStart, onOpenDetails }) {
+      return (
+        <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
+          <div className="tg-card bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
+            <div className="flex items-start gap-3 mb-3">
+              <span className="tg-panel-icon">
+                <img src="/branding/Trident-G-Icon.svg" alt="Trident G" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <span className="tg-panel-kicker">Mindware Lab - Trident G IQ</span>
+                <h1 className="text-4xl font-bold text-gray-800 text-center sm:text-left min-w-0">
+                  Short g Scale - SgS-12 A
+                </h1>
+              </div>
+            </div>
+            <div className="mb-6">
+              <button
+                type="button"
+                onClick={onOpenDetails}
+                className="px-4 py-2 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors whitespace-nowrap"
+              >
+                Test Details
+              </button>
+            </div>
+            <p className="text-gray-600 text-lg mb-8 text-center sm:text-left leading-relaxed">
+              A 12-item validated reasoning snapshot measuring matrices, verbal, series and 3D rotation.
+              There are no time limits, but most people finish in around 5-10 minutes.
+            </p>
+            <button
+              onClick={onStart}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            >
+              Start test
+            </button>
+            <div className="tg-front-link"><a href="https://www.iqmindware.com" target="_blank" rel="noopener noreferrer">IQMindware.com</a></div>
+          </div>
+        </div>
+      );
+    }
+
+    // Item screen
+    function ItemScreen({
+      item,
+      itemIndex,
+      totalItems,
+      selectedOption,
+      onSelectOption,
+      onNext,
+      onPrev,
+    }) {
+      const isAnswered = selectedOption !== null;
+      const isLast = itemIndex === totalItems - 1;
+
+      return (
+        <div className="tg-theme tg-shell min-h-screen bg-gray-50 p-4">
+          <div className="max-w-3xl mx-auto">
+            <div className="mb-6">
+              <div className="text-sm text-gray-600 font-medium">
+                Question {itemIndex + 1} of {totalItems}
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div
+                  className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${((itemIndex + 1) / totalItems) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+
+            <div className="tg-card bg-white rounded-lg shadow-md p-8 mb-6">
+              {/* Stem */}
+              {item.kind === 'matrix' || item.kind === 'rotation' ? (
+                <div className="mb-8 text-center">
+                  <StemImage
+                    src={item.stemImageUrl}
+                    alt="Reasoning puzzle"
+                  />
+                </div>
+              ) : (
+                <p className="text-lg text-gray-700 mb-8 leading-relaxed">
+                  {item.stemText}
+                </p>
+              )}
+
+              {/* Response options */}
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                {item.responseOptions.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => onSelectOption(idx)}
+                    className={`py-3 px-4 rounded-lg font-medium transition-all ${
+                      selectedOption === idx
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <div className="flex gap-4">
+              <button
+                onClick={onPrev}
+                disabled={itemIndex === 0}
+                className="flex-1 py-3 px-4 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                onClick={onNext}
+                disabled={!isAnswered}
+                className="flex-1 py-3 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLast ? 'See results' : 'Next'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Results screen
+    function ResultsScreen({ rawScore, onRestart }) {
+      const safeRawScore = clamp(toSafeInt(rawScore, 0), 0, ITEMS.length);
+      const band = getBand(safeRawScore);
+      const bandLabel = getBandLabel(band);
+      const description = getBandDescription(band);
+      const iq = rsIq(safeRawScore);
+
+      return (
+        <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="tg-card bg-white rounded-lg shadow-lg p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+                Your Results
+              </h2>
+
+              {/* Raw score */}
+              <div className="bg-indigo-50 rounded-lg p-6 mb-8 text-center border-2 border-indigo-200">
+                <div className="text-5xl font-bold text-indigo-600 mb-2">
+                  {safeRawScore}
+                </div>
+                <div className="text-gray-600 font-medium">
+                  Raw score (out of 12)
+                </div>
+              </div>
+
+              {/* Band interpretation */}
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                  Score band: {bandLabel}
+                </h3>
+                <p className="text-gray-700 leading-relaxed">
+                  {description}
+                </p>
+              </div>
+
+              {/* RS-IQ */}
+              <div className="bg-blue-50 rounded-lg p-6 mb-8 border-2 border-blue-200">
+                <div className="text-center mb-4">
+                  <div className="text-4xl font-bold text-blue-600 mb-1">
+                    RS-IQ {iq}
+                  </div>
+                  <div className="text-gray-600 font-medium text-sm">
+                    Reasoning Snapshot IQ-equivalent
+                  </div>
+                </div>
+                <div className="text-xs text-gray-600 text-center mt-4 pt-4 border-t border-blue-200">
+                  RS-IQ is an internal Reasoning Snapshot IQ-equivalent score, based on adult
+                  internet-sample norms. It is not a clinical IQ score and should not be
+                  interpreted as a WAIS score.
+                </div>
+              </div>
+
+              {/* Correspondence guide */}
+              <div className="bg-gray-50 rounded-lg p-6 mb-8">
+                <h4 className="font-bold text-gray-800 mb-3">Typical score ranges:</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="text-gray-700">
+                    <span className="font-semibold">0-3:</span> RS-IQ &lt; ~85
+                  </div>
+                  <div className="text-gray-700">
+                    <span className="font-semibold">4-7:</span> ~85-115
+                  </div>
+                  <div className="text-gray-700">
+                    <span className="font-semibold">8-9:</span> ~115-125
+                  </div>
+                  <div className="text-gray-700">
+                    <span className="font-semibold">10-12:</span> 125+
+                  </div>
+                </div>
+              </div>
+
+              {/* Restart button */}
+              <button
+                onClick={onRestart}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              >
+                Restart test
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ResultsFallback({ rawScore, onRestart }) {
+      const safeRawScore = clamp(toSafeInt(rawScore, 0), 0, ITEMS.length);
+      return (
+        <div className="tg-theme tg-shell min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 p-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="tg-card bg-white rounded-lg shadow-lg p-8 mb-6">
+              <h2 className="text-3xl font-bold text-gray-800 mb-4 text-center">
+                Score ready
+              </h2>
+              <div className="bg-indigo-50 rounded-lg p-6 mb-6 text-center border-2 border-indigo-200">
+                <div className="text-5xl font-bold text-indigo-600 mb-2">
+                  {safeRawScore}
+                </div>
+                <div className="text-gray-600 font-medium">
+                  Raw score (out of 12)
+                </div>
+              </div>
+              <p className="text-gray-700 leading-relaxed mb-8 text-center">
+                The full interpretation panel could not load, but your score was computed successfully.
+              </p>
+              <button
+                onClick={onRestart}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              >
+                Restart test
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Main app
+    function SgS12AApp() {
+      const [screen, setScreen] = useState('start'); // 'start', 'test', 'results'
+      const [currentItemIndex, setCurrentItemIndex] = useState(0);
+      const [answers, setAnswers] = useState(new Array(ITEMS.length).fill(null));
+      const [completedScore, setCompletedScore] = useState(null);
+
+      useEffect(() => {
+        prewarmImages(STEM_IMAGE_URLS);
+      }, []);
+
+      useEffect(() => {
+        if (screen !== 'test') return;
+        const current = ITEMS[currentItemIndex];
+        const next = ITEMS[currentItemIndex + 1];
+        prewarmImages([current?.stemImageUrl, next?.stemImageUrl]);
+      }, [screen, currentItemIndex]);
+
+      const handleStart = () => {
+        setScreen('test');
+        setCurrentItemIndex(0);
+        setAnswers(new Array(ITEMS.length).fill(null));
+        setCompletedScore(null);
+      };
+
+      const handleSelectOption = (optionIndex) => {
+        const newAnswers = [...answers];
+        newAnswers[currentItemIndex] = optionIndex;
+        setAnswers(newAnswers);
+      };
+
+      const handleNext = () => {
+        if (currentItemIndex < ITEMS.length - 1) {
+          setCurrentItemIndex(currentItemIndex + 1);
+        } else {
+          const rawScore = computeRawScore(answers, ITEMS);
+          setCompletedScore(rawScore);
+          setScreen('results');
+        }
+      };
+
+      const handlePrev = () => {
+        if (currentItemIndex > 0) {
+          setCurrentItemIndex(currentItemIndex - 1);
+        }
+      };
+
+      const handleRestart = () => {
+        setScreen('start');
+        setCurrentItemIndex(0);
+        setAnswers(new Array(ITEMS.length).fill(null));
+        setCompletedScore(null);
+      };
+
+      if (screen === 'start') {
+        return <StartScreen onStart={handleStart} onOpenDetails={openSgs12ATestDetails} />;
+      }
+
+      if (screen === 'test') {
+        const currentItem = ITEMS[currentItemIndex];
+        return (
+          <ItemScreen
+            item={currentItem}
+            itemIndex={currentItemIndex}
+            totalItems={ITEMS.length}
+            selectedOption={answers[currentItemIndex]}
+            onSelectOption={handleSelectOption}
+            onNext={handleNext}
+            onPrev={handlePrev}
+          />
+        );
+      }
+
+      if (screen === 'results') {
+        try {
+          const rawScore = completedScore !== null ? completedScore : computeRawScore(answers, ITEMS);
+          return <ResultsScreen rawScore={rawScore} onRestart={handleRestart} />;
+        } catch (error) {
+          console.error('[SgS-12A] Failed to render results', error);
+          return <ResultsFallback rawScore={completedScore} onRestart={handleRestart} />;
+        }
+      }
+
+      return null;
+    }
+
+    // Render
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<SgS12AApp />);
+  </script>
+</body>
+</html>
+
+
+

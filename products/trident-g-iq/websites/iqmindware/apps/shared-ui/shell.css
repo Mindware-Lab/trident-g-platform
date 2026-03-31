@@ -1,0 +1,174 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: var(--iq-font);
+}
+
+body {
+  background: var(--iq-page);
+  color: var(--iq-text);
+}
+
+.tg-desktop-chrome {
+  display: block;
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 50;
+}
+
+.tg-topbar {
+  height: 72px;
+  background: linear-gradient(180deg, rgba(33, 38, 47, 0.98), rgba(36, 42, 52, 0.98));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.tg-topbar__inner {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tg-topbar__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(110, 198, 255, 0.22);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01)), rgba(15, 18, 26, 0.94);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.tg-topbar__icon img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  display: block;
+}
+
+.tg-topbar__pill {
+  border-radius: 999px;
+  background: var(--iq-primary);
+  color: #0b1a0b;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tg-topbar__back {
+  display: none;
+  color: var(--iq-info);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tg-topbar__back.is-visible {
+  display: inline-flex;
+  align-items: center;
+}
+
+.ui-screen {
+  min-height: calc(100vh - 72px);
+  padding-top: 72px;
+}
+
+.ui-content {
+  width: min(960px, 100%);
+  margin: 0 auto;
+  padding: 18px;
+}
+
+/* Optional utilities aligned to UI_SIZE_CONTRACT.md (v3) */
+.ui-shell-contract {
+  width: var(--iq-shell-desktop-width);
+  height: var(--iq-shell-desktop-height);
+  max-height: var(--iq-shell-desktop-height);
+  overflow: hidden;
+}
+
+.ui-content-scroll-mobile {
+  overflow: hidden;
+}
+
+@media (min-width: 960px) {
+  .tg-topbar {
+    height: 90px;
+  }
+
+  .tg-topbar__inner {
+    padding: 0 14px;
+  }
+
+  .tg-topbar__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .tg-topbar__icon img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .tg-topbar__pill {
+    padding: 9px 16px;
+    font-size: 12px;
+  }
+
+  .ui-screen {
+    min-height: calc(100vh - 90px);
+    padding-top: 90px;
+  }
+}
+
+@media (max-height: 940px) {
+  .ui-shell-contract {
+    height: var(--iq-shell-desktop-height-compact);
+    max-height: var(--iq-shell-desktop-height-compact);
+  }
+}
+
+@media (max-width: 520px) {
+  .ui-shell-contract {
+    width: var(--iq-shell-mobile-width);
+    height: var(--iq-shell-mobile-height);
+    max-height: var(--iq-shell-mobile-height);
+    border-radius: 0;
+    border: none;
+  }
+
+  .ui-content-scroll-mobile {
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    padding-bottom: var(--iq-mobile-footer-reserve);
+    scroll-padding-bottom: var(--iq-mobile-scroll-padding-bottom);
+  }
+}
+
+@media (min-width: 960px) {
+  /* Zone Coach keeps inline shell width; force desktop expansion without touching app-local inline CSS. */
+  body.zc-rebrand .zoneAppShell {
+    width: min(900px, calc(100% - 24px)) !important;
+  }
+}

@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../shared-ui/tokens.css" />
   <link rel="stylesheet" href="../shared-ui/shell.css" />
   <link rel="stylesheet" href="../shared-ui/components.css" />
-  <link rel="stylesheet" href="../../../../branding/brand.css?v=2" />
+  <link rel="stylesheet" href="/branding/brand.css?v=2" />
   <style>
     :root { color-scheme: dark; }
     :root {
@@ -534,7 +534,7 @@
     <main class="content zoneContent">
       <div class="zc-brand-row" aria-label="Zone Coach branding">
         <div class="zc-brand-left">
-          <span class="zc-brand-icon"><img class="appIcon" src="../../../../branding/Trident-G-Icon.svg" alt="" /></span>
+          <span class="zc-brand-icon"><img class="appIcon" src="/branding/Trident-G-Icon.svg" alt="" /></span>
           <a id="suiteBackLink" class="zc-suite-back" href="../iq-suite/index.html">Back to Suite</a>
         </div>
         <a class="zc-brand-site" href="https://iqmindware.com/" target="_blank" rel="noopener noreferrer">IQMindware.com</a>
@@ -557,7 +557,7 @@
       <div id="screenStart" class="router-screen active">
         <div class="splash-panel">
           <div class="splash-head">
-            <div class="splash-logo"><img src="../../../../branding/Trident-G-Icon.svg" alt="Trident G" /></div>
+            <div class="splash-logo"><img src="/branding/Trident-G-Icon.svg" alt="Trident G" /></div>
             <div>
               <div class="splash-kicker">Mindware Lab - Trident G IQ</div>
               <h2 class="splash-title">Zone Coach</h2>
@@ -630,9 +630,9 @@
 
         <div id="validPanel" class="hidden">
           <div class="grid result-metrics" id="resultMetricsRow">
-            <div class="metric metric-bps"><div class="metric-head metric-head-bps"><img class="metric-icon" src="../../../../branding/icons/bits-per-second.svg" alt="" aria-hidden="true" /><div class="metric-content"><div class="k">Bits / second (CCC)</div><div class="v" id="mBps">-</div></div><button type="button" class="btn btn-ghost metric-graph-btn" id="showBpsTraceBtn" title="Show session-to-session CCC bits/second graph" aria-label="Show bits per second history graph"><img src="../../../../branding/icons/graph.svg" alt="" aria-hidden="true" /><span>See Data</span></button></div></div>
-            <div class="metric"><div class="metric-head"><img class="metric-icon" src="../../../../branding/icons/brain-state.svg" alt="" aria-hidden="true" /><div class="metric-content"><div class="k">Cognitive State</div><div class="v" id="mState">-</div></div></div></div>
-            <div class="metric"><div class="metric-head"><img class="metric-icon" src="../../../../branding/icons/confidence-level.svg" alt="" aria-hidden="true" /><div class="metric-content"><div class="k">Confidence Level</div><div class="v" id="mConf">-</div></div></div></div>
+            <div class="metric metric-bps"><div class="metric-head metric-head-bps"><img class="metric-icon" src="/branding/icons/bits-per-second.svg" alt="" aria-hidden="true" /><div class="metric-content"><div class="k">Bits / second (CCC)</div><div class="v" id="mBps">-</div></div><button type="button" class="btn btn-ghost metric-graph-btn" id="showBpsTraceBtn" title="Show session-to-session CCC bits/second graph" aria-label="Show bits per second history graph"><img src="/branding/icons/graph.svg" alt="" aria-hidden="true" /><span>See Data</span></button></div></div>
+            <div class="metric"><div class="metric-head"><img class="metric-icon" src="/branding/icons/brain-state.svg" alt="" aria-hidden="true" /><div class="metric-content"><div class="k">Cognitive State</div><div class="v" id="mState">-</div></div></div></div>
+            <div class="metric"><div class="metric-head"><img class="metric-icon" src="/branding/icons/confidence-level.svg" alt="" aria-hidden="true" /><div class="metric-content"><div class="k">Confidence Level</div><div class="v" id="mConf">-</div></div></div></div>
             <div class="metric user-hidden"><div class="k">Probe trials / Catch fail</div><div class="v" id="mProbeCatch">-</div></div>
             <div class="metric user-hidden"><div class="k">Timeout rate / RT CV</div><div class="v" id="mTimeoutCv">-</div></div>
             <div class="metric user-hidden"><div class="k">PES / Burstiness</div><div class="v" id="mPesBurst">-</div></div>
@@ -735,7 +735,7 @@
         appId: "zone_coach",
         appLabel: "Zone Coach",
         manifestUrl: "../iq-suite/bundle-manifests.json",
-        returnTo: "../iq-suite/index.html",
+        returnTo: "/tools/zone-coach/",
         bundleIdHint: launchBundleId,
         requiredBundleId: launchBundleId || ""
       });
@@ -2144,7 +2144,7 @@
     }
 
     function openBpsTraceScreen(){
-      const bpsTraceIcon = new URL(`../../../../branding/icons/bits-per-second.svg`, window.location.href).href;
+      const bpsTraceIcon = new URL(`/branding/icons/bits-per-second.svg`, window.location.origin).href;
       const view = buildBpsTraceView();
 
       openInfoScreen('CCC Bits / Second Trace', `
@@ -2303,7 +2303,7 @@
     }
 
     function openFeelStatesScreen(){
-      const iconUrl = (name) => new URL(`../../../../branding/icons/${name}`, window.location.href).href;
+      const iconUrl = (name) => new URL(`/branding/icons/${name}`, window.location.origin).href;
       const feelIcons = {
         inZone: iconUrl('in-the-zone.svg'),
         flat: iconUrl('flat-dull.svg'),
