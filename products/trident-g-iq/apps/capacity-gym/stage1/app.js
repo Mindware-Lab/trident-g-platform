@@ -80,6 +80,7 @@ import { buildShellViewModel } from "./ui/view-models.js";
 
 const TEMP_RELATIONAL_UNLOCK_FOR_INSPECTION = false;
 const ZONE_AUTO_IMPORT_WINDOW_MS = 30 * 60 * 1000;
+const REL_INPUT_ARM_MS = 120;
 const ROUTES = new Set(["home", "play-hub", "play-emotion", "play-relational", "history", "settings"]);
 const DEFAULT_ROUTE = "home";
 const appRoot = document.querySelector("#app");
@@ -5712,8 +5713,13 @@ function captureRelationalMatch() {
   if (block.responseCaptured) {
     return false;
   }
+  const rtMs = Math.max(0, Math.round(performance.now() - block.trialStartedAtMs));
+  // Ignore spillover taps/keypresses that arrive right as a new trial starts.
+  if (rtMs < REL_INPUT_ARM_MS) {
+    return false;
+  }
   block.responseCaptured = true;
-  block.responseRtMs = Math.max(0, Math.round(performance.now() - block.trialStartedAtMs));
+  block.responseRtMs = rtMs;
   playSfx("game_match_press", {
     onceKey: `${relationalTrialAudioBaseKey(block)}:match-press`
   });
@@ -6460,6 +6466,10 @@ document.addEventListener("keydown", (event) => {
   if (emotionSession && emotionSession.status === "running" && emotionSession.phase === "briefing" && (event.code === "Space" || event.code === "Enter")) {
     event.preventDefault();
     startEmotionCue();
+    return;
+  }
+
+  if (event.repeat && (event.code === "Space" || event.code === "ArrowLeft" || event.code === "ArrowRight" || event.code === "KeyF" || event.code === "KeyJ")) {
     return;
   }
 
