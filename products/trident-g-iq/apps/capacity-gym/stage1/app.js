@@ -1608,6 +1608,17 @@ function targetModalityIconPath(targetLabel) {
   return "";
 }
 
+function renderHubTargetBadge(targetLabel, className = "hub-target") {
+  if (!targetLabel) {
+    return "";
+  }
+  const targetIconPath = targetModalityIconPath(targetLabel);
+  const targetIcon = targetIconPath
+    ? `<img class="target-mode-icon" src="${targetIconPath}" alt="" aria-hidden="true">`
+    : '<span class="target-mode-dot" aria-hidden="true"></span>';
+  return `<span class="${className}">Target: ${targetIcon}<strong>${escapeHtml(targetLabel)}</strong></span>`;
+}
+
 function renderTargetModalityLegend(targetModality, wrapper) {
   const isCategorical = wrapper === "hub_cat";
   const letterOrSymbol = isCategorical ? "LETTER" : "SYMBOL";
@@ -2779,14 +2790,9 @@ function renderHubStimulus(trial, visible, targetLabel, renderMapping, wrapper, 
   const tokenBg = tokenVisible && trial ? trial.display.colourHex : "transparent";
   const tokenText = tokenVisible && trial ? escapeHtml(trial.display.symbolLabel) : "";
   const stimulus = `<div class="${tokenClass}" style="left:${point.xPct}%;top:${point.yPct}%;background:${tokenBg};color:${textColor};">${tokenText}</div>`;
-  const targetIconPath = targetModalityIconPath(targetLabel);
-  const targetIcon = targetIconPath
-    ? `<img class="target-mode-icon" src="${targetIconPath}" alt="" aria-hidden="true">`
-    : '<span class="target-mode-dot" aria-hidden="true"></span>';
 
   return `
     <div class="hub-stimulus ${wrapperClass}">
-      <p class="hub-target">Target: ${targetIcon}<strong>${escapeHtml(targetLabel)}</strong></p>
       ${runtimeInfo ? `<p class="hub-runtime">${escapeHtml(runtimeInfo)}</p>` : ""}
       <div class="hub-arena">
         <div class="hub-ring"></div>
@@ -3120,12 +3126,17 @@ function renderPlayHub() {
     `;
   }
 
+  const topbarTargetBadge = hubSession.phase === "trial" && targetLabel
+    ? renderHubTargetBadge(targetLabel, "game-topbar-target")
+    : "";
+
   return `
     <section class="card game-screen play-session-screen">
       <div class="game-topbar">
         <div class="game-topbar-brand">
           <span>Block ${hubSession.blockCursor + (hubSession.phase === "block-result" ? 0 : 1)}/${HUB_TOTAL_BLOCKS}</span>
           <span>Level ${hubSession.currentN}</span>
+          ${topbarTargetBadge}
         </div>
         <div class="game-topbar-stats">
           <span class="bank-pill"><img src="../brandingUI/icons/gamification/bank-units.svg" alt="" aria-hidden="true"> Training ${state.bankUnits || 0}</span>

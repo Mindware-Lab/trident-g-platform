@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Exo+2:wght@400;500;600;700&family=Orbitron:wght@500;700;800&display=swap");
+
 :root {
   --brand-page: #dfe3e8;
   --brand-ink: #0b0f17;
@@ -23,7 +25,10 @@
   --shadow-lg: 0 14px 30px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.03);
   --shadow-info: 0 0 0 1px rgba(110, 198, 255, 0.18), 0 8px 18px rgba(78, 160, 232, 0.2);
   --shadow-primary: 0 0 0 1px rgba(204, 255, 102, 0.17), 0 8px 18px rgba(190, 239, 78, 0.22);
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --font: "Exo 2", "Segoe UI", Arial, sans-serif;
+  --cg-display-font: "Orbitron", "Segoe UI", Arial, sans-serif;
+  --cg-ui-font: "Chakra Petch", "Segoe UI", Arial, sans-serif;
+  --cg-body-font: "Exo 2", "Segoe UI", Arial, sans-serif;
   --cg-shell-height: calc(100vh - 44px);
   --cg-brand-row-height: 84px;
 }
@@ -38,7 +43,7 @@ body {
   min-height: 100vh;
   background: linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%);
   color: var(--brand-text);
-  font-family: var(--font);
+  font-family: var(--cg-body-font);
 }
 
 body {
@@ -49,6 +54,48 @@ body {
   background:
     radial-gradient(920px 460px at 50% -24%, rgba(110, 198, 255, 0.24), transparent 58%),
     linear-gradient(160deg, #dbe2ea 0%, #ccd5df 100%);
+}
+
+.capacity-brand-pill,
+.card h2,
+.card h3,
+.game-topbar-brand strong,
+.rel-progress-help summary,
+.history-item-title strong {
+  font-family: var(--cg-display-font);
+}
+
+.btn,
+.kicker,
+.game-topbar-stats span,
+.quiz-chip,
+.capacity-brand-site,
+.capacity-suite-back,
+.mode-tile strong,
+.mode-tile span,
+.briefing-chip,
+.training-chip,
+.unlock-chip,
+.bank-pill,
+.transfer-pill {
+  font-family: var(--cg-ui-font);
+}
+
+input,
+select,
+option,
+textarea,
+.hub-token,
+.emotion-word-token,
+.cue-target-card,
+.rel-quiz-prompt,
+.quiz-btn,
+.history-mini-grid,
+.help-sheet,
+.help-lines,
+.help-sections,
+.help-links {
+  font-family: var(--cg-body-font);
 }
 
 .shell {
@@ -298,15 +345,12 @@ body {
 .play-session-screen .hub-trial-stage .hub-stimulus {
   margin-top: 0;
   align-content: start;
+  gap: 6px;
+  padding-bottom: clamp(18px, 3vh, 28px);
 }
 
 .play-session-screen .hub-trial-stage .hub-target {
-  width: 100%;
-  margin: 0 0 6px 0;
-  text-align: center;
-  justify-content: center;
-  font-size: 1.02rem;
-  line-height: 1.25;
+  display: none !important;
 }
 
 .play-session-screen .hub-trial-stage .hub-target strong {
@@ -315,8 +359,8 @@ body {
 }
 
 .play-session-screen .hub-trial-stage .hub-arena {
-  width: min(92vw, clamp(250px, 47vh, 430px));
-  margin: 0 auto;
+  width: min(92vw, clamp(244px, 44vh, 408px));
+  margin: -4px auto 0;
 }
 
 .play-session-screen .hub-arena {
@@ -493,6 +537,11 @@ body {
   gap: 8px;
 }
 
+.game-topbar-brand {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
 .game-topbar-brand strong {
   color: var(--brand-text);
   font-size: 1.45rem;
@@ -504,6 +553,24 @@ body {
   color: var(--brand-text-muted);
   font-size: 0.92rem;
   font-weight: 650;
+}
+
+.game-topbar-brand .game-topbar-target {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(110, 198, 255, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--brand-text);
+  font-size: 0.86rem;
+  font-weight: 760;
+}
+
+.game-topbar-brand .game-topbar-target strong {
+  color: var(--brand-text);
+  font-size: 0.94rem;
 }
 
 .game-topbar-stats span {
@@ -1867,17 +1934,31 @@ input:disabled {
   margin: 0 0 2px 0;
 }
 
-.play-session-screen .hub-stimulus.hub-stimulus-noncat,
+.play-session-screen .hub-stimulus.hub-stimulus-cat,
+.play-session-screen .hub-stimulus.hub-stimulus-noncat {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.play-session-screen .hub-stimulus.hub-stimulus-cat .hub-arena,
+.play-session-screen .hub-stimulus.hub-stimulus-noncat .hub-arena {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.play-session-screen .hub-stimulus.hub-stimulus-cat + .game-match-btn,
+.play-session-screen .hub-stimulus.hub-stimulus-noncat + .game-match-btn {
+  margin-top: 30px;
+}
+
 .play-session-screen .rel-stimulus.rel-stimulus-graph {
   margin-bottom: 0;
 }
 
-.play-session-screen .hub-stimulus.hub-stimulus-noncat .hub-arena,
 .play-session-screen .rel-stimulus.rel-stimulus-graph .hub-arena {
   margin-bottom: 0;
 }
 
-.play-session-screen .hub-stimulus.hub-stimulus-noncat + .game-match-btn,
 .play-session-screen .rel-stimulus.rel-stimulus-graph + .game-match-btn {
   margin-top: 6px;
 }

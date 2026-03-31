@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>IQ Capacity Stage 1</title>
+  <title>IQ Capacity Stage 1 Font Preview</title>
   <link rel="stylesheet" href="../brandingUI/Trident-G-brand.css">
   <link rel="stylesheet" href="./ui/theme.css">
   <link rel="stylesheet" href="./styles.css?v=20260331c">
+  <link rel="stylesheet" href="./preview-font.css?v=20260331a">
 </head>
-<body>
+<body class="capacity-font-preview">
   <div class="shell app-shell">
     <header class="app-header hidden-header">
       <strong id="shell-streak">0</strong>
@@ -31,8 +32,25 @@
     </header>
     <main id="app" class="main" aria-live="polite"></main>
   </div>
-  <script src="../../shared-ui/entitlements-client.js"></script>
-  <script src="../../shared-ui/activation-gate.js"></script>
+  <script>
+    window.__TG_CAPACITY_STORAGE_KEY_OVERRIDE = "tg_capacity_gym_sandbox_font_v1";
+  </script>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var requested = (params.get("preset") || "orbitron").toLowerCase();
+      var allowed = {
+        tactical: true,
+        condensed: true,
+        orbitron: true,
+        mgs: true
+      };
+      var preset = allowed[requested] ? requested : "orbitron";
+      document.body.classList.add("font-preset-" + preset);
+      document.body.setAttribute("data-font-preset", preset);
+      document.title = "IQ Capacity Stage 1 Font Preview - " + preset;
+    }());
+  </script>
   <script>
     var initSuiteBackLink = function () {
       var link = document.getElementById("suiteBackLink");
@@ -54,17 +72,6 @@
       link.removeAttribute("aria-hidden");
     };
     initSuiteBackLink();
-    var launchBundleId = new URLSearchParams(window.location.search).get("bundle") || "";
-    if (window.IQActivationGate) {
-      window.IQActivationGate.enforceAppAccess({
-        appId: "capacity_gym",
-        appLabel: "Capacity Gym",
-        manifestUrl: "../../iq-suite/bundle-manifests.json",
-        returnTo: "../../iq-suite/index.html",
-        bundleIdHint: launchBundleId,
-        requiredBundleId: launchBundleId || ""
-      });
-    }
   </script>
   <script type="module" src="./app.js?v=20260331c"></script>
 </body>
