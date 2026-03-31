@@ -166,6 +166,16 @@ export function exportGymStateJson() {
   return JSON.stringify(state, null, 2);
 }
 
+export function importGymStateJson(rawJson) {
+  const parsed = typeof rawJson === "string" ? safeParse(rawJson) : rawJson;
+  if (!isObject(parsed) || parsed.version !== 1 || !Array.isArray(parsed.history)) {
+    return null;
+  }
+  const nextState = normalizeState(parsed);
+  saveGymState(nextState);
+  return nextState;
+}
+
 export function resetGymState() {
   localStorage.removeItem(STORAGE_KEY);
   const defaults = makeDefaultState();

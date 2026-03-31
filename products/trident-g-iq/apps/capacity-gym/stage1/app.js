@@ -2,6 +2,7 @@ import {
   appendSessionSummary,
   exportGymStateJson,
   getSessionHistory,
+  importGymStateJson,
   loadGymState,
   saveGymState,
   resetGymState,
@@ -1208,6 +1209,62 @@ function importLatestZoneHandoffToGymState() {
     setFlash(`Zone result imported but stale: ${zoneCopy.title}. Run Zone Coach again today for full gating.`, "warn");
   }
   return true;
+}
+
+function syncPreferencesFromState(state) {
+  const safeState = state && typeof state === "object" ? state : loadGymState();
+  const settings = safeState.settings || {};
+  hubPreferences.wrapper = settings.lastWrapper === "hub_noncat" ? "hub_noncat" : "hub_cat";
+  hubPreferences.speed = settings.lastSpeed === "fast" ? "fast" : "slow";
+  hubPreferences.interference = settings.lastInterference === "high" ? "high" : "low";
+  emotionPreferences.mode = EMO_MODES.includes(settings.lastEmotionMode) ? settings.lastEmotionMode : "emo_loc";
+  emotionPreferences.speed = settings.lastSpeed === "fast" ? "fast" : "slow";
+  emotionPreferences.interference = settings.lastInterference === "high" ? "high" : "low";
+  if (isFirstHubRun(safeState)) {
+    hubPreferences.wrapper = FIRST_RUN_BASELINE_BLOCK.wrapper;
+    hubPreferences.speed = FIRST_RUN_BASELINE_BLOCK.speed;
+    hubPreferences.interference = FIRST_RUN_BASELINE_BLOCK.interference;
+  }
+  setAudioEnabled(Boolean(settings.soundOn));
+}
+
+function importGymJsonFromFile() {
+  const picker = document.createElement("input");
+  picker.type = "file";
+  picker.accept = ".json,application/json";
+  picker.addEventListener("change", async () => {
+    const file = picker.files && picker.files[0];
+    picker.remove();
+    if (!file) {
+      return;
+    }
+    try {
+      const raw = await file.text();
+      const importedState = importGymStateJson(raw);
+      if (!importedState) {
+        setFlash("That file could not be imported. Please choose a Capacity Gym export JSON file.", "warn");
+        render();
+        return;
+      }
+      clearHubTimers();
+      hubSession = null;
+      clearEmotionTimers();
+      emotionSession = null;
+      clearRelTimers();
+      relSession = null;
+      closeBriefingOverlay();
+      dismissUnlockCelebration();
+      syncPreferencesFromState(importedState);
+      setFlash("Capacity Gym JSON imported.", "success");
+      render();
+    } catch {
+      setFlash("Import failed. Please try the exported JSON file again.", "warn");
+      render();
+    }
+  }, { once: true });
+  picker.style.display = "none";
+  document.body.appendChild(picker);
+  picker.click();
 }
 
 function applySessionProgressAndSave(summary, family, options = {}) {
@@ -3872,9 +3929,11 @@ function renderSettings(state) {
       </div>
       <div class="row home-footer-actions">
         <button class="btn" data-action="export-json">Export JSON</button>
+        <button class="btn" data-action="import-json">Import JSON</button>
         <button class="btn danger" data-action="reset-data">Reset Local Data</button>
       </div>
       <p class="hint">Export gives you a full backup of local training data.</p>
+      <p class="hint">Moving from the legacy app host? Export JSON there, then import it here to keep your local progress.</p>
       ${renderFlash()}
       ${renderBottomTab("settings")}
     </section>
@@ -6257,6 +6316,11 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (action === "import-json") {
+    void importGymJsonFromFile();
+    return;
+  }
+
   if (action === "reset-data") {
     const confirmed = window.confirm("Reset all Capacity Gym Stage 1 local data?");
     if (!confirmed) {
@@ -6286,6 +6350,7 @@ document.addEventListener("click", (event) => {
       lastEmotionMode: emotionPreferences.mode,
       hasRunHubBefore: false
     });
+    setAudioEnabled(Boolean(loadGymState().settings?.soundOn));
     setFlash("Local data reset complete.", "success");
     render();
   }
