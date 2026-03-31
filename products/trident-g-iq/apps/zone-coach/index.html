@@ -4,13 +4,21 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Zone Coach - MFT-M Router</title>
+  <link rel="icon" type="image/svg+xml" href="../../../../branding/Trident-G-Icon.svg" />
+  <link rel="apple-touch-icon" href="../../../../branding/Trident-G-Icon.svg" />
   <link rel="stylesheet" href="../shared-ui/tokens.css" />
   <link rel="stylesheet" href="../shared-ui/shell.css" />
   <link rel="stylesheet" href="../shared-ui/components.css" />
   <link rel="stylesheet" href="../../../../branding/brand.css?v=2" />
   <style>
+    @import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Exo+2:wght@400;500;600;700&family=Orbitron:wght@500;700;800&display=swap");
     :root { color-scheme: dark; }
     :root {
+      --font: "Exo 2", "Segoe UI", Arial, sans-serif;
+      --iq-font: "Exo 2", "Segoe UI", Arial, sans-serif;
+      --zc-display-font: "Orbitron", "Segoe UI", Arial, sans-serif;
+      --zc-ui-font: "Chakra Petch", "Segoe UI", Arial, sans-serif;
+      --zc-body-font: "Exo 2", "Segoe UI", Arial, sans-serif;
       --zc-text: #edf0f7;
       --zc-text-muted: #d5dceb;
       --zc-text-label: #b7c2d6;
@@ -33,7 +41,50 @@
       --zc-focus-ring: 0 0 0 2px rgba(11,17,24,.95), 0 0 0 4px rgba(110,198,255,.80), 0 0 0 8px rgba(110,198,255,.20);
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: var(--iq-font, var(--font, system-ui, sans-serif)); background: #EFF3F8; color: #111; }
+    body { margin: 0; font-family: var(--zc-body-font); background: #EFF3F8; color: #111; }
+    .title,
+    .splash-title,
+    .zc-brand-pill,
+    .zc-modal-title,
+    .result-guide-title,
+    .result-guide-next {
+      font-family: var(--zc-display-font);
+    }
+    .btn,
+    .pill,
+    .badge,
+    .chip,
+    .gate-chip,
+    .zc-brand-site,
+    .zc-suite-back,
+    .splash-kicker,
+    .splash-tile .k,
+    .result-guide-goal-kicker,
+    .zc-tab,
+    .zc-settings-field label {
+      font-family: var(--zc-ui-font);
+    }
+    input,
+    select,
+    option,
+    textarea,
+    .muted,
+    .small,
+    .metric .k,
+    .metric .v,
+    .result-guide-copy,
+    .result-guide-goal-text,
+    .result-guide-helper,
+    .session-step,
+    .splash-sub,
+    .splash-prompt,
+    .splash-trace-sub,
+    .splash-trace-meta,
+    .run-desktop-hint,
+    .zc-settings-input,
+    .zc-settings-check {
+      font-family: var(--zc-body-font);
+    }
     .zoneAppShell { background:#EFF3F8; }
     .zoneContent { padding: 18px 20px 28px; }
     .app { width: min(980px, 100%); margin: 0 auto; padding: 0; color: var(--zc-text); }
