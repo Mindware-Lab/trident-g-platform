@@ -1,10 +1,6 @@
 import { normalizeEmotionProgression, normalizeProgression } from "./progression.js";
 
-const storageKeyOverride = typeof globalThis !== "undefined" && typeof globalThis.__TG_CAPACITY_STORAGE_KEY_OVERRIDE === "string"
-  ? globalThis.__TG_CAPACITY_STORAGE_KEY_OVERRIDE.trim()
-  : "";
-
-export const STORAGE_KEY = storageKeyOverride || "tg_capacity_gym_v1";
+export const STORAGE_KEY = "tg_capacity_gym_v1";
 const HISTORY_LIMIT = 200;
 
 function makeDefaultState() {

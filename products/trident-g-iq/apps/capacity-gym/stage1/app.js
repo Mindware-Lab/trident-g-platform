@@ -78,10 +78,11 @@ import { renderPrimaryScreen } from "./ui/screens.js";
 import { buildShellViewModel } from "./ui/view-models.js";
 
 const TEMP_RELATIONAL_UNLOCK_FOR_INSPECTION = false;
+const ZONE_AUTO_IMPORT_WINDOW_MS = 30 * 60 * 1000;
 const ROUTES = new Set(["home", "play-hub", "play-emotion", "play-relational", "history", "settings"]);
 const DEFAULT_ROUTE = "home";
 const appRoot = document.querySelector("#app");
-const initialState = loadStateWithSyncedUnlocks();
+const initialState = loadInitialGymState();
 const initialSettings = initialState.settings;
 initAudio({
   enabled: Boolean(initialSettings.soundOn),
@@ -589,6 +590,40 @@ function getEmotionProgressionState(state) {
   return normalizeEmotionProgression(state?.emotionProgression);
 }
 
+function loadInitialGymState(nowTs = Date.now()) {
+  const syncedState = loadStateWithSyncedUnlocks();
+  return autoImportRecentZoneHandoffIfNeeded(syncedState, nowTs);
+}
+
+function getLatestSavedZoneTimestamp(state) {
+  const hubTs = Number(getProgressionState(state)?.lastZone?.timestamp || 0);
+  const emotionTs = Number(getEmotionProgressionState(state)?.lastZone?.timestamp || 0);
+  return Math.max(hubTs, emotionTs, 0);
+}
+
+function autoImportRecentZoneHandoffIfNeeded(stateRaw, nowTs = Date.now()) {
+  const state = stateRaw && typeof stateRaw === "object" ? stateRaw : loadStateWithSyncedUnlocks();
+  const handoff = readZoneHandoffFromStorage(nowTs);
+  if (!handoff || !Number.isFinite(handoff.timestamp)) {
+    return state;
+  }
+  const ageMs = nowTs - handoff.timestamp;
+  if (ageMs < 0 || ageMs > ZONE_AUTO_IMPORT_WINDOW_MS) {
+    return state;
+  }
+  const latestSavedTs = getLatestSavedZoneTimestamp(state);
+  if (latestSavedTs >= handoff.timestamp) {
+    return state;
+  }
+  const nextState = {
+    ...state,
+    progression: applyZoneToProgression(state.progression, handoff),
+    emotionProgression: applyZoneToEmotionProgression(state.emotionProgression, handoff)
+  };
+  saveGymState(nextState);
+  return nextState;
+}
+
 function getSavedZoneForNow(state, nowTs = Date.now(), track = "hub") {
   const progression = track === "emotion"
     ? getEmotionProgressionState(state)
@@ -610,7 +645,7 @@ function getSavedZoneForNow(state, nowTs = Date.now(), track = "hub") {
 function buildZoneStatusCopy(zone) {
   if (!zone) {
     return {
-      title: "No Zone result imported",
+      title: "Your current zone not measured",
       detail: "Run Zone Coach and import the latest result in Settings."
     };
   }
@@ -2548,6 +2583,52 @@ function renderRelationalProgressCard(unlockProgress) {
   `;
 }
 
+function buildHomeZoneChipCopy(zone) {
+  if (!zone || !zone.freshSameDay) {
+    return {
+      tone: "unknown",
+      zoneLabel: "Zone not measured",
+      recommendation: ""
+    };
+  }
+  if (zone.zone === "in_band") {
+    return {
+      tone: "in-band",
+      zoneLabel: "In the Zone",
+      recommendation: "Train hard today"
+    };
+  }
+  if (zone.zone === "too_hot") {
+    return {
+      tone: "too-hot",
+      zoneLabel: "Too hot",
+      recommendation: "Go easy today"
+    };
+  }
+  if (zone.zone === "too_cold") {
+    return {
+      tone: "too-cold",
+      zoneLabel: "Too cold",
+      recommendation: "Go easy today"
+    };
+  }
+  return {
+    tone: "unknown",
+    zoneLabel: "Zone unclear",
+    recommendation: "Go easy today"
+  };
+}
+
+function renderHomeZoneChip(zone) {
+  const copy = buildHomeZoneChipCopy(zone);
+  return `
+    <div class="home-zone-row" role="status" aria-live="polite">
+      <span class="home-zone-chip tone-${escapeHtml(copy.tone)}">${escapeHtml(copy.zoneLabel)}</span>
+      ${copy.recommendation ? `<span class="home-zone-recommendation">${escapeHtml(copy.recommendation)}</span>` : ""}
+    </div>
+  `;
+}
+
 function renderBottomTab(activeTab) {
   const items = [
     { id: "home", label: "Home", icon: "home.svg", action: "go-home" },
@@ -2570,12 +2651,7 @@ function renderBottomTab(activeTab) {
 
 function renderHome(state) {
   const unlockProgress = deriveRelationalUnlockProgress(state.history);
-  const progression = getProgressionState(state);
-  const emotionProgression = getEmotionProgressionState(state);
   const coachRecommendation = getCoachCapacityRecommendation(state);
-  const styleDecision = coachRecommendation.family === "emotion"
-    ? getEmotionStyleDecision(state)
-    : getHubStyleDecision(state);
   const zone = coachRecommendation.family === "emotion"
     ? getSavedZoneForNow(state, Date.now(), "emotion")
     : getSavedZoneForNow(state);
@@ -2626,7 +2702,7 @@ function renderHome(state) {
       </div>
       <h2>${greeting}</h2>
       <p class="hint">${subtitle}</p>
-      ${renderZoneStateCard(zone, styleDecision)}
+      ${renderHomeZoneChip(zone)}
       <div class="mission-card">
         <div class="mission-header-row">
           <p class="kicker">Daily Mission ${mission.tier === "tier1" ? "- Tier 1" : ""}</p>
