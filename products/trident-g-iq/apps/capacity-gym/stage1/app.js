@@ -2684,9 +2684,6 @@ function renderHome(state) {
   const emotionDualLocked = !unlockProgress.emotionDualUnlocked;
   const relLockText = relModeLocked ? "Locked" : "Available";
   const emotionTileStatus = emotionDualLocked ? "Dual locked (mono first)" : "Available";
-  const subtitle = mission.tier === "tier1"
-    ? "Tier 1 - Reset - Control - Reason"
-    : "Complete a Hub or Emotional session today";
   return `
     <section class="card has-bottom-tab game-screen">
       <div class="game-topbar">
@@ -2703,7 +2700,6 @@ function renderHome(state) {
         </div>
       </div>
       <h2>${greeting}</h2>
-      <p class="hint">${subtitle}</p>
       ${renderHomeZoneChip(zone)}
       <div class="mission-card">
         <div class="mission-header-row">
