@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1120" role="img" aria-labelledby="title desc">
+  <title id="title">How to Play Hub Non-Categorical</title>
+  <desc id="desc">Combined panel with four non-categorical hub match examples: colour and location at 1-back and 2-back.</desc>
+  <defs>
+    <style>
+      .bg { fill: #0e1624; }
+      .title { font: 700 48px 'Segoe UI', Arial, sans-serif; fill: #e7edf8; }
+      .sub { font: 500 24px 'Segoe UI', Arial, sans-serif; fill: #b8c5dd; }
+      .card { fill: #ffffff; stroke: #d9e3f2; stroke-width: 2; rx: 22; }
+      .label { font: 600 34px 'Segoe UI', Arial, sans-serif; fill: #b8c5dd; }
+      .cap { font: 600 17px 'Segoe UI', Arial, sans-serif; fill: #6d7f9d; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="1120"/>
+  <text class="title" x="42" y="72">How to Play: Hub Non-Categorical</text>
+  <text class="sub" x="42" y="108">Arbitrary symbols + hues. Match only the current target modality at n-back.</text>
+
+  <g transform="translate(24,132)">
+    <rect class="card" x="0" y="0" width="764" height="464"/>
+    <image href="./hub-noncat-colour-1back-match.svg" x="18" y="18" width="728" height="392" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="0" y="512">COLOUR 1-back match</text>
+  </g>
+
+  <g transform="translate(812,132)">
+    <rect class="card" x="0" y="0" width="764" height="464"/>
+    <image href="./hub-noncat-colour-2back-match.svg" x="18" y="18" width="728" height="392" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="0" y="512">COLOUR 2-back match</text>
+  </g>
+
+  <g transform="translate(24,620)">
+    <rect class="card" x="0" y="0" width="764" height="464"/>
+    <image href="./hub-noncat-location-1back-match.svg" x="18" y="18" width="728" height="392" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="0" y="512">LOCATION 1-back match</text>
+  </g>
+
+  <g transform="translate(812,620)">
+    <rect class="card" x="0" y="0" width="764" height="464"/>
+    <image href="./hub-noncat-location-2back-match.svg" x="18" y="18" width="728" height="392" preserveAspectRatio="xMidYMid meet"/>
+    <text class="label" x="0" y="512">LOCATION 2-back match</text>
+  </g>
+
+  <text class="cap" x="42" y="1102">Tip: in non-categorical mode, mapping stays stable within a block and refreshes between blocks.</text>
+</svg>

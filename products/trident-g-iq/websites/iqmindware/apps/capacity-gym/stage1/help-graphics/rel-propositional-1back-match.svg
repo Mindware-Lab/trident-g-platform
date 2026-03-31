@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Propositional 1-back Match</title>
+  <desc id="desc">Two displays showing a propositional 1-back match with different surface notation.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f4f8fc; }
+      .panel { fill: #ffffff; stroke: #d8e2ef; stroke-width: 2; }
+      .title { font: 700 34px 'Segoe UI', Arial, sans-serif; fill: #12223a; }
+      .sub { font: 500 20px 'Segoe UI', Arial, sans-serif; fill: #344861; }
+      .card { fill: #f9fbff; stroke: #d6e3f5; stroke-width: 2; rx: 14; }
+      .match { fill: #dbf4e6; stroke: #70bf8f; stroke-width: 2; rx: 14; }
+      .txt { font: 600 22px 'Segoe UI', Arial, sans-serif; fill: #12223a; }
+      .small { font: 500 17px 'Segoe UI', Arial, sans-serif; fill: #4b5f78; }
+      .accent { fill: #1f4b84; font: 700 19px 'Segoe UI', Arial, sans-serif; }
+      .chip { fill: #eaf2ff; stroke: #9dbcf1; stroke-width: 1.5; rx: 12; }
+      .arrow { stroke: #73839a; stroke-width: 3; marker-end: url(#m); }
+    </style>
+    <marker id="m" markerWidth="9" markerHeight="9" refX="7.5" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#73839a"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1200" height="720"/>
+  <rect class="panel" x="30" y="26" width="1140" height="668" rx="24"/>
+
+  <text class="title" x="66" y="82">Propositional: 1-back Match</text>
+  <text class="sub" x="66" y="114">Press MATCH at t when canonical premise matches t-1.</text>
+  <rect class="chip" x="66" y="144" width="278" height="42"/>
+  <text class="small" x="86" y="171">Example uses different surface notation</text>
+
+  <g transform="translate(100,220)">
+    <rect class="card" x="0" y="0" width="470" height="390"/>
+    <text class="txt" x="24" y="38">Display 1 (t-1)</text>
+    <rect x="24" y="72" width="422" height="226" rx="12" fill="#ffffff" stroke="#ceddee" stroke-width="2"/>
+    <text x="235" y="205" text-anchor="middle" font-size="56" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#12223a">P -&gt; Q</text>
+    <text class="small" x="24" y="348">Canonical premise: IMP:P-&gt;Q</text>
+  </g>
+
+  <g transform="translate(630,220)">
+    <rect class="match" x="0" y="0" width="470" height="390"/>
+    <text class="txt" x="24" y="38">Display 2 (t)</text>
+    <rect x="24" y="72" width="422" height="226" rx="12" fill="#ffffff" stroke="#ceddee" stroke-width="2"/>
+    <text x="235" y="186" text-anchor="middle" font-size="46" font-family="Segoe UI, Arial, sans-serif" font-weight="700" fill="#12223a">If P then Q</text>
+    <text x="235" y="232" text-anchor="middle" font-size="34" font-family="Segoe UI, Arial, sans-serif" font-weight="600" fill="#3f5774">(same meaning)</text>
+    <text class="small" x="24" y="348">Canonical premise: IMP:P-&gt;Q (match)</text>
+  </g>
+
+  <line class="arrow" x1="525" y1="650" x2="675" y2="650"/>
+  <text class="accent" x="430" y="686">MATCH now: same canonical premise at 1-back</text>
+</svg>

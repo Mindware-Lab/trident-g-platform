@@ -1,0 +1,44 @@
+[
+  {
+    "bundleId": "g_tracker",
+    "label": "G Tracker",
+    "includedAppIds": ["g_tracker"],
+    "description": "Assessment battery access.",
+    "ctaLabel": "Open G Tracker"
+  },
+  {
+    "bundleId": "zone_coach",
+    "label": "Zone Coach",
+    "includedAppIds": ["zone_coach"],
+    "description": "Readiness and routing access.",
+    "ctaLabel": "Open Zone Coach"
+  },
+  {
+    "bundleId": "capacity_gym",
+    "label": "Capacity Gym",
+    "includedAppIds": ["capacity_gym"],
+    "description": "Working memory, attention, and relational reasoning training.",
+    "ctaLabel": "Open Capacity Gym"
+  },
+  {
+    "bundleId": "performance_bundle",
+    "label": "IQ Core (all 3 apps)",
+    "includedAppIds": ["zone_coach", "capacity_gym", "g_tracker"],
+    "description": "All three apps: G Tracker + Zone Coach + Capacity Gym.",
+    "ctaLabel": "Open IQ Core"
+  },
+  {
+    "bundleId": "cohort_bundle",
+    "label": "Live Cohort (4 x 1h weekly)",
+    "includedAppIds": ["zone_coach", "capacity_gym", "g_tracker"],
+    "description": "IQ Core + live cohort support.",
+    "ctaLabel": "Open Live Cohort"
+  },
+  {
+    "bundleId": "premium_1to1",
+    "label": "1:1 Premium (3 x 1h flexible)",
+    "includedAppIds": ["zone_coach", "capacity_gym", "g_tracker"],
+    "description": "IQ Core + private coaching support.",
+    "ctaLabel": "Open 1:1 Premium"
+  }
+]

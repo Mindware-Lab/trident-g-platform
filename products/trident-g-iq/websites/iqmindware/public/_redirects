@@ -10,3 +10,5 @@
 /membership/ /pricing/ 301
 /refund-policy /refunds/ 301
 /refund-policy/ /refunds/ 301
+/tools/capacity-gym /apps/capacity-gym/ 302
+/tools/capacity-gym/ /apps/capacity-gym/ 302
