@@ -1,4 +1,4 @@
-## Appendix Y. Scaling architecture for Trident-G training programmes
+# Appendix Y. Scaling architecture for Trident-G training programmes
 
 ### Y0. Purpose
 
