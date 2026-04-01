@@ -218,7 +218,7 @@ This fits the Trident-G claim that relational processing and reasoning is the li
 
 It is best treated as a computational middle layer within the runtime rather than as the whole runtime itself.
 
-### X9. Neurobiological interpretation, cautiously stated
+### X9. Neurobiological interpretation 
 
 A plausible neurobiological reading of this architecture is that hippocampal systems act as a relational binding and integration hub whose coupling profile shifts with task demands. During flexible inferential reasoning, hippocampal interactions with prefrontal and broader frontoparietal control systems may support recombination, comparison, and testing of relational content. During schema-rich modelling and deeper conceptual integration, hippocampal and parahippocampal interactions with default-mode cortical systems may support retrieval, integration, and elaboration of broader situation models and knowledge structures. This should be treated as a neurobiological interpretation consistent with Trident-G, not as a settled canonical claim of the framework.
 
