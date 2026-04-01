@@ -117,6 +117,7 @@ Practically, this means:
 - repeated shock, instability, or disorientation may indicate **unexpected mismatch**
 - affective capture may worsen **drift**
 - rumination, inner conflict, or competing pulls may be one subjective face of **conflict**
+- progress or reward may be experienced in positive affect or excitement
 
 The coaching rule is therefore: treat subjectivity as **signal-rich but fallible**. It should inform routing, but not replace probing, evaluation, simplification, recovery, or re-mapping.
 
