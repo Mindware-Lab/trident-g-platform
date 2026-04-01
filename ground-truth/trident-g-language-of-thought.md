@@ -1,4 +1,4 @@
-## The Trident-G inference algebra: primitive operators and inference styles
+## The Trident-G language of thought and action: operator algebra and inference styles
 
 ### 0. Purpose and scope
 
