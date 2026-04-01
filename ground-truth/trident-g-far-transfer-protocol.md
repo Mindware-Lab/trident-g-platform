@@ -114,6 +114,8 @@ Acute positive mismatch usually calls for tightening, simplification, and stabil
 
 Unexpected mismatch, or PEε, is the escalation signal for deeper restructuring. It says the problem may lie in the representation, cue, operator boundary, or state abstraction itself rather than only in execution. This is the main gate from ordinary Type-1 tuning into Type-2 restructuring, especially when paired with re-entry failure.
 
+A flat performance curve across repeated **in-band** exposures should not automatically trigger more of the same drill. If performance, error structure, syntax-swap cost, wrapper-swap cost, or cue-fired deployment stops improving, the plateau may indicate over-stabilisation, wrapper-lock, or mental-set capture rather than simple underpractice. In that case, the correct response is often to introduce **controlled entropy** while preserving corridor viability: first vary syntax or wrapper where possible, then where needed vary capacity demands such as switching, interference handling, or set-disengagement, and/or shift towards more explore-weighted operator work such as alternative map generation, analogical transfer, re-representation, meta-mapping, or discriminating probes. The aim is not novelty for its own sake, but renewed selection pressure on deeper invariants.
+
 #### X5.4 Subjective-interface reinforcement note
 
 Because Trident-G treats subjectivity as the lived interface of the loop, reinforcement should not treat feelings as either mere noise or final truth. Pressure, urgency, attraction, aversion, confidence, dread, and relief are often the first way load, salience, mismatch, or conflict are encountered in practice. They are therefore signal-bearing, but fallible. The coaching task is to use them as cues for routing, not to let them replace probing, evaluation, recovery, or re-mapping.
@@ -145,6 +147,7 @@ The following routing rules should be treated as canonical.
 - If the cue did not fire, treat the problem as one of retrieval or environmental triggering, not basic capability.
 - If the cue fired but the operator failed, treat the problem as portability or script-fit failure. Refine boundaries, probes, syntax robustness, or the cue itself.
 - If drills look good but the policy collapses under pressure, treat the problem as state stability, corridor control, or insufficient Type-1 robustness, not as a fully installed script.
+- If the performance curve flattens across repeated in-band exposures with no improvement in error pattern, swap cost, or cue-fired deployment, do not simply increase repetitions. Introduce controlled entropy through syntax or wrapper variation first, then through carefully chosen capacity perturbations or explore-weighted operator strategies. If load or drift is high, recover and simplify before adding entropy.
 - If mismatch is persistent but explainable and re-entry works, stay in Type-1 tuning: improve efficiency, calibration, switching, interference control, syntax robustness, and volatility reduction.
 - If mismatch is unexpectedly unstable, drift repeats, and re-entry is failing, escalate to Type-2 restructuring: revise the representation, cue, invariant, or operator chain rather than pushing harder.
 
