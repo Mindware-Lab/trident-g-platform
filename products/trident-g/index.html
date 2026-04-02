@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trident G - Launcher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Chakra+Petch:wght@300;400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="trident-g.css" />
+</head>
+<body data-page="launcher">
+  <div class="console">
+    <header class="topbar">
+      <div class="tb-brand">
+        <span>TRIDENT</span><span class="tb-brand-accent">G</span>
+        <span class="tb-trident">GRID</span>
+      </div>
+
+      <nav class="screen-tabs" aria-label="Primary pages">
+        <a class="screen-tab active" href="index.html" aria-current="page">Launcher</a>
+        <a class="screen-tab" href="g-loop.html">G Loop</a>
+        <a class="screen-tab" href="game-play.html">Game Play</a>
+      </nav>
+
+      <div class="tb-right">
+        <div class="tb-live">
+          <div class="pulse"></div>
+          <span>Prototype</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="screen active">
+        <div class="screen-heading">
+          <div class="mode-label">Launcher</div>
+          <h1 class="hero-title">Trident G</h1>
+          <p class="hero-copy">
+            A production-style shell for a Trident-G training game with a dedicated
+            G Loop hub and a dedicated Game Play screen.
+          </p>
+        </div>
+
+        <div class="launcher-grid">
+          <a class="launcher-card" href="g-loop.html">
+            <div class="panel-kicker">Mission Hub</div>
+            <div class="launcher-title">G Loop</div>
+            <p class="launcher-copy">
+              Choose program pack, run readiness tests, inspect mission telemetry,
+              and launch an adaptive session.
+            </p>
+            <div class="launcher-meta">
+              <span>Zone gate</span>
+              <span>Mission map</span>
+              <span>Tests</span>
+            </div>
+          </a>
+
+          <a class="launcher-card" href="game-play.html">
+            <div class="panel-kicker">Run Shell</div>
+            <div class="launcher-title">Game Play</div>
+            <p class="launcher-copy">
+              A focused play surface for capacity, reasoning, and mission grammar
+              with syntax and transfer telemetry on the rail.
+            </p>
+            <div class="launcher-meta">
+              <span>Capacity</span>
+              <span>Reasoning</span>
+              <span>Mission</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="launcher-status">
+          <div class="selected-mission-label">Current selection</div>
+          <div class="selected-mission-value" id="launcherSelection">Performance Pack | Understand</div>
+          <p class="selected-mission-copy">
+            Selections made on the G Loop page will carry into Game Play automatically.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bottombar">
+      <div class="bb-left">TRIDENT G // Launcher for the two-page prototype</div>
+      <div class="bb-right">products/trident-g</div>
+    </footer>
+  </div>
+
+  <script src="trident-g.js"></script>
+</body>
+</html>

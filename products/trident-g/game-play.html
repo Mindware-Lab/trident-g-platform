@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trident G - Game Play</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Chakra+Petch:wght@300;400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="trident-g.css" />
+</head>
+<body data-page="gameplay">
+  <div class="console">
+    <header class="topbar">
+      <div class="tb-brand">
+        <span>TRIDENT</span><span class="tb-brand-accent">G</span>
+        <span class="tb-trident">GRID</span>
+      </div>
+
+      <nav class="screen-tabs" aria-label="Primary pages">
+        <a class="screen-tab" href="index.html">Launcher</a>
+        <a class="screen-tab" href="g-loop.html">G Loop</a>
+        <a class="screen-tab active" href="game-play.html" aria-current="page">Game Play</a>
+      </nav>
+
+      <div class="tb-right">
+        <div class="tb-stat">
+          <div class="tb-stat-val" id="timerDisplay">00:59</div>
+          <div class="tb-stat-lbl">Run Time</div>
+        </div>
+        <div class="tb-div"></div>
+        <div class="tb-stat">
+          <div class="tb-stat-val">09</div>
+          <div class="tb-stat-lbl">Streak</div>
+        </div>
+        <div class="tb-div"></div>
+        <div class="tb-live">
+          <div class="pulse"></div>
+          <span>Live</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="screen active">
+        <div class="play-banner">
+          <div class="banner-pill cyan" id="playPackBadge">Performance Pack</div>
+          <div class="banner-pill" id="playMissionBadge">Understand</div>
+          <div class="banner-copy" id="playRunSummary">
+            Capacity supports the map, reasoning sharpens the map, and mission grammar converts the map into action.
+          </div>
+        </div>
+
+        <div class="play-layout">
+          <div class="play-main">
+            <div class="screen-heading compact">
+              <div class="mode-label">Integrated Run</div>
+              <h1 class="hero-title small">Game Play</h1>
+              <p class="hero-copy compact-copy">
+                One universal shell. Three gym surfaces. One transfer-aware telemetry rail.
+              </p>
+            </div>
+
+            <div class="phase-strip">
+              <div class="phase-chip active">Zone</div>
+              <div class="phase-chip active">Capacity</div>
+              <div class="phase-chip active">Reasoning</div>
+              <div class="phase-chip active">Mission</div>
+              <div class="phase-chip lime">Transfer</div>
+            </div>
+
+            <nav class="mode-tabs" aria-label="Game play modes">
+              <button class="mode-tab active" type="button" data-mode="capacity">Capacity Gym</button>
+              <button class="mode-tab" type="button" data-mode="reasoning">Reasoning Gym</button>
+              <button class="mode-tab" type="button" data-mode="mission">Mission Grammar Gym</button>
+            </nav>
+
+            <div class="play-state active" id="play-capacity">
+              <div class="mode-label">Capacity</div>
+              <div class="task-name" id="playCapacityTask">Shield and Hold - Dual Stream</div>
+
+              <div class="task-surface nback-surface">
+                <div class="nback-level">Burst Focus <strong>42s</strong></div>
+                <div class="nback-grid" aria-label="Capacity grid">
+                  <div class="nb-cell"></div>
+                  <div class="nb-cell lit"></div>
+                  <div class="nb-cell"></div>
+                  <div class="nb-cell"></div>
+                  <div class="nb-cell"></div>
+                  <div class="nb-cell"></div>
+                  <div class="nb-cell"></div>
+                  <div class="nb-cell"></div>
+                  <div class="nb-cell hit"></div>
+                </div>
+                <div class="nback-cue">K</div>
+                <div class="nback-hint" id="playCapacityHint">Match position or symbol under light distraction</div>
+              </div>
+
+              <div class="transfer-card">
+                <div class="selected-mission-label">Next transfer probe</div>
+                <div class="selected-mission-value" id="playTransferTask">Swap symbol burst into a spatial wrapper without losing pace.</div>
+              </div>
+
+              <div class="action-strip">
+                <button class="btn-secondary" type="button">Position</button>
+                <button class="btn-primary lime" type="button">Symbol</button>
+              </div>
+            </div>
+
+            <div class="play-state" id="play-reasoning">
+              <div class="mode-label">Reasoning</div>
+              <div class="task-name" id="playReasoningTask">Syntax Stable Distinction</div>
+
+              <div class="task-surface">
+                <div class="logic-card">
+                  <div class="premises">
+                    <div class="premise-row">
+                      <div class="p-idx">1</div>
+                      <div class="p-text"><strong>BOOTS</strong> <em>is same as</em> <strong>STAIR</strong></div>
+                    </div>
+                    <div class="premise-row">
+                      <div class="p-idx">2</div>
+                      <div class="p-text"><strong>STAIR</strong> <em>is same as</em> <strong>MOON</strong></div>
+                    </div>
+                    <div class="premise-row">
+                      <div class="p-idx">3</div>
+                      <div class="p-text"><strong>MOON</strong> <em>is opposite of</em> <strong>COPPER</strong></div>
+                    </div>
+                  </div>
+                  <div class="logic-divider">
+                    <div class="ld-line"></div>
+                    <div class="ld-sym">TEST</div>
+                    <div class="ld-line"></div>
+                  </div>
+                  <div class="conclusion">
+                    <div class="c-text"><strong>BOOTS</strong> <em>is opposite of</em> <strong>COPPER</strong></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="transfer-card">
+                <div class="selected-mission-label">Reasoning focus</div>
+                <div class="selected-mission-copy" id="playReasoningHintText">
+                  Preserve the relation while swapping verbal form for another syntax or wrapper.
+                </div>
+              </div>
+
+              <div class="action-strip">
+                <button class="btn-deny" type="button">False</button>
+                <button class="btn-primary" type="button">True</button>
+              </div>
+            </div>
+
+            <div class="play-state" id="play-mission">
+              <div class="mode-label">Mission Grammar</div>
+              <div class="task-name" id="playMissionTitle">Understand - Scenario 04</div>
+
+              <div class="task-surface mission-surface">
+                <div class="mission-brief">
+                  <div class="mb-tag">Brief</div>
+                  <div class="mb-text" id="missionBriefText">
+                    Build the simplest map that explains why two product signals diverged after the same release,
+                    then pick the most informative next check.
+                  </div>
+                </div>
+
+                <div class="mission-options">
+                  <button class="m-option selected" type="button">
+                    <div class="m-option-key">A</div>
+                    <div class="m-option-text">Trace which shared dependency changed first.</div>
+                  </button>
+                  <button class="m-option" type="button">
+                    <div class="m-option-key">B</div>
+                    <div class="m-option-text">Collect every available metric before probing.</div>
+                  </button>
+                  <button class="m-option" type="button">
+                    <div class="m-option-key">C</div>
+                    <div class="m-option-text">Escalate immediately without isolating the mismatch.</div>
+                  </button>
+                </div>
+              </div>
+
+              <div class="transfer-card">
+                <div class="selected-mission-label">Mission lift</div>
+                <div class="selected-mission-copy">
+                  Mission performance should rise when logic is cleaner and the zone gate is respected.
+                </div>
+              </div>
+
+              <div class="action-strip">
+                <button class="btn-secondary" type="button">Skip</button>
+                <button class="btn-primary lime" type="button">Confirm</button>
+              </div>
+            </div>
+          </div>
+
+          <aside class="hud" aria-label="Run telemetry">
+            <div class="hud-block">
+              <div class="hud-label">Accuracy</div>
+              <div class="hud-val cyan">84%</div>
+              <div class="hud-bar"><div class="hud-bar-fill" style="width: 84%;"></div></div>
+            </div>
+
+            <div class="hud-sep"></div>
+
+            <div class="hud-block">
+              <div class="hud-label">Pace</div>
+              <div class="hud-val">2.1<span class="hud-val-unit">s</span></div>
+              <div class="hud-bar"><div class="hud-bar-fill hud-bar-lime" style="width: 71%;"></div></div>
+            </div>
+
+            <div class="hud-sep"></div>
+
+            <div class="hud-block">
+              <div class="hud-label">Zone</div>
+              <div class="hud-val purple">80</div>
+              <div class="hud-bar"><div class="hud-bar-fill" style="width: 80%;"></div></div>
+            </div>
+
+            <div class="hud-sep"></div>
+
+            <div class="hud-block">
+              <div class="hud-label">Syntax Swap Gains</div>
+              <div class="mini-metric"><span>Verbal</span><span class="lime">+9</span></div>
+              <div class="hud-bar"><div class="hud-bar-fill" style="width: 78%;"></div></div>
+              <div class="mini-metric"><span>Spatial</span><span class="lime">+6</span></div>
+              <div class="hud-bar"><div class="hud-bar-fill" style="width: 63%;"></div></div>
+              <div class="mini-metric"><span>Numeric</span><span class="lime">+4</span></div>
+              <div class="hud-bar"><div class="hud-bar-fill" style="width: 49%;"></div></div>
+            </div>
+
+            <div class="hud-sep"></div>
+
+            <div class="hud-block">
+              <div class="hud-label">Far Transfer</div>
+              <div class="mini-metric"><span>Wrapper</span><span>44%</span></div>
+              <div class="mini-metric"><span>Delayed</span><span>18%</span></div>
+              <div class="mini-metric"><span>Cue Fired</span><span>3/5</span></div>
+              <div class="mini-metric"><span>Bank Ready</span><span>2</span></div>
+              <div class="hud-note" id="playFarTransferNote">Retest the same script after a wrapper swap and a delay.</div>
+            </div>
+
+            <div class="hud-sep"></div>
+
+            <div class="hud-block">
+              <div class="hud-label">Banked Scripts</div>
+              <div class="hud-val">12</div>
+            </div>
+
+            <div class="hud-sep"></div>
+
+            <div class="hud-block">
+              <div class="hud-status">In Band</div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bottombar">
+      <div class="bb-left">TRIDENT G // Game Play shell for capacity, reasoning, mission grammar, and transfer-aware telemetry</div>
+      <div class="bb-right">game-play.html</div>
+    </footer>
+  </div>
+
+  <script src="trident-g.js"></script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trident G - G Loop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Chakra+Petch:wght@300;400;500;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="trident-g.css" />
+</head>
+<body data-page="gloop">
+  <div class="console">
+    <header class="topbar">
+      <div class="tb-brand">
+        <span>TRIDENT</span><span class="tb-brand-accent">G</span>
+        <span class="tb-trident">GRID</span>
+      </div>
+
+      <nav class="screen-tabs" aria-label="Primary pages">
+        <a class="screen-tab" href="index.html">Launcher</a>
+        <a class="screen-tab active" href="g-loop.html" aria-current="page">G Loop</a>
+        <a class="screen-tab" href="game-play.html">Game Play</a>
+      </nav>
+
+      <div class="tb-right">
+        <div class="tb-stat">
+          <div class="tb-stat-val" id="timerDisplay">01:52</div>
+          <div class="tb-stat-lbl">Run Time</div>
+        </div>
+        <div class="tb-div"></div>
+        <div class="tb-stat">
+          <div class="tb-stat-val">82</div>
+          <div class="tb-stat-lbl">Zone</div>
+        </div>
+        <div class="tb-div"></div>
+        <div class="tb-live">
+          <div class="pulse"></div>
+          <span>Mission Hub</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="shell">
+      <section class="screen active">
+        <div class="screen-heading">
+          <div class="mode-label">Mission Hub</div>
+          <h1 class="hero-title">G Loop</h1>
+          <p class="hero-copy">
+            Enter in band, inspect fast signals, choose the mission frame, and launch a run
+            that interleaves capacity, reasoning, mission grammar, and transfer probes.
+          </p>
+        </div>
+
+        <div class="gloop-grid">
+          <section class="hub-panel">
+            <div class="panel-kicker">Gateway</div>
+            <div class="panel-title">Zone Check</div>
+
+            <div class="zone-shell">
+              <div class="zone-ring-wrap">
+                <svg width="170" height="170" viewBox="0 0 170 170" aria-hidden="true">
+                  <circle cx="85" cy="85" r="72" fill="none" stroke="rgba(34,170,255,0.08)" stroke-width="8"></circle>
+                  <circle cx="85" cy="85" r="72" fill="none" stroke="#22AAFF" stroke-width="8" stroke-dasharray="452" stroke-dashoffset="91" stroke-linecap="round"></circle>
+                </svg>
+                <div class="zone-center">
+                  <div class="zone-pct">80</div>
+                  <div class="zone-pct-lbl">In Band</div>
+                </div>
+              </div>
+
+              <div class="zone-bars">
+                <div class="zb-row">
+                  <div class="zb-label">Load</div>
+                  <div class="zb-track"><div class="zb-fill focus" style="width: 34%;"></div></div>
+                  <div class="zb-val">34</div>
+                </div>
+                <div class="zb-row">
+                  <div class="zb-label">Drift</div>
+                  <div class="zb-track"><div class="zb-fill calm" style="width: 18%;"></div></div>
+                  <div class="zb-val">18</div>
+                </div>
+                <div class="zb-row">
+                  <div class="zb-label">Ready</div>
+                  <div class="zb-track"><div class="zb-fill ready" style="width: 80%;"></div></div>
+                  <div class="zb-val">80</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="test-window">
+              <div class="test-window-title">Launch Rule</div>
+              <div class="test-item">
+                <span class="test-key">If load rises</span>
+                <span class="test-value">Simplify before inference</span>
+              </div>
+              <div class="test-item">
+                <span class="test-key">If drift repeats</span>
+                <span class="test-value">Recover or externalise</span>
+              </div>
+              <div class="test-item">
+                <span class="test-key">If mismatch persists</span>
+                <span class="test-value">Increase probe quality</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="hub-panel">
+            <div class="panel-kicker">Run Tests</div>
+            <div class="panel-title">Micro Probes</div>
+
+            <div class="probe-grid">
+              <article class="probe-card">
+                <div class="probe-name">Zone Probe</div>
+                <div class="probe-copy">40 second readiness burst with cadence and drift check.</div>
+                <div class="probe-stat cyan">Pass 82%</div>
+              </article>
+              <article class="probe-card">
+                <div class="probe-name">Syntax Probe</div>
+                <div class="probe-copy">Quick verbal, spatial, and numeric swap sampler.</div>
+                <div class="probe-stat lime">Gain +6</div>
+              </article>
+              <article class="probe-card">
+                <div class="probe-name">Wrapper Probe</div>
+                <div class="probe-copy">Near-swap test before full mission launch.</div>
+                <div class="probe-stat">Near 72%</div>
+              </article>
+            </div>
+
+            <div class="route-footer">
+              <div class="route-footer-label">Test window</div>
+              <div class="route-footer-copy">
+                Keep tests short and diagnostic. They gate the run; they are not the main mission.
+              </div>
+            </div>
+          </section>
+
+          <section class="hub-panel">
+            <div class="panel-kicker">Mission Pack</div>
+            <div class="panel-title">Choose Mission Frame</div>
+
+            <div class="pack-row" role="tablist" aria-label="Program packs">
+              <button class="pack-chip active" type="button" data-pack="performance">Performance</button>
+              <button class="pack-chip" type="button" data-pack="resilience">Resilience</button>
+              <button class="pack-chip" type="button" data-pack="longevity">Longevity</button>
+            </div>
+
+            <div class="selected-mission pack-summary">
+              <div class="selected-mission-label">Active pack</div>
+              <div class="selected-mission-value" id="selectedPackLabel">Performance Pack</div>
+              <p class="selected-mission-copy" id="selectedPackCopy">
+                Optimise focused performance by chaining viability, capacity, reasoning, and mission grammar into one transfer-aware run.
+              </p>
+              <div class="selected-mission-label">Telemetry emphasis</div>
+              <p class="selected-mission-copy pack-copy-tight" id="selectedTelemetryFocus">
+                Zone stability, g lift, working-memory hold, and syntax-swap carryover.
+              </p>
+            </div>
+
+            <div class="mission-frame-grid">
+              <button class="mission-card active" type="button" data-mission="understand">
+                <span class="mission-name">Understand</span>
+                <span class="mission-copy">Map what is going on.</span>
+              </button>
+              <button class="mission-card" type="button" data-mission="choose">
+                <span class="mission-name">Choose</span>
+                <span class="mission-copy">Make tradeoffs under uncertainty.</span>
+              </button>
+              <button class="mission-card" type="button" data-mission="plan">
+                <span class="mission-name">Plan and Do</span>
+                <span class="mission-copy">Turn the map into action.</span>
+              </button>
+              <button class="mission-card" type="button" data-mission="learn">
+                <span class="mission-name">Learn</span>
+                <span class="mission-copy">Acquire and transfer a script.</span>
+              </button>
+            </div>
+
+            <div class="mission-map-shell">
+              <div class="selected-mission-label">Mission map</div>
+              <div class="mission-map">
+                <div class="map-node active">Zone</div>
+                <div class="telemetry-link"></div>
+                <div class="map-node" id="mapMissionLabel">Understand</div>
+                <div class="telemetry-link"></div>
+                <div class="map-node">Reasoning</div>
+                <div class="telemetry-link"></div>
+                <div class="map-node lime">Transfer</div>
+              </div>
+            </div>
+
+            <div class="selected-mission">
+              <div class="selected-mission-label">Current mission</div>
+              <div class="selected-mission-value" id="selectedMissionLabel">Understand</div>
+              <p class="selected-mission-copy" id="selectedMissionCopy">
+                Current run foregrounds map-building, abstraction, and syntax-stable comprehension.
+              </p>
+            </div>
+          </section>
+
+          <section class="hub-panel">
+            <div class="panel-kicker">Meta Missions</div>
+            <div class="panel-title">Core Telemetry and Run Recipe</div>
+
+            <div class="metric-grid">
+              <article class="metric-card">
+                <div class="metric-name">Zone</div>
+                <div class="metric-subtitle">Viability</div>
+                <div class="metric-value cyan">82%</div>
+                <div class="metric-trend">More in-band starts</div>
+              </article>
+              <article class="metric-card">
+                <div class="metric-name">Flex</div>
+                <div class="metric-subtitle">g</div>
+                <div class="metric-value">74</div>
+                <div class="metric-trend">Higher novelty score</div>
+              </article>
+              <article class="metric-card">
+                <div class="metric-name">Hold</div>
+                <div class="metric-subtitle">Working Memory</div>
+                <div class="metric-value purple">68</div>
+                <div class="metric-trend">Lower drift cost</div>
+              </article>
+              <article class="metric-card">
+                <div class="metric-name">Expansion</div>
+                <div class="metric-subtitle">Transfer Range</div>
+                <div class="metric-value lime">41%</div>
+                <div class="metric-trend">Syntax gains unlocked</div>
+              </article>
+            </div>
+
+            <div class="route-list">
+              <div class="route-step">
+                <span class="route-index">01</span>
+                <span class="route-copy">Zone Gate</span>
+                <span class="route-note">Check load and drift</span>
+              </div>
+              <div class="route-step">
+                <span class="route-index">02</span>
+                <span class="route-copy">Capacity Burst</span>
+                <span class="route-note">Hold, update, shield</span>
+              </div>
+              <div class="route-step">
+                <span class="route-index">03</span>
+                <span class="route-copy">Reasoning Gym</span>
+                <span class="route-note" id="reasoningFocus">Mapping, analogy, probe</span>
+              </div>
+              <div class="route-step">
+                <span class="route-index">04</span>
+                <span class="route-copy">Mission Grammar</span>
+                <span class="route-note" id="missionFocus">Understand frame scenario</span>
+              </div>
+              <div class="route-step">
+                <span class="route-index">05</span>
+                <span class="route-copy">Transfer Probe</span>
+                <span class="route-note">Syntax or wrapper swap</span>
+              </div>
+            </div>
+
+            <div class="route-footer">
+              <div class="route-footer-label">Smart interleave</div>
+              <div class="route-footer-copy">
+                Mission grammar gets priority, reasoning supports mission grammar,
+                capacity supports reasoning, and Zone gates all of them.
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="action-strip">
+          <button class="btn-secondary" type="button" id="resetMissionButton">Reset Flow</button>
+          <button class="btn-secondary" type="button" id="previewGameButton">Preview Game Play</button>
+          <button class="btn-primary lime" type="button" id="enterRunButton">Enter Run</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="bottombar">
+      <div class="bb-left">TRIDENT G // G Loop hub with state gate, mission map, tests, and adaptive run recipe</div>
+      <div class="bb-right">g-loop.html</div>
+    </footer>
+  </div>
+
+  <script src="trident-g.js"></script>
+</body>
+</html>
