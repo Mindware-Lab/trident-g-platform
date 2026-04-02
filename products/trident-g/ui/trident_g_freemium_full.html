@@ -1,0 +1,689 @@
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Chakra+Petch:wght@400;600;700&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cyan:#22AAFF;--lime:#CCFF66;--white:#FFFFFF;
+  --charcoal:#333333;--lgrey:#E0E0E0;--dblue:#2764B7;--mgrey:#6D6D6D;
+  --purple:#9B7BFF;--amber:#F5B544;--red:#FF4D4D;--green:#44DD88;
+  --bg:#09101e;--card:#0d1525;--surface:#111d30;--deep:#070d18;
+}
+body{background:transparent;font-family:'Exo 2',sans-serif;color:var(--white)}
+.app{background:var(--bg);min-height:700px;display:flex;flex-direction:column}
+
+/* ── NAV ── */
+.nav{height:48px;background:rgba(7,13,24,0.98);border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:stretch;padding:0 14px;flex-shrink:0;z-index:20}
+.nav-brand{font-family:'Orbitron',monospace;font-weight:900;font-size:14px;letter-spacing:3px;color:var(--white);display:flex;align-items:center;margin-right:20px;flex-shrink:0}
+.nav-brand span{color:var(--cyan)}
+.nav-tabs{display:flex;align-items:stretch;flex:1}
+.nav-tab{font-family:'Chakra Petch',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--mgrey);padding:0 11px;display:flex;align-items:center;cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;white-space:nowrap;user-select:none;gap:5px}
+.nav-tab:hover{color:var(--lgrey)}
+.nav-tab.ah{color:var(--white);border-bottom-color:var(--white)}
+.nav-tab.az{color:var(--amber);border-bottom-color:var(--amber)}
+.nav-tab.ac{color:var(--cyan);border-bottom-color:var(--cyan)}
+.nav-tab.ar{color:var(--lime);border-bottom-color:var(--lime)}
+.nav-tab.am{color:var(--purple);border-bottom-color:var(--purple)}
+.nav-tab.arl{color:var(--dblue);border-bottom-color:var(--dblue)}
+.nav-tab.at{color:var(--amber);border-bottom-color:var(--amber)}
+.lock-icon{font-size:9px;opacity:0.7}
+.nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0}
+.free-badge{background:rgba(34,170,255,0.1);color:var(--cyan);border:1px solid rgba(34,170,255,0.3);font-family:'Chakra Petch',sans-serif;font-size:8px;padding:3px 8px;letter-spacing:2px;text-transform:uppercase}
+.nav-pill{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;padding:4px 10px;border:1px solid rgba(255,255,255,0.12);color:var(--mgrey);text-transform:uppercase}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+
+/* ── SCREENS ── */
+.screen{display:none;flex:1;flex-direction:column}
+.screen.on{display:flex}
+
+/* ── CORNER FRAMES ── */
+.framed{position:relative}
+.framed::before,.framed::after{content:'';position:absolute;width:14px;height:14px;border-style:solid;border-width:0;z-index:2}
+.framed::before{top:-1px;left:-1px}
+.framed::after{bottom:-1px;right:-1px}
+.fz::before{border-top:2px solid var(--amber);border-left:2px solid var(--amber)}.fz::after{border-bottom:2px solid var(--amber);border-right:2px solid var(--amber)}
+.fc::before{border-top:2px solid var(--cyan);border-left:2px solid var(--cyan)}.fc::after{border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan)}
+.fr::before{border-top:2px solid var(--lime);border-left:2px solid var(--lime)}.fr::after{border-bottom:2px solid var(--lime);border-right:2px solid var(--lime)}
+.fm::before{border-top:2px solid var(--purple);border-left:2px solid var(--purple)}.fm::after{border-bottom:2px solid var(--purple);border-right:2px solid var(--purple)}
+.frl::before{border-top:2px solid var(--dblue);border-left:2px solid var(--dblue)}.frl::after{border-bottom:2px solid var(--dblue);border-right:2px solid var(--dblue)}
+.fw::before{border-top:2px solid rgba(255,255,255,0.2);border-left:2px solid rgba(255,255,255,0.2)}.fw::after{border-bottom:2px solid rgba(255,255,255,0.2);border-right:2px solid rgba(255,255,255,0.2)}
+
+/* ── SHARED COMPONENTS ── */
+.card{background:var(--card);border:1px solid rgba(255,255,255,0.07)}
+.card-strip{height:2px;width:100%}
+.lbl{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:3px;color:var(--mgrey);text-transform:uppercase}
+.val-lg{font-family:'Orbitron',monospace;font-weight:900;font-size:26px;line-height:1}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase}
+.chip-green{border:1px solid rgba(68,221,136,.35);background:rgba(68,221,136,.08);color:var(--green)}
+.chip-amber{border:1px solid rgba(245,181,68,.35);background:rgba(245,181,68,.08);color:var(--amber)}
+.chip-cyan{border:1px solid rgba(34,170,255,.35);background:rgba(34,170,255,.08);color:var(--cyan)}
+.chip-grey{border:1px solid rgba(109,109,109,.25);background:rgba(109,109,109,.06);color:var(--mgrey)}
+.chip-red{border:1px solid rgba(255,77,77,.35);background:rgba(255,77,77,.08);color:var(--red)}
+.bar-track{height:3px;background:rgba(255,255,255,.06)}
+.bar-fill{height:100%}
+.btn{font-family:'Chakra Petch',sans-serif;font-weight:700;letter-spacing:3px;text-transform:uppercase;border:none;cursor:pointer;transition:all .15s}
+.btn-cyan{background:var(--cyan);color:var(--charcoal);padding:9px 22px;font-size:10px}
+.btn-cyan:hover{background:#44BBFF}
+.btn-amber-outline{background:transparent;color:var(--amber);border:2px solid var(--amber);padding:11px 24px;font-size:11px}
+.btn-amber-outline:hover{background:rgba(245,181,68,.12)}
+.btn-lime{background:var(--lime);color:var(--charcoal);padding:9px 22px;font-size:10px}
+.btn-purple{background:var(--purple);color:var(--white);padding:9px 22px;font-size:10px;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
+.btn-deny{background:rgba(255,77,77,.1);color:#FF6666;border:1px solid rgba(255,77,77,.25);padding:11px 26px;font-size:12px;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
+
+/* ════════════════════
+   HUB SCREEN
+════════════════════ */
+.hub-body{padding:14px;display:flex;flex-direction:column;gap:11px}
+.hub-top{display:grid;grid-template-columns:220px 1fr;gap:11px}
+
+/* State tile */
+.state-tile{padding:18px;display:flex;flex-direction:column;gap:8px}
+.st-matrix{font-family:'Chakra Petch',sans-serif;font-size:7px;letter-spacing:4px;color:var(--amber);text-transform:uppercase;margin-bottom:2px}
+.st-val{font-family:'Orbitron',monospace;font-size:26px;font-weight:900;line-height:1;color:var(--green)}
+.st-sub{font-family:'Exo 2',sans-serif;font-size:11px;color:var(--mgrey);line-height:1.5;margin-top:4px}
+
+/* Coach / Transfer Quest */
+.coach-card{padding:16px;display:flex;align-items:flex-start;gap:14px}
+.coach-icon{width:42px;height:42px;background:rgba(34,170,255,.12);border:1px solid rgba(34,170,255,.3);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:18px;color:var(--cyan);flex-shrink:0}
+.coach-body{flex:1}
+.coach-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.coach-tag-lbl{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:3px;color:var(--cyan);text-transform:uppercase}
+.quest-limit{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;color:var(--mgrey);text-transform:uppercase;display:flex;align-items:center;gap:4px}
+.ql-pips{display:flex;gap:3px}
+.ql-pip{width:10px;height:4px}
+.ql-pip.used{background:var(--cyan)}
+.ql-pip.avail{background:rgba(255,255,255,.12)}
+.coach-msg{font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:var(--white);margin-bottom:6px;letter-spacing:1px}
+.coach-quest-type{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;background:rgba(34,170,255,.08);border:1px solid rgba(34,170,255,.2);margin-bottom:8px}
+.cqt-label{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase}
+.coach-sub{font-family:'Exo 2',sans-serif;font-size:12px;color:var(--lgrey);line-height:1.55;margin-bottom:12px}
+.coach-sub strong{color:var(--white)}
+
+/* Stack ladder */
+.stack-ladder{padding:14px 18px}
+.sl-title{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:3px;color:var(--mgrey);text-transform:uppercase;margin-bottom:12px}
+.sl-row{display:flex;align-items:center}
+.sl-step{display:flex;flex-direction:column;align-items:center;flex:1;cursor:pointer}
+.sl-dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;margin-bottom:5px;transition:transform .15s}
+.sl-dot:hover{transform:scale(1.1)}
+.sl-name{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase}
+.sl-line{flex:1;height:2px;margin-bottom:20px;max-width:50px}
+.sz .sl-dot{background:rgba(245,181,68,.15);border:2px solid var(--amber);color:var(--amber)}.sz .sl-name{color:var(--amber)}
+.sc .sl-dot{background:rgba(34,170,255,.12);border:2px solid var(--cyan);color:var(--cyan)}.sc .sl-name{color:var(--cyan)}
+.sre .sl-dot{background:rgba(204,255,102,.1);border:2px solid var(--lime);color:var(--lime)}.sre .sl-name{color:var(--lime)}
+.sm .sl-dot{background:rgba(155,123,255,.12);border:2px solid var(--purple);color:var(--purple)}.sm .sl-name{color:var(--purple)}
+.srl .sl-dot{background:rgba(39,100,183,.15);border:2px solid var(--dblue);color:var(--dblue)}.srl .sl-name{color:var(--dblue)}
+
+/* Hub bottom row */
+.hub-bottom{display:grid;grid-template-columns:240px 1fr;gap:11px}
+
+/* Banked mastery economy */
+.bme-card{padding:14px}
+.bme-title{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:3px;color:var(--mgrey);text-transform:uppercase;margin-bottom:10px}
+.bme-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.bme-row:last-child{border:none}
+.bme-label{font-family:'Exo 2',sans-serif;font-size:12px;color:var(--lgrey)}
+.bme-sublabel{font-family:'Chakra Petch',sans-serif;font-size:7px;letter-spacing:1px;color:var(--mgrey);text-transform:uppercase;margin-top:1px}
+.bme-num{font-family:'Orbitron',monospace;font-size:18px;font-weight:900}
+
+/* Assessment access tiles */
+.access-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.access-tile{padding:12px 14px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:5px;position:relative;overflow:hidden}
+.access-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.access-tile:hover{transform:translateY(-2px)}
+.at-icon{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;margin-bottom:2px}
+.at-label{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase}
+.at-sub{font-family:'Exo 2',sans-serif;font-size:10px;color:var(--mgrey);line-height:1.4}
+.at-arrow{font-family:'Chakra Petch',sans-serif;font-size:9px;color:var(--mgrey);margin-top:4px;align-self:flex-end}
+
+/* ════════════════════
+   ZONE / CAPACITY / REASONING / MISSION / REAL — shared gym layout
+════════════════════ */
+.gym-body{flex:1;display:grid;grid-template-columns:1fr 148px;min-height:0}
+.gym-centre{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px}
+.gym-card{width:100%;max-width:460px}
+.chb{padding:12px 18px 10px;display:flex;align-items:center;justify-content:space-between}
+.chb-type{font-family:'Orbitron',monospace;font-weight:900;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--charcoal)}
+.chb-sub{font-family:'Chakra Petch',sans-serif;font-size:9px;color:rgba(51,51,51,.65);letter-spacing:2px;text-transform:uppercase}
+.chb-pts{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:rgba(51,51,51,.6)}
+.gym-inner{padding:18px}
+.nb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;width:180px;margin:0 auto 16px}
+.nb-c{aspect-ratio:1;background:var(--surface);border:1px solid rgba(255,255,255,.06)}
+.nb-c.lit{background:rgba(34,170,255,.18);border-color:var(--cyan)}
+.nb-c.hit{background:rgba(204,255,102,.14);border-color:var(--lime)}
+.cue-lg{font-family:'Orbitron',monospace;font-size:50px;font-weight:900;text-align:center;color:var(--white);letter-spacing:6px;display:block;margin-bottom:12px}
+.hint-txt{font-family:'Chakra Petch',sans-serif;font-size:9px;letter-spacing:3px;color:var(--mgrey);text-transform:uppercase;text-align:center;margin-bottom:18px}
+.btns{display:flex;gap:8px;justify-content:center}
+/* Premises */
+.pre-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.pre-row:last-child{border:none}
+.p-idx{font-family:'Orbitron',monospace;font-size:8px;color:rgba(255,255,255,.18);min-width:14px}
+.p-txt{font-family:'Exo 2',sans-serif;font-size:18px;font-weight:400;color:var(--lgrey)}
+.pkw{color:var(--white);font-weight:600}.prel{color:var(--mgrey);font-style:italic;font-weight:300;font-size:16px}
+.conc-row{padding:12px 0 4px;display:flex;align-items:center;gap:10px}
+.conc-sym{font-family:'Chakra Petch',sans-serif;font-size:9px;letter-spacing:3px;color:rgba(204,255,102,.4)}
+.conc-txt{font-family:'Exo 2',sans-serif;font-size:20px;font-weight:600;color:var(--white)}
+/* Mission chain */
+.chain-row{display:flex;align-items:center;margin-bottom:14px;width:100%}
+.cs-box{flex:1;padding:7px 8px;border:1px solid rgba(155,123,255,.2);background:var(--surface);text-align:center;cursor:pointer;transition:all .15s}
+.cs-box.done{border-color:rgba(155,123,255,.5);background:rgba(155,123,255,.08)}
+.cs-box.current{border-color:var(--purple);background:rgba(155,123,255,.15)}
+.cs-num{font-family:'Orbitron',monospace;font-size:7px;color:rgba(155,123,255,.5);margin-bottom:2px}
+.cs-name{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:1px;color:var(--mgrey);text-transform:uppercase}
+.cs-box.done .cs-name{color:var(--purple)}.cs-box.current .cs-name{color:var(--white)}
+.cs-arrow{font-size:10px;color:rgba(155,123,255,.3);padding:0 3px;flex-shrink:0}
+/* Mission options */
+.m-opts{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.m-opt{background:var(--card);border:1px solid rgba(255,255,255,.06);padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s}
+.m-opt:hover{border-color:rgba(155,123,255,.35);background:rgba(155,123,255,.06)}
+.m-key{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:var(--mgrey);min-width:16px}
+.m-text{font-family:'Exo 2',sans-serif;font-size:13px;color:var(--lgrey)}
+/* Rail */
+.rail{border-left:1px solid rgba(255,255,255,.05);background:var(--deep);padding:16px 12px;display:flex;flex-direction:column;gap:16px}
+.r-lbl{font-family:'Chakra Petch',sans-serif;font-size:7px;letter-spacing:3px;color:rgba(109,109,109,.7);text-transform:uppercase;margin-bottom:3px}
+.r-val{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--white);line-height:1}
+.r-bar{height:2px;background:rgba(255,255,255,.06);margin-top:3px}
+.r-fill{height:100%}
+.r-sep{height:1px;background:rgba(255,255,255,.05)}
+.r-sub{display:flex;justify-content:space-between;font-family:'Chakra Petch',sans-serif;font-size:9px;margin-top:2px}
+.r-sub span:first-child{color:var(--mgrey)}.r-sub span:last-child{color:var(--white)}
+.pips{display:flex;gap:3px;flex-wrap:wrap;margin-top:4px}
+.pip{width:8px;height:8px;background:rgba(255,255,255,.08)}
+.pip.on{background:var(--lime)}
+
+/* Zone ring */
+.zring-wrap{position:relative;width:100px;height:100px;margin:0 auto 16px}
+.zring-wrap svg{transform:rotate(-90deg)}
+.zring-ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.zr-n{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;color:var(--white);line-height:1}
+.zr-l{font-family:'Chakra Petch',sans-serif;font-size:7px;letter-spacing:2px;color:var(--mgrey)}
+.zone-bars{width:100%;max-width:300px;display:flex;flex-direction:column;gap:9px;margin-bottom:18px}
+.zb-row{display:flex;align-items:center;gap:10px}
+.zb-lbl{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;color:var(--mgrey);width:44px;text-align:right;text-transform:uppercase}
+.zb-track{flex:1;height:5px;background:rgba(255,255,255,.06)}
+.zb-fill{height:100%}
+.zb-val{font-family:'Orbitron',monospace;font-size:10px;color:var(--white);min-width:22px;text-align:right}
+/* Zone states */
+.zone-states{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.zstate{border:1px solid rgba(255,255,255,.07);padding:10px;cursor:pointer}
+.zstate.zs-ready{border-color:var(--green);background:rgba(68,221,136,.06)}
+.zstate.zs-wobble{border-color:var(--amber);background:rgba(245,181,68,.06)}
+.zstate.zs-recover{border-color:var(--red);background:rgba(255,77,77,.06)}
+.zs-val{font-family:'Orbitron',monospace;font-size:12px;font-weight:900;margin-bottom:3px}
+.zstate.zs-ready .zs-val{color:var(--green)}.zstate.zs-wobble .zs-val{color:var(--amber)}.zstate.zs-recover .zs-val{color:var(--red)}
+.zs-sub{font-family:'Exo 2',sans-serif;font-size:10px;color:var(--mgrey);line-height:1.4}
+/* Real missions */
+.rm-row{background:var(--card);border:1px solid rgba(39,100,183,.2);padding:10px 14px;display:grid;grid-template-columns:8px 1fr 80px 80px 60px;align-items:center;gap:10px;cursor:pointer;transition:border-color .15s;margin-bottom:5px}
+.rm-row:hover{border-color:rgba(39,100,183,.45)}
+.rm-dot{width:7px;height:7px;border-radius:50%}
+.rm-name{font-family:'Exo 2',sans-serif;font-size:13px;color:var(--white);font-weight:500}
+.rm-frame{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;color:var(--mgrey);text-transform:uppercase;text-align:right}
+.rm-review{font-family:'Chakra Petch',sans-serif;font-size:8px;color:var(--mgrey);text-align:right}
+.rm-count{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--dblue);text-align:right}
+
+/* ════════════════════
+   DEEP TELEMETRY PAYWALL
+════════════════════ */
+.tele-body{padding:14px;flex:1;display:flex;flex-direction:column;gap:11px}
+.tele-info{padding:10px 14px;background:rgba(245,181,68,.06);border:1px solid rgba(245,181,68,.2);display:flex;align-items:center;gap:12px}
+.ti-icon{font-family:'Orbitron',monospace;font-size:16px;color:var(--amber)}
+.ti-text{font-family:'Exo 2',sans-serif;font-size:12px;color:var(--lgrey);line-height:1.5}
+.ti-text strong{color:var(--white)}
+.tele-grid-wrap{flex:1;position:relative}
+.tele-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;filter:blur(4px);opacity:.55;pointer-events:none;user-select:none}
+.tele-card{background:var(--card);border:1px solid rgba(255,255,255,.07);padding:16px}
+.tc-lbl{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:3px;color:var(--mgrey);text-transform:uppercase;margin-bottom:10px}
+.fake-graph{height:58px;margin-bottom:10px;position:relative}
+.fg-bar{position:absolute;bottom:0;background:rgba(34,170,255,.25);transition:height .3s}
+.fake-code{font-family:monospace;font-size:9px;color:var(--mgrey);line-height:1.6}
+.fake-heatmap{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;height:58px;margin-bottom:10px}
+.hm-cell{border-radius:1px}
+.fake-line{height:58px;margin-bottom:10px;position:relative;overflow:hidden}
+.tele-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(7,13,24,.72);z-index:10;border:1px solid rgba(255,255,255,.07)}
+.pw-icon{font-family:'Orbitron',monospace;font-size:36px;color:var(--amber);margin-bottom:14px;letter-spacing:4px}
+.pw-title{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--white);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.pw-desc{font-family:'Exo 2',sans-serif;font-size:13px;color:var(--lgrey);text-align:center;max-width:420px;line-height:1.6;margin-bottom:22px}
+.pw-tiers{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;justify-content:center}
+.pw-tier{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border:1px solid rgba(255,255,255,.12);color:var(--mgrey)}
+.pw-cta-row{display:flex;gap:12px;align-items:center}
+.pw-sub{font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;color:rgba(109,109,109,.6);text-transform:uppercase;margin-top:14px;text-align:center}
+
+/* ════════════════════
+   PROOF ACCESS TILES (hub)
+════════════════════ */
+.at-zone{background:rgba(245,181,68,.06);border:1px solid rgba(245,181,68,.2)}
+.at-zone::before{background:var(--amber)}.at-zone .at-icon{color:var(--amber)}.at-zone .at-label{color:var(--amber)}
+.at-weekly{background:rgba(34,170,255,.05);border:1px solid rgba(34,170,255,.15)}
+.at-weekly::before{background:var(--cyan)}.at-weekly .at-icon{color:var(--cyan)}.at-weekly .at-label{color:var(--cyan)}
+.at-proof{background:rgba(155,123,255,.05);border:1px solid rgba(155,123,255,.2)}
+.at-proof::before{background:var(--purple)}.at-proof .at-icon{color:var(--purple)}.at-proof .at-label{color:var(--purple)}
+.at-missions{background:rgba(39,100,183,.08);border:1px solid rgba(39,100,183,.25)}
+.at-missions::before{background:var(--dblue)}.at-missions .at-icon{color:var(--dblue)}.at-missions .at-label{color:var(--dblue)}
+
+/* Bottom bar */
+.bbar{height:30px;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:rgba(7,13,24,.98);flex-shrink:0}
+.bbar-txt{font-family:'Chakra Petch',sans-serif;font-size:7px;letter-spacing:2px;color:rgba(109,109,109,.4);text-transform:uppercase}
+</style>
+
+<div class="app">
+
+<!-- ── NAV ── -->
+<nav class="nav">
+  <div class="nav-brand">TRIDENT<span>G</span></div>
+  <div class="nav-tabs">
+    <div class="nav-tab ah" onclick="go('hub')" id="tab-hub">G·Loop Hub</div>
+    <div class="nav-tab" onclick="go('zone')" id="tab-zone">Zone</div>
+    <div class="nav-tab" onclick="go('cap')" id="tab-cap">Capacity</div>
+    <div class="nav-tab" onclick="go('rea')" id="tab-rea">Reasoning</div>
+    <div class="nav-tab" onclick="go('mis')" id="tab-mis">Mission</div>
+    <div class="nav-tab" onclick="go('real')" id="tab-real">Real Missions</div>
+    <div class="nav-tab" onclick="go('tele')" id="tab-tele" style="color:rgba(245,181,68,0.5)">Deep Telemetry <span class="lock-icon">🔒</span></div>
+  </div>
+  <div class="nav-right">
+    <div class="free-badge">Free Tier</div>
+    <div class="nav-pill">Session: 24 min</div>
+    <div class="live-dot"></div>
+  </div>
+</nav>
+
+<!-- ══════════ HUB ══════════ -->
+<div class="screen on" id="sc-hub">
+<div class="hub-body">
+
+  <!-- Top row: state tile + coach card -->
+  <div class="hub-top">
+    <div class="card state-tile framed fz">
+      <div class="st-matrix">4-State Matrix</div>
+      <div class="st-val">In The Zone</div>
+      <div class="chip chip-green" style="margin-top:2px"><div class="live-dot"></div>Optimal</div>
+      <div class="st-sub">Free daily training path unlocked. Proceed up the stack.</div>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <div style="flex:1;padding:6px 8px;background:rgba(68,221,136,.07);border:1px solid rgba(68,221,136,.15);text-align:center">
+          <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:900;color:var(--green)">82</div>
+          <div style="font-family:'Chakra Petch',sans-serif;font-size:7px;letter-spacing:1px;color:var(--mgrey);text-transform:uppercase">Zone</div>
+        </div>
+        <div style="flex:1;padding:6px 8px;background:rgba(34,170,255,.07);border:1px solid rgba(34,170,255,.15);text-align:center">
+          <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:900;color:var(--cyan)">N·3</div>
+          <div style="font-family:'Chakra Petch',sans-serif;font-size:7px;letter-spacing:1px;color:var(--mgrey);text-transform:uppercase">Level</div>
+        </div>
+        <div style="flex:1;padding:6px 8px;background:rgba(204,255,102,.06);border:1px solid rgba(204,255,102,.15);text-align:center">
+          <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:900;color:var(--lime)">7</div>
+          <div style="font-family:'Chakra Petch',sans-serif;font-size:7px;letter-spacing:1px;color:var(--mgrey);text-transform:uppercase">Streak</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transfer Quest Coach Card -->
+    <div class="card coach-card framed fc">
+      <div class="coach-icon">⟳</div>
+      <div class="coach-body">
+        <div class="coach-meta">
+          <div>
+            <div class="coach-tag-lbl">Next Best Move · Transfer Quest</div>
+          </div>
+          <div class="quest-limit">
+            <span>Daily</span>
+            <div class="ql-pips">
+              <div class="ql-pip used"></div>
+              <div class="ql-pip avail"></div>
+              <div class="ql-pip avail"></div>
+            </div>
+            <span style="color:var(--cyan)">1 / 3</span>
+          </div>
+        </div>
+        <div class="coach-msg">Switch It Up: Syntax Swap</div>
+        <div class="coach-quest-type">
+          <div class="live-dot" style="background:var(--cyan)"></div>
+          <div class="cqt-label">Active Quest · Portability Check</div>
+        </div>
+        <div class="coach-sub">Your <strong>Deductive Reasoning</strong> streak is solid at 7 — but it might be rote. Complete a <strong>Syntax Swap</strong> to prove flexibility and move this script closer to banked mastery. Accept to begin.</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="btn btn-cyan" onclick="go('rea')">Accept Quest ▶</button>
+          <div style="font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;color:var(--mgrey);text-transform:uppercase">or Step Down to Capacity</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stack ladder -->
+  <div class="card stack-ladder framed fc">
+    <div class="sl-title">Stack Ladder — Training Loop · Click any layer to enter</div>
+    <div class="sl-row">
+      <div class="sl-step sz" onclick="go('zone')"><div class="sl-dot">Z</div><div class="sl-name">Zone</div></div>
+      <div class="sl-line" style="background:linear-gradient(90deg,rgba(245,181,68,.4),rgba(34,170,255,.4))"></div>
+      <div class="sl-step sc" onclick="go('cap')"><div class="sl-dot">C</div><div class="sl-name">Capacity</div></div>
+      <div class="sl-line" style="background:linear-gradient(90deg,rgba(34,170,255,.4),rgba(204,255,102,.4))"></div>
+      <div class="sl-step sre" onclick="go('rea')"><div class="sl-dot">R</div><div class="sl-name">Reasoning</div></div>
+      <div class="sl-line" style="background:linear-gradient(90deg,rgba(204,255,102,.4),rgba(155,123,255,.4))"></div>
+      <div class="sl-step sm" onclick="go('mis')"><div class="sl-dot">M</div><div class="sl-name">Mission</div></div>
+      <div class="sl-line" style="background:linear-gradient(90deg,rgba(155,123,255,.4),rgba(39,100,183,.4))"></div>
+      <div class="sl-step srl" onclick="go('real')"><div class="sl-dot">!</div><div class="sl-name">Real Missions</div></div>
+    </div>
+  </div>
+
+  <!-- Bottom row: Banked Mastery Economy + Access tiles -->
+  <div class="hub-bottom">
+    <div class="card bme-card framed fm">
+      <div class="bme-title">Banked Mastery Economy</div>
+      <div class="bme-row">
+        <div><div class="bme-label">Banked Scripts</div><div class="bme-sublabel">Core Currency</div></div>
+        <div class="bme-num" style="color:var(--lime)">3</div>
+      </div>
+      <div class="bme-row">
+        <div><div class="bme-label">Holding</div><div class="bme-sublabel">Requires cue-fired use</div></div>
+        <div class="bme-num" style="color:var(--amber)">1</div>
+      </div>
+      <div class="bme-row">
+        <div><div class="bme-label">Candidates</div><div class="bme-sublabel">Transfer not yet proven</div></div>
+        <div class="bme-num">4</div>
+      </div>
+      <div class="bme-row">
+        <div><div class="bme-label">Deployed today</div><div class="bme-sublabel">Real-world use events</div></div>
+        <div class="bme-num" style="color:var(--cyan)">2</div>
+      </div>
+    </div>
+
+    <!-- Assessment access tiles -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:3px;color:var(--mgrey);text-transform:uppercase">Assessment &amp; Proof Access</div>
+      <div class="access-grid">
+        <div class="access-tile at-zone framed fz" onclick="go('zone')">
+          <div class="at-icon">Z</div>
+          <div class="at-label">Zone Check</div>
+          <div class="at-sub">20–40s viability gate. Routes your session.</div>
+          <div class="at-arrow">→</div>
+        </div>
+        <div class="access-tile at-weekly framed fc">
+          <div class="at-icon">W</div>
+          <div class="at-label">Weekly Check</div>
+          <div class="at-sub">Due Friday. SgS-12 + CRS-10 check-in.</div>
+          <div class="at-arrow">→</div>
+        </div>
+        <div class="access-tile at-proof framed fm">
+          <div class="at-icon">P</div>
+          <div class="at-label">Proof</div>
+          <div class="at-sub">Benchmarks, EDHS, transfer staircase.</div>
+          <div class="at-arrow">→</div>
+        </div>
+        <div class="access-tile at-missions framed frl" onclick="go('real')">
+          <div class="at-icon">!</div>
+          <div class="at-label">Mission Board</div>
+          <div class="at-sub">Live real-world mission ledger.</div>
+          <div class="at-arrow">→</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════ ZONE ══════════ -->
+<div class="screen" id="sc-zone">
+<div class="gym-body" style="grid-template-columns:1fr 148px">
+  <div class="gym-centre">
+    <div class="gym-card card framed fz" style="border-color:rgba(245,181,68,.25)">
+      <div class="chb" style="background:var(--amber)"><div><div class="chb-type">Zone Check</div><div class="chb-sub">Viability Gate · 30s</div></div><div class="chb-pts">Gateway</div></div>
+      <div style="padding:18px 20px 0">
+        <div class="zring-wrap">
+          <svg width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="6"/><circle cx="50" cy="50" r="42" fill="none" stroke="#F5B544" stroke-width="6" stroke-dasharray="264" stroke-dashoffset="47" stroke-linecap="round"/></svg>
+          <div class="zring-ctr"><div class="zr-n">82</div><div class="zr-l">In Band</div></div>
+        </div>
+        <div class="zone-bars">
+          <div class="zb-row"><div class="zb-lbl">Load</div><div class="zb-track"><div class="zb-fill" style="width:50%;background:var(--cyan)"></div></div><div class="zb-val">34</div></div>
+          <div class="zb-row"><div class="zb-lbl">Drift</div><div class="zb-track"><div class="zb-fill" style="width:26%;background:var(--lime)"></div></div><div class="zb-val">18</div></div>
+          <div class="zb-row"><div class="zb-lbl">Ready</div><div class="zb-track"><div class="zb-fill" style="width:90%;background:var(--purple)"></div></div><div class="zb-val">80</div></div>
+        </div>
+        <div class="zone-states">
+          <div class="zstate zs-ready"><div class="zs-val">Ready</div><div class="zs-sub">Full route available</div></div>
+          <div class="zstate zs-wobble"><div class="zs-val">Wobbling</div><div class="zs-sub">Light training only</div></div>
+          <div class="zstate zs-recover"><div class="zs-val">Recover First</div><div class="zs-sub">No heavy training</div></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;padding:0 20px 16px;justify-content:flex-end">
+        <button class="btn btn-deny" style="clip-path:none">Reset</button>
+        <button class="btn btn-cyan" onclick="go('cap')">Enter Capacity ▶</button>
+      </div>
+    </div>
+  </div>
+  <div class="rail">
+    <div><div class="r-lbl">Zone Probe</div><div style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--green);margin-top:4px">PASS 82%</div></div>
+    <div class="r-sep"></div>
+    <div><div class="r-lbl">Syntax Probe</div><div style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--lime);margin-top:4px">GAIN +6</div></div>
+    <div class="r-sep"></div>
+    <div><div class="r-lbl">Wrapper Probe</div><div style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--amber);margin-top:4px">NEAR 72%</div></div>
+    <div class="r-sep"></div>
+    <div style="background:rgba(245,181,68,.07);border-left:2px solid var(--amber);padding:8px"><div style="font-family:'Exo 2',sans-serif;font-size:11px;color:var(--lgrey);line-height:1.4">Load stable. Drift low. Viable for full training.</div></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ CAPACITY ══════════ -->
+<div class="screen" id="sc-cap">
+<div class="gym-body">
+  <div class="gym-centre">
+    <div class="gym-card card framed fc" style="border-color:rgba(34,170,255,.25)">
+      <div class="chb" style="background:var(--cyan)"><div><div class="chb-type">Capacity Gym</div><div class="chb-sub">Encode &amp; Hold · Pattern Burst</div></div><div class="chb-pts">N·3</div></div>
+      <div class="gym-inner">
+        <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.3);text-align:center;margin-bottom:14px;text-transform:uppercase">Dual N-Back · Burst Focus 42s</div>
+        <div class="nb-grid">
+          <div class="nb-c"></div><div class="nb-c lit"></div><div class="nb-c"></div>
+          <div class="nb-c"></div><div class="nb-c"></div><div class="nb-c"></div>
+          <div class="nb-c"></div><div class="nb-c"></div><div class="nb-c hit"></div>
+        </div>
+        <div class="cue-lg">K</div>
+        <div class="hint-txt">Match position · Match letter</div>
+        <div class="btns"><button class="btn btn-deny">Position</button><button class="btn btn-cyan" style="clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)">Letter ✓</button></div>
+      </div>
+    </div>
+    <div style="width:100%;max-width:460px;margin-top:8px;background:rgba(34,170,255,.05);border:1px solid rgba(34,170,255,.15);padding:10px 14px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:3px;color:var(--cyan);margin-bottom:5px;text-transform:uppercase">Transfer Quest · Active</div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:12px;color:var(--lgrey)">Retain the candidate rule long enough to test it in another wrapper. Syntax swap queued next.</div>
+    </div>
+  </div>
+  <div class="rail">
+    <div><div class="r-lbl">Pace</div><div class="r-val" style="color:var(--lime)">2.1<span style="font-size:11px;color:var(--mgrey)">s</span></div><div class="r-bar"><div class="r-fill" style="width:72%;background:var(--lime)"></div></div></div>
+    <div class="r-sep"></div>
+    <div><div class="r-lbl">Zone</div><div class="r-val" style="color:var(--purple)">80</div><div class="r-bar"><div class="r-fill" style="width:80%;background:var(--purple)"></div></div></div>
+    <div class="r-sep"></div>
+    <div><div class="r-lbl">Syntax Gains</div><div class="r-sub"><span>Verbal</span><span>+9</span></div><div class="r-sub"><span>Spatial</span><span>+6</span></div><div class="r-sub"><span>Numeric</span><span>+4</span></div></div>
+    <div class="r-sep"></div>
+    <div><div class="r-lbl">Streak</div><div class="pips"><div class="pip on"></div><div class="pip on"></div><div class="pip on"></div><div class="pip on"></div><div class="pip on"></div><div class="pip on"></div><div class="pip on"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div></div></div>
+    <div class="r-sep"></div>
+    <div style="display:flex;align-items:center;gap:5px"><div class="live-dot" style="background:var(--cyan)"></div><div style="font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;color:var(--cyan)">IN BAND</div></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ REASONING ══════════ -->
+<div class="screen" id="sc-rea">
+<div class="gym-body">
+  <div class="gym-centre">
+    <div class="gym-card card framed fr" style="border-color:rgba(204,255,102,.25)">
+      <div class="chb" style="background:var(--lime)"><div><div class="chb-type">Reasoning Gym</div><div class="chb-sub">Deductive · Distinction</div></div><div class="chb-pts">+2 pts</div></div>
+      <div class="gym-inner">
+        <div style="display:flex;gap:6px;margin-bottom:12px">
+          <div style="font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border:1px solid rgba(204,255,102,.4);color:var(--lime);background:rgba(204,255,102,.06)">Neutral</div>
+          <div style="font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border:1px solid rgba(255,255,255,.1);color:var(--mgrey);cursor:pointer">Abstract</div>
+          <div style="font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border:1px solid rgba(255,255,255,.1);color:var(--mgrey);cursor:pointer">Mission</div>
+        </div>
+        <div style="font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:2px;color:rgba(204,255,102,.5);text-transform:uppercase;margin-bottom:12px">Deductive · Transitivity</div>
+        <div class="pre-row"><div class="p-idx">1</div><div class="p-txt"><span class="pkw">BOOTS</span> <span class="prel">is same as</span> <span class="pkw">STAIR</span></div></div>
+        <div class="pre-row"><div class="p-idx">2</div><div class="p-txt"><span class="pkw">STAIR</span> <span class="prel">is same as</span> <span class="pkw">MOON</span></div></div>
+        <div class="conc-row"><div class="conc-sym">∴</div><div class="conc-txt"><span class="pkw">BOOTS</span> <span class="prel">is same as</span> <span class="pkw">MOON</span></div></div>
+        <div class="btns" style="margin-top:16px"><button class="btn btn-deny">False</button><button class="btn btn-lime" style="clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);background:var(--lime);color:var(--charcoal);padding:12px 28px;font-size:12px;font-family:'Chakra Petch',sans-serif;font-weight:700;letter-spacing:3px;text-transform:uppercase">True</button></div>
+      </div>
+    </div>
+    <div style="width:100%;max-width:460px;margin-top:8px;background:rgba(204,255,102,.04);border:1px solid rgba(204,255,102,.15);padding:10px 14px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:3px;color:var(--lime);margin-bottom:5px;text-transform:uppercase">Transfer Quest · Syntax Swap active</div>
+      <div style="font-family:'Exo 2',sans-serif;font-size:12px;color:var(--lgrey)">Correct · Streak 7. Next item uses a mission wrapper on the same latent structure.</div>
+    </div>
+  </div>
+  <div class="rail">
+    <div><div class="r-lbl">Accuracy</div><div class="r-val" style="color:var(--lime)">84%</div><div class="r-bar"><div class="r-fill" style="width:84%;background:var(--lime)"></div></div></div>
+    <div class="r-sep"></div>
+    <div><div class="r-lbl">Wrapper</div><div class="r-sub"><span>Abstract</span><span style="color:var(--green)">✓</span></div><div class="r-sub"><span>Neutral</span><span style="color:var(--lime)">Live</span></div><div class="r-sub"><span>Mission</span><span>—</span></div></div>
+    <div class="r-sep"></div>
+    <div><div class="r-lbl">Belief Quad</div><div class="r-sub"><span>Believ ✓</span><span style="color:var(--green)">✓</span></div><div class="r-sub"><span>Believ ✗</span><span style="color:var(--green)">✓</span></div><div class="r-sub"><span>Unbeliev</span><span style="color:var(--amber)">—</span></div></div>
+    <div class="r-sep"></div>
+    <div><div class="r-lbl">Streak</div><div class="pips"><div class="pip on" style="background:var(--lime)"></div><div class="pip on" style="background:var(--lime)"></div><div class="pip on" style="background:var(--lime)"></div><div class="pip on" style="background:var(--lime)"></div><div class="pip on" style="background:var(--lime)"></div><div class="pip on" style="background:var(--lime)"></div><div class="pip on" style="background:var(--lime)"></div><div class="pip"></div><div class="pip"></div><div class="pip"></div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ MISSION ══════════ -->
+<div class="screen" id="sc-mis">
+<div class="gym-body">
+  <div class="gym-centre">
+    <div class="gym-card card framed fm" style="border-color:rgba(155,123,255,.25)">
+      <div class="chb" style="background:var(--purple)"><div><div class="chb-type">Mission</div><div class="chb-sub">Argue · Operator Chain</div></div><div class="chb-pts">Scenario 04</div></div>
+      <div class="gym-inner">
+        <div class="chain-row">
+          <div class="chain-step" style="display:flex;align-items:center;flex:1"><div class="cs-box done"><div class="cs-num">01</div><div class="cs-name">Evaluate</div></div><div class="cs-arrow">›</div></div>
+          <div class="chain-step" style="display:flex;align-items:center;flex:1"><div class="cs-box done"><div class="cs-num">02</div><div class="cs-name">Counterex.</div></div><div class="cs-arrow">›</div></div>
+          <div class="chain-step" style="display:flex;align-items:center;flex:1"><div class="cs-box current"><div class="cs-num">03</div><div class="cs-name">Probe</div></div><div class="cs-arrow">›</div></div>
+          <div class="chain-step" style="display:flex;align-items:center;flex:1"><div class="cs-box"><div class="cs-num">04</div><div class="cs-name">Commit</div></div><div class="cs-arrow">›</div></div>
+          <div style="flex:1"><div class="cs-box"><div class="cs-num">05</div><div class="cs-name">Compile</div></div></div>
+        </div>
+        <div style="font-family:'Exo 2',sans-serif;font-size:14px;color:var(--lgrey);line-height:1.6;margin-bottom:12px;background:var(--surface);border:1px solid rgba(155,123,255,.15);padding:12px 14px">A team of <strong style="color:var(--white)">4 engineers</strong> must reach a decision. Two have agreed. You've identified a counterexample. What is your next probe to test the boundary?</div>
+        <div class="m-opts">
+          <div class="m-opt"><div class="m-key">A</div><div class="m-text">Ask: what if the third engineer abstains?</div></div>
+          <div class="m-opt"><div class="m-key">B</div><div class="m-text">Restate the decision criteria from scratch</div></div>
+          <div class="m-opt"><div class="m-key">C</div><div class="m-text">Identify the veto conditions before proceeding</div></div>
+        </div>
+        <div class="btns"><button class="btn btn-deny" style="clip-path:none">Skip</button><button class="btn btn-purple">Confirm ▶</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="rail">
+    <div><div class="r-lbl">Chain</div><div class="r-val" style="color:var(--purple)">3/5</div><div class="r-bar"><div class="r-fill" style="width:60%;background:var(--purple)"></div></div></div>
+    <div class="r-sep"></div>
+    <div><div class="r-lbl">Frame</div><div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--white)">ARGUE</div></div>
+    <div class="r-sep"></div>
+    <div><div class="r-lbl">Banked</div><div class="r-val" style="color:var(--lime)">3</div></div>
+    <div class="r-sep"></div>
+    <div><div class="r-lbl">Transfer</div><div class="r-sub"><span>Syntax</span><span style="color:var(--green)">✓</span></div><div class="r-sub"><span>Wrapper</span><span style="color:var(--amber)">—</span></div><div class="r-sub"><span>Delayed</span><span>—</span></div></div>
+    <div class="r-sep"></div>
+    <div style="background:rgba(155,123,255,.07);border-left:2px solid var(--purple);padding:8px"><div style="font-family:'Exo 2',sans-serif;font-size:11px;color:var(--lgrey);line-height:1.4">Boundary probe next. Find one condition that breaks the rule.</div></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ REAL MISSIONS ══════════ -->
+<div class="screen" id="sc-real">
+<div style="padding:14px;flex:1;display:flex;flex-direction:column;gap:11px">
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <div class="card framed frl" style="padding:10px 16px;display:flex;flex-direction:column;gap:3px">
+      <div style="font-family:'Chakra Petch',sans-serif;font-size:8px;letter-spacing:3px;color:var(--dblue);text-transform:uppercase">Mission Ledger</div>
+      <div style="font-family:'Orbitron',monospace;font-size:22px;font-weight:900;letter-spacing:2px">Real Missions</div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <div style="text-align:right"><div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--green)">3</div><div style="font-family:'Chakra Petch',sans-serif;font-size:7px;letter-spacing:2px;color:var(--mgrey);text-transform:uppercase">Success</div></div>
+      <div style="text-align:right"><div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--amber)">2</div><div style="font-family:'Chakra Petch',sans-serif;font-size:7px;letter-spacing:2px;color:var(--mgrey);text-transform:uppercase">Partial</div></div>
+      <div style="text-align:right"><div style="font-family:'Orbitron',monospace;font-size:18px;font-weight:900;color:var(--cyan)">2</div><div style="font-family:'Chakra Petch',sans-serif;font-size:7px;letter-spacing:2px;color:var(--mgrey);text-transform:uppercase">Ready</div></div>
+    </div>
+  </div>
+  <div class="rm-row framed frl"><div class="rm-dot" style="background:var(--green)"></div><div class="rm-name">Q3 Strategy Review</div><div class="rm-frame">Argue</div><div class="rm-review">Tomorrow</div><div class="rm-count">7×</div></div>
+  <div class="rm-row"><div class="rm-dot" style="background:var(--amber)"></div><div class="rm-name">New Hire Decision</div><div class="rm-frame">Choose</div><div class="rm-review">Friday</div><div class="rm-count">3×</div></div>
+  <div class="rm-row"><div class="rm-dot" style="background:var(--cyan)"></div><div class="rm-name">Product Roadmap</div><div class="rm-frame">Plan &amp; Do</div><div class="rm-review">Next wk</div><div class="rm-count">1×</div></div>
+  <div class="rm-row"><div class="rm-dot" style="background:var(--red)"></div><div class="rm-name">Budget Negotiation</div><div class="rm-frame">Choose</div><div class="rm-review">Redesign</div><div class="rm-count">2×</div></div>
+  <div class="rm-row"><div class="rm-dot" style="background:var(--mgrey)"></div><div class="rm-name">Client Pitch Framework</div><div class="rm-frame">Understand</div><div class="rm-review">Paused</div><div class="rm-count">0×</div></div>
+</div>
+</div>
+
+<!-- ══════════ DEEP TELEMETRY (PAYWALL) ══════════ -->
+<div class="screen" id="sc-tele">
+<div class="tele-body">
+
+  <div class="tele-info">
+    <div class="ti-icon">⚠</div>
+    <div class="ti-text">You are on the <strong>Free Tier</strong>. The engine is actively recording your cognitive telemetry — but raw signal data requires supervised analysis. Unlock with a coaching session or upgrade your plan.</div>
+  </div>
+
+  <div class="tele-grid-wrap">
+    <div class="tele-grid">
+
+      <!-- Fake card 1 -->
+      <div class="tele-card">
+        <div class="tc-lbl">Raw Drift &amp; Load Matrices</div>
+        <div class="fake-graph">
+          <div class="fg-bar" style="left:0%;width:10%;height:30%;background:rgba(34,170,255,.35)"></div>
+          <div class="fg-bar" style="left:12%;width:10%;height:55%;background:rgba(34,170,255,.35)"></div>
+          <div class="fg-bar" style="left:24%;width:10%;height:70%;background:rgba(34,170,255,.5)"></div>
+          <div class="fg-bar" style="left:36%;width:10%;height:45%;background:rgba(34,170,255,.35)"></div>
+          <div class="fg-bar" style="left:48%;width:10%;height:80%;background:rgba(255,77,77,.5)"></div>
+          <div class="fg-bar" style="left:60%;width:10%;height:60%;background:rgba(245,181,68,.5)"></div>
+          <div class="fg-bar" style="left:72%;width:10%;height:90%;background:rgba(34,170,255,.6)"></div>
+          <div class="fg-bar" style="left:84%;width:10%;height:40%;background:rgba(34,170,255,.35)"></div>
+        </div>
+        <div class="fake-code">DATA.STREAM.01: 0x48A7... [UNEXPECTED MISMATCH]<br>DATA.STREAM.02: LATENT_ID_99 ... [STABLE]<br>DRIFT_DELTA: +0.038 [FLAGGED]</div>
+      </div>
+
+      <!-- Fake card 2 -->
+      <div class="tele-card">
+        <div class="tc-lbl">Portability Swap Heatmap</div>
+        <div class="fake-heatmap">
+          <div class="hm-cell" style="background:rgba(255,77,77,.5)"></div><div class="hm-cell" style="background:rgba(245,181,68,.4)"></div><div class="hm-cell" style="background:rgba(245,181,68,.6)"></div><div class="hm-cell" style="background:rgba(204,255,102,.4)"></div><div class="hm-cell" style="background:rgba(34,170,255,.5)"></div><div class="hm-cell" style="background:rgba(34,170,255,.3)"></div><div class="hm-cell" style="background:rgba(204,255,102,.6)"></div><div class="hm-cell" style="background:rgba(204,255,102,.8)"></div>
+          <div class="hm-cell" style="background:rgba(245,181,68,.3)"></div><div class="hm-cell" style="background:rgba(255,77,77,.6)"></div><div class="hm-cell" style="background:rgba(255,77,77,.4)"></div><div class="hm-cell" style="background:rgba(245,181,68,.5)"></div><div class="hm-cell" style="background:rgba(34,170,255,.6)"></div><div class="hm-cell" style="background:rgba(204,255,102,.5)"></div><div class="hm-cell" style="background:rgba(34,170,255,.4)"></div><div class="hm-cell" style="background:rgba(204,255,102,.7)"></div>
+          <div class="hm-cell" style="background:rgba(204,255,102,.3)"></div><div class="hm-cell" style="background:rgba(34,170,255,.4)"></div><div class="hm-cell" style="background:rgba(245,181,68,.7)"></div><div class="hm-cell" style="background:rgba(255,77,77,.3)"></div><div class="hm-cell" style="background:rgba(204,255,102,.6)"></div><div class="hm-cell" style="background:rgba(155,123,255,.5)"></div><div class="hm-cell" style="background:rgba(34,170,255,.7)"></div><div class="hm-cell" style="background:rgba(34,170,255,.5)"></div>
+        </div>
+        <div class="fake-code">WM_LOAD_PEAK: 84% · BELIEF_BIAS_QUAD: UI [FAIL]<br>SYNTAX_TRANSFER: 6/7 · WRAPPER_HOLD: 4/6</div>
+      </div>
+
+      <!-- Fake card 3 -->
+      <div class="tele-card">
+        <div class="tc-lbl">Operator Chain Latency Analysis</div>
+        <div class="fake-graph" style="border-bottom:1px solid rgba(155,123,255,.2)">
+          <svg width="100%" height="58" style="position:absolute;top:0;left:0"><polyline points="0,50 40,38 80,45 120,20 160,32 200,15 240,28 280,10 320,22 360,8" fill="none" stroke="rgba(155,123,255,0.6)" stroke-width="2"/><polyline points="0,50 40,42 80,48 120,35 160,40 200,28 240,36 280,22 320,30 360,18" fill="none" stroke="rgba(34,170,255,0.4)" stroke-width="1.5" stroke-dasharray="4,3"/></svg>
+        </div>
+        <div class="fake-code">CHAIN_RT_MEAN: 2.14s · CHAIN_RT_SD: 0.38s<br>OPERATOR_ENTROPY: HIGH · BOUNDARY_PASS: 3/5</div>
+      </div>
+
+      <!-- Fake card 4 -->
+      <div class="tele-card">
+        <div class="tc-lbl">Predictive Exhaustion Modelling</div>
+        <div class="fake-graph" style="overflow:hidden">
+          <svg width="100%" height="58" style="position:absolute;top:0;left:0"><path d="M0,30 C60,28 120,10 180,5 C240,0 300,20 360,15" fill="none" stroke="rgba(245,181,68,0.7)" stroke-width="2"/><path d="M0,30 C60,32 120,35 180,38 C240,42 300,48 360,55" fill="rgba(245,181,68,0.06)" stroke="rgba(245,181,68,0.2)" stroke-width="1"/></svg>
+        </div>
+        <div class="fake-code">PSI_BAND_EST: 84% · EXHAUSTION_ETA: 47 min<br>LOAD_TRAJECTORY: RISING · RESET_SIGNAL: PENDING</div>
+      </div>
+    </div>
+
+    <!-- PAYWALL OVERLAY -->
+    <div class="tele-overlay">
+      <div class="pw-icon">🔒</div>
+      <div class="pw-title">Unlock Deep Telemetry</div>
+      <div class="pw-desc">Raw cognitive telemetry — drift matrices, unexpected mismatches, portability heatmaps, and exhaustion modelling — is recorded by the engine but reserved for supervised analysis. Book a 1-on-1 Cognitive Coaching session to decode your neural performance data with an expert.</div>
+      <div class="pw-tiers">
+        <div class="pw-tier">Pro Coaching</div>
+        <div class="pw-tier">Trident Enterprise</div>
+        <div class="pw-tier">Team Plan</div>
+      </div>
+      <div class="pw-cta-row">
+        <button class="btn btn-amber-outline">Book Cognitive Coaching</button>
+        <div style="font-family:'Chakra Petch',sans-serif;font-size:9px;letter-spacing:2px;color:var(--mgrey);text-transform:uppercase">or Upgrade Plan</div>
+      </div>
+      <div class="pw-sub">Your data is already being recorded · Nothing is lost · Unlock any time</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="bbar">
+  <div class="bbar-txt">TRIDENT·G // MVP v1 · Free Tier · Session Active</div>
+  <div class="bbar-txt">linkedin</div>
+</div>
+</div>
+
+<script>
+var TABS={hub:'ah',zone:'az',cap:'ac',rea:'ar',mis:'am',real:'arl',tele:'at'};
+function go(s){
+  document.querySelectorAll('.screen').forEach(function(e){e.classList.remove('on')});
+  document.querySelectorAll('.nav-tab').forEach(function(e){Object.values(TABS).forEach(function(c){e.classList.remove(c)})});
+  var sc=document.getElementById('sc-'+s);
+  var tb=document.getElementById('tab-'+s);
+  if(sc)sc.classList.add('on');
+  if(tb&&TABS[s])tb.classList.add(TABS[s]);
+}
+window.go=go;
+</script>
