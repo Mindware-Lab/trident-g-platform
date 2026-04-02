@@ -83,19 +83,29 @@ The Zone gate checks whether the user is currently in a viable operating state f
 A short **masked-majority task** or similar brief cognitive control probe, taking roughly **20–40 seconds**.
 
 ### Player-facing output
-Only one of three states should be shown:
+Only one of four states should be shown:
 
-- **Ready**
-- **Wobbling**
-- **Recover first**
+- **Flat**
+- **In the zone**
+- **Spun out**
+- **Locked in**
+
+`In the zone` is the only optimal readiness state. The other three states are different sub-optimal patterns that need different routing and coach behavior:
+
+- **Flat** = under-aroused
+- **Spun out** = over-aroused / scattered
+- **Locked in** = hyper-focused / rigid
 
 ### Routing rules
-- **Recover first** → no heavy training, show recovery routine or recovery route
-- **Wobbling** → light training only, usually Capacity or lighter Reasoning
-- **Ready** → full route available
+The Zone gate should act as a deterministic daily triage system.
+
+- **In the zone** -> full stack ladder unlocked; coach suggests normal progression
+- **Flat** -> block Mission and Real Missions; route to Capacity or other wake-up work; coach opens with **Push**
+- **Spun out** -> hard block on heavy training; route to Recovery before re-entry; coach opens with **Recover**
+- **Locked in** -> restrict Mission layers and prioritize flexibility checks; coach opens with **Switch it up**
 
 ### Design note
-The Zone gate is not just another assessment. It is the entry condition for the whole loop.
+The Zone gate is not just another assessment. It is the entry condition for the whole loop and the main state-driven path setter for the day.
 
 ---
 
@@ -304,20 +314,21 @@ The player should see only five high-level things on the main hub.
 
 ## 1. State tile
 Shows:
-- Ready
-- Wobbling
-- Recover first
+- Flat (Blue)
+- In the zone (Green)
+- Spun out (Red)
+- Locked in (Amber)
 
 ## 2. Next best move
 Only one coach card at a time.
 
 Possible prompts:
 - Recover
-- Increase challenge
+- Push
 - Switch it up
-- Drop one layer
-- Deploy in real life
-- Save this method
+- Step down
+- Deploy
+- Bank
 
 ## 3. Stack ladder
 Visible vertical ladder:
@@ -370,14 +381,20 @@ These stay internal.
 
 The coach should use only six visible action classes.
 
+The coach's first move should be set deterministically from the Zone state:
+- **Flat** -> **Push**
+- **In the zone** -> normal progression
+- **Spun out** -> **Recover**
+- **Locked in** -> **Switch it up**
+
 ## 1. Recover
-Used when the system is not clean enough for useful training.
+Used when the system is spun out and not clean enough for useful training.
 
 ## 2. Push
-Increase challenge slightly.
+Used when the system is flat or under-aroused. The coach should use a short wake-up block, usually in Capacity, before heavier work.
 
 ## 3. Switch it up
-Use a syntax swap, wrapper swap, or alternate but structurally related task.
+Used when the system is locked in. Use a syntax swap, wrapper swap, or alternate but structurally related task to test flexibility.
 
 ## 4. Step down
 Drop one layer in the stack:
@@ -411,17 +428,24 @@ If a metric does not support one of those, it likely does not belong in MVP.
 ## Telemetry ledgers
 
 ## 1. State ledger
-Tracks Zone and routing decisions.
+Tracks Zone reads, routing decisions, and the coach's first move.
 
 ### Minimum fields
 - `session_id`
 - `timestamp`
 - `zone_state`
 - `route_recommendation`
+- `coach_action`
 - `state_check_version`
 
 Optional:
 - `notes`
+
+`zone_state` should use:
+- `flat`
+- `in_the_zone`
+- `spun_out`
+- `locked_in`
 
 ## 2. Training ledger
 Tracks training events inside the gyms.
@@ -560,7 +584,7 @@ Use local JSON logging, analytics-ready.
   "session_id": "string",
   "timestamp": "ISO-8601",
   "gym": "zone|capacity|reasoning|mission",
-  "state": "ready|wobbling|recover",
+  "state": "flat|in_the_zone|spun_out|locked_in",
   "action": "start|complete|swap|deploy|bank",
   "result": "success|partial|fail",
   "accuracy": 0.0,
@@ -630,7 +654,7 @@ Use local JSON logging, analytics-ready.
 ## Test plan for MVP
 
 ## Functional checks
-1. Zone gate routes consistently to Ready, Wobbling, or Recover first.
+1. Zone gate routes consistently to Flat, In the zone, Spun out, or Locked in.
 2. Capacity module launches and records completion.
 3. Reasoning items render correctly in abstract, neutral, and mission wrappers.
 4. Syntax swaps are injected and recorded.
@@ -639,11 +663,13 @@ Use local JSON logging, analytics-ready.
 7. Banked script count updates only after transfer conditions are met.
 
 ## Behaviour checks
-1. Out-of-band state suppresses heavy training.
-2. Plateau can trigger “Switch it up”.
-3. Overload can trigger “Step down”.
-4. Robust performance can trigger “Deploy”.
-5. Sufficient transfer evidence can trigger “Bank”.
+1. Flat state suppresses Mission and Real Missions and triggers `Push`.
+2. Spun out state hard-blocks heavy training and triggers `Recover`.
+3. Locked in state restricts Mission layers and triggers `Switch it up`.
+4. In the zone unlocks the full ladder and allows normal progression.
+5. Overload or repeated failure can trigger `Step down`.
+6. Robust in-zone performance can trigger `Deploy`.
+7. Sufficient transfer evidence can trigger `Bank`.
 
 ## UI checks
 1. Hub never shows more than one coach prompt at a time.
@@ -695,7 +721,19 @@ Prefer simpler labels in the UI:
 ## Terminology key
 
 ## Zone
-The current viability state for clean training and action. It determines whether the user is ready, wobbling, or should recover first.
+The current viability state for clean training and action. It determines whether the user is flat, in the zone, spun out, or locked in.
+
+## Flat
+An under-aroused state. Processing is likely sluggish, so heavier inferential work should be deferred while the coach pushes the system upward.
+
+## In the zone
+The only optimal readiness state. The user is clean enough for normal progression through the full stack.
+
+## Spun out
+An over-aroused or scattered state. Interference is high enough that heavy training should pause until the user recovers.
+
+## Locked in
+A rigid or tunnel-visioned state. Focus may be high, but flexibility is low, so the coach should use a switch task before higher-layer work.
 
 ## Capacity
 The runtime-support layer. It includes working memory, control stability, interference resistance, re-entry, and related substrate functions that make higher cognition runnable under load.
@@ -766,10 +804,10 @@ A coach action that routes the user to a lower layer when the current layer is t
 - Capacity → Zone
 
 ## Push
-A coach action that increases challenge modestly when progress is stable.
+A coach action that wakes up a flat or under-aroused system before heavier work.
 
 ## Switch it up
-A coach action that perturbs the task through syntax, wrapper, or alternate structurally related form when progress is flatlining.
+A coach action that perturbs the task through syntax, wrapper, or alternate structurally related form when rigidity or tunnel vision is detected.
 
 ## Deploy
 A coach action that tells the user to use a method in a real task.
