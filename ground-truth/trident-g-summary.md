@@ -121,6 +121,11 @@ The G-Loop remains the core intelligence kernel running across all these layers.
 
 The crucial clarification is that **the operators collectively implement how the kernel thinks and acts**, but they are **not the whole kernel**. The G-Loop also depends on semantics, subjectivity, allostatic viability, feedback signals, and runtime conditions. In other words, operator algebra plus mission grammar are the concrete mindware implementation layer of the kernel, not the entire architecture.
 
+G-Loop = the kernel;
+Operator algebra + mission grammar = the concrete mindware implementation layer of that kernel;
+Reasoning calculus = the inference style running inside those moves;
+Runtime = what makes the whole thing executable under load.
+
 ### 8. Summary
 
 Trident-G is best understood as a domain-general intelligence architecture organised around a shaft-and-tines structure and run by a common G-Loop kernel. The shaft is banked Gc competence, the centre tine is live Gf relational reasoning as the bridge between viability control, banked Gc, and the explore–exploit branches, and the outer tines are entropy-widening exploration and mutual-information-tightening control. Above the architecture sit the two meta-missions of Viability and Expansion. At the applied level, Trident-G is run through mission frames for IQ / performance and control missions for resilience / self-regulation. Formally, the system is organised as a language of thought and action, composed of operator algebra and mission grammar, together with a reasoning calculus, a semantic layer, a syntax layer, a subjective interface, a Ψ-allostatic viability layer, a cognitive runtime, and a fast SR-like relational runtime. The language of thought and action is the formal move-language by which the kernel is executed concretely, but the kernel is not reducible to operators alone: it also depends on what is being modelled, what is valued, whether the current state is viable, how signals are routed, and what the runtime can sustain. Together these layers explain how Trident-G integrates purpose, modelling, subjectivity, inference, selective compression, state control, and runtime execution into a single architecture.
