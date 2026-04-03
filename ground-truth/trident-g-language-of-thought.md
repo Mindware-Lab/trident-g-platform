@@ -8,6 +8,10 @@ Within the wider Trident-G stack, this appendix specifies the **operator algebra
 
 These operators are intended to support both mission families already specified in Trident-G: IQ / performance missions such as understanding, argumentation, decision-making, and strategic action, and resilience / self-regulation missions such as shielding attention, recovery, mode calibration, externalisation, and viable re-entry. The same operator set supports both families because self-regulation in Trident-G is explicitly not mindware-free.
 
+A further clarification is important. In Trident-G, the operator algebra and mission grammar are the concrete **mindware implementation layer** of the G-Loop. The G-Loop is the kernel. The operator algebra supplies the reusable rule-like moves by which that kernel runs. Mission grammar supplies the frame-specific sequencing rules that make those moves well-formed for a given purpose. Reasoning styles such as deductive, inductive, abductive, analogical, Bayesian, and value-of-information reasoning are then layered onto those moves during execution.
+
+This means that insight, gist extraction, and compression should not be treated as mysterious extras outside the formal system. They are produced procedurally through the operator layer, especially when relational reasoning is working cleanly over the current map.
+
 ### 1. Ontological clarification
 
 The operators are not the raw processing itself. They are the rule-like moves that run over representational objects such as maps, chunks, schemas, claims, hypotheses, action candidates, and external artefacts. They are therefore best treated as **mindware primitives**, not as the capacity substrate that supports them. Working memory and attention keep these objects active and manipulable. The operators specify what to do with them.
@@ -16,11 +20,11 @@ This distinction matters. Working memory, attention protection, interference con
 
 For the same reason, the following should **not** be added as separate primitive operators:
 
-- working-memory holding
-- attention protection
-- explore vs exploit
-- meaning vs moves
-- banking or consolidation as such
+* working-memory holding
+* attention protection
+* explore vs exploit
+* meaning vs moves
+* banking or consolidation as such
 
 These are already handled elsewhere in the architecture. Working memory and attention are runtime variables, explore–exploit is a mode policy of the kernel, and Install / Bank is a cross-frame conversion mode rather than an additional primitive.
 
@@ -52,62 +56,151 @@ The following reasoning types should be treated as **inference styles** or **rea
 
 These reasoning styles may optionally be used as tags on operator runs. In other words, the operators say **what move is being made**, while the reasoning style says **how inference is being carried out during that move**. This keeps the operator algebra compact while preserving the richer reasoning calculus above it.
 
+### 3A. Insight, compression, and selection pressure in the operator layer
+
+Deep insight in Trident-G is not just extracted from the task. It emerges from an interaction between:
+
+* the task structure itself
+* the person’s existing banked Gc
+* their current subjective value landscape
+* their embodied allostatic state and history
+
+That is why two people can face the same problem and extract different gists, and why even the same person may extract a different invariant at a different stage of life or in a different state.
+
+A concise formula is:
+
+**Insight = invariant extracted through current engagement, under selection pressure from task structure, existing Gc, lived values, and embodied state/history.**
+
+This should not be read as making insight “subjective” in the weak sense. Rather, it means that invariant extraction is always constrained both by what is structurally present in the task and by the selector field created by prior knowledge, valuation, and current viable state.
+
+The main operator pathway for insight and gist extraction is:
+
+**Y4 Map → Y5 Chunk → Y8 Abstract → Y10 Re-represent → Y11 Meta-map**
+
+with later pressure-testing through:
+
+**Y12 Evaluate → Y13 Discriminate / Probe → Y14 Validate portability → Y15 Satisfice / Commit**
+
+The functional roles are:
+
+* **Y4 Map** builds the live relational field, including entities, constraints, relations, options, and value tags.
+* **Y5 Chunk** compresses coherent structure into manageable units and reduces model weight.
+* **Y8 Abstract** extracts the higher-order invariant, schema, or organising rule.
+* **Y10 Re-represent** shifts framing, level, or representation while preserving what matters, and is often central for insight when the original framing was wrong.
+* **Y11 Meta-map** compares maps, scripts, or frameworks and helps identify deeper commonalities across cases.
+
+These operators generate candidate insight.
+
+The candidate is then tested and stabilised by:
+
+* **Y12 Evaluate**, which checks whether the candidate is good enough to trust
+* **Y13 Discriminate / Probe**, which identifies the cheapest high-value test that separates real invariants from attractive errors
+* **Y14 Validate portability**, which tests whether the candidate actually travels across syntax, wrapper, stake, or boundary changes
+* **Y15 Satisfice / Commit**, which turns the current gist into a justified next move, stop rule, or reusable script candidate
+
+So insight in Trident-G is not a separate seventeenth primitive. It is the emergent result of a particular operator pathway running well.
+
+Compression success is the degree to which the system can reduce current structure into a usable gist, invariant, or next move without losing what matters.
+
+This is often lived as:
+
+* relief
+* coherence
+* clarity
+* excitement
+* confidence
+* a felt “click”
+
+These feelings are useful because they may mark successful reduction of model weight and improved fit between representation and structure. But they are not self-validating. A satisfying click is a candidate signal of emerging gist, not proof of truth or proof of far transfer.
+
+For that reason, Trident-G should treat pleasurable compression as a useful but fallible cue that must still be pressure-tested by evaluation, discrimination, and portability checks.
+
+The operator layer should also distinguish two different complexity costs.
+
+**Revision cost** is the cost of changing the current model, policy, or skill structure to fit what is happening. It is encountered mainly through mismatch and unexpected mismatch. In practical terms, it is the cost of revising what one believes, how one is modelling the situation, or which operator chain one is relying on.
+
+**Map cost** is the cost of carrying and running the current model. It is the representational burden or model weight of the map: how many moving parts it contains, how hard it is to hold online, and how fragile it becomes under load and drift.
+
+The operator layer therefore sits between two pressures:
+
+* revise when the model is not good enough
+* simplify when the model is too heavy to run cleanly
+
+A good operator run manages both.
+
+Because Trident-G treats subjectivity as the lived interface of the loop, operator execution is never fully neutral. Feelings, motivations, emotional pressure, and felt significance shape what is noticed, what is held in working memory, what is treated as salient, and which candidate gist feels worth pursuing.
+
+This means that the emotional surface often gives first contact with several different loop conditions:
+
+* rising pressure may indicate rising load
+* felt “something is off” may indicate mismatch
+* repeated destabilisation may indicate unexpected mismatch
+* mental clutter may indicate excessive map cost
+* relief or excitement may accompany compression success
+* urgency or attraction may reflect genuine salience, over-bracing, or both
+
+So subjectivity should be treated as **signal-rich but fallible**. It helps reveal what the loop is experiencing, but it does not by itself determine whether the right response is to simplify, probe, update, recover, or restructure.
+
+The cleanest practical rule is:
+
+**Use the operator layer to generate candidate gists and invariants, but treat them as selected under task structure, prior Gc, lived values, and embodied state/history. Then test them hard enough that only portable structure survives.**
+
 ### 4. Canonical operator set
 
 #### A. Rigour and viability gating
 
-**Y1 — Orient**  
+**Y1 — Orient**
 Set the rigour budget for the loop. Y1 decides how much depth, checking, complexity, and caution are warranted now, given stakes, uncertainty, time, and current state. It is the operator-level expression of salience: not another content move, but the move that decides how much loop to run. In IQ / performance missions, Y1 prevents both shallow under-modelling and unnecessary over-analysis. In resilience missions, it helps match effort to viable state. In far transfer, it protects clean credit assignment by preventing over-rigorous work when the system is unstable.
 
-**Y2 — Recover**  
+**Y2 — Recover**
 Restore workable corridor occupancy when the loop has become noisy, overheated, flat, or otherwise untrustworthy. Y2 is a true primitive because recovery is not an optional prelude to cognition in Trident-G, but part of the intelligence kernel itself. In IQ / performance missions, it restores the possibility of clean inference. In resilience missions, it is central. In far transfer, it prevents state-contingent errors from being mistaken for structural failure or success.
 
-**Y3 — Externalise / Escalate**  
+**Y3 — Externalise / Escalate**
 Offload cognition into stable scaffolds or escalate when clean in-head continuation is no longer viable or safe. This operator preserves progress and safety by routing work into notes, checklists, schedules, delegation, review, or human support. In IQ / performance missions, it prevents forced cognition under unstable conditions. In resilience missions, it is a key safeguard. In far transfer, it supports human-plus-tool general intelligence by allowing the operator policy to continue in another substrate rather than collapse.
 
 #### B. Representational construction and transformation
 
-**Y4 — Map**  
+**Y4 — Map**
 Build the current relational problem space: entities, constraints, relations, options, and value tags. This is the main explicit structure-building operator. In stack terms, it operates over the semantic layer: ontology, situation map, and affordance surface. It is central to comprehension, diagnosis, planning, and argumentation. In resilience use, it can also be directed at one’s own state, triggers, and constraints. In far transfer, it is foundational because portability depends on learning deeper structure rather than surface wrappers alone. Common inference styles here are abductive and inductive.
 
-**Y5 — Chunk**  
+**Y5 — Chunk**
 Compress a coherent subgraph into a manageable unit. Y5 reduces model weight, packages stable structure, and creates candidate reusable units for later retrieval and recombination. Hierarchical decomposition is usually achieved by **Y4 Map + Y5 Chunk**, optionally regulated by **Y16**. In IQ / performance work, Y5 supports clearer modelling and lower working-memory cost. In resilience work, it can reduce overwhelm by reducing live representational burden. In far transfer, it helps create reusable units that may later become part of bankable scripts.
 
-**Y6 — Unpack**  
+**Y6 — Unpack**
 Reopen a chunk when it fails, hides dependencies, or proves too coarse. Y6 is indispensable for debugging brittle scripts, locating hidden assumptions, and correcting bad boundaries. In IQ / performance missions, it supports troubleshooting, revision, and deeper analysis. In resilience missions, it prevents over-compressed or emotionally loaded simplifications from being treated as adequate models. In far transfer, it helps distinguish genuinely portable structure from compressed but wrapper-bound tricks.
 
-**Y7 — Analogise**  
+**Y7 — Analogise**
 Transfer structure by role rather than surface similarity. Y7 supports portability, problem-solving, reframing, and cross-domain reasoning by mapping deeper relational roles from a source case to a target case. In resilience use, analogical reframing can also help restore distance or alternative interpretation. In far transfer, it is one of the clearest bridges from specific experience to portable structure. Its dominant inference style is analogical reasoning.
 
-**Y8 — Abstract**  
+**Y8 — Abstract**
 Extract a higher-order invariant, schema, or organising rule from repeated cases or maps. Y8 is one of the main routes from live Gf to portable Gc because it asks what remains stable across instances, not what merely worked once. In IQ / performance missions, it supports rule-learning, theory-building, and principled transfer. In resilience missions, it supports general self-regulation routines that apply across states and contexts. In far transfer, it is central because abstraction is one of the main routes to syntax- and wrapper-robust competence. Common inference styles here are inductive and sometimes abductive.
 
-**Y9 — Instantiate**  
+**Y9 — Instantiate**
 Bind a schema, script, or abstract structure to the present case strongly enough to generate implications, expectations, or next moves. Y9 is the main “apply the rule here” operator. In IQ / performance missions, it supports decision-making, planning, diagnosis, and explanation. In resilience missions, it helps translate a general recovery or distancing script into the current episode. In far transfer, it is crucial because transfer is not only about having an abstract rule, but about binding it appropriately to a new case or syntax. Deductive reasoning is often prominent here.
 
-**Y10 — Re-represent**  
+**Y10 — Re-represent**
 Shift framing or level while preserving essential structure. Y10 is the operator for changing representation without losing what matters. It is especially useful when a failure is representational rather than informational: wrong level, wrong framing, wrong granularity, wrong causal picture, or unhelpful surface syntax. In IQ / performance missions, it supports insight, reframing, and better fit between model and problem. In resilience missions, it supports distancing, reappraisal, and reduced salience hijack. In far transfer, it helps preserve deep structure across surface changes.
 
-**Y11 — Meta-map**  
+**Y11 — Meta-map**
 Map relations between maps, models, scripts, or frameworks. Y11 builds structure over structures. It is especially important in theory-building, argument comparison, research synthesis, systems design, and multi-framework planning. In resilience missions, it can support meta-awareness of recurring loops, triggers, and competing self-regulation routines. In far transfer, it helps identify deeper commonalities across syntaxes, wrappers, and domains. Abductive and inductive reasoning are often prominent here.
 
 #### C. Testing and discrimination
 
-**Y12 — Evaluate**  
+**Y12 — Evaluate**
 Assess whether a claim, relation, assumption, or action candidate is good enough to trust. Y12 is the main audit primitive. It includes both external support checks and internal consistency checks, such as contradictions, broken links, missing warrants, category errors, or policy mismatches. In IQ / performance missions, it is central to argument quality, decision quality, and model validity. In resilience missions, it supports reality-checking and reduces drift into emotionally compelling but structurally weak interpretations. In far transfer, it helps prevent premature banking of plausible but unverified routines. Deductive, inductive, and Bayesian forms of evaluation may all appear here.
 
-**Y13 — Discriminate / Probe**  
+**Y13 — Discriminate / Probe**
 Design or run the cheapest, highest-value test that best separates competing possibilities. Y13 is the main diagnostic probe operator and is repeatedly highlighted in the protocol as a core move under mismatch. In IQ / performance missions, it supports diagnosis, decision-making, argument testing, and efficient learning. In resilience missions, it helps separate genuine threat from noise, and true constraint from avoidance or distortion. In far transfer, it is essential because portability depends on learning what actually matters, not merely rehearsing what feels plausible. Value-of-information reasoning is most explicit here, and Bayesian or inductive updating often follows from it.
 
-**Y14 — Validate portability**  
+**Y14 — Validate portability**
 Test whether a candidate script or structure actually travels across syntaxes, wrappers, stakes, and boundary conditions. Y14 is the explicit portability threshold operator, not the whole of banking. It asks whether a candidate survives variation strongly enough to become eligible for banking as competence. In IQ / performance missions, it supports generalisation beyond the original training syntax or wrapper. In resilience missions, it helps ensure a self-regulation script still works under different kinds of load and context. In far transfer, it is indispensable. Inductive generalisation across swaps is especially important here. The scaling protocol makes clear that syntax swaps are a subtype of wrapper swap and should usually be the first portability staircase.
 
 #### D. Commitment and meta-control
 
-**Y15 — Satisfice / Commit**  
+**Y15 — Satisfice / Commit**
 Stop hovering and choose the next move once the signal is good enough for the current rigour budget. Y15 is not simply action selection, but the discipline of not overthinking beyond salience. In IQ / performance missions, it supports timely execution and realistic stopping rules. In resilience missions, it reduces thrash, rumination, and avoidant overprocessing. In far transfer, it helps ensure that learned scripts become executable rather than endlessly theoretical.
 
-**Y16 — Level control / anti-regress**  
+**Y16 — Level control / anti-regress**
 Regulate movement between levels of representation so the loop does not get trapped in over-abstraction, over-detail, or endless recursion. This operator is best defined narrowly as granularity control rather than as recursion in the broad sense. In IQ / performance missions, it supports better problem decomposition and prevents unproductive level-lock. In resilience missions, it can break loops of over-analysis, fixation, or vague globalisation. In far transfer, it helps ensure that the structure being abstracted or applied is at the right level to travel.
 
 ### 5. Why this set is balanced
