@@ -920,8 +920,6 @@ function injectRichSchema() {
 
   if (!existingTypes.has(pageSchemaType(path))) {
     pushNode(buildWebPageSchema(buildContactPageMainEntity(path)))
-  } else if (!existingTypes.has("WebPage") && pageSchemaType(path) !== "WebPage") {
-    pushNode(buildWebPageSchema(buildContactPageMainEntity(path)))
   }
 
   if (path === "/about/" && !existingTypes.has("Person")) {
