@@ -1,7 +1,7 @@
 ﻿# IQMindware Website Inventory
 
 Generated: 2026-04-04 00:00:00 +00:00
-Total pages: 43
+Total pages: 44
 
 | Title | URL | Source file |
 |---|---|---|
@@ -21,6 +21,7 @@ Total pages: 43
 | Why Far Transfer Is Harder Than It Looks \\| IQMindware | https://www.iqmindware.com/learn/blog/article/ | learn/blog/article/index.html |
 | Dual N-Back Training Strategies: Progression, Plateaus, and Transfer | https://www.iqmindware.com/learn/blog/dual-n-back-training-strategies/ | learn/blog/dual-n-back-training-strategies/index.html |
 | The Science Behind the Emotional Dual N-back \\| IQMindware | https://www.iqmindware.com/learn/blog/emotional-dual-n-back-science/ | learn/blog/emotional-dual-n-back-science/index.html |
+| Fluid and Crystallized Intelligence: Why Problems Repeat \\| IQMindware | https://www.iqmindware.com/learn/blog/fluid-and-crystallized-intelligence/ | learn/blog/fluid-and-crystallized-intelligence/index.html |
 | Raven's Progressive Matrices: How to Approach the Test Well | https://www.iqmindware.com/learn/blog/how-to-do-a-raven-matrices-test/ | learn/blog/how-to-do-a-raven-matrices-test/index.html |
 | Human-Led AI Reasoning Protocol: 10-Day Challenge \\| IQMindware | https://www.iqmindware.com/learn/blog/human-led-ai-reasoning-protocol-10-day-challenge/ | learn/blog/human-led-ai-reasoning-protocol-10-day-challenge/index.html |
 | Jordan Peterson on IQ: A Methods-First Read \\| IQMindware | https://www.iqmindware.com/learn/blog/jordan-peterson-iq/ | learn/blog/jordan-peterson-iq/index.html |

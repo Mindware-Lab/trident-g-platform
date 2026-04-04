@@ -144,6 +144,12 @@
       "required_template_blocks": []
     },
     {
+      "route": "/learn/blog/fluid-and-crystallized-intelligence/",
+      "intent": "education_article",
+      "primary_cta": "Read article content",
+      "required_template_blocks": []
+    },
+    {
       "route": "/learn/blog/ai-knowledge-workers-cognitive-drift/",
       "intent": "education_article",
       "primary_cta": "Read article content",

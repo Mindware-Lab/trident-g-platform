@@ -80,6 +80,13 @@
         "CollectionPage"
       ]
     },
+    "/learn/blog/fluid-and-crystallized-intelligence/": {
+      "title": "Fluid and Crystallized Intelligence: Why Problems Repeat",
+      "canonical": "https://www.iqmindware.com/learn/blog/fluid-and-crystallized-intelligence/",
+      "schema": [
+        "Article"
+      ]
+    },
     "/learn/blog/ai-knowledge-workers-cognitive-drift/": {
       "title": "AI and Knowledge Workers: The Real Challenge Is Cognitive Drift",
       "canonical": "https://www.iqmindware.com/learn/blog/ai-knowledge-workers-cognitive-drift/",
