@@ -353,7 +353,7 @@ body.blog    { background: var(--pg-alt); }
   top: 120px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
 }
 .bl-toc {
   background: #fff; border: 1.5px solid rgba(0,0,0,.08);

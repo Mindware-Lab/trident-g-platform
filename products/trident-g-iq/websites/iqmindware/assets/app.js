@@ -898,8 +898,11 @@ function buildContactPageMainEntity(path) {
 const BREVO_SIGNUP_FORM_URL =
   "https://e287205c.sibforms.com/serve/MUIFAJD01nPYezZRJNU5f5-z57gqUO9A0-DknttJV5VvRRH9CSPY2gJO8RWK0fyTYZw7Pz4yHVunCGQsZGp99u6LjVNpGQouxx3xTXVduP1F97vskESxC0VKRFIEZEeULZJ34ii-Xmb2D7YTur5aU7X6zvnYkTwJzA2ISJZ1kL5VddiqfysLVEZfsi5zb5Edypy-sc5gvCT_goF58w=="
 
-function buildSignupButton(label) {
-  return `<a class="btn btn-lime btn-sm" href="${BREVO_SIGNUP_FORM_URL}" target="_blank" rel="noopener noreferrer">${label}</a>`
+function buildSignupButton(label, extraClass = "") {
+  const className = ["btn", "btn-lime", "btn-sm", extraClass]
+    .filter(Boolean)
+    .join(" ")
+  return `<a class="${className}" href="${BREVO_SIGNUP_FORM_URL}" target="_blank" rel="noopener noreferrer">${label}</a>`
 }
 
 function buildSignupIframe(frameTitle) {
@@ -970,7 +973,7 @@ function buildSignupCompactSection({
   `
 }
 
-function buildSignupSidebarCard({ eyebrow, title, text, frameTitle }) {
+function buildSignupSidebarCard({ eyebrow, title, text, buttonLabel }) {
   return `
     <div class="iqm-signup-card iqm-signup-card--sidebar">
       <div class="iqm-signup-copy">
@@ -978,7 +981,9 @@ function buildSignupSidebarCard({ eyebrow, title, text, frameTitle }) {
         <h2 class="iqm-signup-title">${title}</h2>
         <p class="iqm-signup-text">${text}</p>
       </div>
-      ${buildSignupIframe(frameTitle)}
+      <div class="iqm-signup-actions iqm-signup-actions--sidebar">
+        ${buildSignupButton(buttonLabel, "iqm-signup-button")}
+      </div>
     </div>
   `
 }
@@ -1001,7 +1006,7 @@ function injectSignupPrompts() {
           title: "Get new essays and research notes",
           text:
             "Subscribe for intelligence training content, protocol updates, and occasional offers from IQMindware.",
-          frameTitle: "IQMindware article signup form",
+          buttonLabel: "Subscribe for content",
         })
       )
     }
