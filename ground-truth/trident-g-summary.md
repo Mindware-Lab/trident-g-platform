@@ -23,7 +23,7 @@ The centre tine is best understood as the live relational bridge in three linked
 
 A clean definition is:
 
-> **G is the overall usable general-intelligence range of the Trident system: the capacity to stay viable, move adaptively across the explore–exploit range, and coordinate banked Gc with live Gf so that cognition can shift from low-cost automated competence to high-demand restructuring under challenge, then crystallise what survives back into reusable Gc.**
+> **G is the overall usable general-intelligence range of the Trident system: the capacity to stay in a viable near-critical brain state - and move inferentially across the explore–exploit range, and coordinate banked Gc with live Gf so that cognition can shift from low-cost automated competence to high-demand restructuring under challenge, then crystallise what survives back into reusable Gc.**
 
 So:
 
