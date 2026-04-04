@@ -291,6 +291,174 @@ a {
   background: rgba(88, 101, 242, 0.09);
 }
 
+.iqm-signup-section {
+  padding: 0 max(1rem, 5vw) 56px;
+}
+
+.iqm-signup-section--contained {
+  padding-top: 28px;
+}
+
+.iqm-signup-shell {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.iqm-signup-shell--narrow {
+  max-width: 960px;
+}
+
+.iqm-signup-card {
+  background:
+    radial-gradient(circle at top left, rgba(34, 170, 255, 0.12), transparent 38%),
+    radial-gradient(circle at bottom right, rgba(204, 255, 102, 0.14), transparent 34%),
+    #f7f9fc;
+  border: 1.5px solid rgba(14, 31, 53, 0.10);
+  border-radius: 24px;
+  box-shadow: 0 18px 42px rgba(10, 25, 46, 0.08);
+}
+
+.iqm-signup-card--embed {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 390px);
+  gap: 28px;
+  align-items: start;
+  padding: 28px;
+}
+
+.iqm-signup-card--compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 26px;
+}
+
+.iqm-signup-card--sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.iqm-signup-copy {
+  min-width: 0;
+}
+
+.iqm-signup-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #1a5fa8;
+  margin-bottom: 12px;
+}
+
+.iqm-signup-eyebrow::before {
+  content: "";
+  width: 18px;
+  height: 1.5px;
+  background: #22AAFF;
+  flex-shrink: 0;
+}
+
+.iqm-signup-title {
+  font-size: clamp(22px, 3vw, 34px);
+  font-weight: 800;
+  letter-spacing: -.022em;
+  line-height: 1.12;
+  color: #12253f;
+  margin: 0 0 12px;
+}
+
+.iqm-signup-card--compact .iqm-signup-title {
+  font-size: clamp(20px, 2.4vw, 28px);
+  margin-bottom: 8px;
+}
+
+.iqm-signup-card--sidebar .iqm-signup-title {
+  font-size: 18px;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.iqm-signup-text {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #44566f;
+  margin: 0;
+}
+
+.iqm-signup-card--sidebar .iqm-signup-text {
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+.iqm-signup-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.iqm-signup-meta {
+  font-size: 12px;
+  line-height: 1.55;
+  color: #62748b;
+}
+
+.iqm-signup-iframe-wrap {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(14, 31, 53, 0.08);
+  border-radius: 18px;
+  padding: 10px;
+}
+
+.iqm-signup-iframe {
+  display: block;
+  width: 100%;
+  min-height: 330px;
+  border: 0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.iqm-signup-card--sidebar .iqm-signup-iframe {
+  min-height: 410px;
+}
+
+@media (max-width: 980px) {
+  .iqm-signup-card--embed {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .iqm-signup-section {
+    padding-bottom: 40px;
+  }
+
+  .iqm-signup-card--embed,
+  .iqm-signup-card--compact {
+    padding: 22px;
+  }
+
+  .iqm-signup-card--compact {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .iqm-signup-card--sidebar .iqm-signup-iframe {
+    min-height: 360px;
+  }
+}
+
 @media (max-width: 880px) {
   .site-header {
     align-items: flex-start;

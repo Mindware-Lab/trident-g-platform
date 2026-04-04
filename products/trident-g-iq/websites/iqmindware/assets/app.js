@@ -895,6 +895,172 @@ function buildContactPageMainEntity(path) {
   return undefined
 }
 
+const BREVO_SIGNUP_FORM_URL =
+  "https://e287205c.sibforms.com/serve/MUIFAJD01nPYezZRJNU5f5-z57gqUO9A0-DknttJV5VvRRH9CSPY2gJO8RWK0fyTYZw7Pz4yHVunCGQsZGp99u6LjVNpGQouxx3xTXVduP1F97vskESxC0VKRFIEZEeULZJ34ii-Xmb2D7YTur5aU7X6zvnYkTwJzA2ISJZ1kL5VddiqfysLVEZfsi5zb5Edypy-sc5gvCT_goF58w=="
+
+function buildSignupButton(label) {
+  return `<a class="btn btn-lime btn-sm" href="${BREVO_SIGNUP_FORM_URL}" target="_blank" rel="noopener noreferrer">${label}</a>`
+}
+
+function buildSignupIframe(frameTitle) {
+  return `
+    <div class="iqm-signup-iframe-wrap">
+      <iframe
+        class="iqm-signup-iframe"
+        src="${BREVO_SIGNUP_FORM_URL}"
+        title="${frameTitle}"
+        loading="lazy"
+        referrerpolicy="strict-origin-when-cross-origin"
+      ></iframe>
+    </div>
+  `
+}
+
+function buildSignupEmbedSection({
+  sectionClass = "",
+  eyebrow,
+  title,
+  text,
+  frameTitle,
+  buttonLabel,
+}) {
+  return `
+    <section class="iqm-signup-section ${sectionClass}">
+      <div class="iqm-signup-shell">
+        <div class="iqm-signup-card iqm-signup-card--embed">
+          <div class="iqm-signup-copy">
+            <span class="iqm-signup-eyebrow">${eyebrow}</span>
+            <h2 class="iqm-signup-title">${title}</h2>
+            <p class="iqm-signup-text">${text}</p>
+            <div class="iqm-signup-actions">
+              ${buildSignupButton(buttonLabel)}
+              <span class="iqm-signup-meta">Prefer the hosted version? Use the button to open the full signup page in a new tab.</span>
+            </div>
+          </div>
+          ${buildSignupIframe(frameTitle)}
+        </div>
+      </div>
+    </section>
+  `
+}
+
+function buildSignupCompactSection({
+  sectionClass = "",
+  eyebrow,
+  title,
+  text,
+  buttonLabel,
+}) {
+  return `
+    <section class="iqm-signup-section iqm-signup-section--contained ${sectionClass}">
+      <div class="iqm-signup-shell iqm-signup-shell--narrow">
+        <div class="iqm-signup-card iqm-signup-card--compact">
+          <div class="iqm-signup-copy">
+            <span class="iqm-signup-eyebrow">${eyebrow}</span>
+            <h2 class="iqm-signup-title">${title}</h2>
+            <p class="iqm-signup-text">${text}</p>
+          </div>
+          <div class="iqm-signup-actions">
+            ${buildSignupButton(buttonLabel)}
+            <span class="iqm-signup-meta">Opens the hosted signup form in a new tab.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  `
+}
+
+function buildSignupSidebarCard({ eyebrow, title, text, frameTitle }) {
+  return `
+    <div class="iqm-signup-card iqm-signup-card--sidebar">
+      <div class="iqm-signup-copy">
+        <span class="iqm-signup-eyebrow">${eyebrow}</span>
+        <h2 class="iqm-signup-title">${title}</h2>
+        <p class="iqm-signup-text">${text}</p>
+      </div>
+      ${buildSignupIframe(frameTitle)}
+    </div>
+  `
+}
+
+// Inject signup surfaces centrally so page type controls placement and weight.
+function injectSignupPrompts() {
+  const footer = document.querySelector("footer.site-footer")
+
+  if (
+    document.body.classList.contains("blog") &&
+    document.querySelector(".bl-article-body") &&
+    document.querySelector(".bl-article-sidebar")
+  ) {
+    const sidebar = document.querySelector(".bl-article-sidebar")
+    if (sidebar && !sidebar.querySelector(".iqm-signup-card--sidebar")) {
+      sidebar.insertAdjacentHTML(
+        "beforeend",
+        buildSignupSidebarCard({
+          eyebrow: "Stay updated",
+          title: "Get new essays and research notes",
+          text:
+            "Subscribe for intelligence training content, protocol updates, and occasional offers from IQMindware.",
+          frameTitle: "IQMindware article signup form",
+        })
+      )
+    }
+  }
+
+  if (document.body.classList.contains("home")) {
+    const anchor = document.querySelector(".home-cta-band") || footer
+    if (anchor && !document.querySelector(".iqm-signup-section--home")) {
+      anchor.insertAdjacentHTML(
+        "beforebegin",
+        buildSignupEmbedSection({
+          sectionClass: "iqm-signup-section--home",
+          eyebrow: "Get updates",
+          title: "Get intelligence training content and launch updates",
+          text:
+            "Subscribe for new research notes, protocol updates, and occasional offers as IQMindware evolves.",
+          frameTitle: "IQMindware homepage signup form",
+          buttonLabel: "Open hosted signup form",
+        })
+      )
+    }
+  }
+
+  if (document.body.classList.contains("proof")) {
+    const anchor = footer
+    if (anchor && !document.querySelector(".iqm-signup-section--proof")) {
+      anchor.insertAdjacentHTML(
+        "beforebegin",
+        buildSignupEmbedSection({
+          sectionClass: "iqm-signup-section--proof",
+          eyebrow: "Stay current",
+          title: "Get protocol and proof updates by email",
+          text:
+            "Subscribe for new validation notes, protocol revisions, data summary updates, and launch offers.",
+          frameTitle: "IQMindware proof signup form",
+          buttonLabel: "Open hosted signup form",
+        })
+      )
+    }
+  }
+
+  if (document.body.classList.contains("validation-detail")) {
+    const anchor = document.querySelector(".gtv-cta-band") || footer
+    if (anchor && !document.querySelector(".iqm-signup-section--validation")) {
+      anchor.insertAdjacentHTML(
+        "afterend",
+        buildSignupCompactSection({
+          sectionClass: "iqm-signup-section--validation",
+          eyebrow: "Research updates",
+          title: "Want protocol notes and new validation updates by email?",
+          text:
+            "Use the hosted signup form to get new protocol releases, research notes, and launch offers.",
+          buttonLabel: "Subscribe for updates",
+        })
+      )
+    }
+  }
+}
+
 function injectRichSchema() {
   const existingTypes = schemaTypesInPage()
   const path = normalizePath(window.location.pathname)
@@ -983,6 +1149,7 @@ function injectRichSchema() {
 }
 
 highlightCurrentNav()
+injectSignupPrompts()
 injectRichSchema()
 renderPricing()
 renderCadence()
