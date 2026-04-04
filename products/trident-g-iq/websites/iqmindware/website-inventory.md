@@ -1,7 +1,7 @@
 ﻿# IQMindware Website Inventory
 
-Generated: 2026-03-29 00:00:00 +00:00
-Total pages: 42
+Generated: 2026-04-04 00:00:00 +00:00
+Total pages: 43
 
 | Title | URL | Source file |
 |---|---|---|
@@ -28,6 +28,7 @@ Total pages: 42
 | Wiki - Protocol Glossary and Structured References \\| IQMindware | https://www.iqmindware.com/learn/wiki/ | learn/wiki/index.html |
 | Far Transfer \\| Wiki \\| IQMindware | https://www.iqmindware.com/learn/wiki/entry/ | learn/wiki/entry/index.html |
 | IQ Levels Explained: What Your IQ Score Means on an IQ Scale | https://www.iqmindware.com/learn/wiki/what-does-my-iq-score-mean/ | learn/wiki/what-does-my-iq-score-mean/index.html |
+| What Is Trident-G? Architecture Summary \\| IQMindware | https://www.iqmindware.com/learn/wiki/what-is-trident-g/ | learn/wiki/what-is-trident-g/index.html |
 | Login \\| IQMindware | https://www.iqmindware.com/login/ | login/index.html |
 | Plans \\| IQMindware | https://www.iqmindware.com/pricing/ | pricing/index.html |
 | Privacy \\| IQMindware | https://www.iqmindware.com/privacy/ | privacy/index.html |

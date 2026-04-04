@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-29",
+  "generated_at": "2026-04-04",
   "routes": [
     {
       "route": "/",
@@ -205,6 +205,12 @@
     },
     {
       "route": "/learn/wiki/what-does-my-iq-score-mean/",
+      "intent": "education_wiki_entry",
+      "primary_cta": "Read wiki entry",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/learn/wiki/what-is-trident-g/",
       "intent": "education_wiki_entry",
       "primary_cta": "Read wiki entry",
       "required_template_blocks": []
