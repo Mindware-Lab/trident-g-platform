@@ -28,7 +28,7 @@ Total pages: 43
 | Wiki - Protocol Glossary and Structured References \\| IQMindware | https://www.iqmindware.com/learn/wiki/ | learn/wiki/index.html |
 | Far Transfer \\| Wiki \\| IQMindware | https://www.iqmindware.com/learn/wiki/entry/ | learn/wiki/entry/index.html |
 | IQ Levels Explained: What Your IQ Score Means on an IQ Scale | https://www.iqmindware.com/learn/wiki/what-does-my-iq-score-mean/ | learn/wiki/what-does-my-iq-score-mean/index.html |
-| What Is Trident-G? Architecture Summary \\| IQMindware | https://www.iqmindware.com/learn/wiki/what-is-trident-g/ | learn/wiki/what-is-trident-g/index.html |
+| Welcome to the Trident-G Framework \\| IQMindware | https://www.iqmindware.com/learn/wiki/what-is-trident-g/ | learn/wiki/what-is-trident-g/index.html |
 | Login \\| IQMindware | https://www.iqmindware.com/login/ | login/index.html |
 | Plans \\| IQMindware | https://www.iqmindware.com/pricing/ | pricing/index.html |
 | Privacy \\| IQMindware | https://www.iqmindware.com/privacy/ | privacy/index.html |
