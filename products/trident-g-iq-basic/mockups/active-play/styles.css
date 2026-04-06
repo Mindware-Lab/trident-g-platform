@@ -1,0 +1,18 @@
+/*
+  In-progress active-play mockup styling for the live basic routes:
+  /#tests
+  /#zone
+  /#capacity
+
+  Shared shell primitives remain in ../trident-g-iq-shared/ui/.
+  Route-specific mockup tuning for the current design iteration belongs here.
+*/
+
+:root {
+  --display-width: 740px;
+  --display-height: 600px;
+}
+
+.app-shell[data-app-kind="basic"] .nav-tabs {
+  gap: 12px;
+}
