@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trident G Active Play Mock-up</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Chakra+Petch:wght@400;600;700&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page-frame">
+    <div class="app-shell" id="app-shell" data-screen="tests">
+      <header class="top-nav" aria-label="Primary navigation">
+        <div class="wordmark">TRIDENT<span>G</span></div>
+        <nav class="nav-tabs">
+          <button class="nav-tab" type="button" disabled>Hub</button>
+          <button class="nav-tab is-active" type="button" data-screen="tests">Tests</button>
+          <button class="nav-tab" type="button" data-screen="zone">Zone</button>
+          <button class="nav-tab" type="button" data-screen="capacity">Capacity</button>
+        </nav>
+      </header>
+
+      <main class="play-stage">
+        <div class="play-layout">
+          <section class="play-column">
+            <div class="info-strip" id="info-strip" aria-live="polite"></div>
+
+            <article class="game-window frame-corners" aria-labelledby="banner-title">
+              <header class="game-window__banner" id="banner"></header>
+              <div class="game-window__body">
+                <div class="task-area" id="task-area"></div>
+                <div class="response-area" id="response-area"></div>
+              </div>
+            </article>
+
+            <aside class="coach-strip" id="coach-strip"></aside>
+          </section>
+
+          <aside class="telemetry-rail" id="telemetry-rail" aria-label="Telemetry"></aside>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
