@@ -1,0 +1,121 @@
+.app-shell[data-screen="hub"] {
+  --module-accent: var(--hub);
+  --module-glow: var(--hub-glow);
+}
+
+.app-shell[data-screen="reasoning"] {
+  --module-accent: var(--reasoning);
+  --module-glow: var(--reasoning-glow);
+}
+
+.app-shell[data-screen="missions"] {
+  --module-accent: var(--missions);
+  --module-glow: var(--missions-glow);
+}
+
+.app-shell[data-screen="progress"] {
+  --module-accent: var(--progress);
+  --module-glow: var(--progress-glow);
+}
+
+.app-shell[data-screen="coach-review"] {
+  --module-accent: var(--coach-review);
+  --module-glow: var(--coach-review-glow);
+}
+
+.hub-grid,
+.placeholder-grid {
+  width: min(560px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.hub-card,
+.placeholder-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(17, 29, 48, 0.82);
+  padding: 12px;
+  text-align: left;
+}
+
+.hub-card__kicker,
+.placeholder-panel__eyebrow {
+  color: var(--module-accent);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.hub-card__title,
+.placeholder-panel__title {
+  margin-top: 8px;
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.hub-card__copy,
+.placeholder-panel__copy {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.route-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.route-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.metric-row-value--accent {
+  color: var(--module-accent);
+}
+
+.metric-row-value--ready {
+  color: var(--ready);
+}
+
+.metric-row-value--credit {
+  color: var(--credit);
+}
+
+.metric-row-value--transfer {
+  color: var(--transfer);
+}
+
+.metric-row-value--warning {
+  color: var(--zone);
+}
+
+.metric-row-value--muted {
+  color: var(--flat);
+}
+
+@media (max-width: 860px) {
+  .hub-grid,
+  .placeholder-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,7 @@
+.app-shell[data-app-kind="max"] .nav-tabs {
+  gap: 10px;
+}
+
+.app-shell[data-app-kind="max"] .nav-tab {
+  padding-inline: 4px;
+}

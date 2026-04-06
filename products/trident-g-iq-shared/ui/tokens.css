@@ -1,0 +1,12 @@
+:root {
+  --hub: #97abc4;
+  --hub-glow: rgba(151, 171, 196, 0.28);
+  --reasoning: #ccff66;
+  --reasoning-glow: rgba(204, 255, 102, 0.24);
+  --missions: #9b7bff;
+  --missions-glow: rgba(155, 123, 255, 0.28);
+  --progress: #8aa3c7;
+  --progress-glow: rgba(138, 163, 199, 0.24);
+  --coach-review: #f5b544;
+  --coach-review-glow: rgba(245, 181, 68, 0.24);
+}
