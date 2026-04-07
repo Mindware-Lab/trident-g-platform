@@ -1,7 +1,13 @@
+param(
+  [int]$Port = 4173
+)
+
 $ErrorActionPreference = "Stop"
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
-Set-Location $root
+$productsRoot = Split-Path -Parent $root
+Set-Location $productsRoot
 
-Write-Host "Serving Trident G IQ Basic at http://127.0.0.1:4173/" -ForegroundColor Cyan
-python -m http.server 4173
+Write-Host "Serving products root at http://127.0.0.1:$Port/" -ForegroundColor Cyan
+Write-Host "Open Trident G IQ Basic at http://127.0.0.1:$Port/trident-g-iq-basic/#hub" -ForegroundColor Green
+python -m http.server $Port

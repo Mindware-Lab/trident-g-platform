@@ -2,43 +2,57 @@ export const basicHubTelemetry = [
   {
     type: "splitMetric",
     label: "Route status",
-    value: "Ready",
+    value: "Encode",
     valueTone: "accent",
-    subline: "Basic shell is live and routable.",
+    subline: "Phase 1 is live. Only clean in-zone full sessions count toward the core 20.",
     badge: "Day 8",
     emphasis: true
   },
   {
+    type: "ring",
+    label: "Core window",
+    ringValue: 40,
+    ringNumber: "8",
+    ringLabel: "of 20",
+    subline: "Twenty counted core sessions drive the initial encode programme."
+  },
+  {
+    label: "Wallet",
+    html: `
+      <div class="hub-telemetry-wallet">
+        <div class="hub-telemetry-currency hub-telemetry-currency--g">
+          <span class="hub-telemetry-value">128</span>
+          <span class="hub-telemetry-unit">G</span>
+          <span class="hub-telemetry-copy">progression coins</span>
+        </div>
+        <div class="hub-telemetry-currency hub-telemetry-currency--trident">
+          <span class="hub-telemetry-value">12</span>
+          <span class="hub-telemetry-unit">Tridents</span>
+          <span class="hub-telemetry-copy">milestone rewards</span>
+        </div>
+        <div class="hub-telemetry-credit">
+          Convertible wallet: <strong>34 G Credit</strong>
+        </div>
+      </div>
+    `
+  },
+  {
     type: "list",
-    label: "Today's route",
+    label: "Session classes",
     rows: [
-      { label: "Zone", value: "Check first" },
-      { label: "Tests", value: "Optional" },
-      { label: "Capacity", value: "Core block" },
-      { label: "Hub", value: "Launch surface" }
+      { label: "Ready", value: "10 blocks", tone: "ready" },
+      { label: "Flat", value: "4-6 support", tone: "muted" },
+      { label: "Spun Out", value: "3-4 reset", tone: "warning" },
+      { label: "Locked In", value: "4-5 shift", tone: "accent" }
     ]
   },
   {
-    type: "badge",
-    label: "Zone state",
-    badge: "Ready",
-    badgeState: "ready",
-    subline: "Use the hub to move into today's run."
-  },
-  {
-    type: "metric",
-    label: "Credits",
-    value: "40 TG",
-    valueTone: "credit",
-    subline: "Reward language stays shared across modules."
-  },
-  {
     type: "streak",
-    label: "Weekly streak",
-    lines: ["4 launches this week", "1 counted core route today"],
-    streakOn: 5,
+    label: "Reward rhythm",
+    lines: ["Fast-speed hold bonus: +20 G", "Variant swap milestone: +1 Trident"],
+    streakOn: 6,
     streakTotal: 8,
-    footer: { left: "Mode", right: "Basic", rightTone: "accent" }
+    footer: { left: "Next unlock", right: "AND probe lane", rightTone: "accent" }
   }
 ];
 

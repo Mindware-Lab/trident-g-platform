@@ -50,6 +50,39 @@ function renderCoach(screen) {
   `;
 }
 
+function renderStandardLayout(screen) {
+  return `
+    <div class="play-layout">
+      <section class="play-column">
+        <div class="info-strip" aria-live="polite">${screen.info.map(renderInfoBlock).join("")}</div>
+        <article class="game-window frame-corners" aria-labelledby="banner-title">
+          <header class="game-window__banner">${renderBanner(screen)}</header>
+          <div class="game-window__body">
+            <div class="task-area">${screen.taskHtml}</div>
+            <div class="response-area">${screen.responseHtml}</div>
+          </div>
+        </article>
+        <aside class="coach-strip">${renderCoach(screen)}</aside>
+      </section>
+      <aside class="telemetry-rail" aria-label="Telemetry">${renderTelemetryCards(screen.telemetryCards)}</aside>
+    </div>
+  `;
+}
+
+function renderScreenStage(screen) {
+  if (screen.layout === "dashboard" && screen.dashboardHtml) {
+    return {
+      className: "play-stage play-stage--dashboard",
+      html: screen.dashboardHtml
+    };
+  }
+
+  return {
+    className: "play-stage",
+    html: renderStandardLayout(screen)
+  };
+}
+
 export function mountAppShell({
   root,
   appKind,
@@ -62,6 +95,7 @@ export function mountAppShell({
   function renderScreen(screenId) {
     const screen = registry.get(screenId) || registry.get(defaultScreenId) || registry.first();
     const activeModule = screen.module || screen.id;
+    const stage = renderScreenStage(screen);
 
     root.innerHTML = `
       <div class="page-frame">
@@ -70,22 +104,7 @@ export function mountAppShell({
             <div class="wordmark">${wordmark}</div>
             <nav class="nav-tabs">${renderNav({ navItems, activeId: screen.id })}</nav>
           </header>
-          <main class="play-stage">
-            <div class="play-layout">
-              <section class="play-column">
-                <div class="info-strip" aria-live="polite">${screen.info.map(renderInfoBlock).join("")}</div>
-                <article class="game-window frame-corners" aria-labelledby="banner-title">
-                  <header class="game-window__banner">${renderBanner(screen)}</header>
-                  <div class="game-window__body">
-                    <div class="task-area">${screen.taskHtml}</div>
-                    <div class="response-area">${screen.responseHtml}</div>
-                  </div>
-                </article>
-                <aside class="coach-strip">${renderCoach(screen)}</aside>
-              </section>
-              <aside class="telemetry-rail" aria-label="Telemetry">${renderTelemetryCards(screen.telemetryCards)}</aside>
-            </div>
-          </main>
+          <main class="${stage.className}">${stage.html}</main>
         </div>
       </div>
     `;
