@@ -65,3 +65,10 @@ node scripts/smoke-test-legacy-routing.mjs https://<preview-domain>
 ```
 
 The script checks mandatory copy, transparency links, pricing collapsed block, and forbidden claims terms.
+
+## Deployment
+
+- Cloudflare Pages project: `iqmindware`
+- Normal path: commit and push to `main`
+- Direct fallback: `powershell -ExecutionPolicy Bypass -File .\scripts\deploy-cloudflare-pages.ps1`
+- Full runbook: see `DEPLOY.md`
