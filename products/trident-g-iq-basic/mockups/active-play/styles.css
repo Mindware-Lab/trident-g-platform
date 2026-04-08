@@ -190,10 +190,13 @@
 
 .hub-wallet-coins {
   width: 100%;
-  max-width: 190px;
+  max-width: 156px;
   display: block;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.02);
+  margin: 0 auto;
+  padding: 10px;
+  object-fit: contain;
 }
 
 .hub-wallet-stats {
@@ -1768,7 +1771,7 @@
 
 .capacity-rail-panel {
   display: grid;
-  gap: 8px;
+  gap: 9px;
 }
 
 .capacity-rail-progress-head,
@@ -1786,7 +1789,7 @@
   font-family: "Chakra Petch", sans-serif;
   font-size: 8px;
   font-weight: 700;
-  letter-spacing: 1.4px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
 }
 
@@ -1795,13 +1798,13 @@
 }
 
 .capacity-rail-progress-track {
-  height: 7px;
+  height: 8px;
 }
 
 .capacity-rail-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
 }
 
 .capacity-rail-stat {
@@ -1813,7 +1816,7 @@
   font-family: "Chakra Petch", sans-serif;
   font-size: 7px;
   font-weight: 700;
-  letter-spacing: 1.6px;
+  letter-spacing: 1.7px;
   text-transform: uppercase;
 }
 
@@ -1821,13 +1824,15 @@
   margin-top: 4px;
   color: var(--white);
   font-family: "Orbitron", monospace;
-  font-size: 19px;
+  font-size: 24px;
   font-weight: 900;
   line-height: 1;
+  text-shadow: 0 0 12px rgba(84, 162, 255, 0.1);
 }
 
 .capacity-rail-stat-value.is-accent {
   color: var(--module-accent);
+  text-shadow: 0 0 14px rgba(84, 162, 255, 0.24);
 }
 
 .capacity-rail-stat-subline {
@@ -1841,14 +1846,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 22px;
+  min-height: 24px;
   margin-top: 6px;
-  padding: 4px 7px;
+  padding: 4px 8px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   font-family: "Chakra Petch", sans-serif;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 1.4px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
 }
 
@@ -1867,10 +1872,116 @@
 .capacity-rail-inline-value {
   color: var(--white);
   font-family: "Chakra Petch", sans-serif;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   line-height: 1.2;
   text-align: right;
+}
+
+.capacity-rail-trend {
+  margin-top: 2px;
+  display: grid;
+  gap: 6px;
+}
+
+.capacity-rail-trend-label {
+  color: var(--muted-2);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1.7px;
+  text-transform: uppercase;
+}
+
+.capacity-rail-spark {
+  width: 100%;
+  height: 28px;
+  display: block;
+  filter: drop-shadow(0 0 6px rgba(245, 181, 68, 0.16));
+}
+
+.app-shell[data-screen="capacity"] .telemetry-card {
+  border-color: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(15, 24, 41, 0.96), rgba(10, 16, 29, 0.98)),
+    radial-gradient(circle at top right, rgba(84, 162, 255, 0.08), transparent 28%);
+  padding: 11px;
+}
+
+.app-shell[data-screen="capacity"] .telemetry-card--emphasis {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 20px color-mix(in srgb, var(--module-accent) 12%, transparent);
+}
+
+.app-shell[data-screen="capacity"] .metric-label {
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-size: 8px;
+  letter-spacing: 2.5px;
+}
+
+.app-shell[data-screen="capacity"] .metric-label--credit {
+  color: var(--credit);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.6px;
+  text-shadow: 0 0 12px rgba(204, 255, 102, 0.18);
+}
+
+.capacity-credit-card {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.capacity-credit-coin {
+  width: 44px;
+  height: 44px;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 0 14px rgba(204, 255, 102, 0.16));
+}
+
+.capacity-credit-copy {
+  min-width: 0;
+}
+
+.capacity-credit-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  padding: 2px 6px;
+  border: 1px solid rgba(204, 255, 102, 0.24);
+  background: rgba(204, 255, 102, 0.08);
+  color: var(--credit);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.capacity-credit-value {
+  margin-top: 6px;
+  color: var(--credit);
+  font-family: "Orbitron", monospace;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 14px rgba(204, 255, 102, 0.2);
+}
+
+.capacity-credit-subline {
+  margin-top: 4px;
+  color: var(--text);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
 }
 
 .hub-summary-title {
@@ -2205,6 +2316,32 @@
   display: none;
 }
 
+.app-shell[data-screen="capacity"] .play-main--split {
+  grid-template-columns: 174px 520px;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+  justify-content: end;
+  align-items: start;
+}
+
+.app-shell[data-screen="capacity"] .capacity-side-panel {
+  width: 174px;
+  padding-top: calc(var(--banner-height) - 24px);
+  min-height: 0;
+}
+
+.app-shell[data-screen="capacity"] .game-window {
+  width: 520px;
+  max-width: 520px;
+  justify-self: end;
+}
+
+.app-shell[data-screen="capacity"] .coach-strip {
+  width: 520px;
+  margin-left: auto;
+}
+
 .task-shell--capacity {
   width: 100%;
   max-width: none;
@@ -2212,18 +2349,32 @@
 }
 
 .capacity-stage {
-  display: grid;
-  grid-template-columns: 194px minmax(0, 1fr);
-  gap: 20px;
-  align-items: stretch;
+  display: flex;
+  min-height: 100%;
+  align-items: center;
+  justify-content: center;
 }
 
 .capacity-route {
-  padding-right: 14px;
+  padding-right: 8px;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.capacity-route-kicker,
+.capacity-route-title,
+.capacity-preview-kicker {
+  text-transform: uppercase;
+}
+
+.capacity-route-title {
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 1px;
+  margin-left: 12px;
+}
+
 .capacity-preview-kicker {
   color: var(--muted);
   font-family: "Chakra Petch", sans-serif;
@@ -2237,7 +2388,7 @@
   position: relative;
   display: grid;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 16px;
   padding-left: 2px;
 }
 
@@ -2316,19 +2467,22 @@
   opacity: 0.62;
 }
 
-.capacity-family-head {
-  display: flex;
-  justify-content: space-between;
+.capacity-family-titlebar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
+  margin: -7px -9px 7px;
+  padding: 4px 6px 4px 8px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--family-color) 82%, white 8%), color-mix(in srgb, var(--family-color) 54%, black 46%));
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.18);
 }
 
-.capacity-family-chip,
-.capacity-family-status {
+.capacity-family-name,
+.capacity-family-state {
   display: inline-flex;
   align-items: center;
-  min-height: 20px;
-  padding: 3px 7px;
+  min-height: 14px;
   font-family: "Chakra Petch", sans-serif;
   font-size: 9px;
   font-weight: 700;
@@ -2336,33 +2490,70 @@
   text-transform: uppercase;
 }
 
-.capacity-family-chip {
-  border: 1px solid color-mix(in srgb, var(--family-color) 34%, rgba(255, 255, 255, 0.08));
-  background: color-mix(in srgb, var(--family-color) 13%, transparent);
-  color: color-mix(in srgb, var(--family-color) 74%, white 26%);
+.capacity-family-name {
+  min-width: 0;
+  color: #1f2939;
+  font-size: 8px;
+  letter-spacing: 1.35px;
 }
 
-.capacity-family-status {
+.capacity-family-state {
+  justify-content: center;
+  width: 22px;
+  min-width: 22px;
+  min-height: 14px;
+  padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text);
+  background: rgba(10, 16, 29, 0.52);
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.capacity-family.is-active .capacity-family-status {
+.capacity-family-state--open {
+  border-color: rgba(125, 234, 255, 0.24);
+  color: #d4f3ff;
+}
+
+.capacity-family-state--locked {
+  border-color: rgba(151, 171, 196, 0.16);
+  color: var(--flat);
+}
+
+.capacity-family-state--live {
   border-color: rgba(204, 255, 102, 0.26);
-  background: rgba(204, 255, 102, 0.08);
   color: var(--credit);
 }
 
-.capacity-family.is-locked .capacity-family-status {
-  color: var(--flat);
+.capacity-family-lock {
+  position: relative;
+  width: 9px;
+  height: 7px;
+  border: 1.4px solid currentColor;
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+
+.capacity-family-lock::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  bottom: 5px;
+  width: 5px;
+  height: 5px;
+  border: 1.4px solid currentColor;
+  border-bottom: 0;
+  border-radius: 5px 5px 0 0;
+  box-sizing: border-box;
+}
+
+.capacity-family-lock--open::before {
+  left: 4px;
 }
 
 .capacity-family-variants {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  margin-top: 7px;
+  margin-top: 2px;
 }
 
 .capacity-variant {
@@ -2409,13 +2600,14 @@
 
 .capacity-preview {
   display: grid;
+  min-height: 100%;
   align-content: center;
   justify-items: center;
   gap: 10px;
 }
 
 .capacity-phone {
-  width: 246px;
+  width: 258px;
   padding: 12px 14px 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background:
@@ -2578,6 +2770,6 @@
   }
 
   .capacity-stage {
-    grid-template-columns: 1fr;
+    justify-content: center;
   }
 }

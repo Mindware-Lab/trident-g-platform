@@ -201,6 +201,22 @@ body {
   gap: var(--stack-gap);
 }
 
+.play-main {
+  display: block;
+  min-height: 0;
+}
+
+.play-main--split {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.play-side-panel {
+  min-width: 0;
+}
+
 .info-strip {
   min-height: var(--info-height);
   height: var(--info-height);

@@ -51,17 +51,24 @@ function renderCoach(screen) {
 }
 
 function renderStandardLayout(screen) {
+  const sidePanel = screen.sidePanelHtml
+    ? `<aside class="play-side-panel${screen.sidePanelClass ? ` ${screen.sidePanelClass}` : ""}">${screen.sidePanelHtml}</aside>`
+    : "";
+
   return `
     <div class="play-layout">
       <section class="play-column">
         <div class="info-strip" aria-live="polite">${screen.info.map(renderInfoBlock).join("")}</div>
-        <article class="game-window frame-corners" aria-labelledby="banner-title">
-          <header class="game-window__banner">${renderBanner(screen)}</header>
-          <div class="game-window__body">
-            <div class="task-area">${screen.taskHtml}</div>
-            <div class="response-area">${screen.responseHtml}</div>
-          </div>
-        </article>
+        <div class="play-main${screen.sidePanelHtml ? " play-main--split" : ""}">
+          ${sidePanel}
+          <article class="game-window frame-corners" aria-labelledby="banner-title">
+            <header class="game-window__banner">${renderBanner(screen)}</header>
+            <div class="game-window__body">
+              <div class="task-area">${screen.taskHtml}</div>
+              <div class="response-area">${screen.responseHtml}</div>
+            </div>
+          </article>
+        </div>
         <aside class="coach-strip">${renderCoach(screen)}</aside>
       </section>
       <aside class="telemetry-rail" aria-label="Telemetry">${renderTelemetryCards(screen.telemetryCards)}</aside>

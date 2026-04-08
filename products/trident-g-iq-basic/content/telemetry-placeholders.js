@@ -146,6 +146,7 @@ export const zoneTelemetry = [
 export const capacityTelemetry = [
   {
     label: "Session performance",
+    labelClass: "metric-label--credit",
     emphasis: true,
     html: `
       <div class="capacity-rail-panel">
@@ -181,6 +182,8 @@ export const capacityTelemetry = [
   },
   {
     label: "Game performance",
+    labelClass: "metric-label--credit",
+    emphasis: true,
     html: `
       <div class="capacity-rail-panel">
         <div class="capacity-rail-grid">
@@ -199,23 +202,27 @@ export const capacityTelemetry = [
           <span class="capacity-rail-inline-label">Last accuracy</span>
           <span class="capacity-rail-inline-value">18 of 21 correct</span>
         </div>
-        <div class="capacity-rail-inline">
-          <span class="capacity-rail-inline-label">Next game</span>
-          <span class="capacity-rail-inline-value">Relational numbers</span>
-        </div>
-        <div class="capacity-rail-inline">
-          <span class="capacity-rail-inline-label">Progression</span>
-          <span class="capacity-rail-inline-value">Level up if relation rule holds</span>
+        <div class="capacity-rail-trend">
+          <div class="capacity-rail-trend-label">Accuracy over blocks</div>
+          <svg class="capacity-rail-spark" viewBox="0 0 170 30" preserveAspectRatio="none" aria-hidden="true">
+            <polyline fill="none" stroke="rgba(245, 181, 68, 0.96)" stroke-width="2.6" points="2,22 22,20 42,18 62,20 82,16 102,14 122,17 142,12 168,9"></polyline>
+          </svg>
         </div>
       </div>
     `
   },
   {
-    type: "streak",
-    label: "Track progress",
-    lines: ["Targeted Day 2 of 10", "Relational: 1 of 3 variants live"],
-    streakOn: 6,
-    streakTotal: 8,
-    footer: { left: "Today", right: "+30 TG", rightTone: "credit" }
+    label: "Today",
+    emphasis: true,
+    html: `
+      <div class="capacity-credit-card">
+        <img class="capacity-credit-coin" src="./mockups/Octa g icon.png" alt="G credit coin">
+        <div class="capacity-credit-copy">
+          <div class="capacity-credit-chip">G credit</div>
+          <div class="capacity-credit-value">+30</div>
+          <div class="capacity-credit-subline">Session reward</div>
+        </div>
+      </div>
+    `
   }
 ];

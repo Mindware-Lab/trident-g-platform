@@ -178,7 +178,7 @@ export const hubScreen = {
             <span class="hub-panel-badge">Rewards</span>
           </div>
           <div class="hub-wallet-body">
-            <img class="hub-wallet-coins" src="./assets/hub/currency-coins.png" alt="Trident and G coin artwork">
+            <img class="hub-wallet-coins" src="./mockups/Octa g icon.png" alt="G credit coin artwork">
             <div class="hub-wallet-stats">
               <div class="hub-wallet-stat hub-wallet-stat--g">
                 <span class="hub-wallet-value">3.8 G</span>

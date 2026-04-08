@@ -23,6 +23,15 @@ function renderMetricValue(value, tone) {
   return `<div class="${classes.join(" ")}">${value}</div>`;
 }
 
+function renderLabel(card) {
+  const classes = ["metric-label"];
+  if (card.labelClass) {
+    classes.push(card.labelClass);
+  }
+
+  return `<div class="${classes.join(" ")}">${card.label || "Telemetry"}</div>`;
+}
+
 function renderCard(card) {
   const emphasis = card.emphasis ? " telemetry-card--emphasis" : "";
 
@@ -30,7 +39,7 @@ function renderCard(card) {
     case "splitMetric":
       return `
         <section class="telemetry-card${emphasis}">
-          <div class="metric-label">${card.label}</div>
+          ${renderLabel(card)}
           <div class="metric-split">
             <div>
               ${renderMetricValue(card.value, card.valueTone)}
@@ -43,7 +52,7 @@ function renderCard(card) {
     case "metric":
       return `
         <section class="telemetry-card${emphasis}">
-          <div class="metric-label">${card.label}</div>
+          ${renderLabel(card)}
           ${renderMetricValue(card.value, card.valueTone)}
           ${card.subline ? `<div class="metric-subline">${card.subline}</div>` : ""}
           ${renderFooter(card.footer)}
@@ -52,7 +61,7 @@ function renderCard(card) {
     case "barMetric":
       return `
         <section class="telemetry-card${emphasis}">
-          <div class="metric-label">${card.label}</div>
+          ${renderLabel(card)}
           ${renderMetricValue(card.value, card.valueTone)}
           <div class="mini-bar">
             <div class="bar-track"><div class="bar-fill${card.barTone ? ` bar-fill--${card.barTone}` : ""}" style="width: ${card.barValue}%;"></div></div>
@@ -63,7 +72,7 @@ function renderCard(card) {
     case "ring":
       return `
         <section class="telemetry-card${emphasis}">
-          <div class="metric-label">${card.label}</div>
+          ${renderLabel(card)}
           <div class="ring${card.variant === "violet" ? " ring--violet" : ""}" style="--ring-value: ${card.ringValue};">
             <div class="ring-value">
               <span class="ring-number">${card.ringNumber}</span>
@@ -76,7 +85,7 @@ function renderCard(card) {
     case "list":
       return `
         <section class="telemetry-card${emphasis}">
-          <div class="metric-label">${card.label}</div>
+          ${renderLabel(card)}
           <div class="state-list">
             ${card.rows.map((row) => `<div class="state-row"><span>${row.label}</span><span class="${toneClass(row.tone).trim()}">${row.value}</span></div>`).join("")}
           </div>
@@ -86,7 +95,7 @@ function renderCard(card) {
     case "badge":
       return `
         <section class="telemetry-card${emphasis}">
-          <div class="metric-label">${card.label}</div>
+          ${renderLabel(card)}
           <div class="metric-badge"${card.badgeState ? ` data-state="${card.badgeState}"` : ""}>${card.badge}</div>
           ${card.subline ? `<div class="metric-subline">${card.subline}</div>` : ""}
           ${renderFooter(card.footer)}
@@ -95,7 +104,7 @@ function renderCard(card) {
     case "signalProfile":
       return `
         <section class="telemetry-card${emphasis}">
-          <div class="metric-label">${card.label}</div>
+          ${renderLabel(card)}
           <div class="signal-row">
             ${card.bars.map((bar) => `
               <div class="state-row"><span>${bar.label}</span><span>${bar.value}</span></div>
@@ -107,7 +116,7 @@ function renderCard(card) {
     case "routing":
       return `
         <section class="telemetry-card${emphasis}">
-          <div class="metric-label">${card.label}</div>
+          ${renderLabel(card)}
           <div class="routing-card">
             <div class="routing-title">${card.title}</div>
             <div class="routing-subtitle">${card.subtitle}</div>
@@ -118,7 +127,7 @@ function renderCard(card) {
     case "sparkline":
       return `
         <section class="telemetry-card${emphasis}">
-          <div class="metric-label">${card.label}</div>
+          ${renderLabel(card)}
           ${renderMetricValue(card.value, card.valueTone)}
           <svg class="sparkline" viewBox="0 0 180 36" preserveAspectRatio="none" aria-hidden="true">
             <polyline fill="none" stroke="${card.stroke || "rgba(84, 162, 255, 0.95)"}" stroke-width="2" points="${card.points}"></polyline>
@@ -129,7 +138,7 @@ function renderCard(card) {
     case "streak":
       return `
         <section class="telemetry-card${emphasis}">
-          <div class="metric-label">${card.label}</div>
+          ${renderLabel(card)}
           ${card.lines.map((line) => `<div class="metric-subline">${line}</div>`).join("")}
           <div class="streak-blocks">
             ${Array.from({ length: card.streakTotal }, (_, index) => `<span${index < card.streakOn ? ' class="is-on"' : ""}></span>`).join("")}
@@ -140,7 +149,7 @@ function renderCard(card) {
     default:
       return `
         <section class="telemetry-card${emphasis}">
-          <div class="metric-label">${card.label || "Telemetry"}</div>
+          ${renderLabel(card)}
           ${card.html || ""}
         </section>
       `;
