@@ -46,7 +46,7 @@ Total pages: 45
 | Support \\| IQMindware | https://www.iqmindware.com/support/ | support/index.html |
 | Terms \\| IQMindware | https://www.iqmindware.com/terms/ | terms/index.html |
 | Apps \\| IQMindware | https://www.iqmindware.com/tools/ | tools/index.html |
-| Capacity Gym \\| IQMindware | https://www.iqmindware.com/tools/capacity-gym/ | tools/capacity-gym/index.html |
+| Capacity Gym \\| IQMindware | https://www.iqmindware.com/tools/capacity-gym/info/ | tools/capacity-gym/info/index.html |
 | G Tracker \\| IQMindware | https://www.iqmindware.com/tools/g-tracker/ | tools/g-tracker/index.html |
 | Mindware Gym (Coming Soon) \\| IQMindware | https://www.iqmindware.com/tools/mindware-gym/ | tools/mindware-gym/index.html |
 | Zone Coach \\| IQMindware | https://www.iqmindware.com/tools/zone-coach/ | tools/zone-coach/index.html |

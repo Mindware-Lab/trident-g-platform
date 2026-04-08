@@ -19,7 +19,11 @@ Use this when the Cloudflare git integration is healthy.
 2. Keep page-discovery and metadata files in sync for new public pages:
    - `learn/blog/index.html`
    - `learn/index.html`
-   - `sitemap.xml`
+   - `sitemap.xml` (sitemap index)
+   - `sitemap-pages.xml`
+   - `sitemap-blog.xml`
+   - `sitemap-wiki.xml`
+   - `sitemap-tools.xml`
    - `website-inventory.md`
    - `site-map.json`
    - `seo-meta.json`

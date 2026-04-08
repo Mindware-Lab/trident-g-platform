@@ -27,7 +27,7 @@ const MISMATCH_PATH = path.join(
 );
 const ROUTES_PATH = path.join(SITE_ROOT, "functions", "_routes.json");
 const REDIRECTS_PATH = path.join(SITE_ROOT, "_redirects");
-const SITEMAP_PATH = path.join(SITE_ROOT, "sitemap.xml");
+const SITEMAP_FILE_REGEX = /^sitemap.*\.xml$/i;
 
 async function walkFiles(rootDir, out) {
   const entries = await fs.readdir(rootDir, { withFileTypes: true });
@@ -125,8 +125,10 @@ const redirectsRaw = await fs.readFile(REDIRECTS_PATH, "utf8");
 const redirectRows = parseRedirectsFile(redirectsRaw);
 
 for (const row of redirectRows) {
-  if (row.status !== "301") {
-    errors.push(`_redirects contains non-301 status: ${row.source} ${row.destination} ${row.status}`);
+  if (row.status !== "301" && row.status !== "302") {
+    errors.push(
+      `_redirects contains unsupported status: ${row.source} ${row.destination} ${row.status}`
+    );
   }
   const sourcePath = normalizeRedirectSource(row.source);
   if (pathHandledByFunctions(sourcePath, routesConfig)) {
@@ -134,19 +136,25 @@ for (const row of redirectRows) {
   }
 }
 
-const sitemapXml = await fs.readFile(SITEMAP_PATH, "utf8");
-const sitemapLocRegex = /<loc>([^<]+)<\/loc>/gi;
-let locMatch = sitemapLocRegex.exec(sitemapXml);
-while (locMatch) {
-  const loc = locMatch[1].trim();
-  if (loc.startsWith("https://www.iqmindware.com/")) {
-    const url = new URL(loc);
-    const route = resolveRule(url.pathname, ruleIndex);
-    if (route?.action === "410") {
-      errors.push(`Sitemap contains retired URL routed to 410: ${loc}`);
+const sitemapFiles = (await fs.readdir(SITE_ROOT))
+  .filter((entry) => SITEMAP_FILE_REGEX.test(entry))
+  .map((entry) => path.join(SITE_ROOT, entry));
+
+for (const sitemapPath of sitemapFiles) {
+  const sitemapXml = await fs.readFile(sitemapPath, "utf8");
+  const sitemapLocRegex = /<loc>([^<]+)<\/loc>/gi;
+  let locMatch = sitemapLocRegex.exec(sitemapXml);
+  while (locMatch) {
+    const loc = locMatch[1].trim();
+    if (loc.startsWith("https://www.iqmindware.com/")) {
+      const url = new URL(loc);
+      const route = resolveRule(url.pathname, ruleIndex);
+      if (route?.action === "410") {
+        errors.push(`Sitemap contains retired URL routed to 410: ${loc}`);
+      }
     }
+    locMatch = sitemapLocRegex.exec(sitemapXml);
   }
-  locMatch = sitemapLocRegex.exec(sitemapXml);
 }
 
 const files = [];

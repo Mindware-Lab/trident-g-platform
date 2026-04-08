@@ -52,6 +52,8 @@
     "/increase-cognitive-resilience/*"
   ],
   "exclude": [
+    "/trident-brain-training/intelligence-research/the-bell-curve-cognitive-elites",
+    "/improve-executive-control/capacity-training/training-strategies",
     "/about/*",
     "/assets/*",
     "/branding/*",

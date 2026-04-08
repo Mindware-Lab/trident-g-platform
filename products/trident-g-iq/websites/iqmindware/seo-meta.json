@@ -50,6 +50,14 @@
         "CollectionPage"
       ]
     },
+    "/tools/capacity-gym/info/": {
+      "title": "Capacity Gym",
+      "canonical": "https://www.iqmindware.com/tools/capacity-gym/info/",
+      "schema": [
+        "SoftwareApplication",
+        "WebPage"
+      ]
+    },
     "/proof/": {
       "title": "Proof",
       "canonical": "https://www.iqmindware.com/proof/",

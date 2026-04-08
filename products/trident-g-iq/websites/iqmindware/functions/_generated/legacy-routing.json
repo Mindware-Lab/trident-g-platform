@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-22T11:27:20.716002+00:00",
+  "generated_at": "2026-04-08T22:26:06.109Z",
   "canonical_host": "https://www.iqmindware.com",
   "mirror_public_redirects": false,
   "known_strip_allowlist": [
@@ -27,30 +27,8 @@
       "strip_params": [
         "hop"
       ],
-      "notes": "strip legacy hop param on home"
-    },
-    {
-      "match_type": "exact",
-      "old_path": "/trident-brain-training/intelligence-research/the-bell-curve-cognitive-elites/",
-      "action": "301",
-      "target_path": "/learn/blog/the-bell-curve-cognitive-elites/",
-      "strip_params": [
-        "amp",
-        "noamp",
-        "utm_source",
-        "utm_medium",
-        "utm_campaign",
-        "utm_term",
-        "utm_content",
-        "hop",
-        "cat",
-        "admitad_uid",
-        "advcake_params",
-        "erid",
-        "goback",
-        "source"
-      ],
-      "notes": "mapped legacy article"
+      "notes": "strip legacy hop param on home",
+      "source_line": 2
     },
     {
       "match_type": "exact",
@@ -73,30 +51,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy article"
-    },
-    {
-      "match_type": "exact",
-      "old_path": "/improve-executive-control/capacity-training/training-strategies/",
-      "action": "301",
-      "target_path": "/learn/blog/dual-n-back-training-strategies/",
-      "strip_params": [
-        "amp",
-        "noamp",
-        "utm_source",
-        "utm_medium",
-        "utm_campaign",
-        "utm_term",
-        "utm_content",
-        "hop",
-        "cat",
-        "admitad_uid",
-        "advcake_params",
-        "erid",
-        "goback",
-        "source"
-      ],
-      "notes": "mapped legacy article"
+      "notes": "mapped legacy article",
+      "source_line": 9
     },
     {
       "match_type": "exact",
@@ -119,7 +75,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy wiki entry"
+      "notes": "mapped legacy wiki entry",
+      "source_line": 11
     },
     {
       "match_type": "exact",
@@ -142,7 +99,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy article"
+      "notes": "mapped legacy article",
+      "source_line": 12
     },
     {
       "match_type": "exact",
@@ -165,7 +123,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy article"
+      "notes": "mapped legacy article",
+      "source_line": 13
     },
     {
       "match_type": "exact",
@@ -188,7 +147,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy article"
+      "notes": "mapped legacy article",
+      "source_line": 14
     },
     {
       "match_type": "exact",
@@ -211,7 +171,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy pricing"
+      "notes": "mapped legacy pricing",
+      "source_line": 15
     },
     {
       "match_type": "exact",
@@ -234,7 +195,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped founder profile"
+      "notes": "mapped founder profile",
+      "source_line": 16
     },
     {
       "match_type": "exact",
@@ -257,7 +219,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped about page"
+      "notes": "mapped about page",
+      "source_line": 17
     },
     {
       "match_type": "exact",
@@ -281,7 +244,8 @@
         "source",
         "tag"
       ],
-      "notes": "mapped legacy blog hub"
+      "notes": "mapped legacy blog hub",
+      "source_line": 18
     },
     {
       "match_type": "exact",
@@ -304,7 +268,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy blog article"
+      "notes": "mapped legacy blog article",
+      "source_line": 19
     },
     {
       "match_type": "exact",
@@ -327,7 +292,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy wiki hub"
+      "notes": "mapped legacy wiki hub",
+      "source_line": 20
     },
     {
       "match_type": "exact",
@@ -350,7 +316,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub",
+      "source_line": 21
     },
     {
       "match_type": "exact",
@@ -373,7 +340,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub",
+      "source_line": 22
     },
     {
       "match_type": "exact",
@@ -396,7 +364,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub",
+      "source_line": 23
     },
     {
       "match_type": "exact",
@@ -419,7 +388,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub",
+      "source_line": 24
     },
     {
       "match_type": "exact",
@@ -442,7 +412,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy emotional dual n back page to close successor"
+      "notes": "mapped legacy emotional dual n back page to close successor",
+      "source_line": 25
     },
     {
       "match_type": "exact",
@@ -465,7 +436,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy dual n back route to dedicated successor"
+      "notes": "mapped legacy dual n back route to dedicated successor",
+      "source_line": 26
     },
     {
       "match_type": "prefix",
@@ -473,7 +445,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired tag family without strong replacement"
+      "notes": "retired tag family without strong replacement",
+      "source_line": 27
     },
     {
       "match_type": "prefix",
@@ -481,7 +454,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired category family without strong replacement"
+      "notes": "retired category family without strong replacement",
+      "source_line": 28
     },
     {
       "match_type": "prefix",
@@ -489,7 +463,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired product family without strong replacement"
+      "notes": "retired product family without strong replacement",
+      "source_line": 29
     },
     {
       "match_type": "prefix",
@@ -497,7 +472,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired blog archive pages"
+      "notes": "retired blog archive pages",
+      "source_line": 30
     },
     {
       "match_type": "prefix",
@@ -505,7 +481,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired unmatched legacy blog paths"
+      "notes": "retired unmatched legacy blog paths",
+      "source_line": 31
     },
     {
       "match_type": "prefix",
@@ -513,7 +490,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired dual n back legacy family"
+      "notes": "retired dual n back legacy family",
+      "source_line": 32
     },
     {
       "match_type": "prefix",
@@ -521,7 +499,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired legacy brain training family without strong replacement"
+      "notes": "retired legacy brain training family without strong replacement",
+      "source_line": 33
     },
     {
       "match_type": "prefix",
@@ -529,7 +508,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired improve bioq family without strong replacement"
+      "notes": "retired improve bioq family without strong replacement",
+      "source_line": 34
     },
     {
       "match_type": "prefix",
@@ -537,7 +517,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired increase iq family without strong replacement"
+      "notes": "retired increase iq family without strong replacement",
+      "source_line": 35
     },
     {
       "match_type": "prefix",
@@ -545,7 +526,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired intelligence trackers family without strong replacement"
+      "notes": "retired intelligence trackers family without strong replacement",
+      "source_line": 36
     },
     {
       "match_type": "prefix",
@@ -553,7 +535,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired unmatched legacy wiki pages"
+      "notes": "retired unmatched legacy wiki pages",
+      "source_line": 37
     },
     {
       "match_type": "prefix",
@@ -561,7 +544,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired legacy brain iq science family"
+      "notes": "retired legacy brain iq science family",
+      "source_line": 38
     },
     {
       "match_type": "prefix",
@@ -569,7 +553,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired cognitive training app legacy family"
+      "notes": "retired cognitive training app legacy family",
+      "source_line": 39
     },
     {
       "match_type": "prefix",
@@ -577,7 +562,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired fluid intelligence legacy family"
+      "notes": "retired fluid intelligence legacy family",
+      "source_line": 40
     },
     {
       "match_type": "prefix",
@@ -585,7 +571,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired research opportunities legacy family"
+      "notes": "retired research opportunities legacy family",
+      "source_line": 41
     },
     {
       "match_type": "prefix",
@@ -593,7 +580,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired iq tests legacy family without strong replacement"
+      "notes": "retired iq tests legacy family without strong replacement",
+      "source_line": 42
     },
     {
       "match_type": "prefix",
@@ -601,7 +589,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired iq training goals legacy family"
+      "notes": "retired iq training goals legacy family",
+      "source_line": 43
     },
     {
       "match_type": "prefix",
@@ -609,7 +598,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired affiliate legacy route"
+      "notes": "retired affiliate legacy route",
+      "source_line": 44
     },
     {
       "match_type": "prefix",
@@ -617,7 +607,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired testimonials legacy route"
+      "notes": "retired testimonials legacy route",
+      "source_line": 45
     },
     {
       "match_type": "prefix",
@@ -625,7 +616,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired privacy legacy route"
+      "notes": "retired privacy legacy route",
+      "source_line": 46
     },
     {
       "match_type": "prefix",
@@ -633,7 +625,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired can you increase iq legacy route"
+      "notes": "retired can you increase iq legacy route",
+      "source_line": 47
     },
     {
       "match_type": "prefix",
@@ -641,7 +634,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired evidence based legacy route"
+      "notes": "retired evidence based legacy route",
+      "source_line": 48
     },
     {
       "match_type": "prefix",
@@ -649,7 +643,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired far transfer legacy route"
+      "notes": "retired far transfer legacy route",
+      "source_line": 49
     }
   ],
   "exact": {
@@ -661,30 +656,8 @@
       "strip_params": [
         "hop"
       ],
-      "notes": "strip legacy hop param on home"
-    },
-    "/trident-brain-training/intelligence-research/the-bell-curve-cognitive-elites/": {
-      "match_type": "exact",
-      "old_path": "/trident-brain-training/intelligence-research/the-bell-curve-cognitive-elites/",
-      "action": "301",
-      "target_path": "/learn/blog/the-bell-curve-cognitive-elites/",
-      "strip_params": [
-        "amp",
-        "noamp",
-        "utm_source",
-        "utm_medium",
-        "utm_campaign",
-        "utm_term",
-        "utm_content",
-        "hop",
-        "cat",
-        "admitad_uid",
-        "advcake_params",
-        "erid",
-        "goback",
-        "source"
-      ],
-      "notes": "mapped legacy article"
+      "notes": "strip legacy hop param on home",
+      "source_line": 2
     },
     "/intelligence-trackers/iq-tests/how-to-do-a-raven-matrices-test/": {
       "match_type": "exact",
@@ -707,30 +680,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy article"
-    },
-    "/improve-executive-control/capacity-training/training-strategies/": {
-      "match_type": "exact",
-      "old_path": "/improve-executive-control/capacity-training/training-strategies/",
-      "action": "301",
-      "target_path": "/learn/blog/dual-n-back-training-strategies/",
-      "strip_params": [
-        "amp",
-        "noamp",
-        "utm_source",
-        "utm_medium",
-        "utm_campaign",
-        "utm_term",
-        "utm_content",
-        "hop",
-        "cat",
-        "admitad_uid",
-        "advcake_params",
-        "erid",
-        "goback",
-        "source"
-      ],
-      "notes": "mapped legacy article"
+      "notes": "mapped legacy article",
+      "source_line": 9
     },
     "/wiki/what-is-an-iq-score-what-does-my-iq-score-mean/": {
       "match_type": "exact",
@@ -753,7 +704,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy wiki entry"
+      "notes": "mapped legacy wiki entry",
+      "source_line": 11
     },
     "/123-sigma-rule/": {
       "match_type": "exact",
@@ -776,7 +728,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy article"
+      "notes": "mapped legacy article",
+      "source_line": 12
     },
     "/increase-cognitive-resilience/emotional-dual-n-back-science/": {
       "match_type": "exact",
@@ -799,7 +752,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy article"
+      "notes": "mapped legacy article",
+      "source_line": 13
     },
     "/trident-brain-training/intelligence-research/jordan-peterson-iq/": {
       "match_type": "exact",
@@ -822,7 +776,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy article"
+      "notes": "mapped legacy article",
+      "source_line": 14
     },
     "/brain-training-plan/": {
       "match_type": "exact",
@@ -845,7 +800,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy pricing"
+      "notes": "mapped legacy pricing",
+      "source_line": 15
     },
     "/mark-ashton-smith-ph-d/": {
       "match_type": "exact",
@@ -868,7 +824,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped founder profile"
+      "notes": "mapped founder profile",
+      "source_line": 16
     },
     "/iq-mindware-about/": {
       "match_type": "exact",
@@ -891,7 +848,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped about page"
+      "notes": "mapped about page",
+      "source_line": 17
     },
     "/blog/": {
       "match_type": "exact",
@@ -915,7 +873,8 @@
         "source",
         "tag"
       ],
-      "notes": "mapped legacy blog hub"
+      "notes": "mapped legacy blog hub",
+      "source_line": 18
     },
     "/blog/the-bell-curve-cognitive-elites/": {
       "match_type": "exact",
@@ -938,7 +897,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy blog article"
+      "notes": "mapped legacy blog article",
+      "source_line": 19
     },
     "/wiki/": {
       "match_type": "exact",
@@ -961,7 +921,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy wiki hub"
+      "notes": "mapped legacy wiki hub",
+      "source_line": 20
     },
     "/wiki/what-is-bioenergetics/": {
       "match_type": "exact",
@@ -984,7 +945,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub",
+      "source_line": 21
     },
     "/wiki/what-is-processing-speed/": {
       "match_type": "exact",
@@ -1007,7 +969,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub",
+      "source_line": 22
     },
     "/wiki/what-is-the-g-factor/": {
       "match_type": "exact",
@@ -1030,7 +993,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub",
+      "source_line": 23
     },
     "/wiki/what-is-visual-intelligence/": {
       "match_type": "exact",
@@ -1053,7 +1017,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy wiki topic to closest live wiki explainer hub"
+      "notes": "mapped legacy wiki topic to closest live wiki explainer hub",
+      "source_line": 24
     },
     "/cognitive-training-apps/emotional-dual-n-back/": {
       "match_type": "exact",
@@ -1076,7 +1041,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy emotional dual n back page to close successor"
+      "notes": "mapped legacy emotional dual n back page to close successor",
+      "source_line": 25
     },
     "/dual-n-back/": {
       "match_type": "exact",
@@ -1099,7 +1065,8 @@
         "goback",
         "source"
       ],
-      "notes": "mapped legacy dual n back route to dedicated successor"
+      "notes": "mapped legacy dual n back route to dedicated successor",
+      "source_line": 26
     }
   },
   "prefix": [
@@ -1109,7 +1076,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired evidence based legacy route"
+      "notes": "retired evidence based legacy route",
+      "source_line": 48
     },
     {
       "match_type": "prefix",
@@ -1117,7 +1085,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired fluid intelligence legacy family"
+      "notes": "retired fluid intelligence legacy family",
+      "source_line": 40
     },
     {
       "match_type": "prefix",
@@ -1125,7 +1094,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired testimonials legacy route"
+      "notes": "retired testimonials legacy route",
+      "source_line": 45
     },
     {
       "match_type": "prefix",
@@ -1133,7 +1103,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired far transfer legacy route"
+      "notes": "retired far transfer legacy route",
+      "source_line": 49
     },
     {
       "match_type": "prefix",
@@ -1141,7 +1112,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired privacy legacy route"
+      "notes": "retired privacy legacy route",
+      "source_line": 46
     },
     {
       "match_type": "prefix",
@@ -1149,7 +1121,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired cognitive training app legacy family"
+      "notes": "retired cognitive training app legacy family",
+      "source_line": 39
     },
     {
       "match_type": "prefix",
@@ -1157,7 +1130,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired legacy brain training family without strong replacement"
+      "notes": "retired legacy brain training family without strong replacement",
+      "source_line": 33
     },
     {
       "match_type": "prefix",
@@ -1165,7 +1139,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired research opportunities legacy family"
+      "notes": "retired research opportunities legacy family",
+      "source_line": 41
     },
     {
       "match_type": "prefix",
@@ -1173,7 +1148,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired intelligence trackers family without strong replacement"
+      "notes": "retired intelligence trackers family without strong replacement",
+      "source_line": 36
     },
     {
       "match_type": "prefix",
@@ -1181,7 +1157,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired affiliate legacy route"
+      "notes": "retired affiliate legacy route",
+      "source_line": 44
     },
     {
       "match_type": "prefix",
@@ -1189,7 +1166,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired can you increase iq legacy route"
+      "notes": "retired can you increase iq legacy route",
+      "source_line": 47
     },
     {
       "match_type": "prefix",
@@ -1197,7 +1175,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired iq training goals legacy family"
+      "notes": "retired iq training goals legacy family",
+      "source_line": 43
     },
     {
       "match_type": "prefix",
@@ -1205,7 +1184,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired legacy brain iq science family"
+      "notes": "retired legacy brain iq science family",
+      "source_line": 38
     },
     {
       "match_type": "prefix",
@@ -1213,7 +1193,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired improve bioq family without strong replacement"
+      "notes": "retired improve bioq family without strong replacement",
+      "source_line": 34
     },
     {
       "match_type": "prefix",
@@ -1221,7 +1202,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired dual n back legacy family"
+      "notes": "retired dual n back legacy family",
+      "source_line": 32
     },
     {
       "match_type": "prefix",
@@ -1229,7 +1211,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired increase iq family without strong replacement"
+      "notes": "retired increase iq family without strong replacement",
+      "source_line": 35
     },
     {
       "match_type": "prefix",
@@ -1237,7 +1220,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired blog archive pages"
+      "notes": "retired blog archive pages",
+      "source_line": 30
     },
     {
       "match_type": "prefix",
@@ -1245,7 +1229,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired category family without strong replacement"
+      "notes": "retired category family without strong replacement",
+      "source_line": 28
     },
     {
       "match_type": "prefix",
@@ -1253,7 +1238,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired iq tests legacy family without strong replacement"
+      "notes": "retired iq tests legacy family without strong replacement",
+      "source_line": 42
     },
     {
       "match_type": "prefix",
@@ -1261,7 +1247,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired product family without strong replacement"
+      "notes": "retired product family without strong replacement",
+      "source_line": 29
     },
     {
       "match_type": "prefix",
@@ -1269,7 +1256,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired unmatched legacy blog paths"
+      "notes": "retired unmatched legacy blog paths",
+      "source_line": 31
     },
     {
       "match_type": "prefix",
@@ -1277,7 +1265,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired unmatched legacy wiki pages"
+      "notes": "retired unmatched legacy wiki pages",
+      "source_line": 37
     },
     {
       "match_type": "prefix",
@@ -1285,7 +1274,8 @@
       "action": "410",
       "target_path": "",
       "strip_params": [],
-      "notes": "retired tag family without strong replacement"
+      "notes": "retired tag family without strong replacement",
+      "source_line": 27
     }
   ]
 }
