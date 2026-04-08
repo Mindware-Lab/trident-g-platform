@@ -51,8 +51,8 @@ const programmeCards = [
     cardTone: "locked",
     statusTone: "select",
     stage: "3",
-    title: "Sprint",
-    status: "Select",
+    title: "Tune",
+    status: "Inactive",
     meterType: "segments",
     segmentsOn: 1
   }
@@ -140,6 +140,13 @@ export const hubScreen = {
           <div class="hub-mission-layout">
             <div class="hub-mission-main">
               <div class="hub-mission-title">Recommended mission.</div>
+              <div class="hub-mission-route-chips" aria-label="Programme selection">
+                <span class="hub-mission-route-chip">20 session</span>
+                <span class="hub-mission-route-chip hub-mission-route-chip--active">10 session</span>
+                <span class="hub-mission-route-chip">3 session</span>
+                <span class="hub-mission-route-label">Choose Program</span>
+                <span class="hub-mission-route-help" aria-label="Help about choosing a programme" title="Help about choosing a programme">?</span>
+              </div>
               <div class="hub-mission-flow" aria-label="Recommended mission flow">
                 <span class="hub-mission-step hub-mission-step--tests">Take Psi-CBS Test</span>
                 <span class="hub-mission-arrow" aria-hidden="true">></span>

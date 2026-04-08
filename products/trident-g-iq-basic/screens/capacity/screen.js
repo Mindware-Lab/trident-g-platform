@@ -5,66 +5,124 @@ export const capacityScreen = {
   module: "capacity",
   banner: {
     title: "Capacity",
-    subtitle: "XOR - Flexibility, selective attention, conceptual abstraction",
-    subcopy: "Capacity Gym - next gate: hold this level after a wrapper swap",
+    subtitle: "Relational - relational integration, fluid reasoning",
+    subcopy: "Capacity Gym - numbers variant live. Next gate: hold this rule after a wrapper swap",
     stage: "N-3",
-    stageMeta: "block 6 of 10"
+    stageMeta: "numbers variant"
   },
   info: [
-    { kind: "text", icon: "C", text: "Phase 1 - Encode" },
+    { kind: "text", icon: "C", text: "10 session - targeted" },
     { kind: "pill", text: "Today counts", tone: "positive" },
-    { kind: "text", text: "0 of 1 core session used" },
+    { kind: "text", text: "0 of 1 targeted session used" },
     { kind: "credit", text: "TG Credit +30" }
   ],
   coach: {
     label: "Coach",
-    headline: "Test carry-over next.",
-    body: "Swap wrapper at this level."
+    headline: "Hold the numbers rule next.",
+    body: "Keep relational matches clean after the wrapper swap."
   },
   taskHtml: `
-    <div class="task-shell">
-      <div class="task-kicker">Relational n-back board</div>
-      <div class="nback-grid">
-        <div class="nback-cell"></div>
-        <div class="nback-cell is-lit"></div>
-        <div class="nback-cell"></div>
-        <div class="nback-cell"></div>
-        <div class="nback-cell"></div>
-        <div class="nback-cell"></div>
-        <div class="nback-cell"></div>
-        <div class="nback-cell"></div>
-        <div class="nback-cell is-hit"></div>
-      </div>
-      <div class="stimulus-letter">K</div>
-      <div class="task-caption">Hold position and wrapper rule across the board</div>
-      <div class="capacity-progress">
-        <span class="is-on"></span>
-        <span class="is-on"></span>
-        <span class="is-on"></span>
-        <span class="is-on"></span>
-        <span class="is-on"></span>
-        <span class="is-on"></span>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
+    <div class="task-shell task-shell--capacity">
+      <div class="capacity-stage">
+        <div class="capacity-route">
+          <div class="capacity-route-kicker">Family route</div>
+          <div class="capacity-route-stack">
+            <div class="capacity-family capacity-family--xor">
+              <div class="capacity-family-order">1</div>
+              <div class="capacity-family-body">
+                <div class="capacity-family-head">
+                  <span class="capacity-family-chip">XOR</span>
+                  <span class="capacity-family-status">Open</span>
+                </div>
+                <div class="capacity-family-variants">
+                  <span class="capacity-variant capacity-variant--a is-on">Cat</span>
+                  <span class="capacity-variant capacity-variant--b is-on">Remap</span>
+                  <span class="capacity-variant capacity-variant--c is-on">Concept</span>
+                </div>
+              </div>
+            </div>
+            <div class="capacity-family capacity-family--and">
+              <div class="capacity-family-order">2</div>
+              <div class="capacity-family-body">
+                <div class="capacity-family-head">
+                  <span class="capacity-family-chip">AND</span>
+                  <span class="capacity-family-status">Open</span>
+                </div>
+                <div class="capacity-family-variants">
+                  <span class="capacity-variant capacity-variant--a is-on">Cat</span>
+                  <span class="capacity-variant capacity-variant--b is-on">Remap</span>
+                </div>
+              </div>
+            </div>
+            <div class="capacity-family capacity-family--interference">
+              <div class="capacity-family-order">3</div>
+              <div class="capacity-family-body">
+                <div class="capacity-family-head">
+                  <span class="capacity-family-chip">Interference</span>
+                  <span class="capacity-family-status">Open</span>
+                </div>
+                <div class="capacity-family-variants">
+                  <span class="capacity-variant capacity-variant--a is-on">Arrow</span>
+                  <span class="capacity-variant capacity-variant--b is-on">Stroop</span>
+                  <span class="capacity-variant capacity-variant--c">Concept</span>
+                </div>
+              </div>
+            </div>
+            <div class="capacity-family capacity-family--emotional is-locked">
+              <div class="capacity-family-order">4</div>
+              <div class="capacity-family-body">
+                <div class="capacity-family-head">
+                  <span class="capacity-family-chip">Emotional</span>
+                  <span class="capacity-family-status">Locked</span>
+                </div>
+                <div class="capacity-family-variants">
+                  <span class="capacity-variant capacity-variant--a is-locked">Visual</span>
+                  <span class="capacity-variant capacity-variant--b is-locked">Verbal</span>
+                </div>
+              </div>
+            </div>
+            <div class="capacity-family capacity-family--relational is-active">
+              <div class="capacity-family-order">5</div>
+              <div class="capacity-family-body">
+                <div class="capacity-family-head">
+                  <span class="capacity-family-chip">Relational</span>
+                  <span class="capacity-family-status">Live</span>
+                </div>
+                <div class="capacity-family-variants">
+                  <span class="capacity-variant capacity-variant--a is-on">Direction</span>
+                  <span class="capacity-variant capacity-variant--b is-on">Angles</span>
+                  <span class="capacity-variant capacity-variant--c is-active">Numbers</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="capacity-preview">
+          <div class="capacity-preview-kicker">Numbers n-back</div>
+          <div class="capacity-phone">
+            <div class="capacity-phone-head">Game: Relational</div>
+            <div class="capacity-phone-board">
+              <span class="capacity-phone-node capacity-phone-node--1"></span>
+              <span class="capacity-phone-node capacity-phone-node--2"></span>
+              <span class="capacity-phone-node capacity-phone-node--3"></span>
+              <span class="capacity-phone-node capacity-phone-node--4"></span>
+              <span class="capacity-phone-node capacity-phone-node--5"></span>
+              <span class="capacity-phone-node capacity-phone-node--6"></span>
+              <div class="capacity-phone-token capacity-phone-token--t1">
+                <span class="capacity-phone-token-tag">t1</span>
+                <span class="capacity-phone-token-value">3</span>
+              </div>
+              <div class="capacity-phone-token capacity-phone-token--t2">
+                <span class="capacity-phone-token-tag">t2</span>
+                <span class="capacity-phone-token-value">3</span>
+              </div>
+            </div>
+            <button class="capacity-phone-action" type="button">Match</button>
+          </div>
+        </div>
       </div>
     </div>
   `,
-  responseHtml: `
-    <div class="response-stack">
-      <div class="response-hint">Response controls</div>
-      <div class="response-buttons">
-        <button class="response-button is-primary" type="button">
-          <span class="button-title">Match position</span>
-          <span class="button-subtitle">Spatial recall at N-3</span>
-        </button>
-        <button class="response-button is-confirmed" type="button">
-          <span class="button-title">Match letter</span>
-          <span class="button-subtitle">Correct action gets the lime pulse</span>
-        </button>
-      </div>
-    </div>
-  `,
+  responseHtml: ``,
   telemetryCards: capacityTelemetry
 };

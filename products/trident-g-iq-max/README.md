@@ -3,8 +3,8 @@
 Expanded full-game product built on the new sibling UI/runtime layer.
 
 ## Scope
-
-- Hub
++=[- m/ mn bvc\654321`-0o9i8890-=]
+- Hub.mki9o0p-['/. mnjbhgyvt123.,z\ 12343W2Q1   234567]
 - Tests
 - Zone Coach
 - Capacity Gym

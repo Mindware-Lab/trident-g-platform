@@ -145,41 +145,75 @@ export const zoneTelemetry = [
 
 export const capacityTelemetry = [
   {
-    type: "barMetric",
-    label: "Session average",
-    value: "2.0",
-    valueTone: "accent",
-    barValue: 58,
-    subline: "Average session n-back stays visible, but not overloaded.",
-    emphasis: true
+    label: "Session performance",
+    emphasis: true,
+    html: `
+      <div class="capacity-rail-panel">
+        <div class="capacity-rail-progress-head">
+          <span>Block 6 of 10</span>
+          <span class="capacity-rail-route">Counted session</span>
+        </div>
+        <div class="bar-track capacity-rail-progress-track">
+          <div class="bar-fill" style="width: 60%;"></div>
+        </div>
+        <div class="capacity-rail-grid">
+          <div class="capacity-rail-stat">
+            <div class="capacity-rail-stat-label">Session average</div>
+            <div class="capacity-rail-stat-value is-accent">2.0</div>
+            <div class="capacity-rail-stat-subline">Current session n-back</div>
+          </div>
+          <div class="capacity-rail-stat">
+            <div class="capacity-rail-stat-label">Transfer readiness</div>
+            <div class="capacity-rail-pill capacity-rail-pill--transfer">Developing</div>
+            <div class="capacity-rail-stat-subline">Switch cost absorbed</div>
+          </div>
+        </div>
+        <div class="capacity-rail-inline">
+          <span class="capacity-rail-inline-label">Stable level</span>
+          <span class="capacity-rail-inline-value">2-back</span>
+        </div>
+        <div class="capacity-rail-inline">
+          <span class="capacity-rail-inline-label">Pressure status</span>
+          <span class="capacity-rail-inline-value">Numbers hold next</span>
+        </div>
+      </div>
+    `
   },
   {
-    type: "metric",
-    label: "Stable level",
-    value: "2-back",
-    subline: "Fast speed not yet confirmed."
-  },
-  {
-    type: "sparkline",
-    label: "Trend",
-    value: "Rising",
-    valueTone: "accent",
-    points: "2,30 32,24 62,25 92,17 122,18 152,10 178,12",
-    subline: "Shape is placeholder only. Later this maps to actual session trend."
-  },
-  {
-    type: "ring",
-    label: "Transfer readiness",
-    ringValue: 58,
-    ringNumber: "58",
-    ringLabel: "proxy score",
-    subline: "Visible proxy rather than a full far-transfer claim.",
-    variant: "violet"
+    label: "Game performance",
+    html: `
+      <div class="capacity-rail-panel">
+        <div class="capacity-rail-grid">
+          <div class="capacity-rail-stat">
+            <div class="capacity-rail-stat-label">Next block</div>
+            <div class="capacity-rail-stat-value is-accent">N-3</div>
+            <div class="capacity-rail-stat-subline">Wrapper swap</div>
+          </div>
+          <div class="capacity-rail-stat">
+            <div class="capacity-rail-stat-label">Last block</div>
+            <div class="capacity-rail-stat-value">86%</div>
+            <div class="capacity-rail-pill capacity-rail-pill--up">UP</div>
+          </div>
+        </div>
+        <div class="capacity-rail-inline">
+          <span class="capacity-rail-inline-label">Last accuracy</span>
+          <span class="capacity-rail-inline-value">18 of 21 correct</span>
+        </div>
+        <div class="capacity-rail-inline">
+          <span class="capacity-rail-inline-label">Next game</span>
+          <span class="capacity-rail-inline-value">Relational numbers</span>
+        </div>
+        <div class="capacity-rail-inline">
+          <span class="capacity-rail-inline-label">Progression</span>
+          <span class="capacity-rail-inline-value">Level up if relation rule holds</span>
+        </div>
+      </div>
+    `
   },
   {
     type: "streak",
     label: "Track progress",
-    lines: ["Encode Day 8 of 20", "XOR: 2 of 3 variants stabilized"],
+    lines: ["Targeted Day 2 of 10", "Relational: 1 of 3 variants live"],
     streakOn: 6,
     streakTotal: 8,
     footer: { left: "Today", right: "+30 TG", rightTone: "credit" }

@@ -1381,6 +1381,67 @@
   text-transform: uppercase;
 }
 
+.hub-mission-route-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.hub-mission-route-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.hub-mission-route-chip--active {
+  border-color: rgba(68, 221, 136, 0.34);
+  background: rgba(68, 221, 136, 0.1);
+  color: var(--ready);
+  box-shadow: 0 0 12px rgba(68, 221, 136, 0.08);
+}
+
+.hub-mission-route-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-left: 4px;
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.hub-mission-route-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: -2px;
+  border: 1px solid rgba(125, 234, 255, 0.3);
+  border-radius: 50%;
+  background: rgba(125, 234, 255, 0.08);
+  color: var(--tests);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+}
+
 .hub-mission-copy {
   margin-top: 8px;
   color: var(--text);
@@ -1393,7 +1454,7 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
   gap: 6px;
   align-items: center;
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .hub-mission-step {
@@ -1703,6 +1764,113 @@
   font-family: "Chakra Petch", sans-serif;
   font-weight: 700;
   letter-spacing: 0.6px;
+}
+
+.capacity-rail-panel {
+  display: grid;
+  gap: 8px;
+}
+
+.capacity-rail-progress-head,
+.capacity-rail-inline {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.capacity-rail-progress-head,
+.capacity-rail-inline-label,
+.capacity-rail-route {
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.capacity-rail-progress-head span:first-child {
+  color: var(--white);
+}
+
+.capacity-rail-progress-track {
+  height: 7px;
+}
+
+.capacity-rail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.capacity-rail-stat {
+  min-width: 0;
+}
+
+.capacity-rail-stat-label {
+  color: var(--muted-2);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+
+.capacity-rail-stat-value {
+  margin-top: 4px;
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.capacity-rail-stat-value.is-accent {
+  color: var(--module-accent);
+}
+
+.capacity-rail-stat-subline {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.3;
+}
+
+.capacity-rail-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22px;
+  margin-top: 6px;
+  padding: 4px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.capacity-rail-pill--transfer {
+  border-color: rgba(155, 123, 255, 0.3);
+  background: rgba(155, 123, 255, 0.1);
+  color: var(--transfer);
+}
+
+.capacity-rail-pill--up {
+  border-color: rgba(68, 221, 136, 0.3);
+  background: rgba(68, 221, 136, 0.08);
+  color: var(--ready);
+}
+
+.capacity-rail-inline-value {
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: right;
 }
 
 .hub-summary-title {
@@ -2033,6 +2201,347 @@
   color: var(--tests);
 }
 
+.app-shell[data-screen="capacity"] .response-area:empty {
+  display: none;
+}
+
+.task-shell--capacity {
+  width: 100%;
+  max-width: none;
+  text-align: left;
+}
+
+.capacity-stage {
+  display: grid;
+  grid-template-columns: 194px minmax(0, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.capacity-route {
+  padding-right: 14px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.capacity-route-kicker,
+.capacity-preview-kicker {
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.6px;
+  text-transform: uppercase;
+}
+
+.capacity-route-stack {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding-left: 2px;
+}
+
+.capacity-route-stack::before {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 10px;
+  bottom: 10px;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(84, 162, 255, 0.35), rgba(151, 171, 196, 0.1));
+}
+
+.capacity-family {
+  --family-color: var(--capacity);
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.capacity-family--xor {
+  --family-color: #5f9cff;
+}
+
+.capacity-family--and {
+  --family-color: #68d2ff;
+}
+
+.capacity-family--interference {
+  --family-color: #f5b544;
+}
+
+.capacity-family--emotional {
+  --family-color: #ff5b9a;
+}
+
+.capacity-family--relational {
+  --family-color: #8a7bff;
+}
+
+.capacity-family-order {
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(9, 16, 30, 0.92);
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 22px;
+  text-align: center;
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.2);
+}
+
+.capacity-family-body {
+  padding: 7px 9px 8px;
+  border: 1px solid color-mix(in srgb, var(--family-color) 28%, rgba(255, 255, 255, 0.06));
+  background:
+    linear-gradient(180deg, rgba(16, 26, 42, 0.9), rgba(11, 18, 32, 0.96)),
+    linear-gradient(115deg, color-mix(in srgb, var(--family-color) 10%, transparent), transparent 60%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}
+
+.capacity-family.is-active .capacity-family-body {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 18px color-mix(in srgb, var(--family-color) 18%, transparent);
+}
+
+.capacity-family.is-locked .capacity-family-body,
+.capacity-family.is-locked .capacity-family-order {
+  opacity: 0.62;
+}
+
+.capacity-family-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.capacity-family-chip,
+.capacity-family-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 3px 7px;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+
+.capacity-family-chip {
+  border: 1px solid color-mix(in srgb, var(--family-color) 34%, rgba(255, 255, 255, 0.08));
+  background: color-mix(in srgb, var(--family-color) 13%, transparent);
+  color: color-mix(in srgb, var(--family-color) 74%, white 26%);
+}
+
+.capacity-family-status {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+}
+
+.capacity-family.is-active .capacity-family-status {
+  border-color: rgba(204, 255, 102, 0.26);
+  background: rgba(204, 255, 102, 0.08);
+  color: var(--credit);
+}
+
+.capacity-family.is-locked .capacity-family-status {
+  color: var(--flat);
+}
+
+.capacity-family-variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.capacity-variant {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  padding: 2px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+}
+
+.capacity-variant.is-on {
+  color: var(--white);
+}
+
+.capacity-variant.capacity-variant--a.is-on {
+  border-color: color-mix(in srgb, var(--family-color) 18%, rgba(255, 255, 255, 0.08));
+  background: color-mix(in srgb, var(--family-color) 14%, transparent);
+}
+
+.capacity-variant.capacity-variant--b.is-on {
+  border-color: color-mix(in srgb, var(--family-color) 24%, rgba(255, 255, 255, 0.08));
+  background: color-mix(in srgb, var(--family-color) 22%, transparent);
+}
+
+.capacity-variant.capacity-variant--c.is-on,
+.capacity-variant.is-active {
+  border-color: color-mix(in srgb, var(--family-color) 34%, rgba(255, 255, 255, 0.08));
+  background: color-mix(in srgb, var(--family-color) 34%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--family-color) 14%, transparent);
+}
+
+.capacity-variant.is-locked {
+  color: var(--flat);
+  border-color: rgba(151, 171, 196, 0.12);
+  background: rgba(151, 171, 196, 0.04);
+}
+
+.capacity-preview {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+}
+
+.capacity-phone {
+  width: 246px;
+  padding: 12px 14px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.045), transparent 38%),
+    linear-gradient(180deg, rgba(15, 24, 41, 0.96), rgba(10, 16, 29, 0.98));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 24px rgba(84, 162, 255, 0.08);
+}
+
+.capacity-phone-head {
+  color: rgba(255, 255, 255, 0.78);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.capacity-phone-board {
+  position: relative;
+  height: 182px;
+  margin-top: 10px;
+}
+
+.capacity-phone-board::before {
+  content: "";
+  position: absolute;
+  inset: 14px 16px;
+  border: 2px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+}
+
+.capacity-phone-node {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.44);
+}
+
+.capacity-phone-node--1 {
+  top: 12px;
+  left: calc(50% - 4px);
+}
+
+.capacity-phone-node--2 {
+  top: 34px;
+  right: 34px;
+}
+
+.capacity-phone-node--3 {
+  top: calc(50% - 4px);
+  right: 18px;
+}
+
+.capacity-phone-node--4 {
+  bottom: 14px;
+  left: calc(50% - 4px);
+}
+
+.capacity-phone-node--5 {
+  bottom: 34px;
+  left: 34px;
+}
+
+.capacity-phone-node--6 {
+  top: calc(50% - 4px);
+  left: 18px;
+}
+
+.capacity-phone-token {
+  position: absolute;
+  width: 50px;
+  height: 56px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #6c74ff, #505ce0);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 10px 24px rgba(56, 70, 178, 0.26);
+  display: grid;
+  place-items: center;
+}
+
+.capacity-phone-token--t1 {
+  top: 26px;
+  left: 10px;
+}
+
+.capacity-phone-token--t2 {
+  right: 14px;
+  bottom: 20px;
+}
+
+.capacity-phone-token-tag {
+  position: absolute;
+  top: -16px;
+  left: 4px;
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.capacity-phone-token-value {
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.capacity-phone-action {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(223, 255, 27, 0.98), rgba(197, 232, 24, 0.94));
+  color: #213018;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  box-shadow: 0 0 18px rgba(204, 255, 102, 0.18);
+}
+
 @media (max-width: 860px) {
   .play-stage--dashboard {
     padding: 14px;
@@ -2066,5 +2575,9 @@
 
   .hub-wallet-coins {
     margin: 0 auto;
+  }
+
+  .capacity-stage {
+    grid-template-columns: 1fr;
   }
 }
