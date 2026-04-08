@@ -1,7 +1,7 @@
 ﻿# IQMindware Website Inventory
 
-Generated: 2026-04-04 00:00:00 +00:00
-Total pages: 44
+Generated: 2026-04-08 00:00:00 +00:00
+Total pages: 45
 
 | Title | URL | Source file |
 |---|---|---|
@@ -15,6 +15,7 @@ Total pages: 44
 | How it works \\| IQMindware | https://www.iqmindware.com/how-it-works/ | how-it-works/index.html |
 | Learn - Methods, Blog and Wiki \\| IQMindware | https://www.iqmindware.com/learn/ | learn/index.html |
 | Blog - Method Updates and Protocol Notes \\| IQMindware | https://www.iqmindware.com/learn/blog/ | learn/blog/index.html |
+| The Science of Learning Curves: Overcoming Plateaus and the Fluency Trap \\| IQMindware | https://www.iqmindware.com/learn/blog/learning-curves-plateaus-fluency-trap/ | learn/blog/learning-curves-plateaus-fluency-trap/index.html |
 | AI and Knowledge Workers: The Real Challenge Is Cognitive Drift \\| IQMindware | https://www.iqmindware.com/learn/blog/ai-knowledge-workers-cognitive-drift/ | learn/blog/ai-knowledge-workers-cognitive-drift/index.html |
 | The ORSAR Framework: How to Use AI Without Losing Your Mind \\| IQMindware | https://www.iqmindware.com/learn/blog/orsar-framework-how-to-use-ai-without-losing-your-mind/ | learn/blog/orsar-framework-how-to-use-ai-without-losing-your-mind/index.html |
 | The 123 Sigma Rule: 1-2-3 Sigma Framing for IQ and Performance | https://www.iqmindware.com/learn/blog/123-sigma-rule/ | learn/blog/123-sigma-rule/index.html |
