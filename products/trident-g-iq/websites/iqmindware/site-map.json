@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-04",
+  "generated_at": "2026-04-08",
   "routes": [
     {
       "route": "/",
@@ -141,6 +141,12 @@
       "route": "/learn/blog/",
       "intent": "education_blog",
       "primary_cta": "Read blog content",
+      "required_template_blocks": []
+    },
+    {
+      "route": "/learn/blog/learning-curves-plateaus-fluency-trap/",
+      "intent": "education_article",
+      "primary_cta": "Read article content",
       "required_template_blocks": []
     },
     {
