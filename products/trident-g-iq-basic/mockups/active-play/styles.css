@@ -2312,13 +2312,18 @@
   color: var(--tests);
 }
 
+.app-shell[data-screen="capacity"] {
+  --banner-height: 62px;
+  --coach-height: 78px;
+}
+
 .app-shell[data-screen="capacity"] .response-area:empty {
   display: none;
 }
 
 .app-shell[data-screen="capacity"] .play-main--split {
-  grid-template-columns: 174px 520px;
-  gap: 14px;
+  grid-template-columns: 200px 520px;
+  gap: 12px;
   flex: 1;
   min-height: 0;
   justify-content: end;
@@ -2326,8 +2331,8 @@
 }
 
 .app-shell[data-screen="capacity"] .capacity-side-panel {
-  width: 174px;
-  padding-top: calc(var(--banner-height) - 24px);
+  width: 200px;
+  padding-top: calc(var(--banner-height) - 34px);
   min-height: 0;
 }
 
@@ -2337,9 +2342,24 @@
   justify-self: end;
 }
 
+.app-shell[data-screen="capacity"] .game-window__banner {
+  padding: 8px 12px;
+  align-items: center;
+  gap: 12px;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--module-accent) 40%, black 60%) 0%,
+      color-mix(in srgb, var(--module-accent) 62%, black 38%) 58%,
+      color-mix(in srgb, var(--module-accent) 76%, white 24%) 100%
+    );
+}
+
 .app-shell[data-screen="capacity"] .coach-strip {
   width: 520px;
   margin-left: auto;
+  padding: 10px 12px;
+  display: block;
 }
 
 .task-shell--capacity {
@@ -2350,14 +2370,167 @@
 
 .capacity-stage {
   display: flex;
+  width: 100%;
   min-height: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 12px;
+}
+
+.capacity-banner-shell {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+.capacity-banner-a11y-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.capacity-banner-track {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  padding: 2px 8px 1px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(217, 234, 255, 0.88);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.capacity-banner-divider {
+  width: 1px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.2);
+  flex: 0 0 auto;
+}
+
+.capacity-banner-chip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+}
+
+.capacity-banner-credit {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.capacity-banner-credit-label {
+  color: rgba(255, 255, 255, 0.86);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.capacity-banner-credit-badge {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 8px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 10px rgba(255, 255, 255, 0.08);
+  color: #ff972c;
+  font-family: "Orbitron", monospace;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.5px;
+}
+
+.capacity-banner-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 20px;
+  padding: 2px 9px 1px;
+  border: 1px solid rgba(114, 171, 255, 0.3);
+  border-radius: 999px;
+  background: rgba(20, 45, 88, 0.52);
+  color: #8abefe;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.05px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.capacity-banner-chip--level {
+  background: rgba(255, 255, 255, 0.1);
+  color: #dceaff;
+}
+
+.capacity-banner-chip--speed {
+  border-color: rgba(110, 224, 129, 0.4);
+  background: rgba(77, 181, 92, 0.16);
+  color: #87eba1;
+}
+
+.capacity-banner-chip-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #4f9dff;
+  box-shadow: 0 0 8px rgba(79, 157, 255, 0.35);
+  flex: 0 0 auto;
+}
+
+.capacity-banner-chip--speed .capacity-banner-chip-dot {
+  background: #6ddc85;
+  box-shadow: 0 0 10px rgba(109, 220, 133, 0.4);
+  animation: capacity-banner-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes capacity-banner-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
 }
 
 .capacity-route {
-  padding-right: 8px;
+  padding-right: 6px;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
 }
 
 .capacity-route-title,
@@ -2371,8 +2544,268 @@
   font-size: 24px;
   font-weight: 900;
   line-height: 1;
-  letter-spacing: 1px;
-  margin-left: 12px;
+  letter-spacing: 4px;
+}
+
+.capacity-route-title span {
+  color: var(--module-accent);
+}
+
+.capacity-route-figure {
+  margin-top: 12px;
+  width: 100%;
+}
+
+.capacity-route-map {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform: translateY(-10px);
+  transform-origin: top center;
+}
+
+.capacity-route-key {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.capacity-route-key-item {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.capacity-route-key-label {
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+}
+
+.capacity-route-key-swatch {
+  --key-color: var(--capacity);
+  position: relative;
+  width: 34px;
+  height: 12px;
+}
+
+.capacity-route-key-swatch::before,
+.capacity-route-key-swatch::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.capacity-route-key-swatch::before {
+  left: 2px;
+  right: 8px;
+  border-top: 1px solid var(--key-color);
+}
+
+.capacity-route-key-swatch::after {
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--key-color);
+  border-radius: 999px;
+  background: transparent;
+}
+
+.capacity-route-key-swatch--unlocked {
+  --key-color: #6d98ff;
+}
+
+.capacity-route-key-swatch--locked {
+  --key-color: #9b88a9;
+}
+
+.capacity-route-key-swatch--locked::before,
+.capacity-route-key-swatch--locked::after {
+  opacity: 0.72;
+}
+
+.capacity-route-key-swatch--locked::before {
+  border-top-style: dashed;
+}
+
+.capacity-route-key-swatch--locked::after {
+  border-style: dashed;
+}
+
+.capacity-route-key-swatch--active {
+  --key-color: #8a7bff;
+}
+
+.capacity-route-key-swatch--active::before {
+  opacity: 0.96;
+}
+
+.capacity-route-key-swatch--active::after {
+  background: var(--key-color);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--key-color) 34%, transparent);
+}
+
+.capacity-route-spine,
+.capacity-route-step,
+.capacity-route-branch,
+.capacity-route-junction,
+.capacity-route-trunk,
+.capacity-route-link,
+.capacity-route-node {
+  vector-effect: non-scaling-stroke;
+}
+
+.capacity-route-spine {
+  stroke: rgba(84, 162, 255, 0.34);
+  stroke-width: 1.1;
+}
+
+.capacity-route-family {
+  --family-color: var(--capacity);
+  --family-color-muted: color-mix(in srgb, var(--family-color) 48%, #7f90ab 52%);
+  --family-color-muted-ink: color-mix(in srgb, var(--family-color) 58%, #c7d2e6 42%);
+}
+
+.capacity-route-family--xor {
+  --family-color: #5f9cff;
+}
+
+.capacity-route-family--and {
+  --family-color: #68d2ff;
+}
+
+.capacity-route-family--interference {
+  --family-color: #f5b544;
+}
+
+.capacity-route-family--emotional {
+  --family-color: #ff5b9a;
+}
+
+.capacity-route-family--relational {
+  --family-color: #8a7bff;
+}
+
+.capacity-route-family-name {
+  fill: color-mix(in srgb, var(--family-color) 84%, white 16%);
+}
+
+.capacity-route-step {
+  fill: color-mix(in srgb, var(--family-color) 14%, transparent);
+  stroke: var(--family-color);
+  stroke-width: 1.5;
+}
+
+.capacity-route-branch,
+.capacity-route-link,
+.capacity-route-trunk {
+  stroke: var(--family-color);
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.capacity-route-branch,
+.capacity-route-link {
+  opacity: 0.72;
+}
+
+.capacity-route-trunk {
+  opacity: 0.56;
+}
+
+.capacity-route-junction {
+  fill: var(--family-color);
+  stroke: none;
+  opacity: 0.58;
+}
+
+.capacity-route-node {
+  fill: none;
+  stroke: var(--family-color);
+  stroke-width: 1.5;
+  opacity: 0.9;
+}
+
+.capacity-route-variant-label {
+  fill: color-mix(in srgb, var(--family-color) 82%, white 18%);
+}
+
+.capacity-route-family.is-locked .capacity-route-step,
+.capacity-route-family.is-locked .capacity-route-branch,
+.capacity-route-family.is-locked .capacity-route-trunk,
+.capacity-route-family.is-locked .capacity-route-link,
+.capacity-route-family.is-locked .capacity-route-node {
+  stroke: var(--family-color-muted);
+  stroke-dasharray: 3 2;
+}
+
+.capacity-route-family.is-locked .capacity-route-family-name,
+.capacity-route-family.is-locked .capacity-route-variant-label {
+  fill: var(--family-color-muted-ink);
+  opacity: 0.8;
+}
+
+.capacity-route-family.is-locked .capacity-route-step {
+  fill: color-mix(in srgb, var(--family-color-muted) 12%, transparent);
+  opacity: 0.74;
+}
+
+.capacity-route-family.is-locked .capacity-route-branch,
+.capacity-route-family.is-locked .capacity-route-trunk,
+.capacity-route-family.is-locked .capacity-route-link,
+.capacity-route-family.is-locked .capacity-route-node {
+  opacity: 0.64;
+}
+
+.capacity-route-family.is-locked .capacity-route-junction {
+  fill: var(--family-color-muted);
+  opacity: 0.62;
+}
+
+.capacity-route-family.is-current .capacity-route-family-name,
+.capacity-route-family.is-current .capacity-route-variant:not(.is-active) .capacity-route-variant-label {
+  fill: color-mix(in srgb, var(--family-color) 76%, white 24%);
+}
+
+.capacity-route-family.is-current .capacity-route-step {
+  fill: color-mix(in srgb, var(--family-color) 24%, transparent);
+  animation: capacity-route-pulse 1.8s ease-in-out infinite;
+}
+
+.capacity-route-family.is-current .capacity-route-branch,
+.capacity-route-family.is-current .capacity-route-link,
+.capacity-route-family.is-current .capacity-route-trunk,
+.capacity-route-family.is-current .capacity-route-node {
+  opacity: 0.92;
+}
+
+.capacity-route-variant.is-active .capacity-route-node {
+  fill: var(--family-color);
+  animation: capacity-route-pulse 1.8s ease-in-out infinite;
+}
+
+.capacity-route-variant.is-active .capacity-route-link {
+  opacity: 1;
+}
+
+.capacity-route-variant.is-active .capacity-route-variant-label {
+  fill: var(--white);
+}
+
+@keyframes capacity-route-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.48;
+  }
 }
 
 .capacity-preview-kicker {
@@ -2384,230 +2817,194 @@
   text-transform: uppercase;
 }
 
-.capacity-route-stack {
-  position: relative;
-  display: grid;
-  gap: 8px;
-  margin-top: 16px;
-  padding-left: 2px;
+.capacity-mockup-tabs {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
-.capacity-route-stack::before {
-  content: "";
-  position: absolute;
-  left: 13px;
-  top: 10px;
-  bottom: 10px;
-  width: 1px;
-  background: linear-gradient(180deg, rgba(84, 162, 255, 0.35), rgba(151, 171, 196, 0.1));
-}
-
-.capacity-family {
-  --family-color: var(--capacity);
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  gap: 10px;
-  align-items: start;
-}
-
-.capacity-family--xor {
-  --family-color: #5f9cff;
-}
-
-.capacity-family--and {
-  --family-color: #68d2ff;
-}
-
-.capacity-family--interference {
-  --family-color: #f5b544;
-}
-
-.capacity-family--emotional {
-  --family-color: #ff5b9a;
-}
-
-.capacity-family--relational {
-  --family-color: #8a7bff;
-}
-
-.capacity-family-order {
-  width: 24px;
+.capacity-mockup-tab {
+  width: 26px;
   height: 24px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  background: rgba(9, 16, 30, 0.92);
-  color: var(--white);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
   font-family: "Orbitron", monospace;
   font-size: 11px;
-  font-weight: 900;
-  line-height: 22px;
-  text-align: center;
-  box-shadow: 0 0 14px rgba(0, 0, 0, 0.2);
-}
-
-.capacity-family-body {
-  padding: 7px 9px 8px;
-  border: 1px solid color-mix(in srgb, var(--family-color) 28%, rgba(255, 255, 255, 0.06));
-  background:
-    linear-gradient(180deg, rgba(16, 26, 42, 0.9), rgba(11, 18, 32, 0.96)),
-    linear-gradient(115deg, color-mix(in srgb, var(--family-color) 10%, transparent), transparent 60%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
-}
-
-.capacity-family.is-active .capacity-family-body {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 0 18px color-mix(in srgb, var(--family-color) 18%, transparent);
-}
-
-.capacity-family.is-locked .capacity-family-body,
-.capacity-family.is-locked .capacity-family-order {
-  opacity: 0.62;
-}
-
-.capacity-family-titlebar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-  margin: -7px -9px 7px;
-  padding: 4px 6px 4px 8px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--family-color) 82%, white 8%), color-mix(in srgb, var(--family-color) 54%, black 46%));
-  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.18);
-}
-
-.capacity-family-name,
-.capacity-family-state {
-  display: inline-flex;
-  align-items: center;
-  min-height: 14px;
-  font-family: "Chakra Petch", sans-serif;
-  font-size: 9px;
   font-weight: 700;
-  letter-spacing: 1.6px;
+  cursor: pointer;
+}
+
+.capacity-mockup-tab.is-active {
+  border-color: rgba(84, 162, 255, 0.34);
+  background: rgba(84, 162, 255, 0.12);
+  color: var(--white);
+  box-shadow: 0 0 12px rgba(84, 162, 255, 0.12);
+}
+
+.capacity-play-panel {
+  flex: 1;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+}
+
+.capacity-play-panel[hidden],
+.capacity-coach-line[hidden] {
+  display: none !important;
+}
+
+.capacity-transition-card {
+  width: min(320px, 100%);
+  padding: 16px 14px;
+  border: 1px solid rgba(84, 162, 255, 0.16);
+  background:
+    linear-gradient(180deg, rgba(14, 23, 39, 0.96), rgba(10, 16, 29, 0.98)),
+    radial-gradient(circle at top left, rgba(84, 162, 255, 0.12), transparent 58%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 24px rgba(84, 162, 255, 0.08);
+  display: grid;
+  gap: 10px;
+}
+
+.capacity-transition-kicker {
+  color: var(--module-accent);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 2px;
   text-transform: uppercase;
 }
 
-.capacity-family-name {
-  min-width: 0;
-  color: #1f2939;
-  font-size: 8px;
-  letter-spacing: 1.35px;
+.capacity-transition-title {
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
-.capacity-family-state {
-  justify-content: center;
-  width: 22px;
-  min-width: 22px;
-  min-height: 14px;
-  padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(10, 16, 29, 0.52);
-  color: rgba(255, 255, 255, 0.9);
+.capacity-transition-copy {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-.capacity-family-state--open {
-  border-color: rgba(125, 234, 255, 0.24);
-  color: #d4f3ff;
+.capacity-transition-steps {
+  display: grid;
+  gap: 6px;
 }
 
-.capacity-family-state--locked {
-  border-color: rgba(151, 171, 196, 0.16);
-  color: var(--flat);
-}
-
-.capacity-family-state--live {
-  border-color: rgba(204, 255, 102, 0.26);
-  color: var(--credit);
-}
-
-.capacity-family-lock {
-  position: relative;
-  width: 9px;
-  height: 7px;
-  border: 1.4px solid currentColor;
-  border-radius: 2px;
-  box-sizing: border-box;
-}
-
-.capacity-family-lock::before {
-  content: "";
-  position: absolute;
-  left: 1px;
-  bottom: 5px;
-  width: 5px;
-  height: 5px;
-  border: 1.4px solid currentColor;
-  border-bottom: 0;
-  border-radius: 5px 5px 0 0;
-  box-sizing: border-box;
-}
-
-.capacity-family-lock--open::before {
-  left: 4px;
-}
-
-.capacity-family-variants {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 2px;
-}
-
-.capacity-variant {
-  display: inline-flex;
-  align-items: center;
-  min-height: 18px;
-  padding: 2px 6px;
+.capacity-transition-step {
+  min-height: 24px;
+  padding: 5px 8px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
-  color: var(--text);
+  color: var(--muted);
   font-family: "Chakra Petch", sans-serif;
   font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.35px;
+  text-transform: uppercase;
+}
+
+.capacity-transition-step--done {
+  border-color: rgba(84, 162, 255, 0.24);
+  background: rgba(84, 162, 255, 0.09);
+  color: #d7ecff;
+}
+
+.capacity-transition-step--active {
+  border-color: rgba(204, 255, 102, 0.28);
+  background: rgba(204, 255, 102, 0.08);
+  color: var(--credit);
+  box-shadow: 0 0 16px rgba(204, 255, 102, 0.08);
+}
+
+.capacity-transition-stats {
+  display: grid;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.capacity-transition-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 1.3px;
   text-transform: uppercase;
 }
 
-.capacity-variant.is-on {
+.capacity-transition-stat-label {
+  color: var(--muted);
+}
+
+.capacity-transition-stat-value {
   color: var(--white);
 }
 
-.capacity-variant.capacity-variant--a.is-on {
-  border-color: color-mix(in srgb, var(--family-color) 18%, rgba(255, 255, 255, 0.08));
-  background: color-mix(in srgb, var(--family-color) 14%, transparent);
+.capacity-transition-action {
+  width: 100%;
+  min-height: 38px;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(223, 255, 27, 0.98), rgba(197, 232, 24, 0.94));
+  color: #213018;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  box-shadow: 0 0 16px rgba(204, 255, 102, 0.14);
 }
 
-.capacity-variant.capacity-variant--b.is-on {
-  border-color: color-mix(in srgb, var(--family-color) 24%, rgba(255, 255, 255, 0.08));
-  background: color-mix(in srgb, var(--family-color) 22%, transparent);
-}
-
-.capacity-variant.capacity-variant--c.is-on,
-.capacity-variant.is-active {
-  border-color: color-mix(in srgb, var(--family-color) 34%, rgba(255, 255, 255, 0.08));
-  background: color-mix(in srgb, var(--family-color) 34%, transparent);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--family-color) 14%, transparent);
-}
-
-.capacity-variant.is-locked {
-  color: var(--flat);
-  border-color: rgba(151, 171, 196, 0.12);
-  background: rgba(151, 171, 196, 0.04);
-}
-
-.capacity-preview {
+.capacity-live-card {
   display: grid;
-  min-height: 100%;
-  align-content: center;
+  gap: 10px;
   justify-items: center;
+}
+
+.capacity-live-head {
+  width: min(320px, 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 10px;
 }
 
+.capacity-live-kicker {
+  color: var(--module-accent);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.capacity-live-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  padding: 2px 8px;
+  border: 1px solid rgba(204, 255, 102, 0.24);
+  background: rgba(204, 255, 102, 0.08);
+  color: var(--credit);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
 .capacity-phone {
-  width: 258px;
+  width: 316px;
   padding: 12px 14px 14px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background:
@@ -2623,18 +3020,20 @@
   font-family: "Chakra Petch", sans-serif;
   font-size: 11px;
   font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .capacity-phone-board {
   position: relative;
-  height: 182px;
+  height: 226px;
   margin-top: 10px;
 }
 
 .capacity-phone-board::before {
   content: "";
   position: absolute;
-  inset: 14px 16px;
+  inset: 18px 20px;
   border: 2px solid rgba(255, 255, 255, 0.34);
   border-radius: 999px;
 }
@@ -2648,33 +3047,33 @@
 }
 
 .capacity-phone-node--1 {
-  top: 12px;
+  top: 18px;
   left: calc(50% - 4px);
 }
 
 .capacity-phone-node--2 {
-  top: 34px;
-  right: 34px;
+  top: 44px;
+  right: 48px;
 }
 
 .capacity-phone-node--3 {
   top: calc(50% - 4px);
-  right: 18px;
+  right: 22px;
 }
 
 .capacity-phone-node--4 {
-  bottom: 14px;
+  bottom: 18px;
   left: calc(50% - 4px);
 }
 
 .capacity-phone-node--5 {
-  bottom: 34px;
-  left: 34px;
+  bottom: 44px;
+  left: 48px;
 }
 
 .capacity-phone-node--6 {
   top: calc(50% - 4px);
-  left: 18px;
+  left: 22px;
 }
 
 .capacity-phone-token {
@@ -2691,13 +3090,13 @@
 }
 
 .capacity-phone-token--t1 {
-  top: 26px;
-  left: 10px;
+  top: 34px;
+  left: 18px;
 }
 
 .capacity-phone-token--t2 {
-  right: 14px;
-  bottom: 20px;
+  right: 22px;
+  bottom: 28px;
 }
 
 .capacity-phone-token-tag {
@@ -2732,6 +3131,39 @@
   letter-spacing: 1.5px;
   text-transform: uppercase;
   box-shadow: 0 0 18px rgba(204, 255, 102, 0.18);
+}
+
+.capacity-live-note {
+  max-width: 316px;
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  line-height: 1.45;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.capacity-coach-shell {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.capacity-coach-panel {
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(17, 29, 48, 0.48);
+}
+
+.capacity-coach-line {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 @media (max-width: 860px) {
@@ -2769,7 +3201,458 @@
     margin: 0 auto;
   }
 
+  .app-shell[data-screen="capacity"] .play-main--split {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .app-shell[data-screen="capacity"] .capacity-side-panel {
+    width: 100%;
+    padding-top: 0;
+  }
+
+  .app-shell[data-screen="capacity"] .game-window,
+  .app-shell[data-screen="capacity"] .coach-strip {
+    width: 100%;
+    max-width: none;
+  }
+
+  .app-shell[data-screen="capacity"] .coach-strip {
+    height: auto;
+  }
+
+  .capacity-banner-shell {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .capacity-coach-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .capacity-banner-divider {
+    display: none;
+  }
+
+  .capacity-banner-chip-row {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .capacity-banner-credit {
+    margin-left: 0;
+  }
+
+  .capacity-live-head {
+    width: 100%;
+  }
+
+  .capacity-phone,
+  .capacity-live-note,
+  .capacity-transition-card {
+    width: 100%;
+  }
+
+  .capacity-route {
+    padding-right: 0;
+    padding-bottom: 12px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .capacity-route-title {
+    text-align: center;
+    letter-spacing: 3px;
+  }
+
+  .capacity-route-figure {
+    max-width: 228px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .capacity-route-key {
+    max-width: 228px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .capacity-stage {
     justify-content: center;
+  }
+}
+
+.capacity-transition-secondary {
+  width: 100%;
+  min-height: 38px;
+  margin-top: 8px;
+  border: 1px solid rgba(114, 171, 255, 0.28);
+  border-radius: 10px;
+  background: rgba(84, 162, 255, 0.08);
+  color: #d9ecff;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.capacity-transition-hint {
+  margin-top: 8px;
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  line-height: 1.5;
+}
+
+.capacity-route--lab {
+  display: grid;
+  gap: 12px;
+}
+
+.capacity-lab-route-note {
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.capacity-lab-route-stack {
+  display: grid;
+  gap: 8px;
+}
+
+.capacity-lab-route-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(17, 29, 48, 0.42);
+  color: var(--text);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.capacity-lab-route-card.is-active {
+  border-color: rgba(84, 162, 255, 0.28);
+  background: rgba(84, 162, 255, 0.08);
+}
+
+.capacity-lab-side-action {
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.capacity-sandbox-shell {
+  width: 100%;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.capacity-sandbox-panel {
+  width: min(100%, 352px);
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(20, 32, 54, 0.78), rgba(10, 16, 29, 0.92));
+}
+
+.capacity-sandbox-panel--result {
+  gap: 12px;
+}
+
+.capacity-lab-setup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.capacity-lab-field {
+  display: grid;
+  gap: 5px;
+}
+
+.capacity-lab-field--wide {
+  grid-column: 1 / -1;
+}
+
+.capacity-lab-field span {
+  color: var(--muted-2);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+
+.capacity-lab-field select {
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 18, 31, 0.9);
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 10px;
+}
+
+.capacity-lab-field select:disabled {
+  opacity: 0.56;
+}
+
+.capacity-lab-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.capacity-transition-action--lab {
+  min-height: 42px;
+}
+
+.capacity-lab-secondary-btn {
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.capacity-lab-secondary-btn:disabled,
+.capacity-phone-action:disabled,
+.capacity-transition-secondary:disabled {
+  opacity: 0.48;
+  cursor: default;
+}
+
+.capacity-lab-helper {
+  margin: 0;
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  line-height: 1.5;
+}
+
+.capacity-live-card--sandbox {
+  width: min(100%, 352px);
+  gap: 12px;
+}
+
+.capacity-sandbox-shell--live {
+  min-height: 100%;
+  align-content: start;
+  padding: 8px 0 0;
+}
+
+.capacity-live-stage--sandbox {
+  width: min(100%, 520px);
+  min-height: 382px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 10px 18px 18px;
+  box-sizing: border-box;
+}
+
+.capacity-live-stage--sandbox.is-paused {
+  opacity: 0.78;
+}
+
+.capacity-live-stage-body {
+  width: 100%;
+  min-height: 0;
+  display: grid;
+  justify-items: center;
+}
+
+.capacity-hub-arena {
+  width: min(100%, 296px);
+  aspect-ratio: 1;
+  height: auto;
+  position: relative;
+  transform: translateY(-10px);
+  transition: opacity 120ms ease;
+}
+
+.capacity-hub-arena.is-paused {
+  opacity: 0.82;
+}
+
+.capacity-hub-ring {
+  position: absolute;
+  inset: 22px;
+  border: 2px solid rgba(211, 223, 240, 0.34);
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.01) 74%, rgba(255, 255, 255, 0));
+}
+
+.capacity-hub-marker {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.42);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 2px rgba(7, 11, 19, 0.88);
+}
+
+.capacity-hub-token {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -50%);
+  font-family: "Orbitron", monospace;
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1;
+  border: 1px solid rgba(17, 24, 39, 0.28);
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+.capacity-hub-token.is-hidden {
+  opacity: 0;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.capacity-lab-response-row {
+  margin-top: 10px;
+}
+
+.capacity-live-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.capacity-live-actions--sandbox {
+  width: min(100%, 340px);
+  justify-self: center;
+}
+
+.capacity-phone-action--sandbox {
+  margin-top: 0;
+}
+
+.capacity-live-secondary-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.capacity-lab-result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.capacity-lab-result-stat {
+  min-width: 0;
+  padding: 8px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.capacity-lab-result-stat span {
+  display: block;
+  color: var(--muted-2);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.capacity-lab-result-stat strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.capacity-lab-history-list {
+  display: grid;
+  gap: 6px;
+}
+
+.capacity-lab-history-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.4;
+}
+
+.capacity-lab-empty {
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.5;
+}
+
+.capacity-lab-saved-note {
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.55;
+}
+
+@media (max-width: 640px) {
+  .capacity-lab-setup-grid,
+  .capacity-lab-result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .capacity-live-stage--sandbox,
+  .capacity-sandbox-shell {
+    width: 100%;
+  }
+
+  .capacity-live-secondary-row {
+    grid-template-columns: 1fr;
   }
 }

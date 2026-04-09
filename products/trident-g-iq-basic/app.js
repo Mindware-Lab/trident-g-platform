@@ -5,12 +5,14 @@ import { hubScreen } from "./screens/hub/screen.js";
 import { testsScreen } from "./screens/tests/screen.js";
 import { zoneScreen } from "./screens/zone/screen.js";
 import { capacityScreen } from "./screens/capacity/screen.js";
+import { capacityLabScreen } from "./screens/capacity-lab/screen.js";
 
 const registry = createScreenRegistry([
   hubScreen,
   testsScreen,
   zoneScreen,
-  capacityScreen
+  capacityScreen,
+  capacityLabScreen
 ]);
 
 mountAppShell({

@@ -21,6 +21,7 @@ Current live unfinished routes:
 - `http://127.0.0.1:4173/trident-g-iq-basic/#tests`
 - `http://127.0.0.1:4173/trident-g-iq-basic/#zone`
 - `http://127.0.0.1:4173/trident-g-iq-basic/#capacity`
+- `http://127.0.0.1:4173/trident-g-iq-basic/#capacity-lab`
 
 The shared shell primitives stay in `products/trident-g-iq-shared/ui/`, but route-specific mockup tuning for these active-play screens belongs in the basic mockup folder until the designs are finalized.
 

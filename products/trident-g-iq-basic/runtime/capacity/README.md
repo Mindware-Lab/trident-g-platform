@@ -7,3 +7,4 @@ Planned home for:
 - metrics helpers
 - coach/progression logic
 - capacity storage helpers
+- public XOR sandbox controller and local-only scoring state

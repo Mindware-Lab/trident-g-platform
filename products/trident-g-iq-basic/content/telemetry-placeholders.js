@@ -145,6 +145,21 @@ export const zoneTelemetry = [
 
 export const capacityTelemetry = [
   {
+    label: "Today",
+    labelClass: "metric-label--credit",
+    emphasis: true,
+    html: `
+      <div class="capacity-credit-card">
+        <img class="capacity-credit-coin" src="./mockups/g_credit_coin_256.png" alt="G credit coin">
+        <div class="capacity-credit-copy">
+          <div class="capacity-credit-chip">G credit</div>
+          <div class="capacity-credit-value">+30</div>
+          <div class="capacity-credit-subline">Session reward</div>
+        </div>
+      </div>
+    `
+  },
+  {
     label: "Session performance",
     labelClass: "metric-label--credit",
     emphasis: true,
@@ -207,20 +222,6 @@ export const capacityTelemetry = [
           <svg class="capacity-rail-spark" viewBox="0 0 170 30" preserveAspectRatio="none" aria-hidden="true">
             <polyline fill="none" stroke="rgba(245, 181, 68, 0.96)" stroke-width="2.6" points="2,22 22,20 42,18 62,20 82,16 102,14 122,17 142,12 168,9"></polyline>
           </svg>
-        </div>
-      </div>
-    `
-  },
-  {
-    label: "Today",
-    emphasis: true,
-    html: `
-      <div class="capacity-credit-card">
-        <img class="capacity-credit-coin" src="./mockups/Octa g icon.png" alt="G credit coin">
-        <div class="capacity-credit-copy">
-          <div class="capacity-credit-chip">G credit</div>
-          <div class="capacity-credit-value">+30</div>
-          <div class="capacity-credit-subline">Session reward</div>
         </div>
       </div>
     `

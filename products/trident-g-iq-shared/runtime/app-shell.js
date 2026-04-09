@@ -19,6 +19,16 @@ function renderInfoBlock(item) {
     `;
   }
 
+  if (item.label && item.value) {
+    return `
+      <div class="info-block">
+        ${item.icon ? `<span class="info-icon">${item.icon}</span>` : ""}
+        <span class="info-label">${item.label}</span>
+        <span class="info-value" data-tone="${item.tone || "default"}">${item.value}</span>
+      </div>
+    `;
+  }
+
   return `
     <div class="info-block">
       ${item.icon ? `<span class="info-icon">${item.icon}</span>` : ""}
@@ -28,6 +38,10 @@ function renderInfoBlock(item) {
 }
 
 function renderBanner(screen) {
+  if (screen.bannerHtml) {
+    return screen.bannerHtml;
+  }
+
   return `
     <div class="banner-left">
       <h1 class="banner-title" id="banner-title">${screen.banner.title}</h1>
@@ -42,6 +56,10 @@ function renderBanner(screen) {
 }
 
 function renderCoach(screen) {
+  if (screen.coachHtml) {
+    return screen.coachHtml;
+  }
+
   const detail = screen.coach.detail ? `<span class="coach-detail">${screen.coach.detail}</span>` : "";
 
   return `
@@ -90,6 +108,50 @@ function renderScreenStage(screen) {
   };
 }
 
+function wireViewGroups(container) {
+  const groups = new Map();
+  container.querySelectorAll("[data-view-group][data-view-value]").forEach((trigger) => {
+    const group = trigger.dataset.viewGroup;
+    if (!group) return;
+    if (!groups.has(group)) {
+      groups.set(group, []);
+    }
+    groups.get(group).push(trigger);
+  });
+
+  groups.forEach((triggers, group) => {
+    const panels = Array.from(container.querySelectorAll(`[data-view-group="${group}"][data-view-panel]`));
+    if (!panels.length) {
+      return;
+    }
+
+    const selectValue = (value) => {
+      triggers.forEach((trigger) => {
+        const active = trigger.dataset.viewValue === value;
+        trigger.classList.toggle("is-active", active);
+        trigger.setAttribute("aria-pressed", active ? "true" : "false");
+        trigger.setAttribute("aria-selected", active ? "true" : "false");
+        trigger.tabIndex = active ? 0 : -1;
+      });
+
+      panels.forEach((panel) => {
+        const active = panel.dataset.viewPanel === value;
+        panel.hidden = !active;
+        panel.classList.toggle("is-active", active);
+      });
+    };
+
+    triggers.forEach((trigger) => {
+      trigger.addEventListener("click", () => selectValue(trigger.dataset.viewValue));
+    });
+
+    const initial = triggers.find((trigger) => trigger.classList.contains("is-active")) || triggers[0];
+    if (initial?.dataset?.viewValue) {
+      selectValue(initial.dataset.viewValue);
+    }
+  });
+}
+
 export function mountAppShell({
   root,
   appKind,
@@ -99,7 +161,17 @@ export function mountAppShell({
   defaultScreenId,
   wordmark = "TRIDENT<span>G</span>"
 }) {
+  let activeUnmount = null;
+
+  function teardownMountedScreen() {
+    if (typeof activeUnmount === "function") {
+      activeUnmount();
+    }
+    activeUnmount = null;
+  }
+
   function renderScreen(screenId) {
+    teardownMountedScreen();
     const screen = registry.get(screenId) || registry.get(defaultScreenId) || registry.first();
     const activeModule = screen.module || screen.id;
     const stage = renderScreenStage(screen);
@@ -109,7 +181,7 @@ export function mountAppShell({
         <div class="app-shell" data-app-kind="${appKind}" data-screen="${activeModule}">
           <header class="top-nav" aria-label="Primary navigation">
             <div class="wordmark">${wordmark}</div>
-            <nav class="nav-tabs">${renderNav({ navItems, activeId: screen.id })}</nav>
+            <nav class="nav-tabs">${renderNav({ navItems, activeId: screen.navActiveId || screen.id })}</nav>
           </header>
           <main class="${stage.className}">${stage.html}</main>
         </div>
@@ -124,7 +196,17 @@ export function mountAppShell({
       button.addEventListener("click", () => router.go(button.dataset.go));
     });
 
+    wireViewGroups(root);
+
     document.title = `${titlePrefix} - ${screen.banner.title}`;
+
+    if (typeof screen.mount === "function") {
+      activeUnmount = screen.mount({
+        root,
+        screen,
+        router
+      }) || null;
+    }
   }
 
   const router = createHashRouter({

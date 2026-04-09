@@ -21,3 +21,9 @@ The shared shell renders those fields into the fixed frame:
 6. telemetry rail on the right
 
 `taskHtml` and `responseHtml` are currently allowed to stay as HTML strings for speed. Navigation, banner, coach, and telemetry should stay structured.
+
+Optional:
+
+- `mount({ root, screen, router })`
+
+If present, `mount` is called after the shell renders the screen. It may return a cleanup function, which will be called before the next screen render. Use this for screen-local timers, keyboard handlers, or live DOM updates that do not fit the static screen contract.

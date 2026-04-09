@@ -283,6 +283,36 @@ body {
   text-overflow: ellipsis;
 }
 
+.info-label {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.info-value {
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.info-value[data-tone="accent"] {
+  color: var(--module-accent);
+}
+
+.info-value[data-tone="positive"] {
+  color: var(--ready);
+}
+
+.info-value[data-tone="warning"] {
+  color: var(--zone);
+}
+
+.info-value[data-tone="muted"] {
+  color: var(--flat);
+}
+
+.info-value[data-tone="credit"] {
+  color: var(--credit);
+}
+
 .state-pill,
 .credit-pill {
   display: inline-flex;
