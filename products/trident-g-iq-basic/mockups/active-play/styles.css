@@ -2617,6 +2617,7 @@
   gap: 2px;
   flex: 0 0 auto;
   margin-left: auto;
+  align-self: center;
 }
 
 .capacity-banner-credit-label {
@@ -2649,6 +2650,73 @@
   font-weight: 900;
   line-height: 1;
   letter-spacing: 0.5px;
+}
+
+.capacity-banner-sfx {
+  min-width: 88px;
+  min-height: 24px;
+  padding: 2px 10px 1px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 10px rgba(255, 255, 255, 0.12);
+}
+
+.capacity-banner-sfx:hover {
+  border-color: rgba(255, 255, 255, 0.95);
+}
+
+.capacity-banner-sfx[aria-pressed="false"] {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 8px rgba(255, 255, 255, 0.08);
+}
+
+.capacity-banner-sfx::before {
+  content: "";
+  width: 26px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(11, 18, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.capacity-banner-sfx::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #eaffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+  transition: transform 140ms ease;
+}
+
+.capacity-banner-sfx[aria-pressed="false"]::after {
+  transform: translateX(0);
+}
+
+.capacity-banner-sfx[aria-pressed="true"]::after {
+  transform: translateX(14px);
 }
 
 .capacity-banner-chip {
@@ -3967,6 +4035,11 @@
 
 .capacity-hub-token.is-hidden {
   opacity: 0;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.capacity-hub-token.is-shape {
   border-color: transparent;
   box-shadow: none;
 }

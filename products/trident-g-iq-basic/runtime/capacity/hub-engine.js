@@ -240,11 +240,17 @@ function makeShape(seed, opts = {}) {
     maxPoints = 9,
     radialJitter = 0.28,
     angleJitter = 0.18,
+    concaveChance = 0.45,
+    concaveDepth = [0.22, 0.48],
     mode = "mixed"
   } = opts;
 
   const rng = createSeededRng(seed);
-  const type = mode === "mixed" ? (rng() < 0.25 ? "star" : "polygon") : mode;
+  const type = mode === "mixed"
+    ? (rng() < 0.3 ? "star" : "polygon")
+    : mode === "spiky"
+      ? (rng() < 0.7 ? "star" : "polygon")
+      : mode;
   const count = minPoints + Math.floor(rng() * (maxPoints - minPoints + 1));
   const step = (Math.PI * 2) / count;
   const start = rng() * Math.PI * 2;
@@ -255,6 +261,10 @@ function makeShape(seed, opts = {}) {
     let radius = 0.85 + (rng() * radialJitter);
     if (type === "star" && index % 2 === 1) {
       radius *= 0.55 + (rng() * 0.18);
+    }
+    if (type === "polygon" && rng() < concaveChance) {
+      const [minDepth, maxDepth] = concaveDepth;
+      radius *= minDepth + (rng() * (maxDepth - minDepth));
     }
     points.push({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius });
   }
@@ -348,7 +358,11 @@ function buildRenderMapping({ wrapper, mappingSeed }) {
       variants: makeShapeBank(8, shapeSeed + (index * 100), {
         minPoints: 5,
         maxPoints: 8,
-        mode: "mixed"
+        mode: "spiky",
+        radialJitter: 0.38,
+        angleJitter: 0.24,
+        concaveChance: 0.7,
+        concaveDepth: [0.16, 0.42]
       })
     }));
     return {

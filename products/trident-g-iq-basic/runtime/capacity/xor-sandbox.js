@@ -16,6 +16,12 @@ import {
   loadCapacityLabState,
   updateCapacityLabSettings
 } from "./sandbox-storage.js";
+import {
+  initAudio,
+  playSfx,
+  setAudioEnabled,
+  unlockAudioContextFromUserGesture
+} from "./audio.js";
 
 const PREVIEW_MARKERS = [
   { xPct: 50, yPct: 8 },
@@ -533,7 +539,9 @@ function arenaMarkup(uiState) {
   const background = visible ? String(trial?.display?.colourHex || "#ffffff") : "transparent";
   const fallbackTextColor = String(trial?.display?.colourHex || "").toLowerCase() === "#ffffff" ? "#102033" : "#ffffff";
   const textColor = trial?.display?.textHex || fallbackTextColor;
+  const shapeColor = trial?.display?.colourHex || "#ffffff";
   let token = "";
+  const isShape = Boolean(trial?.display?.symbolSvgPath);
   if (visible) {
     if (trial?.display?.symbolImageUrl) {
       token = `<img src="${escapeHtml(trial.display.symbolImageUrl)}" alt="">`;
@@ -560,7 +568,7 @@ function arenaMarkup(uiState) {
     <div class="capacity-hub-arena ${wrapperClass}${uiState.status === "paused" ? " is-paused" : ""}">
       <div class="capacity-hub-ring"></div>
       ${markers}
-      <div class="capacity-hub-token${visible ? "" : " is-hidden"}" style="left:${point.xPct}%;top:${point.yPct}%;background:${background};color:${visible ? textColor : "transparent"};${fontFamily}${fontWeight}${fontStyle}">${token}</div>
+      <div class="capacity-hub-token${visible ? "" : " is-hidden"}${isShape ? " is-shape" : ""}" style="left:${point.xPct}%;top:${point.yPct}%;background:${isShape ? "transparent" : background};color:${visible ? (isShape ? shapeColor : textColor) : "transparent"};${fontFamily}${fontWeight}${fontStyle}">${token}</div>
     </div>
   `;
 }
@@ -569,14 +577,6 @@ function setupMarkup(uiState) {
   const last = uiState.lastSavedEntry;
   const statusLabel = uiState.status === "result" ? "Saved" : "Ready";
   const isAnd = wrapperFamily(uiState.settings.wrapper) === "and";
-  const helper = `${wrapperLabel(uiState.settings.wrapper)} | ${modalityLabel(uiState.settings.targetModality, uiState.settings.wrapper)} | N-${uiState.settings.n}`;
-  const savedSummary = last
-    ? `
-      <div class="capacity-lab-saved-note">
-        Last block saved to the rail: ${escapeHtml(accuracyPercent(last.block.accuracy))} accuracy, ${escapeHtml(formatRt(last.block.meanRtMs))} mean RT.
-      </div>
-    `
-    : "";
 
   return `
     <div class="capacity-sandbox-shell">
@@ -610,8 +610,6 @@ function setupMarkup(uiState) {
           <button class="capacity-transition-action capacity-transition-action--lab" type="button" data-lab-action="start">Run block</button>
           <button class="capacity-lab-secondary-btn" type="button" data-lab-action="reset-history">Reset history</button>
         </div>
-        ${uiState.settings.mode === "manual" ? `<p class="capacity-lab-helper">${escapeHtml(helper)} | ${escapeHtml(speedLabel(uiState.settings.speed))} | ${escapeHtml(modeLabel(uiState.settings.mode))}</p>` : ""}
-        ${savedSummary}
       </section>
     </div>
   `;
@@ -731,6 +729,7 @@ export function mountCapacityLab({ root }) {
     const modality = root.querySelector("[data-capacity-lab-modality]");
     const speed = root.querySelector("[data-capacity-lab-speed]");
     const runs = root.querySelector("[data-capacity-lab-runs]");
+    const sfxButton = root.querySelector("[data-capacity-lab-sfx]");
     const active = uiState.activeBlock;
     if (track) {
       if (uiState.status === "trial" && active) {
@@ -750,6 +749,11 @@ export function mountCapacityLab({ root }) {
     if (modality) modality.textContent = active ? modalityMark(active.plan.targetModality) : "—";
     if (speed) speed.textContent = active ? speedLabel(active.plan.speed) : "—";
     if (runs) runs.textContent = String(uiState.history.length);
+    if (sfxButton) {
+      const soundOn = uiState.settings.soundOn;
+      sfxButton.textContent = soundOn ? "Sound on" : "Sound off";
+      sfxButton.setAttribute("aria-pressed", soundOn ? "true" : "false");
+    }
   }
 
   function updateCoach() {
@@ -773,6 +777,20 @@ export function mountCapacityLab({ root }) {
     updateSandboxRail();
     updateBanner();
     updateCoach();
+
+    const sfxButton = root.querySelector("[data-capacity-lab-sfx]");
+    if (sfxButton) {
+      sfxButton.onclick = () => {
+        const nextSoundOn = !uiState.settings.soundOn;
+        syncSettings({ soundOn: nextSoundOn });
+        setAudioEnabled(nextSoundOn);
+        if (nextSoundOn) {
+          initAudio({ enabled: true, preloadTier: "p0" });
+          unlockAudioContextFromUserGesture();
+        }
+        render();
+      };
+    }
 
     taskRoot.querySelectorAll("[data-lab-setting]").forEach((element) => {
       element.addEventListener("change", (event) => {
@@ -801,6 +819,8 @@ export function mountCapacityLab({ root }) {
       element.addEventListener("click", (event) => {
         const action = event.currentTarget.dataset.labAction;
         if (action === "start") {
+          unlockAudioContextFromUserGesture();
+          playSfx("ui_tap_soft");
           if (uiState.settings.mode === "coach") {
             const recommended = recommendSettings(uiState);
             syncSettings({
@@ -814,12 +834,14 @@ export function mountCapacityLab({ root }) {
             startBlock(uiState.settings);
           }
         } else if (action === "match") {
+          unlockAudioContextFromUserGesture();
           captureResponse();
         } else if (action === "pause") {
           pauseBlock();
         } else if (action === "resume") {
           resumeBlock();
         } else if (action === "set-mode") {
+          playSfx("ui_tap_soft");
           const mode = event.currentTarget.dataset.mode === "coach" ? "coach" : "manual";
           syncSettings({ mode });
           uiState.activeMessage = `Mode set to ${modeLabel(mode)}.`;
@@ -828,6 +850,7 @@ export function mountCapacityLab({ root }) {
             : "Manual mode: choose your own settings for the next block.";
           render();
         } else if (action === "discard") {
+          playSfx("session_stop_discard");
           clearTimers();
           uiState.activeBlock = null;
           uiState.status = "idle";
@@ -835,6 +858,7 @@ export function mountCapacityLab({ root }) {
           uiState.coachMessage = uiState.activeMessage;
           render();
         } else if (action === "reset-history") {
+          playSfx("ui_tap_soft");
           const persisted = clearCapacityLabHistory();
           uiState.history = persisted.history.slice();
           uiState.lastSavedEntry = null;
@@ -943,6 +967,7 @@ export function mountCapacityLab({ root }) {
     }
     active.responseCaptured = true;
     active.responseRtMs = Math.max(0, Math.round(performance.now() - active.trialStartedAtMs));
+    playSfx("game_match_press");
     uiState.coachMessage = "Response logged. Hold for the next trial.";
     render();
     return true;
@@ -954,6 +979,7 @@ export function mountCapacityLab({ root }) {
       return;
     }
 
+    playSfx("pause_on");
     const now = performance.now();
     active.pausedState = uiState.status === "briefing"
       ? {
@@ -983,6 +1009,7 @@ export function mountCapacityLab({ root }) {
       return;
     }
 
+    playSfx("resume_on");
     clearTimers();
     active.pausedState = null;
     uiState.activeMessage = "Block resumed.";
@@ -1038,6 +1065,13 @@ export function mountCapacityLab({ root }) {
       trialOutcomes: active.trialOutcomes,
       nMax: HUB_N_MAX
     });
+    if (summary.outcomeBand === "UP") {
+      playSfx("n_level_up");
+    } else if (summary.outcomeBand === "DOWN") {
+      playSfx("n_level_down");
+    } else {
+      playSfx("block_complete_neutral");
+    }
     const entry = {
       id: `xor_lab_${active.tsStart}`,
       tsStart: active.tsStart,
@@ -1082,6 +1116,14 @@ export function mountCapacityLab({ root }) {
       isError = true;
     }
 
+    if (classification === "hit") {
+      playSfx("trial_hit");
+    } else if (classification === "false_alarm") {
+      playSfx("trial_false_alarm");
+    } else if (classification === "miss") {
+      playSfx("trial_miss");
+    }
+
     active.trialOutcomes.push({
       trialIndex: active.trialIndex,
       canonKey: trial.canonKey,
@@ -1116,6 +1158,7 @@ export function mountCapacityLab({ root }) {
       return;
     }
 
+    unlockAudioContextFromUserGesture();
     clearTimers();
     const baseSettings = overrideSettings || uiState.settings;
     const resolvedTarget = wrapperFamily(baseSettings.wrapper) === "and" ? "conj" : baseSettings.targetModality;
@@ -1187,12 +1230,16 @@ export function mountCapacityLab({ root }) {
     if (tagName === "select") {
       return;
     }
-    if ((event.code === "Space" || event.code === "Enter") && captureResponse()) {
-      event.preventDefault();
+    if (event.code === "Space" || event.code === "Enter") {
+      unlockAudioContextFromUserGesture();
+      if (captureResponse()) {
+        event.preventDefault();
+      }
     }
   }
 
   window.addEventListener("keydown", handleKeydown);
+  initAudio({ enabled: uiState.settings.soundOn, preloadTier: "p0" });
   render();
 
   return function unmountCapacityLab() {

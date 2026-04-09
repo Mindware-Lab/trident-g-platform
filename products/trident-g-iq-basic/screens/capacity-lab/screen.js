@@ -63,7 +63,6 @@ const capacityLabSidePanelHtml = `
       <div><span class="capacity-games-legend-dot"></span>Locked</div>
       <div><span class="capacity-games-legend-dot is-current"></span>Active</div>
     </div>
-    <button class="capacity-lab-side-action" type="button" data-go="capacity">Back to preview</button>
   </div>
 `;
 
@@ -78,9 +77,8 @@ const capacityLabBannerHtml = `
       <span class="capacity-banner-chip" data-capacity-lab-modality>◯</span>
       <span class="capacity-banner-chip capacity-banner-chip--speed" data-capacity-lab-speed>Slow pace</span>
     </div>
-    <div class="capacity-banner-credit" aria-label="Logged local runs">
-      <span class="capacity-banner-credit-label">Runs logged</span>
-      <span class="capacity-banner-credit-badge" data-capacity-lab-runs>0</span>
+    <div class="capacity-banner-credit" aria-label="Sound toggle">
+      <button class="capacity-banner-sfx" type="button" data-capacity-lab-sfx>Sound on</button>
     </div>
   </div>
 `;
@@ -97,7 +95,7 @@ const capacityLabCoachHtml = `
 `;
 
 export const capacityLabScreen = {
-  id: "capacity-lab",
+  id: "capacity",
   navActiveId: "capacity",
   module: "capacity",
   banner: {

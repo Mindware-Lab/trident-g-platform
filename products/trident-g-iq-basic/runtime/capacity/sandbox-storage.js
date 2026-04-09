@@ -38,7 +38,8 @@ function createDefaultState() {
       targetModality: "loc",
       speed: "slow",
       mode: "manual",
-      n: 1
+      n: 1,
+      soundOn: true
     },
     history: []
   };
@@ -101,7 +102,8 @@ function normalizeState(raw) {
           : "loc",
       speed: settings.speed === "fast" ? "fast" : "slow",
       mode: settings.mode === "coach" ? "coach" : "manual",
-      n: clampN(settings.n)
+      n: clampN(settings.n),
+      soundOn: settings.soundOn !== false
     },
     history
   };
