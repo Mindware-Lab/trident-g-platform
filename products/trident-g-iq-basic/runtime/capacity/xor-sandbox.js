@@ -1124,6 +1124,7 @@ export function mountCapacityLab({ root }) {
     const mappingSeed = baseSettings.wrapper === "hub_noncat"
       || baseSettings.wrapper === "hub_concept"
       || baseSettings.wrapper === "and_noncat"
+      || baseSettings.wrapper === "and_cat"
       ? hash32(`${tsStart}:${resolvedTarget}:${blockIndex}`)
       : undefined;
     const plan = createHubBlockPlan({
@@ -1162,6 +1163,18 @@ export function mountCapacityLab({ root }) {
       pausedState: null,
       trialOutcomes: []
     };
+    if (build.trials) {
+      const urls = new Set();
+      build.trials.forEach((trial) => {
+        if (trial?.display?.symbolImageUrl) {
+          urls.add(trial.display.symbolImageUrl);
+        }
+      });
+      urls.forEach((url) => {
+        const img = new Image();
+        img.src = url;
+      });
+    }
     uiState.status = "briefing";
     uiState.activeMessage = `Starting ${wrapperLabel(plan.wrapper)} ${modalityLabel(plan.targetModality, plan.wrapper)} at N-${plan.n}.`;
     uiState.coachMessage = `Get ready. Match the ${displayHubTargetLabel(plan.targetModality, plan.wrapper).toLowerCase()} from ${plan.n} turns ago. Official progression is not advanced from this sandbox alone.`;

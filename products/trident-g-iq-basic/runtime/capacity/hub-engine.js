@@ -33,19 +33,19 @@ const AND_CAT_COLORS = [
 const AND_CAT_SYMBOLS = [
   {
     label: "Pig",
-    variants: Array.from({ length: 8 }, (_, index) => `./assets/capacity/and/animals/pig-${index + 1}.png`)
+    variants: Array.from({ length: 10 }, (_, index) => `./assets/capacity/and/pig${index + 1}.png`)
   },
   {
     label: "Dog",
-    variants: Array.from({ length: 8 }, (_, index) => `./assets/capacity/and/animals/dog-${index + 1}.png`)
+    variants: Array.from({ length: 10 }, (_, index) => `./assets/capacity/and/dog${index + 1}.png`)
   },
   {
     label: "Cat",
-    variants: Array.from({ length: 8 }, (_, index) => `./assets/capacity/and/animals/cat-${index + 1}.png`)
+    variants: Array.from({ length: 10 }, (_, index) => `./assets/capacity/and/cat${index + 1}.png`)
   },
   {
     label: "Bird",
-    variants: Array.from({ length: 8 }, (_, index) => `./assets/capacity/and/animals/bird-${index + 1}.png`)
+    variants: Array.from({ length: 10 }, (_, index) => `./assets/capacity/and/bird${index + 1}.png`)
   }
 ];
 
@@ -323,12 +323,17 @@ function buildConjunctiveStreams(totalTrials, n, matchFlags, lureFlags, rng) {
 
 function buildRenderMapping({ wrapper, mappingSeed }) {
   if (wrapper === "and_cat") {
+    const resolvedSeed = Number.isFinite(mappingSeed) ? (mappingSeed >>> 0) : hash32("and_cat_default");
+    const rng = createSeededRng(resolvedSeed);
     return {
       locRotationDeg: 0,
       radiusPct: HUB_ARENA_RADIUS_PCT,
       markerPositions: markerPositionsForRotation(0, HUB_ARENA_RADIUS_PCT),
       palette: AND_CAT_COLORS,
-      symbolSet: AND_CAT_SYMBOLS
+      symbolSet: AND_CAT_SYMBOLS.map((category) => ({
+        label: category.label,
+        variants: sampleWithoutReplacement(category.variants, 4, rng)
+      }))
     };
   }
 
@@ -441,11 +446,13 @@ export function createHubBlockPlan({
     targetModality
   };
 
-  if (resolvedWrapper === "hub_noncat" || resolvedWrapper === "hub_concept" || resolvedWrapper === "and_noncat") {
+  if (resolvedWrapper === "hub_noncat" || resolvedWrapper === "hub_concept" || resolvedWrapper === "and_noncat" || resolvedWrapper === "and_cat") {
     const seedPrefix = resolvedWrapper === "hub_noncat"
       ? "noncat"
       : resolvedWrapper === "and_noncat"
         ? "and"
+        : resolvedWrapper === "and_cat"
+          ? "and-cat"
         : "concept";
     const resolvedSeed = Number.isFinite(mappingSeed) ? (mappingSeed >>> 0) : hash32(`${seedPrefix}:${blockIndex}:${n}`);
     plan.mappingSeed = resolvedSeed;
