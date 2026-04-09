@@ -23,6 +23,13 @@ function clampN(value) {
   return Math.max(1, Math.min(7, Math.round(value)));
 }
 
+function normalizeWrapper(value) {
+  if (value === "hub_noncat" || value === "hub_concept") {
+    return value;
+  }
+  return "hub_cat";
+}
+
 function createDefaultState() {
   return {
     version: 1,
@@ -30,7 +37,7 @@ function createDefaultState() {
       wrapper: "hub_cat",
       targetModality: "loc",
       speed: "slow",
-      interference: "low",
+      mode: "manual",
       n: 1
     },
     history: []
@@ -50,10 +57,9 @@ function normalizeHistoryEntry(entry) {
     id: typeof entry.id === "string" ? entry.id : `xor_lab_${entry.tsStart}`,
     tsStart: Math.round(entry.tsStart),
     tsEnd: Number.isFinite(entry.tsEnd) ? Math.round(entry.tsEnd) : Math.round(entry.tsStart),
-    wrapper: entry.wrapper === "hub_noncat" ? "hub_noncat" : "hub_cat",
+    wrapper: normalizeWrapper(entry.wrapper),
     targetModality: entry.targetModality === "col" || entry.targetModality === "sym" ? entry.targetModality : "loc",
     speed: entry.speed === "fast" ? "fast" : "slow",
-    interference: entry.interference === "high" ? "high" : "low",
     outcomeBand: entry.outcomeBand === "UP" || entry.outcomeBand === "DOWN" ? entry.outcomeBand : "HOLD",
     recommendedN: clampN(entry.recommendedN),
     block: {
@@ -80,10 +86,10 @@ function normalizeState(raw) {
   return {
     version: 1,
     settings: {
-      wrapper: settings.wrapper === "hub_noncat" ? "hub_noncat" : "hub_cat",
+      wrapper: normalizeWrapper(settings.wrapper),
       targetModality: settings.targetModality === "col" || settings.targetModality === "sym" ? settings.targetModality : "loc",
       speed: settings.speed === "fast" ? "fast" : "slow",
-      interference: settings.interference === "high" ? "high" : "low",
+      mode: settings.mode === "coach" ? "coach" : "manual",
       n: clampN(settings.n)
     },
     history

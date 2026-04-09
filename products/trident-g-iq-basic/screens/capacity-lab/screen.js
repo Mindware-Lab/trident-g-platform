@@ -15,6 +15,10 @@ const capacityLabSidePanelHtml = `
         <span>XOR non-categorical</span>
         <span>Live</span>
       </div>
+      <div class="capacity-lab-route-card is-active">
+        <span>XOR conceptual</span>
+        <span>Live</span>
+      </div>
       <div class="capacity-lab-route-card">
         <span>Targets</span>
         <span>◎ / ◐ / ✦</span>
@@ -54,7 +58,7 @@ const capacityLabBannerHtml = `
 
 const capacityLabCoachHtml = `
   <div class="capacity-coach-shell">
-    <div class="coach-label">Sandbox</div>
+    <div class="coach-label">Coach tip</div>
     <div class="capacity-coach-panel">
       <div class="capacity-coach-line is-active" data-capacity-lab-coach>
         Use this route to play XOR categorical and non-categorical blocks inside the new capacity shell without advancing the official progression engine.

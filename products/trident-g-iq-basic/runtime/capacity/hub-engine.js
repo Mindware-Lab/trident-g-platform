@@ -11,41 +11,93 @@ export const HUB_SOA_MS = {
   fast: 1400
 };
 export const HUB_TARGET_MODALITIES = ["loc", "col", "sym"];
-export const HUB_WRAPPERS = ["hub_cat", "hub_noncat"];
+export const HUB_WRAPPERS = ["hub_cat", "hub_noncat", "hub_concept"];
 export const HUB_ARENA_RADIUS_PCT = 42;
 
 const CAT_COLORS = [
-  { label: "Red", hex: "#dc2626" },
-  { label: "Blue", hex: "#2563eb" },
-  { label: "Black", hex: "#111827" },
-  { label: "White", hex: "#ffffff" }
+  { label: "Red", hex: "#dc2626", textHex: "#ffffff" },
+  { label: "Blue", hex: "#2563eb", textHex: "#ffffff" },
+  { label: "Grey", hex: "#6b7280", textHex: "#ffffff" },
+  { label: "White", hex: "#ffffff", textHex: "#102033" }
 ];
 
 const CAT_SYMBOLS = ["A", "B", "C", "D"];
+
+const CONCEPT_COLOR_CATEGORIES = [
+  {
+    label: "Grey",
+    variants: [
+      { hex: "#4b5563", textHex: "#ffffff" },
+      { hex: "#6b7280", textHex: "#ffffff" },
+      { hex: "#9ca3af", textHex: "#102033" },
+      { hex: "#d1d5db", textHex: "#102033" }
+    ]
+  },
+  {
+    label: "Blue",
+    variants: [
+      { hex: "#1d4ed8", textHex: "#ffffff" },
+      { hex: "#2563eb", textHex: "#ffffff" },
+      { hex: "#60a5fa", textHex: "#102033" },
+      { hex: "#93c5fd", textHex: "#102033" }
+    ]
+  },
+  {
+    label: "Green",
+    variants: [
+      { hex: "#15803d", textHex: "#ffffff" },
+      { hex: "#16a34a", textHex: "#ffffff" },
+      { hex: "#4ade80", textHex: "#102033" },
+      { hex: "#86efac", textHex: "#102033" }
+    ]
+  },
+  {
+    label: "Red-orange",
+    variants: [
+      { hex: "#c2410c", textHex: "#ffffff" },
+      { hex: "#ea580c", textHex: "#ffffff" },
+      { hex: "#fb923c", textHex: "#102033" },
+      { hex: "#fdba74", textHex: "#102033" }
+    ]
+  }
+];
+
+const CONCEPT_LETTER_CATEGORIES = ["A", "E", "M", "R"];
+
+const CONCEPT_FONT_VARIANTS = [
+  { fontFamily: "\"Orbitron\", monospace", fontWeight: 900, fontStyle: "normal", letterCase: "upper" },
+  { fontFamily: "\"Chakra Petch\", sans-serif", fontWeight: 700, fontStyle: "normal", letterCase: "lower" },
+  { fontFamily: "Georgia, serif", fontWeight: 700, fontStyle: "normal", letterCase: "upper" },
+  { fontFamily: "\"Trebuchet MS\", sans-serif", fontWeight: 800, fontStyle: "normal", letterCase: "lower" },
+  { fontFamily: "\"Courier New\", monospace", fontWeight: 700, fontStyle: "normal", letterCase: "upper" },
+  { fontFamily: "\"Times New Roman\", serif", fontWeight: 700, fontStyle: "italic", letterCase: "lower" }
+];
+
+const CONCEPT_CARDINAL_ANGLES = [-90, 0, 90, 180];
 
 const SYMBOL_POOL = [
   "@", "#", "$", "%", "&", "*", "+", "=", "?", "!", "X", "O",
   "K", "Q", "R", "Z", "M", "N", "P", "T"
 ];
 
-const LURE_RATE_BY_INTERFERENCE = {
-  low: 0.1,
-  high: 0.25
-};
+const LURE_RATE = 0.1;
 
 function hslColor(hue, saturation, lightness) {
   return `hsl(${hue} ${saturation}% ${lightness}%)`;
 }
 
+function markerPositionForAngle(thetaDeg, radiusPct = HUB_ARENA_RADIUS_PCT) {
+  const theta = (thetaDeg * Math.PI) / 180;
+  return {
+    xPct: 50 + (radiusPct * Math.cos(theta)),
+    yPct: 50 + (radiusPct * Math.sin(theta))
+  };
+}
+
 function markerPositionsForRotation(rotationDeg, radiusPct = HUB_ARENA_RADIUS_PCT) {
   const points = [];
   for (let index = 0; index < 4; index += 1) {
-    const thetaDeg = rotationDeg + (index * 90);
-    const theta = (thetaDeg * Math.PI) / 180;
-    points.push({
-      xPct: 50 + (radiusPct * Math.cos(theta)),
-      yPct: 50 + (radiusPct * Math.sin(theta))
-    });
+    points.push(markerPositionForAngle(rotationDeg + (index * 90), radiusPct));
   }
   return points;
 }
@@ -73,7 +125,8 @@ function buildNoncatPalette(mappingSeed) {
     const resolvedLightness = Math.max(28, Math.min(76, lightness + (index % 2 === 0 ? -4 : 6)));
     return {
       label: `Hue ${hue}`,
-      hex: hslColor(hue, saturation, resolvedLightness)
+      hex: hslColor(hue, saturation, resolvedLightness),
+      textHex: resolvedLightness >= 62 ? "#102033" : "#ffffff"
     };
   });
 }
@@ -144,6 +197,18 @@ function buildRenderMapping({ wrapper, mappingSeed }) {
     };
   }
 
+  if (wrapper === "hub_concept") {
+    return {
+      locRotationDeg: CONCEPT_CARDINAL_ANGLES[0],
+      radiusPct: HUB_ARENA_RADIUS_PCT,
+      markerPositions: CONCEPT_CARDINAL_ANGLES.map((angleDeg) => markerPositionForAngle(angleDeg, HUB_ARENA_RADIUS_PCT)),
+      locationAngles: CONCEPT_CARDINAL_ANGLES.slice(),
+      palette: CONCEPT_COLOR_CATEGORIES,
+      symbolSet: CONCEPT_LETTER_CATEGORIES.slice(),
+      fontVariants: CONCEPT_FONT_VARIANTS.slice()
+    };
+  }
+
   const locRotationDeg = 45;
   return {
     locRotationDeg,
@@ -166,7 +231,7 @@ export function modalityLabel(targetModality) {
 
 export function displayHubTargetLabel(targetModality, wrapper) {
   const base = modalityLabel(targetModality);
-  if (wrapper === "hub_cat" && targetModality === "sym") {
+  if (wrapper !== "hub_noncat" && targetModality === "sym") {
     return "LETTER";
   }
   return base;
@@ -177,26 +242,84 @@ export function createHubBlockPlan({
   blockIndex,
   n,
   speed,
-  interference = "low",
   targetModality,
   mappingSeed
 }) {
-  const resolvedWrapper = wrapper === "hub_noncat" ? "hub_noncat" : "hub_cat";
+  const resolvedWrapper = wrapper === "hub_noncat"
+    ? "hub_noncat"
+    : wrapper === "hub_concept"
+      ? "hub_concept"
+      : "hub_cat";
   const plan = {
     blockIndex,
     wrapper: resolvedWrapper,
     n,
     speed,
-    interference,
     targetModality
   };
 
-  if (resolvedWrapper === "hub_noncat") {
-    const resolvedSeed = Number.isFinite(mappingSeed) ? (mappingSeed >>> 0) : hash32(`noncat:${blockIndex}:${n}`);
+  if (resolvedWrapper === "hub_noncat" || resolvedWrapper === "hub_concept") {
+    const seedPrefix = resolvedWrapper === "hub_noncat" ? "noncat" : "concept";
+    const resolvedSeed = Number.isFinite(mappingSeed) ? (mappingSeed >>> 0) : hash32(`${seedPrefix}:${blockIndex}:${n}`);
     plan.mappingSeed = resolvedSeed;
   }
 
   return plan;
+}
+
+function resolveDisplayLocation({ wrapper, locIdx, renderMapping, rng }) {
+  if (wrapper === "hub_concept") {
+    const baseAngleDeg = renderMapping.locationAngles[locIdx];
+    const jitterDeg = randomInt(rng, -20, 20);
+    return {
+      pointPct: markerPositionForAngle(baseAngleDeg + jitterDeg, renderMapping.radiusPct),
+      locationLabel: ["Up", "Right", "Down", "Left"][locIdx]
+    };
+  }
+
+  return {
+    pointPct: renderMapping.markerPositions[locIdx],
+    locationLabel: null
+  };
+}
+
+function resolveDisplayColour({ wrapper, colIdx, renderMapping, rng }) {
+  if (wrapper === "hub_concept") {
+    const category = renderMapping.palette[colIdx];
+    const variant = category.variants[randomInt(rng, 0, category.variants.length - 1)];
+    return {
+      colourLabel: category.label,
+      colourHex: variant.hex,
+      textHex: variant.textHex
+    };
+  }
+
+  const colour = renderMapping.palette[colIdx];
+  return {
+    colourLabel: colour.label,
+    colourHex: colour.hex,
+    textHex: colour.textHex || "#ffffff"
+  };
+}
+
+function resolveDisplaySymbol({ wrapper, symIdx, renderMapping, rng }) {
+  if (wrapper === "hub_concept") {
+    const letter = renderMapping.symbolSet[symIdx];
+    const variant = renderMapping.fontVariants[randomInt(rng, 0, renderMapping.fontVariants.length - 1)];
+    return {
+      symbolLabel: variant.letterCase === "lower" ? letter.toLowerCase() : letter.toUpperCase(),
+      symbolFontFamily: variant.fontFamily,
+      symbolFontWeight: variant.fontWeight,
+      symbolFontStyle: variant.fontStyle
+    };
+  }
+
+  return {
+    symbolLabel: renderMapping.symbolSet[symIdx],
+    symbolFontFamily: null,
+    symbolFontWeight: null,
+    symbolFontStyle: null
+  };
 }
 
 export function createHubBlockTrials({
@@ -204,7 +327,6 @@ export function createHubBlockTrials({
   n,
   targetModality,
   speed,
-  interference = "low",
   mappingSeed,
   baseTrials = HUB_BASE_TRIALS,
   seed = Date.now()
@@ -218,11 +340,10 @@ export function createHubBlockTrials({
   });
   const totalTrials = schedule.totalTrials;
   const matchFlags = schedule.matchFlags;
-  const lureRate = LURE_RATE_BY_INTERFERENCE[interference] ?? LURE_RATE_BY_INTERFERENCE.low;
   const lureFlags = scheduleLureFlags({
     targetMatchFlags: matchFlags,
     n,
-    lureRate,
+    lureRate: LURE_RATE,
     rng
   });
 
@@ -266,6 +387,9 @@ export function createHubBlockTrials({
       : targetModality === "col"
         ? colIdx
         : symIdx;
+    const locationDisplay = resolveDisplayLocation({ wrapper, locIdx, renderMapping, rng });
+    const colourDisplay = resolveDisplayColour({ wrapper, colIdx, renderMapping, rng });
+    const symbolDisplay = resolveDisplaySymbol({ wrapper, symIdx, renderMapping, rng });
 
     trials.push({
       trialIndex: index,
@@ -276,9 +400,15 @@ export function createHubBlockTrials({
       lureMatchedModality: lureMatchedModality[index],
       canonKey: `${targetModality}:${canonValue}`,
       display: {
-        colourLabel: renderMapping.palette[colIdx].label,
-        colourHex: renderMapping.palette[colIdx].hex,
-        symbolLabel: renderMapping.symbolSet[symIdx]
+        pointPct: locationDisplay.pointPct,
+        locationLabel: locationDisplay.locationLabel,
+        colourLabel: colourDisplay.colourLabel,
+        colourHex: colourDisplay.colourHex,
+        textHex: colourDisplay.textHex,
+        symbolLabel: symbolDisplay.symbolLabel,
+        symbolFontFamily: symbolDisplay.symbolFontFamily,
+        symbolFontWeight: symbolDisplay.symbolFontWeight,
+        symbolFontStyle: symbolDisplay.symbolFontStyle
       }
     });
   }
@@ -372,7 +502,6 @@ export function summarizeHubBlock({
       nStart: plan.n,
       nEnd,
       speed: plan.speed,
-      interference: plan.interference,
       targetModality: plan.targetModality,
       trials: trials.length,
       hits,

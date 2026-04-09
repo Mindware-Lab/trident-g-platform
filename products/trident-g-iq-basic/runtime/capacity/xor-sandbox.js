@@ -34,11 +34,21 @@ function escapeHtml(value) {
 }
 
 function wrapperLabel(wrapper) {
-  return wrapper === "hub_noncat" ? "Non-categorical" : "Categorical";
+  if (wrapper === "hub_noncat") {
+    return "Non-categorical";
+  }
+  if (wrapper === "hub_concept") {
+    return "Conceptual";
+  }
+  return "Categorical";
 }
 
 function speedLabel(speed) {
   return speed === "fast" ? "Fast pace" : "Slow pace";
+}
+
+function modeLabel(mode) {
+  return mode === "coach" ? "Coach guided" : "Manual";
 }
 
 function modalityLabel(targetModality, wrapper) {
@@ -64,6 +74,105 @@ function formatRt(value) {
   return Number.isFinite(value) ? `${Math.round(value)} ms` : "--";
 }
 
+function clampN(value) {
+  if (!Number.isFinite(value)) {
+    return 1;
+  }
+  return Math.max(1, Math.min(HUB_N_MAX, Math.round(value)));
+}
+
+function nextWrapper(current) {
+  const order = ["hub_cat", "hub_noncat", "hub_concept"];
+  const index = Math.max(0, order.indexOf(current));
+  return order[(index + 1) % order.length];
+}
+
+function recommendSettings(uiState) {
+  const history = uiState.history;
+  const last = history[0];
+  const fallback = {
+    wrapper: uiState.settings.wrapper,
+    targetModality: uiState.settings.targetModality,
+    speed: uiState.settings.speed,
+    n: uiState.settings.n,
+    reason: "Start with your current sandbox settings."
+  };
+
+  if (!last) {
+    return {
+      wrapper: "hub_cat",
+      targetModality: "loc",
+      speed: "slow",
+      n: 1,
+      reason: "Start with the simplest wrapper to establish a stable baseline."
+    };
+  }
+
+  const lastN = clampN(last.block?.nEnd ?? last.block?.nStart ?? uiState.settings.n);
+  const lastWrapper = last.wrapper || uiState.settings.wrapper;
+  const lastSpeed = last.speed || uiState.settings.speed;
+  const lastTarget = last.targetModality || uiState.settings.targetModality;
+  const lastThree = history.slice(0, 3);
+  const avgAcc = lastThree.length
+    ? lastThree.reduce((sum, entry) => sum + Number(entry?.block?.accuracy || 0), 0) / lastThree.length
+    : Number(last?.block?.accuracy || 0);
+  const stable = avgAcc >= 0.9;
+  const drop = avgAcc < 0.75;
+  const recentWrappers = new Set(lastThree.map((entry) => entry.wrapper));
+
+  if (drop) {
+    return {
+      wrapper: lastWrapper,
+      targetModality: lastTarget,
+      speed: "slow",
+      n: clampN(lastN - 1),
+      reason: "Stability dipped; lower the load and slow the pace."
+    };
+  }
+
+  if (stable && recentWrappers.size < 2) {
+    return {
+      wrapper: nextWrapper(lastWrapper),
+      targetModality: lastTarget,
+      speed: "slow",
+      n: lastN,
+      reason: "Stability held; swap wrapper before speed or n increases."
+    };
+  }
+
+  if (stable && lastSpeed === "slow") {
+    return {
+      wrapper: lastWrapper,
+      targetModality: lastTarget,
+      speed: "fast",
+      n: lastN,
+      reason: "Confirm stability under faster timing before increasing n."
+    };
+  }
+
+  if (stable && lastSpeed === "fast") {
+    return {
+      wrapper: lastWrapper,
+      targetModality: lastTarget,
+      speed: "fast",
+      n: clampN(lastN + 1),
+      reason: "Stable at fast pace; increase n."
+    };
+  }
+
+  return {
+    wrapper: lastWrapper,
+    targetModality: lastTarget,
+    speed: lastSpeed,
+    n: lastN,
+    reason: "Hold current settings to build stability."
+  };
+}
+
+function buildCoachMessage(recommendation) {
+  return `The recommended option for far transfer training is ${wrapperLabel(recommendation.wrapper)} ${modalityLabel(recommendation.targetModality, recommendation.wrapper)}, N-${recommendation.n}, ${speedLabel(recommendation.speed)}. ${recommendation.reason}`;
+}
+
 function sparkPoints(history) {
   const values = history.slice(0, 8).map((entry) => Number(entry?.block?.accuracy || 0) * 100).reverse();
   if (!values.length) {
@@ -80,6 +189,210 @@ function sparkPoints(history) {
   }).join(" ");
 }
 
+const REWARD_EVENTS = {
+  SESSION_GOOD: { tridents: 40, max: 20 },
+  SESSION_FAST_FINISH: { tridents: 20, max: 20 },
+  SESSION_PERSONAL_BEST_AVG: { tridents: 40, max: 10 },
+  SESSION_PERSONAL_BEST_STABLE: { tridents: 40, max: 10 },
+  SAME_FAMILY_SWAP_HOLD: { tridents: 100, max: 9 },
+  VARIANT_FAST_3_MASTERED: { tridents: 200, max: 9 },
+  FAMILY_FAST_3_MASTERED: { tridents: 600, max: 3 },
+  TRANSFER_READINESS_EMERGING: { tridents: 150, max: 1 },
+  TRANSFER_READINESS_DEVELOPING: { tridents: 300, max: 1 },
+  TRANSFER_READINESS_BROADENING: { tridents: 450, max: 1 },
+  TRANSFER_READINESS_STRONG: { tridents: 600, max: 1 },
+  CAPACITY_GYM_CHALLENGE_20_COMPLETED: { tridents: 2000, max: 1 },
+  FREE_COACHING_SESSION_VOUCHER: { tridents: 0, max: 1 }
+};
+
+const ECONOMY = {
+  CURRENT_VARIANT_COUNT: 9,
+  CHALLENGE_SESSION_LIMIT: 20
+};
+
+function computeStableLevel(history) {
+  const recent = history.slice(0, 3);
+  if (!recent.length) return null;
+  const avgAcc = recent.reduce((sum, entry) => sum + Number(entry?.block?.accuracy || 0), 0) / recent.length;
+  if (avgAcc < 0.85) return null;
+  const avgN = recent.reduce((sum, entry) => sum + clampN(entry?.block?.nEnd ?? entry?.block?.nStart ?? 1), 0) / recent.length;
+  return Math.round(avgN);
+}
+
+function computeRewardTimeline(history) {
+  const events = [];
+  const counters = new Map();
+  const best = {
+    sessionAvgAcc: 0,
+    stableLevel: 0
+  };
+  const variantFast3 = new Set();
+  const wrappersFast3 = new Set();
+  const transferStages = new Set();
+  let challengeAwarded = false;
+  const sessionAcc = [];
+  let sessionIndex = 1;
+  let sessionBlock = 0;
+
+  const chronological = history.slice().reverse();
+  let prev = null;
+  chronological.forEach((entry, index) => {
+    const block = entry.block || {};
+    const accuracy = Number(block.accuracy || 0);
+    const nEnd = clampN(block.nEnd ?? block.nStart ?? 1);
+    const speed = entry.speed || "slow";
+    sessionBlock += 1;
+    sessionAcc.push(accuracy);
+
+    const recentHistory = chronological.slice(0, index + 1).reverse();
+    const consistencyOk = computeStableLevel(recentHistory) !== null;
+
+    if (accuracy >= 0.9 && consistencyOk) {
+      events.push({ name: "SESSION_GOOD", blockIndex: index, sessionIndex });
+    }
+    if (speed === "fast" && accuracy >= 0.85 && consistencyOk) {
+      events.push({ name: "SESSION_FAST_FINISH", blockIndex: index, sessionIndex });
+      if (!transferStages.has("DEVELOPING")) {
+        transferStages.add("DEVELOPING");
+        events.push({ name: "TRANSFER_READINESS_DEVELOPING", blockIndex: index, sessionIndex });
+      }
+    }
+
+    if (prev && prev.wrapper !== entry.wrapper && consistencyOk) {
+      const prevN = clampN(prev.block?.nEnd ?? prev.block?.nStart ?? 1);
+      if (accuracy >= 0.85 && nEnd >= prevN - 1) {
+        events.push({ name: "SAME_FAMILY_SWAP_HOLD", blockIndex: index, sessionIndex });
+        if (!transferStages.has("EMERGING")) {
+          transferStages.add("EMERGING");
+          events.push({ name: "TRANSFER_READINESS_EMERGING", blockIndex: index, sessionIndex });
+        }
+      }
+    }
+
+    if (speed === "fast" && nEnd >= 3 && accuracy >= 0.9 && consistencyOk) {
+      const variantKey = `${entry.wrapper}:${entry.targetModality}`;
+      if (!variantFast3.has(variantKey)) {
+        variantFast3.add(variantKey);
+        events.push({ name: "VARIANT_FAST_3_MASTERED", blockIndex: index, sessionIndex });
+        if (!transferStages.has("BROADENING")) {
+          transferStages.add("BROADENING");
+          events.push({ name: "TRANSFER_READINESS_BROADENING", blockIndex: index, sessionIndex });
+        }
+      }
+      wrappersFast3.add(entry.wrapper);
+    }
+
+    if (wrappersFast3.size === 3) {
+      if (!transferStages.has("FAMILY") && consistencyOk) {
+        transferStages.add("FAMILY");
+        events.push({ name: "FAMILY_FAST_3_MASTERED", blockIndex: index, sessionIndex });
+        if (!transferStages.has("STRONG")) {
+          transferStages.add("STRONG");
+          events.push({ name: "TRANSFER_READINESS_STRONG", blockIndex: index, sessionIndex });
+        }
+      }
+    }
+
+    if (!challengeAwarded && variantFast3.size >= ECONOMY.CURRENT_VARIANT_COUNT) {
+      if (sessionIndex <= ECONOMY.CHALLENGE_SESSION_LIMIT) {
+        challengeAwarded = true;
+        events.push({ name: "CAPACITY_GYM_CHALLENGE_20_COMPLETED", blockIndex: index, sessionIndex });
+        events.push({ name: "FREE_COACHING_SESSION_VOUCHER", blockIndex: index, sessionIndex });
+      }
+    }
+
+    const stableLevel = computeStableLevel(recentHistory);
+    if (stableLevel && stableLevel > best.stableLevel) {
+      best.stableLevel = stableLevel;
+      events.push({ name: "SESSION_PERSONAL_BEST_STABLE", blockIndex: index, sessionIndex });
+    }
+
+    if (sessionBlock === 10) {
+      const avgAcc = sessionAcc.reduce((sum, value) => sum + value, 0) / sessionAcc.length;
+      if (avgAcc > best.sessionAvgAcc + 0.01 && consistencyOk) {
+        best.sessionAvgAcc = avgAcc;
+        events.push({ name: "SESSION_PERSONAL_BEST_AVG", blockIndex: index, sessionIndex });
+      }
+      sessionAcc.length = 0;
+      sessionBlock = 0;
+      sessionIndex += 1;
+    }
+
+    prev = entry;
+  });
+
+  // Apply max awards
+  const awarded = new Map();
+  const filtered = [];
+  events.forEach((event) => {
+    const rule = REWARD_EVENTS[event.name];
+    if (!rule) return;
+    const count = awarded.get(event.name) || 0;
+    if (count >= rule.max) return;
+    awarded.set(event.name, count + 1);
+    filtered.push(event);
+  });
+
+  return filtered;
+}
+
+function computeRewards(history) {
+  const timeline = computeRewardTimeline(history);
+  const totals = timeline.reduce((sum, event) => sum + (REWARD_EVENTS[event.name]?.tridents || 0), 0);
+  return { timeline, totalTridents: totals };
+}
+
+function transferReadinessLabel(events) {
+  if (events.some((event) => event.name === "TRANSFER_READINESS_STRONG")) return "Strong";
+  if (events.some((event) => event.name === "TRANSFER_READINESS_BROADENING")) return "Broadening";
+  if (events.some((event) => event.name === "TRANSFER_READINESS_DEVELOPING")) return "Developing";
+  if (events.some((event) => event.name === "TRANSFER_READINESS_EMERGING")) return "Emerging";
+  return null;
+}
+
+function lastBlockSummary(entry) {
+  const block = entry?.block;
+  if (!block) {
+    return { accuracy: null, correct: null, total: null, outcome: null };
+  }
+  const correct = Number(block.hits || 0) + Number(block.correctRejections || 0);
+  return {
+    accuracy: Number(block.accuracy || 0),
+    correct,
+    total: Number(block.trials || 0),
+    outcome: entry?.outcomeBand || null
+  };
+}
+
+function formatPercent(value) {
+  return Number.isFinite(value) ? `${Math.round(value * 100)}%` : "--";
+}
+
+function safeValue(value) {
+  return value === null || value === undefined || value === "" ? "--" : value;
+}
+
+function sessionBlockIndex(history, activeBlock) {
+  const completed = history.length;
+  const progress = completed % 10;
+  const current = progress + (activeBlock ? 1 : 0);
+  return current || 0;
+}
+
+function sessionHistory(history) {
+  const progress = history.length % 10;
+  return history.slice(0, progress);
+}
+
+function nextBlockHint(recommendation, lastEntry) {
+  if (!recommendation) return "Hold";
+  if (!lastEntry) return "Baseline";
+  if (recommendation.wrapper !== lastEntry.wrapper) return "Wrapper swap";
+  if (recommendation.speed !== lastEntry.speed) return "Speed pressure";
+  if (recommendation.n > (lastEntry.block?.nEnd ?? lastEntry.block?.nStart ?? 1)) return "N increase";
+  return "Hold";
+}
+
 function historyRows(history) {
   return history.slice(0, 4).map((entry) => `
     <div class="capacity-lab-history-row">
@@ -91,46 +404,77 @@ function historyRows(history) {
 
 export const capacityLabTelemetrySeed = [
   {
-    label: "Sandbox setup",
+    label: "Sandbox",
     labelClass: "metric-label--credit",
     emphasis: true,
     html: `
-      <div class="capacity-rail-panel">
-        <div class="capacity-rail-inline">
-          <span class="capacity-rail-inline-label">Route</span>
-          <span class="capacity-rail-inline-value">XOR sandbox</span>
+      <div class="capacity-sandbox-rail">
+        <div class="capacity-sandbox-card capacity-sandbox-card--today" data-sandbox-today>
+          <div class="capacity-sandbox-title">Today</div>
+          <div class="capacity-sandbox-reward">
+            <div class="capacity-sandbox-reward-coin" aria-hidden="true"></div>
+            <div>
+              <div class="capacity-sandbox-reward-label">Tridents</div>
+              <div class="capacity-sandbox-reward-value">--</div>
+              <div class="capacity-sandbox-reward-sub">Session reward</div>
+            </div>
+          </div>
         </div>
-        <div class="capacity-rail-inline">
-          <span class="capacity-rail-inline-label">Scope</span>
-          <span class="capacity-rail-inline-value">Basic local scoring</span>
+
+        <div class="capacity-sandbox-card capacity-sandbox-card--session">
+          <div class="capacity-sandbox-title">Session performance</div>
+          <div class="capacity-sandbox-row">
+            <span data-sandbox-session-block>--</span>
+            <span data-sandbox-session-counted>--</span>
+          </div>
+          <div class="capacity-sandbox-progress">
+            <span style="width:0%;" data-sandbox-session-progress></span>
+          </div>
+          <div class="capacity-sandbox-grid">
+            <div>
+              <div class="capacity-sandbox-label">Session average</div>
+              <div class="capacity-sandbox-value" data-sandbox-session-average>--</div>
+            </div>
+            <div>
+              <div class="capacity-sandbox-label">Transfer readiness</div>
+              <div class="capacity-sandbox-pill" data-sandbox-transfer>--</div>
+            </div>
+            <div>
+              <div class="capacity-sandbox-label">Stable level</div>
+              <div class="capacity-sandbox-value" data-sandbox-stable>--</div>
+            </div>
+            <div>
+              <div class="capacity-sandbox-label">Pressure status</div>
+              <div class="capacity-sandbox-value" data-sandbox-pressure>--</div>
+            </div>
+          </div>
         </div>
-      </div>
-    `
-  },
-  {
-    label: "Current block",
-    labelClass: "metric-label--credit",
-    emphasis: true,
-    html: `
-      <div class="capacity-rail-panel">
-        <div class="capacity-rail-inline">
-          <span class="capacity-rail-inline-label">Status</span>
-          <span class="capacity-rail-inline-value">Ready</span>
+
+        <div class="capacity-sandbox-card capacity-sandbox-card--game">
+          <div class="capacity-sandbox-title">Game performance</div>
+          <div class="capacity-sandbox-grid capacity-sandbox-grid--dual">
+            <div>
+              <div class="capacity-sandbox-label">Next block</div>
+              <div class="capacity-sandbox-value" data-sandbox-next>--</div>
+              <div class="capacity-sandbox-subline" data-sandbox-next-note>--</div>
+            </div>
+            <div>
+              <div class="capacity-sandbox-label">Last block</div>
+              <div class="capacity-sandbox-value" data-sandbox-last-accuracy>--</div>
+              <div class="capacity-sandbox-pill capacity-sandbox-pill--result" data-sandbox-last-result>--</div>
+            </div>
+          </div>
+          <div class="capacity-sandbox-row">
+            <span>Last accuracy</span>
+            <span data-sandbox-last-correct>--</span>
+          </div>
+          <div class="capacity-sandbox-trend">
+            <div class="capacity-sandbox-label">Accuracy over blocks</div>
+            <svg viewBox="0 0 170 30" preserveAspectRatio="none" aria-hidden="true">
+              <polyline fill="none" stroke="rgba(245, 181, 68, 0.96)" stroke-width="2.6" points="2,22 168,22" data-sandbox-spark></polyline>
+            </svg>
+          </div>
         </div>
-        <div class="capacity-rail-inline">
-          <span class="capacity-rail-inline-label">Telemetry</span>
-          <span class="capacity-rail-inline-value">Waiting for first run</span>
-        </div>
-      </div>
-    `
-  },
-  {
-    label: "Recent runs",
-    labelClass: "metric-label--credit",
-    emphasis: true,
-    html: `
-      <div class="capacity-rail-panel">
-        <div class="capacity-lab-empty">Run a block to populate the local history rail.</div>
       </div>
     `
   }
@@ -149,113 +493,8 @@ function createUiState() {
   };
 }
 
-function telemetryCards(uiState) {
-  const active = uiState.activeBlock;
-  const last = uiState.lastSavedEntry;
-  const lastBlock = last?.block || null;
-  const history = uiState.history;
-  const bestAccuracy = history.length ? Math.max(...history.map((entry) => Number(entry?.block?.accuracy || 0))) : 0;
-  const progress = active?.trials?.length ? Math.max(4, Math.round(((active.trialIndex + 1) / active.trials.length) * 100)) : 0;
-
-  return [
-    {
-      label: "Sandbox setup",
-      labelClass: "metric-label--credit",
-      emphasis: true,
-      html: `
-        <div class="capacity-rail-panel">
-          <div class="capacity-rail-progress-head">
-            <span>${escapeHtml(wrapperLabel(uiState.settings.wrapper))} XOR</span>
-            <span class="capacity-rail-route">${escapeHtml(uiState.status === "trial" ? "Live" : uiState.status === "briefing" ? "Cueing" : uiState.status === "paused" ? "Paused" : uiState.status === "result" ? "Saved" : "Ready")}</span>
-          </div>
-          <div class="capacity-rail-grid">
-            <div class="capacity-rail-stat">
-              <div class="capacity-rail-stat-label">Target</div>
-              <div class="capacity-rail-stat-value is-accent">${escapeHtml(modalityMark(uiState.settings.targetModality))}</div>
-              <div class="capacity-rail-stat-subline">Next block setting</div>
-            </div>
-            <div class="capacity-rail-stat">
-              <div class="capacity-rail-stat-label">Pace</div>
-              <div class="capacity-rail-pill capacity-rail-pill--transfer">${escapeHtml(speedLabel(uiState.settings.speed))}</div>
-              <div class="capacity-rail-stat-subline">${escapeHtml(uiState.settings.interference === "high" ? "High interference" : "Low interference")}</div>
-            </div>
-          </div>
-          <div class="capacity-rail-inline">
-            <span class="capacity-rail-inline-label">Selected n-back</span>
-            <span class="capacity-rail-inline-value">N-${uiState.settings.n}</span>
-          </div>
-          <div class="capacity-rail-inline">
-            <span class="capacity-rail-inline-label">Logged runs</span>
-            <span class="capacity-rail-inline-value">${history.length}</span>
-          </div>
-        </div>
-      `
-    },
-    {
-      label: "Current block",
-      labelClass: "metric-label--credit",
-      emphasis: true,
-      html: `
-        <div class="capacity-rail-panel">
-          <div class="capacity-rail-progress-head">
-            <span>${active ? `Trial ${Math.max(active.trialIndex + 1, 0)} of ${active.trials.length}` : "No active block"}</span>
-            <span class="capacity-rail-route">${active ? "Live scoring" : "Waiting"}</span>
-          </div>
-          <div class="bar-track capacity-rail-progress-track">
-            <div class="bar-fill" style="width: ${progress}%;"></div>
-          </div>
-          <div class="capacity-rail-grid">
-            <div class="capacity-rail-stat">
-              <div class="capacity-rail-stat-label">Last accuracy</div>
-              <div class="capacity-rail-stat-value is-accent">${lastBlock ? accuracyPercent(lastBlock.accuracy) : "--"}</div>
-              <div class="capacity-rail-stat-subline">${lastBlock ? `${lastBlock.hits} hits / ${lastBlock.falseAlarms} FA` : "No saved block yet"}</div>
-            </div>
-            <div class="capacity-rail-stat">
-              <div class="capacity-rail-stat-label">Sandbox hint</div>
-              <div class="capacity-rail-pill ${last?.outcomeBand === "UP" ? "capacity-rail-pill--up" : "capacity-rail-pill--transfer"}">${lastBlock ? `N-${last.recommendedN}` : "N-1"}</div>
-              <div class="capacity-rail-stat-subline">${last ? `${last.outcomeBand} block-only heuristic` : "Start a block to score"}</div>
-            </div>
-          </div>
-          <div class="capacity-rail-inline">
-            <span class="capacity-rail-inline-label">Mean RT</span>
-            <span class="capacity-rail-inline-value">${lastBlock ? formatRt(lastBlock.meanRtMs) : "--"}</span>
-          </div>
-          <div class="capacity-rail-inline">
-            <span class="capacity-rail-inline-label">Lapse count</span>
-            <span class="capacity-rail-inline-value">${lastBlock ? lastBlock.lapseCount : 0}</span>
-          </div>
-        </div>
-      `
-    },
-    {
-      label: "Recent runs",
-      labelClass: "metric-label--credit",
-      emphasis: true,
-      html: `
-        <div class="capacity-rail-panel">
-          <div class="capacity-rail-grid">
-            <div class="capacity-rail-stat">
-              <div class="capacity-rail-stat-label">Best accuracy</div>
-              <div class="capacity-rail-stat-value">${history.length ? accuracyPercent(bestAccuracy) : "--"}</div>
-              <div class="capacity-rail-stat-subline">Last ${history.length} local runs</div>
-            </div>
-            <div class="capacity-rail-stat">
-              <div class="capacity-rail-stat-label">Base trials</div>
-              <div class="capacity-rail-stat-value">${HUB_BASE_TRIALS}</div>
-              <div class="capacity-rail-stat-subline">Plus current n-back offset</div>
-            </div>
-          </div>
-          <div class="capacity-rail-trend">
-            <div class="capacity-rail-trend-label">Accuracy over recent runs</div>
-            <svg class="capacity-rail-spark" viewBox="0 0 170 30" preserveAspectRatio="none" aria-hidden="true">
-              <polyline fill="none" stroke="rgba(245, 181, 68, 0.96)" stroke-width="2.6" points="${sparkPoints(history)}"></polyline>
-            </svg>
-          </div>
-          ${history.length ? `<div class="capacity-lab-history-list">${historyRows(history)}</div>` : '<div class="capacity-lab-empty">No local runs saved yet.</div>'}
-        </div>
-      `
-    }
-  ];
+function telemetryCards() {
+  return capacityLabTelemetrySeed;
 }
 
 function arenaMarkup(uiState) {
@@ -263,17 +502,27 @@ function arenaMarkup(uiState) {
   const trial = active && active.trialIndex >= 0 ? active.trials[active.trialIndex] : null;
   const points = active?.renderMapping?.markerPositions?.length ? active.renderMapping.markerPositions : PREVIEW_MARKERS;
   const markers = points.map((point) => `<span class="capacity-hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`).join("");
-  const point = trial && points[trial.locIdx] ? points[trial.locIdx] : { xPct: 50, yPct: 50 };
+  const point = trial?.display?.pointPct || (trial && points[trial.locIdx] ? points[trial.locIdx] : { xPct: 50, yPct: 50 });
   const visible = Boolean(trial && (uiState.status === "trial" || uiState.status === "paused") && active.stimulusVisible);
-  const background = visible ? String(trial.display.colourHex || "#ffffff") : "transparent";
-  const textColor = String(trial?.display?.colourHex || "").toLowerCase() === "#ffffff" ? "#102033" : "#ffffff";
-  const token = visible ? escapeHtml(trial.display.symbolLabel) : "";
+  const background = visible ? String(trial?.display?.colourHex || "#ffffff") : "transparent";
+  const fallbackTextColor = String(trial?.display?.colourHex || "").toLowerCase() === "#ffffff" ? "#102033" : "#ffffff";
+  const textColor = trial?.display?.textHex || fallbackTextColor;
+  const token = visible ? escapeHtml(trial?.display?.symbolLabel || "") : "";
+  const fontFamily = trial?.display?.symbolFontFamily ? `font-family:${trial.display.symbolFontFamily};` : "";
+  const fontWeight = trial?.display?.symbolFontWeight ? `font-weight:${trial.display.symbolFontWeight};` : "";
+  const fontStyle = trial?.display?.symbolFontStyle ? `font-style:${trial.display.symbolFontStyle};` : "";
+
+  const wrapperClass = active?.plan?.wrapper === "hub_noncat"
+    ? "is-noncat"
+    : active?.plan?.wrapper === "hub_concept"
+      ? "is-concept"
+      : "is-cat";
 
   return `
-    <div class="capacity-hub-arena ${active?.plan?.wrapper === "hub_noncat" ? "is-noncat" : "is-cat"}${uiState.status === "paused" ? " is-paused" : ""}">
+    <div class="capacity-hub-arena ${wrapperClass}${uiState.status === "paused" ? " is-paused" : ""}">
       <div class="capacity-hub-ring"></div>
       ${markers}
-      <div class="capacity-hub-token${visible ? "" : " is-hidden"}" style="left:${point.xPct}%;top:${point.yPct}%;background:${background};color:${visible ? textColor : "transparent"};">${token}</div>
+      <div class="capacity-hub-token${visible ? "" : " is-hidden"}" style="left:${point.xPct}%;top:${point.yPct}%;background:${background};color:${visible ? textColor : "transparent"};${fontFamily}${fontWeight}${fontStyle}">${token}</div>
     </div>
   `;
 }
@@ -298,17 +547,28 @@ function setupMarkup(uiState) {
           <div class="capacity-live-pill">${escapeHtml(statusLabel)}</div>
         </div>
         <div class="capacity-lab-setup-grid">
-          <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Categorical</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Non-categorical</option></select></label>
-          <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality"><option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Symbol</option></select></label>
-          <label class="capacity-lab-field"><span>Speed</span><select data-lab-setting="speed"><option value="slow" ${uiState.settings.speed === "slow" ? "selected" : ""}>Slow pace</option><option value="fast" ${uiState.settings.speed === "fast" ? "selected" : ""}>Fast pace</option></select></label>
-          <label class="capacity-lab-field"><span>Interference</span><select data-lab-setting="interference"><option value="low" ${uiState.settings.interference === "low" ? "selected" : ""}>Low</option><option value="high" ${uiState.settings.interference === "high" ? "selected" : ""}>High</option></select></label>
-          <label class="capacity-lab-field capacity-lab-field--wide"><span>N-back</span><select data-lab-setting="n">${Array.from({ length: HUB_N_MAX }, (_, index) => { const value = index + 1; return `<option value="${value}" ${uiState.settings.n === value ? "selected" : ""}>N-${value}</option>`; }).join("")}</select></label>
+          <div class="capacity-lab-field capacity-lab-field--wide">
+            <span>Mode</span>
+            <div class="capacity-lab-mode-row" role="group" aria-label="Training mode">
+              <button class="capacity-lab-chip${uiState.settings.mode === "coach" ? " is-active" : ""}" type="button" data-lab-action="set-mode" data-mode="coach">Coach guided</button>
+              <button class="capacity-lab-chip${uiState.settings.mode !== "coach" ? " is-active" : ""}" type="button" data-lab-action="set-mode" data-mode="manual">Manual</button>
+            </div>
+          </div>
+          ${uiState.settings.mode === "manual"
+            ? `
+            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Categorical</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Non-categorical</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Conceptual</option></select></label>
+            <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality"><option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Symbol</option></select></label>
+            <label class="capacity-lab-field"><span>Speed</span><select data-lab-setting="speed"><option value="slow" ${uiState.settings.speed === "slow" ? "selected" : ""}>Slow pace</option><option value="fast" ${uiState.settings.speed === "fast" ? "selected" : ""}>Fast pace</option></select></label>
+            <label class="capacity-lab-field capacity-lab-field--wide"><span>N-back</span><select data-lab-setting="n">${Array.from({ length: HUB_N_MAX }, (_, index) => { const value = index + 1; return `<option value="${value}" ${uiState.settings.n === value ? "selected" : ""}>N-${value}</option>`; }).join("")}</select></label>
+            `
+            : ""
+          }
         </div>
         <div class="capacity-lab-action-row">
-          <button class="capacity-transition-action capacity-transition-action--lab" type="button" data-lab-action="start">${uiState.status === "result" ? "Start another block" : "Start block"}</button>
+          <button class="capacity-transition-action capacity-transition-action--lab" type="button" data-lab-action="start">Run block</button>
           <button class="capacity-lab-secondary-btn" type="button" data-lab-action="reset-history">Reset history</button>
         </div>
-        <p class="capacity-lab-helper">${escapeHtml(helper)} | ${escapeHtml(speedLabel(uiState.settings.speed))} | ${escapeHtml(uiState.settings.interference === "high" ? "High interference" : "Low interference")}</p>
+        ${uiState.settings.mode === "manual" ? `<p class="capacity-lab-helper">${escapeHtml(helper)} | ${escapeHtml(speedLabel(uiState.settings.speed))} | ${escapeHtml(modeLabel(uiState.settings.mode))}</p>` : ""}
         ${savedSummary}
       </section>
     </div>
@@ -444,16 +704,20 @@ export function mountCapacityLab({ root }) {
       }
     }
     if (status) status.textContent = uiState.status === "trial" ? "Live" : uiState.status === "briefing" ? "Cueing" : uiState.status === "paused" ? "Paused" : uiState.status === "result" ? "Saved" : "Ready";
-    if (wrapper) wrapper.textContent = wrapperLabel(active?.plan?.wrapper || uiState.settings.wrapper);
-    if (modality) modality.textContent = modalityMark(active?.plan?.targetModality || uiState.settings.targetModality);
-    if (speed) speed.textContent = speedLabel(active?.plan?.speed || uiState.settings.speed);
+    if (wrapper) wrapper.textContent = active ? wrapperLabel(active.plan.wrapper) : "—";
+    if (modality) modality.textContent = active ? modalityMark(active.plan.targetModality) : "—";
+    if (speed) speed.textContent = active ? speedLabel(active.plan.speed) : "—";
     if (runs) runs.textContent = String(uiState.history.length);
   }
 
   function updateCoach() {
     const coach = root.querySelector("[data-capacity-lab-coach]");
     if (coach) {
-      coach.textContent = uiState.coachMessage;
+      if (!uiState.activeBlock && uiState.settings.mode === "coach") {
+        coach.textContent = buildCoachMessage(recommendSettings(uiState));
+      } else {
+        coach.textContent = uiState.coachMessage;
+      }
     }
   }
 
@@ -464,6 +728,7 @@ export function mountCapacityLab({ root }) {
 
     taskRoot.innerHTML = taskMarkup(uiState);
     telemetryRail.innerHTML = renderTelemetryCards(telemetryCards(uiState));
+    updateSandboxRail();
     updateBanner();
     updateCoach();
 
@@ -482,13 +747,32 @@ export function mountCapacityLab({ root }) {
       element.addEventListener("click", (event) => {
         const action = event.currentTarget.dataset.labAction;
         if (action === "start") {
-          startBlock();
+          if (uiState.settings.mode === "coach") {
+            const recommended = recommendSettings(uiState);
+            syncSettings({
+              wrapper: recommended.wrapper,
+              targetModality: recommended.targetModality,
+              speed: recommended.speed,
+              n: recommended.n
+            });
+            startBlock(recommended);
+          } else {
+            startBlock(uiState.settings);
+          }
         } else if (action === "match") {
           captureResponse();
         } else if (action === "pause") {
           pauseBlock();
         } else if (action === "resume") {
           resumeBlock();
+        } else if (action === "set-mode") {
+          const mode = event.currentTarget.dataset.mode === "coach" ? "coach" : "manual";
+          syncSettings({ mode });
+          uiState.activeMessage = `Mode set to ${modeLabel(mode)}.`;
+          uiState.coachMessage = mode === "coach"
+            ? buildCoachMessage(recommendSettings(uiState))
+            : "Manual mode: choose your own settings for the next block.";
+          render();
         } else if (action === "discard") {
           clearTimers();
           uiState.activeBlock = null;
@@ -509,6 +793,93 @@ export function mountCapacityLab({ root }) {
         }
       });
     });
+  }
+
+  function updateSandboxRail() {
+    const rail = root.querySelector(".capacity-sandbox-rail");
+    if (!rail) return;
+
+    const history = uiState.history;
+    const active = uiState.activeBlock;
+    const rewards = computeRewards(history);
+    const events = rewards.timeline;
+    const readiness = transferReadinessLabel(events);
+    const stable = computeStableLevel(history);
+    const sessionBlocks = sessionHistory(history);
+    const sessionTridents = events
+      .filter((event) => event.sessionIndex === (Math.floor(history.length / 10) + 1))
+      .reduce((sum, event) => sum + (REWARD_EVENTS[event.name]?.tridents || 0), 0);
+    const sessionBlockNumber = sessionBlockIndex(history, active);
+    const sessionProgress = Math.min(100, Math.round((sessionBlockNumber / 10) * 100));
+    const sessionAvg = sessionBlocks.length
+      ? (sessionBlocks.reduce((sum, entry) => sum + clampN(entry.block?.nEnd ?? entry.block?.nStart ?? 1), 0) / sessionBlocks.length)
+      : null;
+    const last = history[0] || null;
+    const lastSummary = lastBlockSummary(last);
+    const recommendation = recommendSettings(uiState);
+
+    const sessionRewardValue = rail.querySelector(".capacity-sandbox-reward-value");
+    if (sessionRewardValue) {
+      sessionRewardValue.textContent = sessionBlocks.length ? `+${sessionTridents}` : "--";
+    }
+    const sessionBlockLabel = rail.querySelector("[data-sandbox-session-block]");
+    if (sessionBlockLabel) {
+      sessionBlockLabel.textContent = sessionBlockNumber ? `BLOCK ${sessionBlockNumber} OF 10` : "--";
+    }
+    const sessionCounted = rail.querySelector("[data-sandbox-session-counted]");
+    if (sessionCounted) {
+      sessionCounted.textContent = sessionBlockNumber ? "COUNTED" : "--";
+    }
+    const sessionProgressBar = rail.querySelector("[data-sandbox-session-progress]");
+    if (sessionProgressBar) {
+      sessionProgressBar.style.width = `${sessionProgress}%`;
+    }
+    const sessionAverage = rail.querySelector("[data-sandbox-session-average]");
+    if (sessionAverage) {
+      sessionAverage.textContent = sessionAvg ? sessionAvg.toFixed(1) : "--";
+    }
+    const transfer = rail.querySelector("[data-sandbox-transfer]");
+    if (transfer) {
+      transfer.textContent = readiness || "--";
+    }
+    const stableValue = rail.querySelector("[data-sandbox-stable]");
+    if (stableValue) {
+      stableValue.textContent = stable ? `${stable}-back` : "--";
+    }
+    const pressure = rail.querySelector("[data-sandbox-pressure]");
+    if (pressure) {
+      const fastConfirmed = history.some((entry) => entry.speed === "fast" && Number(entry.block?.accuracy || 0) >= 0.9);
+      pressure.textContent = stable ? (fastConfirmed ? "Fast confirmed" : "Fast hold next") : "--";
+    }
+
+    const nextBlock = rail.querySelector("[data-sandbox-next]");
+    if (nextBlock) {
+      nextBlock.textContent = recommendation ? `N-${recommendation.n}` : "--";
+    }
+    const nextNote = rail.querySelector("[data-sandbox-next-note]");
+    if (nextNote) {
+      nextNote.textContent = safeValue(nextBlockHint(recommendation, last));
+    }
+    const lastAcc = rail.querySelector("[data-sandbox-last-accuracy]");
+    if (lastAcc) {
+      lastAcc.textContent = lastSummary.accuracy !== null ? formatPercent(lastSummary.accuracy) : "--";
+    }
+    const lastResult = rail.querySelector("[data-sandbox-last-result]");
+    if (lastResult) {
+      lastResult.textContent = lastSummary.outcome ? lastSummary.outcome : "--";
+    }
+    const lastCorrect = rail.querySelector("[data-sandbox-last-correct]");
+    if (lastCorrect) {
+      if (lastSummary.correct !== null && lastSummary.total) {
+        lastCorrect.textContent = `${lastSummary.correct} of ${lastSummary.total} correct`;
+      } else {
+        lastCorrect.textContent = "--";
+      }
+    }
+    const spark = rail.querySelector("[data-sandbox-spark]");
+    if (spark) {
+      spark.setAttribute("points", history.length ? sparkPoints(history) : "2,22 168,22");
+    }
   }
 
   function captureResponse() {
@@ -620,7 +991,6 @@ export function mountCapacityLab({ root }) {
       wrapper: active.plan.wrapper,
       targetModality: active.plan.targetModality,
       speed: active.plan.speed,
-      interference: active.plan.interference,
       outcomeBand: summary.outcomeBand,
       recommendedN: summary.nEnd,
       block: summary.blockResult
@@ -687,24 +1057,24 @@ export function mountCapacityLab({ root }) {
     finishBlock();
   }
 
-  function startBlock() {
+  function startBlock(overrideSettings) {
     if (uiState.activeBlock) {
       return;
     }
 
     clearTimers();
+    const baseSettings = overrideSettings || uiState.settings;
     const tsStart = Date.now();
     const blockIndex = uiState.history.length + 1;
-    const mappingSeed = uiState.settings.wrapper === "hub_noncat"
-      ? hash32(`${tsStart}:${uiState.settings.targetModality}:${blockIndex}`)
+    const mappingSeed = baseSettings.wrapper === "hub_noncat" || baseSettings.wrapper === "hub_concept"
+      ? hash32(`${tsStart}:${baseSettings.targetModality}:${blockIndex}`)
       : undefined;
     const plan = createHubBlockPlan({
-      wrapper: uiState.settings.wrapper,
+      wrapper: baseSettings.wrapper,
       blockIndex,
-      n: uiState.settings.n,
-      speed: uiState.settings.speed,
-      interference: uiState.settings.interference,
-      targetModality: uiState.settings.targetModality,
+      n: baseSettings.n,
+      speed: baseSettings.speed,
+      targetModality: baseSettings.targetModality,
       mappingSeed
     });
     const build = createHubBlockTrials({
@@ -712,7 +1082,6 @@ export function mountCapacityLab({ root }) {
       n: plan.n,
       targetModality: plan.targetModality,
       speed: plan.speed,
-      interference: plan.interference,
       mappingSeed: plan.mappingSeed,
       baseTrials: HUB_BASE_TRIALS,
       seed: tsStart

@@ -198,9 +198,7 @@ export const hubScreen = {
             <div class="hub-store-head">
               <div class="hub-store-brand" aria-hidden="true">
                 <span class="hub-store-logo">
-                  <span class="hub-store-logo-eye">
-                    <span class="hub-store-logo-q"></span>
-                  </span>
+                  <img class="hub-store-logo-image" src="./mockups/iqmindware%20eye.png" alt="">
                 </span>
                 <span class="hub-store-wordmark">IQMindware</span>
               </div>
