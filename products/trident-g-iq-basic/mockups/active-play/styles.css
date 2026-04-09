@@ -3563,6 +3563,147 @@
   cursor: pointer;
 }
 
+.capacity-games-panel {
+  display: grid;
+  gap: 14px;
+  padding: 6px 0 0;
+}
+
+.capacity-games-title {
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.capacity-games-tree {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  padding-left: 14px;
+}
+
+.capacity-games-tree::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  bottom: 0;
+  width: 1px;
+  background: rgba(125, 234, 255, 0.2);
+}
+
+.capacity-games-family {
+  display: grid;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.capacity-games-family.is-active {
+  color: var(--white);
+}
+
+.capacity-games-family-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.capacity-games-family-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.capacity-games-family-dot.is-active {
+  border-color: rgba(125, 234, 255, 0.7);
+  background: rgba(125, 234, 255, 0.35);
+  box-shadow: 0 0 10px rgba(125, 234, 255, 0.4);
+}
+
+.capacity-games-variants {
+  display: grid;
+  gap: 6px;
+  margin-left: 10px;
+  padding-left: 12px;
+  border-left: 1px solid rgba(125, 234, 255, 0.2);
+}
+
+.capacity-games-variant {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: inherit;
+}
+
+.capacity-games-variant-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.capacity-games-variant-dot.is-active {
+  border-color: rgba(68, 221, 136, 0.6);
+  background: rgba(68, 221, 136, 0.4);
+  box-shadow: 0 0 8px rgba(68, 221, 136, 0.4);
+}
+
+.capacity-games-family.is-locked,
+.capacity-games-family.is-locked .capacity-games-variant {
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.capacity-games-legend {
+  display: grid;
+  gap: 6px;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.capacity-games-legend > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.capacity-games-legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.capacity-games-legend-dot.is-active {
+  border-color: rgba(68, 221, 136, 0.6);
+  background: rgba(68, 221, 136, 0.4);
+}
+
+.capacity-games-legend-dot.is-current {
+  border-color: rgba(125, 234, 255, 0.7);
+  background: rgba(125, 234, 255, 0.45);
+}
+
 .capacity-sandbox-shell {
   width: 100%;
   display: grid;
@@ -3805,6 +3946,23 @@
   box-shadow:
     0 10px 22px rgba(0, 0, 0, 0.34),
     0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+.capacity-hub-token img,
+.capacity-hub-token svg {
+  width: 46px;
+  height: 46px;
+  display: block;
+}
+
+.capacity-hub-token svg {
+  fill: currentColor;
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.22));
+}
+
+.capacity-hub-token svg.is-rounded path {
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 .capacity-hub-token.is-hidden {

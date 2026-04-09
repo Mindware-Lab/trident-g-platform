@@ -24,7 +24,7 @@ function clampN(value) {
 }
 
 function normalizeWrapper(value) {
-  if (value === "hub_noncat" || value === "hub_concept") {
+  if (value === "hub_noncat" || value === "hub_concept" || value === "and_cat" || value === "and_noncat") {
     return value;
   }
   return "hub_cat";
@@ -53,12 +53,19 @@ function normalizeHistoryEntry(entry) {
     return null;
   }
 
+  const resolvedWrapper = normalizeWrapper(entry.wrapper);
+  const resolvedTarget = resolvedWrapper.startsWith("and_")
+    ? "conj"
+    : entry.targetModality === "col" || entry.targetModality === "sym" || entry.targetModality === "conj"
+      ? entry.targetModality
+      : "loc";
+
   return {
     id: typeof entry.id === "string" ? entry.id : `xor_lab_${entry.tsStart}`,
     tsStart: Math.round(entry.tsStart),
     tsEnd: Number.isFinite(entry.tsEnd) ? Math.round(entry.tsEnd) : Math.round(entry.tsStart),
-    wrapper: normalizeWrapper(entry.wrapper),
-    targetModality: entry.targetModality === "col" || entry.targetModality === "sym" ? entry.targetModality : "loc",
+    wrapper: resolvedWrapper,
+    targetModality: resolvedTarget,
     speed: entry.speed === "fast" ? "fast" : "slow",
     outcomeBand: entry.outcomeBand === "UP" || entry.outcomeBand === "DOWN" ? entry.outcomeBand : "HOLD",
     recommendedN: clampN(entry.recommendedN),
@@ -87,7 +94,11 @@ function normalizeState(raw) {
     version: 1,
     settings: {
       wrapper: normalizeWrapper(settings.wrapper),
-      targetModality: settings.targetModality === "col" || settings.targetModality === "sym" ? settings.targetModality : "loc",
+      targetModality: normalizeWrapper(settings.wrapper).startsWith("and_")
+        ? "conj"
+        : settings.targetModality === "col" || settings.targetModality === "sym" || settings.targetModality === "conj"
+          ? settings.targetModality
+          : "loc",
       speed: settings.speed === "fast" ? "fast" : "slow",
       mode: settings.mode === "coach" ? "coach" : "manual",
       n: clampN(settings.n)

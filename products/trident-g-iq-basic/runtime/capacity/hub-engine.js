@@ -11,7 +11,7 @@ export const HUB_SOA_MS = {
   fast: 1400
 };
 export const HUB_TARGET_MODALITIES = ["loc", "col", "sym"];
-export const HUB_WRAPPERS = ["hub_cat", "hub_noncat", "hub_concept"];
+export const HUB_WRAPPERS = ["hub_cat", "hub_noncat", "hub_concept", "and_cat", "and_noncat"];
 export const HUB_ARENA_RADIUS_PCT = 42;
 
 const CAT_COLORS = [
@@ -22,6 +22,32 @@ const CAT_COLORS = [
 ];
 
 const CAT_SYMBOLS = ["A", "B", "C", "D"];
+
+const AND_CAT_COLORS = [
+  { label: "Red", hex: "#dc2626", textHex: "#ffffff" },
+  { label: "Blue", hex: "#2563eb", textHex: "#ffffff" },
+  { label: "Green", hex: "#16a34a", textHex: "#ffffff" },
+  { label: "Yellow", hex: "#f59e0b", textHex: "#102033" }
+];
+
+const AND_CAT_SYMBOLS = [
+  {
+    label: "Pig",
+    variants: Array.from({ length: 8 }, (_, index) => `./assets/capacity/and/animals/pig-${index + 1}.png`)
+  },
+  {
+    label: "Dog",
+    variants: Array.from({ length: 8 }, (_, index) => `./assets/capacity/and/animals/dog-${index + 1}.png`)
+  },
+  {
+    label: "Cat",
+    variants: Array.from({ length: 8 }, (_, index) => `./assets/capacity/and/animals/cat-${index + 1}.png`)
+  },
+  {
+    label: "Bird",
+    variants: Array.from({ length: 8 }, (_, index) => `./assets/capacity/and/animals/bird-${index + 1}.png`)
+  }
+];
 
 const CONCEPT_COLOR_CATEGORIES = [
   {
@@ -79,6 +105,8 @@ const SYMBOL_POOL = [
   "@", "#", "$", "%", "&", "*", "+", "=", "?", "!", "X", "O",
   "K", "Q", "R", "Z", "M", "N", "P", "T"
 ];
+
+const AND_SHAPE_POOL = ["▲", "■", "●", "◆", "✚", "✖", "✶", "✷", "✹", "✳"];
 
 const LURE_RATE = 0.1;
 
@@ -181,7 +209,152 @@ function buildConstrainedStream(totalTrials, n, constraints, rng) {
   return values;
 }
 
+function normaliseShapePoints(points) {
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  points.forEach((point) => {
+    minX = Math.min(minX, point.x);
+    minY = Math.min(minY, point.y);
+    maxX = Math.max(maxX, point.x);
+    maxY = Math.max(maxY, point.y);
+  });
+
+  const width = maxX - minX || 1;
+  const height = maxY - minY || 1;
+  const scale = 2 / Math.max(width, height);
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+
+  return points.map((point) => ({
+    x: (point.x - centerX) * scale,
+    y: (point.y - centerY) * scale
+  }));
+}
+
+function makeShape(seed, opts = {}) {
+  const {
+    minPoints = 5,
+    maxPoints = 9,
+    radialJitter = 0.28,
+    angleJitter = 0.18,
+    mode = "mixed"
+  } = opts;
+
+  const rng = createSeededRng(seed);
+  const type = mode === "mixed" ? (rng() < 0.25 ? "star" : "polygon") : mode;
+  const count = minPoints + Math.floor(rng() * (maxPoints - minPoints + 1));
+  const step = (Math.PI * 2) / count;
+  const start = rng() * Math.PI * 2;
+  const points = [];
+
+  for (let index = 0; index < count; index += 1) {
+    const angle = start + (index * step) + ((rng() - 0.5) * step * angleJitter);
+    let radius = 0.85 + (rng() * radialJitter);
+    if (type === "star" && index % 2 === 1) {
+      radius *= 0.55 + (rng() * 0.18);
+    }
+    points.push({ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius });
+  }
+
+  return {
+    type,
+    points: normaliseShapePoints(points)
+  };
+}
+
+function shapeToPath(points) {
+  if (!points.length) return "";
+  const [first, ...rest] = points;
+  const path = [`M ${first.x.toFixed(3)} ${first.y.toFixed(3)}`];
+  rest.forEach((point) => {
+    path.push(`L ${point.x.toFixed(3)} ${point.y.toFixed(3)}`);
+  });
+  path.push("Z");
+  return path.join(" ");
+}
+
+function makeShapeBank(count, seedStart, opts) {
+  const bank = [];
+  for (let index = 0; index < count; index += 1) {
+    const shape = makeShape(seedStart + index, opts);
+    bank.push({
+      path: shapeToPath(shape.points),
+      rounded: shape.type !== "star"
+    });
+  }
+  return bank;
+}
+
+function buildConjunctiveStreams(totalTrials, n, matchFlags, lureFlags, rng) {
+  const sym = Array.from({ length: totalTrials }, () => 0);
+  const col = Array.from({ length: totalTrials }, () => 0);
+  const lureMatchedModality = Array.from({ length: totalTrials }, () => null);
+
+  for (let index = 0; index < totalTrials; index += 1) {
+    if (index < n) {
+      sym[index] = randomInt(rng, 0, 3);
+      col[index] = randomInt(rng, 0, 3);
+      continue;
+    }
+
+    if (matchFlags[index]) {
+      sym[index] = sym[index - n];
+      col[index] = col[index - n];
+      continue;
+    }
+
+    if (lureFlags[index]) {
+      const matchSym = rng() < 0.5;
+      sym[index] = matchSym ? sym[index - n] : pickDifferent(sym[index - n], rng);
+      col[index] = matchSym ? pickDifferent(col[index - n], rng) : col[index - n];
+      lureMatchedModality[index] = matchSym ? "sym" : "col";
+      continue;
+    }
+
+    sym[index] = pickDifferent(sym[index - n], rng);
+    col[index] = pickDifferent(col[index - n], rng);
+  }
+
+  return { sym, col, lureMatchedModality };
+}
+
 function buildRenderMapping({ wrapper, mappingSeed }) {
+  if (wrapper === "and_cat") {
+    return {
+      locRotationDeg: 0,
+      radiusPct: HUB_ARENA_RADIUS_PCT,
+      markerPositions: markerPositionsForRotation(0, HUB_ARENA_RADIUS_PCT),
+      palette: AND_CAT_COLORS,
+      symbolSet: AND_CAT_SYMBOLS
+    };
+  }
+
+  if (wrapper === "and_noncat") {
+    const resolvedSeed = Number.isFinite(mappingSeed) ? (mappingSeed >>> 0) : hash32("and_noncat_default");
+    const rng = createSeededRng(resolvedSeed);
+    const locRotationDeg = rng() * 360;
+    const palette = buildNoncatPalette(resolvedSeed);
+    const shapeSeed = hash32(`and-shapes:${resolvedSeed}`);
+    const symbolSet = Array.from({ length: 4 }, (_, index) => ({
+      label: AND_SHAPE_POOL[index % AND_SHAPE_POOL.length],
+      variants: makeShapeBank(8, shapeSeed + (index * 100), {
+        minPoints: 5,
+        maxPoints: 8,
+        mode: "mixed"
+      })
+    }));
+    return {
+      locRotationDeg,
+      radiusPct: HUB_ARENA_RADIUS_PCT,
+      markerPositions: markerPositionsForRotation(locRotationDeg, HUB_ARENA_RADIUS_PCT),
+      palette,
+      symbolSet
+    };
+  }
+
   if (wrapper === "hub_noncat") {
     const resolvedSeed = Number.isFinite(mappingSeed) ? (mappingSeed >>> 0) : hash32("hub_noncat_default");
     const rng = createSeededRng(resolvedSeed);
@@ -220,6 +393,9 @@ function buildRenderMapping({ wrapper, mappingSeed }) {
 }
 
 export function modalityLabel(targetModality) {
+  if (targetModality === "conj") {
+    return "COLOUR + SYMBOL";
+  }
   if (targetModality === "loc") {
     return "LOCATION";
   }
@@ -230,6 +406,9 @@ export function modalityLabel(targetModality) {
 }
 
 export function displayHubTargetLabel(targetModality, wrapper) {
+  if (targetModality === "conj") {
+    return "COLOUR + SYMBOL";
+  }
   const base = modalityLabel(targetModality);
   if (wrapper !== "hub_noncat" && targetModality === "sym") {
     return "LETTER";
@@ -249,7 +428,11 @@ export function createHubBlockPlan({
     ? "hub_noncat"
     : wrapper === "hub_concept"
       ? "hub_concept"
-      : "hub_cat";
+      : wrapper === "and_cat"
+        ? "and_cat"
+        : wrapper === "and_noncat"
+          ? "and_noncat"
+          : "hub_cat";
   const plan = {
     blockIndex,
     wrapper: resolvedWrapper,
@@ -258,8 +441,12 @@ export function createHubBlockPlan({
     targetModality
   };
 
-  if (resolvedWrapper === "hub_noncat" || resolvedWrapper === "hub_concept") {
-    const seedPrefix = resolvedWrapper === "hub_noncat" ? "noncat" : "concept";
+  if (resolvedWrapper === "hub_noncat" || resolvedWrapper === "hub_concept" || resolvedWrapper === "and_noncat") {
+    const seedPrefix = resolvedWrapper === "hub_noncat"
+      ? "noncat"
+      : resolvedWrapper === "and_noncat"
+        ? "and"
+        : "concept";
     const resolvedSeed = Number.isFinite(mappingSeed) ? (mappingSeed >>> 0) : hash32(`${seedPrefix}:${blockIndex}:${n}`);
     plan.mappingSeed = resolvedSeed;
   }
@@ -314,8 +501,39 @@ function resolveDisplaySymbol({ wrapper, symIdx, renderMapping, rng }) {
     };
   }
 
+  if (wrapper === "and_cat") {
+    const category = renderMapping.symbolSet[symIdx];
+    const variant = category.variants[randomInt(rng, 0, category.variants.length - 1)];
+    return {
+      symbolLabel: category.label,
+      symbolImageUrl: variant,
+      symbolSvgPath: null,
+      symbolSvgRounded: false,
+      symbolFontFamily: null,
+      symbolFontWeight: null,
+      symbolFontStyle: null
+    };
+  }
+
+  if (wrapper === "and_noncat") {
+    const category = renderMapping.symbolSet[symIdx];
+    const variant = category.variants[randomInt(rng, 0, category.variants.length - 1)];
+    return {
+      symbolLabel: category.label,
+      symbolImageUrl: null,
+      symbolSvgPath: variant.path,
+      symbolSvgRounded: variant.rounded,
+      symbolFontFamily: null,
+      symbolFontWeight: null,
+      symbolFontStyle: null
+    };
+  }
+
   return {
     symbolLabel: renderMapping.symbolSet[symIdx],
+    symbolImageUrl: null,
+    symbolSvgPath: null,
+    symbolSvgRounded: false,
     symbolFontFamily: null,
     symbolFontWeight: null,
     symbolFontStyle: null
@@ -331,6 +549,7 @@ export function createHubBlockTrials({
   baseTrials = HUB_BASE_TRIALS,
   seed = Date.now()
 }) {
+  const isAnd = wrapper === "and_cat" || wrapper === "and_noncat";
   const rng = createSeededRng(seed);
   const schedule = scheduleBlockTrials({
     baseTrials,
@@ -346,6 +565,52 @@ export function createHubBlockTrials({
     lureRate: LURE_RATE,
     rng
   });
+
+  if (isAnd) {
+    const streams = buildConjunctiveStreams(totalTrials, n, matchFlags, lureFlags, rng);
+    const renderMapping = buildRenderMapping({ wrapper, mappingSeed });
+    const trials = [];
+
+    for (let index = 0; index < totalTrials; index += 1) {
+      const locIdx = randomInt(rng, 0, 3);
+      const colIdx = streams.col[index];
+      const symIdx = streams.sym[index];
+      const locationDisplay = resolveDisplayLocation({ wrapper, locIdx, renderMapping, rng });
+      const colourDisplay = resolveDisplayColour({ wrapper, colIdx, renderMapping, rng });
+      const symbolDisplay = resolveDisplaySymbol({ wrapper, symIdx, renderMapping, rng });
+
+      trials.push({
+        trialIndex: index,
+        locIdx,
+        colIdx,
+        symIdx,
+        isLure: Boolean(lureFlags[index]),
+        lureMatchedModality: streams.lureMatchedModality[index],
+        canonKey: `conj:${symIdx}-${colIdx}`,
+        display: {
+          pointPct: locationDisplay.pointPct,
+          locationLabel: locationDisplay.locationLabel,
+          colourLabel: colourDisplay.colourLabel,
+          colourHex: colourDisplay.colourHex,
+          textHex: colourDisplay.textHex,
+          symbolLabel: symbolDisplay.symbolLabel,
+          symbolImageUrl: symbolDisplay.symbolImageUrl,
+          symbolSvgPath: symbolDisplay.symbolSvgPath,
+          symbolSvgRounded: symbolDisplay.symbolSvgRounded,
+          symbolFontFamily: symbolDisplay.symbolFontFamily,
+          symbolFontWeight: symbolDisplay.symbolFontWeight,
+          symbolFontStyle: symbolDisplay.symbolFontStyle
+        }
+      });
+    }
+
+    return {
+      soaMs: HUB_SOA_MS[speed] || HUB_SOA_MS.slow,
+      displayMs: Math.round((HUB_SOA_MS[speed] || HUB_SOA_MS.slow) * HUB_DISPLAY_RATIO),
+      trials,
+      renderMapping
+    };
+  }
 
   const constraints = {
     loc: Array.from({ length: totalTrials }, () => "free"),
@@ -406,6 +671,9 @@ export function createHubBlockTrials({
         colourHex: colourDisplay.colourHex,
         textHex: colourDisplay.textHex,
         symbolLabel: symbolDisplay.symbolLabel,
+        symbolImageUrl: symbolDisplay.symbolImageUrl,
+        symbolSvgPath: symbolDisplay.symbolSvgPath,
+        symbolSvgRounded: symbolDisplay.symbolSvgRounded,
         symbolFontFamily: symbolDisplay.symbolFontFamily,
         symbolFontWeight: symbolDisplay.symbolFontWeight,
         symbolFontStyle: symbolDisplay.symbolFontStyle

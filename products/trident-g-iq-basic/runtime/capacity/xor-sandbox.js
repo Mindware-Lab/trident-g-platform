@@ -40,6 +40,12 @@ function wrapperLabel(wrapper) {
   if (wrapper === "hub_concept") {
     return "Conceptual";
   }
+  if (wrapper === "and_cat") {
+    return "AND categorical";
+  }
+  if (wrapper === "and_noncat") {
+    return "AND remap";
+  }
   return "Categorical";
 }
 
@@ -58,12 +64,15 @@ function modalityLabel(targetModality, wrapper) {
 
 function modalityMark(targetModality) {
   if (targetModality === "col") {
-    return "◐";
+    return "\u25d0";
   }
   if (targetModality === "sym") {
-    return "✦";
+    return "\u2726";
   }
-  return "◎";
+  if (targetModality === "conj") {
+    return "\u2227";
+  }
+  return "\u25ce";
 }
 
 function accuracyPercent(value) {
@@ -81,8 +90,14 @@ function clampN(value) {
   return Math.max(1, Math.min(HUB_N_MAX, Math.round(value)));
 }
 
+function wrapperFamily(wrapper) {
+  return wrapper.startsWith("and_") ? "and" : "xor";
+}
+
 function nextWrapper(current) {
-  const order = ["hub_cat", "hub_noncat", "hub_concept"];
+  const order = wrapperFamily(current) === "and"
+    ? ["and_cat", "and_noncat"]
+    : ["hub_cat", "hub_noncat", "hub_concept"];
   const index = Math.max(0, order.indexOf(current));
   return order[(index + 1) % order.length];
 }
@@ -99,6 +114,15 @@ function recommendSettings(uiState) {
   };
 
   if (!last) {
+    if (wrapperFamily(uiState.settings.wrapper) === "and") {
+      return {
+        wrapper: "and_cat",
+        targetModality: "conj",
+        speed: "slow",
+        n: 1,
+        reason: "Start with the simplest AND wrapper to establish a stable baseline."
+      };
+    }
     return {
       wrapper: "hub_cat",
       targetModality: "loc",
@@ -123,17 +147,19 @@ function recommendSettings(uiState) {
   if (drop) {
     return {
       wrapper: lastWrapper,
-      targetModality: lastTarget,
+      targetModality: wrapperFamily(lastWrapper) === "and" ? "conj" : lastTarget,
       speed: "slow",
       n: clampN(lastN - 1),
       reason: "Stability dipped; lower the load and slow the pace."
     };
   }
 
-  if (stable && recentWrappers.size < 2) {
+  const swapCap = wrapperFamily(lastWrapper) === "and" ? 2 : 3;
+
+  if (stable && recentWrappers.size < swapCap) {
     return {
       wrapper: nextWrapper(lastWrapper),
-      targetModality: lastTarget,
+      targetModality: wrapperFamily(lastWrapper) === "and" ? "conj" : lastTarget,
       speed: "slow",
       n: lastN,
       reason: "Stability held; swap wrapper before speed or n increases."
@@ -143,7 +169,7 @@ function recommendSettings(uiState) {
   if (stable && lastSpeed === "slow") {
     return {
       wrapper: lastWrapper,
-      targetModality: lastTarget,
+      targetModality: wrapperFamily(lastWrapper) === "and" ? "conj" : lastTarget,
       speed: "fast",
       n: lastN,
       reason: "Confirm stability under faster timing before increasing n."
@@ -153,7 +179,7 @@ function recommendSettings(uiState) {
   if (stable && lastSpeed === "fast") {
     return {
       wrapper: lastWrapper,
-      targetModality: lastTarget,
+      targetModality: wrapperFamily(lastWrapper) === "and" ? "conj" : lastTarget,
       speed: "fast",
       n: clampN(lastN + 1),
       reason: "Stable at fast pace; increase n."
@@ -162,7 +188,7 @@ function recommendSettings(uiState) {
 
   return {
     wrapper: lastWrapper,
-    targetModality: lastTarget,
+    targetModality: wrapperFamily(lastWrapper) === "and" ? "conj" : lastTarget,
     speed: lastSpeed,
     n: lastN,
     reason: "Hold current settings to build stability."
@@ -507,7 +533,17 @@ function arenaMarkup(uiState) {
   const background = visible ? String(trial?.display?.colourHex || "#ffffff") : "transparent";
   const fallbackTextColor = String(trial?.display?.colourHex || "").toLowerCase() === "#ffffff" ? "#102033" : "#ffffff";
   const textColor = trial?.display?.textHex || fallbackTextColor;
-  const token = visible ? escapeHtml(trial?.display?.symbolLabel || "") : "";
+  let token = "";
+  if (visible) {
+    if (trial?.display?.symbolImageUrl) {
+      token = `<img src="${escapeHtml(trial.display.symbolImageUrl)}" alt="">`;
+    } else if (trial?.display?.symbolSvgPath) {
+      const rounded = trial.display.symbolSvgRounded ? " is-rounded" : "";
+      token = `<svg class="capacity-hub-symbol${rounded}" viewBox="-1 -1 2 2" aria-hidden="true"><path d="${trial.display.symbolSvgPath}" /></svg>`;
+    } else {
+      token = escapeHtml(trial?.display?.symbolLabel || "");
+    }
+  }
   const fontFamily = trial?.display?.symbolFontFamily ? `font-family:${trial.display.symbolFontFamily};` : "";
   const fontWeight = trial?.display?.symbolFontWeight ? `font-weight:${trial.display.symbolFontWeight};` : "";
   const fontStyle = trial?.display?.symbolFontStyle ? `font-style:${trial.display.symbolFontStyle};` : "";
@@ -516,7 +552,9 @@ function arenaMarkup(uiState) {
     ? "is-noncat"
     : active?.plan?.wrapper === "hub_concept"
       ? "is-concept"
-      : "is-cat";
+      : active?.plan?.wrapper?.startsWith("and_")
+        ? "is-and"
+        : "is-cat";
 
   return `
     <div class="capacity-hub-arena ${wrapperClass}${uiState.status === "paused" ? " is-paused" : ""}">
@@ -530,6 +568,7 @@ function arenaMarkup(uiState) {
 function setupMarkup(uiState) {
   const last = uiState.lastSavedEntry;
   const statusLabel = uiState.status === "result" ? "Saved" : "Ready";
+  const isAnd = wrapperFamily(uiState.settings.wrapper) === "and";
   const helper = `${wrapperLabel(uiState.settings.wrapper)} | ${modalityLabel(uiState.settings.targetModality, uiState.settings.wrapper)} | N-${uiState.settings.n}`;
   const savedSummary = last
     ? `
@@ -556,8 +595,11 @@ function setupMarkup(uiState) {
           </div>
           ${uiState.settings.mode === "manual"
             ? `
-            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Categorical</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Non-categorical</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Conceptual</option></select></label>
-            <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality"><option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Symbol</option></select></label>
+            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>XOR categorical</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>XOR remap</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>XOR conceptual</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>AND categorical</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>AND remap</option></select></label>
+            <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality" ${isAnd ? "disabled" : ""}>${isAnd
+              ? `<option value="conj" selected>Colour + Symbol</option>`
+              : `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Symbol</option>`
+            }</select></label>
             <label class="capacity-lab-field"><span>Speed</span><select data-lab-setting="speed"><option value="slow" ${uiState.settings.speed === "slow" ? "selected" : ""}>Slow pace</option><option value="fast" ${uiState.settings.speed === "fast" ? "selected" : ""}>Fast pace</option></select></label>
             <label class="capacity-lab-field capacity-lab-field--wide"><span>N-back</span><select data-lab-setting="n">${Array.from({ length: HUB_N_MAX }, (_, index) => { const value = index + 1; return `<option value="${value}" ${uiState.settings.n === value ? "selected" : ""}>N-${value}</option>`; }).join("")}</select></label>
             `
@@ -736,7 +778,19 @@ export function mountCapacityLab({ root }) {
       element.addEventListener("change", (event) => {
         const key = event.currentTarget.dataset.labSetting;
         const value = key === "n" ? Number(event.currentTarget.value) : event.currentTarget.value;
-        syncSettings({ [key]: value });
+        if (key === "wrapper") {
+          if (wrapperFamily(value) === "and") {
+            syncSettings({ wrapper: value, targetModality: "conj" });
+          } else {
+            const nextTarget = uiState.settings.targetModality === "conj" ? "loc" : uiState.settings.targetModality;
+            syncSettings({ wrapper: value, targetModality: nextTarget });
+          }
+        } else if (key === "targetModality") {
+          const nextTarget = wrapperFamily(uiState.settings.wrapper) === "and" ? "conj" : value;
+          syncSettings({ targetModality: nextTarget });
+        } else {
+          syncSettings({ [key]: value });
+        }
         uiState.activeMessage = "Sandbox selection updated for the next block.";
         uiState.coachMessage = `Sandbox selection updated: ${wrapperLabel(uiState.settings.wrapper)}, ${modalityLabel(uiState.settings.targetModality, uiState.settings.wrapper)}, N-${uiState.settings.n}.`;
         render();
@@ -1064,17 +1118,20 @@ export function mountCapacityLab({ root }) {
 
     clearTimers();
     const baseSettings = overrideSettings || uiState.settings;
+    const resolvedTarget = wrapperFamily(baseSettings.wrapper) === "and" ? "conj" : baseSettings.targetModality;
     const tsStart = Date.now();
     const blockIndex = uiState.history.length + 1;
-    const mappingSeed = baseSettings.wrapper === "hub_noncat" || baseSettings.wrapper === "hub_concept"
-      ? hash32(`${tsStart}:${baseSettings.targetModality}:${blockIndex}`)
+    const mappingSeed = baseSettings.wrapper === "hub_noncat"
+      || baseSettings.wrapper === "hub_concept"
+      || baseSettings.wrapper === "and_noncat"
+      ? hash32(`${tsStart}:${resolvedTarget}:${blockIndex}`)
       : undefined;
     const plan = createHubBlockPlan({
       wrapper: baseSettings.wrapper,
       blockIndex,
       n: baseSettings.n,
       speed: baseSettings.speed,
-      targetModality: baseSettings.targetModality,
+      targetModality: resolvedTarget,
       mappingSeed
     });
     const build = createHubBlockTrials({
