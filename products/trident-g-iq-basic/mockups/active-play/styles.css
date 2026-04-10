@@ -3997,6 +3997,12 @@
   box-shadow: 0 0 0 2px rgba(7, 11, 19, 0.88);
 }
 
+.capacity-hub-arena.is-noncat .capacity-hub-marker,
+.capacity-hub-arena.is-concept .capacity-hub-marker,
+.capacity-hub-arena.is-and-remap .capacity-hub-marker {
+  display: none;
+}
+
 .capacity-hub-token {
   position: absolute;
   width: 72px;

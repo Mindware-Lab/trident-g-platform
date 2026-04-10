@@ -533,7 +533,13 @@ function arenaMarkup(uiState) {
   const active = uiState.activeBlock;
   const trial = active && active.trialIndex >= 0 ? active.trials[active.trialIndex] : null;
   const points = active?.renderMapping?.markerPositions?.length ? active.renderMapping.markerPositions : PREVIEW_MARKERS;
-  const markers = points.map((point) => `<span class="capacity-hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`).join("");
+  const wrapperForMarkers = active?.plan?.wrapper || uiState.settings.wrapper;
+  const hideMarkers = wrapperForMarkers === "hub_noncat"
+    || wrapperForMarkers === "hub_concept"
+    || wrapperForMarkers === "and_noncat";
+  const markers = hideMarkers
+    ? ""
+    : points.map((point) => `<span class="capacity-hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`).join("");
   const point = trial?.display?.pointPct || (trial && points[trial.locIdx] ? points[trial.locIdx] : { xPct: 50, yPct: 50 });
   const visible = Boolean(trial && (uiState.status === "trial" || uiState.status === "paused") && active.stimulusVisible);
   const background = visible ? String(trial?.display?.colourHex || "#ffffff") : "transparent";
@@ -556,12 +562,13 @@ function arenaMarkup(uiState) {
   const fontWeight = trial?.display?.symbolFontWeight ? `font-weight:${trial.display.symbolFontWeight};` : "";
   const fontStyle = trial?.display?.symbolFontStyle ? `font-style:${trial.display.symbolFontStyle};` : "";
 
-  const wrapperClass = active?.plan?.wrapper === "hub_noncat"
+  const activeWrapper = active?.plan?.wrapper || uiState.settings.wrapper;
+  const wrapperClass = activeWrapper === "hub_noncat"
     ? "is-noncat"
-    : active?.plan?.wrapper === "hub_concept"
+    : activeWrapper === "hub_concept"
       ? "is-concept"
-      : active?.plan?.wrapper?.startsWith("and_")
-        ? "is-and"
+      : activeWrapper?.startsWith("and_")
+        ? (activeWrapper === "and_noncat" ? "is-and is-and-remap" : "is-and")
         : "is-cat";
 
   return `
