@@ -4035,6 +4035,12 @@
   box-shadow: none;
 }
 
+.capacity-hub-arena.is-resist-concept .capacity-hub-token {
+  border-color: transparent;
+  box-shadow: none;
+  background: transparent;
+}
+
 .capacity-hub-token {
   position: absolute;
   width: 72px;
@@ -4065,6 +4071,13 @@
   width: 58px;
   height: 58px;
   filter: drop-shadow(0 0 10px rgba(84, 162, 255, 0.12));
+}
+
+.capacity-hub-arena.is-resist-concept .capacity-hub-token img {
+  width: 74px;
+  height: 74px;
+  background: transparent;
+  filter: drop-shadow(0 0 10px rgba(84, 162, 255, 0.1));
 }
 
 .capacity-hub-token svg {

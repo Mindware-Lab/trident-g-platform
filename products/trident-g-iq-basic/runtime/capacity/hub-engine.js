@@ -11,7 +11,7 @@ export const HUB_SOA_MS = {
   fast: 1400
 };
 export const HUB_TARGET_MODALITIES = ["loc", "col", "sym"];
-export const HUB_WRAPPERS = ["hub_cat", "hub_noncat", "hub_concept", "and_cat", "and_noncat", "resist_vectors", "resist_words"];
+export const HUB_WRAPPERS = ["hub_cat", "hub_noncat", "hub_concept", "and_cat", "and_noncat", "resist_vectors", "resist_words", "resist_concept"];
 export const HUB_ARENA_RADIUS_PCT = 42;
 
 const CAT_COLORS = [
@@ -117,6 +117,48 @@ const RESIST_WORD_COLOURS = [
 ];
 
 const RESIST_WORD_SYMBOLS = ["BLUE", "GREEN", "GREY", "RED"];
+const RESIST_CONCEPT_ASSET_VERSION = "v2";
+
+const RESIST_CONCEPT_SYMBOLS = [
+  {
+    label: "Up",
+    variants: [
+      `./assets/capacity/resist/concept/eyes - up.png?${RESIST_CONCEPT_ASSET_VERSION}`,
+      `./assets/capacity/resist/concept/point - up.png?${RESIST_CONCEPT_ASSET_VERSION}`,
+      `./assets/capacity/resist/concept/vector - up.png?${RESIST_CONCEPT_ASSET_VERSION}`
+    ]
+  },
+  {
+    label: "Right",
+    variants: [
+      `./assets/capacity/resist/concept/eyes - right.png?${RESIST_CONCEPT_ASSET_VERSION}`,
+      `./assets/capacity/resist/concept/point - right.png?${RESIST_CONCEPT_ASSET_VERSION}`,
+      `./assets/capacity/resist/concept/vector - right.png?${RESIST_CONCEPT_ASSET_VERSION}`
+    ]
+  },
+  {
+    label: "Down",
+    variants: [
+      `./assets/capacity/resist/concept/eyes - down.png?${RESIST_CONCEPT_ASSET_VERSION}`,
+      `./assets/capacity/resist/concept/point - down.png?${RESIST_CONCEPT_ASSET_VERSION}`,
+      `./assets/capacity/resist/concept/vector - down.png?${RESIST_CONCEPT_ASSET_VERSION}`
+    ]
+  },
+  {
+    label: "Left",
+    variants: [
+      `./assets/capacity/resist/concept/eyes - left.png?${RESIST_CONCEPT_ASSET_VERSION}`,
+      `./assets/capacity/resist/concept/point - left.png?${RESIST_CONCEPT_ASSET_VERSION}`,
+      `./assets/capacity/resist/concept/vector - left.png?${RESIST_CONCEPT_ASSET_VERSION}`
+    ]
+  }
+];
+
+export const HUB_PRELOAD_ASSETS = [
+  ...AND_CAT_SYMBOLS.flatMap((entry) => entry.variants),
+  ...RESIST_VECTOR_SYMBOLS.map((entry) => entry.url),
+  ...RESIST_CONCEPT_SYMBOLS.flatMap((entry) => entry.variants)
+];
 
 const SYMBOL_POOL = [
   "▲", "△", "▼", "▽", "◆", "◇", "■", "□", "●", "○", "★", "☆",
@@ -236,6 +278,9 @@ function targetModalitiesForWrapper(wrapper) {
   }
   if (wrapper === "resist_words") {
     return ["col", "sym"];
+  }
+  if (wrapper === "resist_concept") {
+    return ["loc", "sym"];
   }
   return HUB_TARGET_MODALITIES;
 }
@@ -465,6 +510,24 @@ function buildRenderMapping({ wrapper, mappingSeed }) {
     };
   }
 
+  if (wrapper === "resist_concept") {
+    return {
+      locRotationDeg: RESIST_CARDINAL_ANGLES[0],
+      radiusPct: HUB_ARENA_RADIUS_PCT,
+      markerPositions: RESIST_CARDINAL_ANGLES.map((angleDeg) => markerPositionForAngle(angleDeg, HUB_ARENA_RADIUS_PCT)),
+      locationAngles: RESIST_CARDINAL_ANGLES.slice(),
+      palette: Array.from({ length: 4 }, () => ({
+        label: "Neutral",
+        hex: "transparent",
+        textHex: "#ffffff"
+      })),
+      symbolSet: RESIST_CONCEPT_SYMBOLS.map((entry) => ({
+        label: entry.label,
+        variants: entry.variants.slice()
+      }))
+    };
+  }
+
   const locRotationDeg = 45;
   return {
     locRotationDeg,
@@ -493,6 +556,9 @@ export function displayHubTargetLabel(targetModality, wrapper) {
     return "COLOUR + SYMBOL";
   }
   if (wrapper === "resist_vectors" && targetModality === "sym") {
+    return "DIRECTION";
+  }
+  if (wrapper === "resist_concept" && targetModality === "sym") {
     return "DIRECTION";
   }
   if (wrapper === "resist_words" && targetModality === "sym") {
@@ -528,6 +594,8 @@ export function createHubBlockPlan({
             ? "resist_vectors"
             : wrapper === "resist_words"
               ? "resist_words"
+              : wrapper === "resist_concept"
+                ? "resist_concept"
           : "hub_cat";
   const plan = {
     blockIndex,
@@ -537,7 +605,7 @@ export function createHubBlockPlan({
     targetModality: resolveTargetModalityForWrapper(resolvedWrapper, targetModality)
   };
 
-  if (resolvedWrapper === "hub_noncat" || resolvedWrapper === "hub_concept" || resolvedWrapper === "and_noncat" || resolvedWrapper === "and_cat" || resolvedWrapper === "resist_vectors" || resolvedWrapper === "resist_words") {
+  if (resolvedWrapper === "hub_noncat" || resolvedWrapper === "hub_concept" || resolvedWrapper === "and_noncat" || resolvedWrapper === "and_cat" || resolvedWrapper === "resist_vectors" || resolvedWrapper === "resist_words" || resolvedWrapper === "resist_concept") {
     const seedPrefix = resolvedWrapper === "hub_noncat"
       ? "noncat"
       : resolvedWrapper === "and_noncat"
@@ -548,6 +616,8 @@ export function createHubBlockPlan({
           ? "resist-vectors"
         : resolvedWrapper === "resist_words"
           ? "resist-words"
+        : resolvedWrapper === "resist_concept"
+          ? "resist-concept"
         : "concept";
     const resolvedSeed = Number.isFinite(mappingSeed) ? (mappingSeed >>> 0) : hash32(`${seedPrefix}:${blockIndex}:${n}`);
     plan.mappingSeed = resolvedSeed;
@@ -577,6 +647,15 @@ function resolveDisplayLocation({ wrapper, locIdx, renderMapping, rng }) {
     return {
       pointPct: { xPct: 50, yPct: 50 },
       locationLabel: null
+    };
+  }
+
+  if (wrapper === "resist_concept") {
+    const baseAngleDeg = renderMapping.locationAngles[locIdx];
+    const jitterDeg = randomInt(rng, -30, 30);
+    return {
+      pointPct: markerPositionForAngle(baseAngleDeg + jitterDeg, renderMapping.radiusPct),
+      locationLabel: ["Up", "Right", "Down", "Left"][locIdx]
     };
   }
 
@@ -675,6 +754,20 @@ function resolveDisplaySymbol({ wrapper, symIdx, renderMapping, rng }) {
       symbolFontFamily: "\"Orbitron\", monospace",
       symbolFontWeight: 900,
       symbolFontStyle: "normal"
+    };
+  }
+
+  if (wrapper === "resist_concept") {
+    const symbol = renderMapping.symbolSet[symIdx];
+    const variant = symbol.variants[randomInt(rng, 0, symbol.variants.length - 1)];
+    return {
+      symbolLabel: symbol.label,
+      symbolImageUrl: variant,
+      symbolSvgPath: null,
+      symbolSvgRounded: false,
+      symbolFontFamily: null,
+      symbolFontWeight: null,
+      symbolFontStyle: null
     };
   }
 

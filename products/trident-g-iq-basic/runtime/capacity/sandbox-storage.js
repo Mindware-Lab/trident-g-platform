@@ -24,7 +24,7 @@ function clampN(value) {
 }
 
 function normalizeWrapper(value) {
-  if (value === "hub_noncat" || value === "hub_concept" || value === "and_cat" || value === "and_noncat" || value === "resist_vectors" || value === "resist_words") {
+  if (value === "hub_noncat" || value === "hub_concept" || value === "and_cat" || value === "and_noncat" || value === "resist_vectors" || value === "resist_words" || value === "resist_concept") {
     return value;
   }
   return "hub_cat";
@@ -39,6 +39,9 @@ function normalizeTargetModality(wrapper, value) {
   }
   if (wrapper === "resist_words") {
     return value === "sym" ? "sym" : "col";
+  }
+  if (wrapper === "resist_concept") {
+    return value === "sym" ? "sym" : "loc";
   }
   return value === "col" || value === "sym" ? value : "loc";
 }

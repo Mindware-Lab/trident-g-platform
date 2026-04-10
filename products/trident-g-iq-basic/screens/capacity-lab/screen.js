@@ -34,7 +34,7 @@ const capacityLabSidePanelHtml = `
         <div class="capacity-games-variants">
           <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Vectors</span></div>
           <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Words</span></div>
-          <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Concept</span></div>
+          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Concept</span></div>
         </div>
       </div>
       <div class="capacity-games-family is-locked">

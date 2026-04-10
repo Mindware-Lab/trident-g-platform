@@ -3,6 +3,7 @@ import {
   HUB_BASE_TRIALS,
   HUB_CUE_MS,
   HUB_N_MAX,
+  HUB_PRELOAD_ASSETS,
   createHubBlockPlan,
   createHubBlockTrials,
   displayHubTargetLabel,
@@ -33,8 +34,21 @@ const PREVIEW_MARKERS = [
 const WRAPPER_GROUPS = {
   flex: ["hub_cat", "hub_noncat", "hub_concept"],
   bind: ["and_cat", "and_noncat"],
-  resist: ["resist_vectors", "resist_words"]
+  resist: ["resist_vectors", "resist_words", "resist_concept"]
 };
+
+function preloadImageUrls(urls) {
+  if (typeof Image === "undefined") {
+    return;
+  }
+  urls.forEach((url) => {
+    if (!url) return;
+    const img = new Image();
+    img.decoding = "async";
+    img.loading = "eager";
+    img.src = url;
+  });
+}
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -63,6 +77,9 @@ function wrapperLabel(wrapper) {
   }
   if (wrapper === "resist_words") {
     return "Resist words";
+  }
+  if (wrapper === "resist_concept") {
+    return "Resist concept";
   }
   return "Flex known";
 }
@@ -128,6 +145,9 @@ function familyDefaultTarget(wrapper) {
   }
   if (wrapper === "resist_words") {
     return "col";
+  }
+  if (wrapper === "resist_concept") {
+    return "loc";
   }
   if (wrapperFamily(wrapper) === "resist") {
     return "loc";
@@ -579,7 +599,8 @@ function arenaMarkup(uiState) {
   const hideMarkers = wrapperForMarkers === "hub_noncat"
     || wrapperForMarkers === "hub_concept"
     || wrapperForMarkers === "and_noncat"
-    || wrapperForMarkers === "resist_words";
+    || wrapperForMarkers === "resist_words"
+    || wrapperForMarkers === "resist_concept";
   const markers = hideMarkers
     ? ""
     : points.map((point) => `<span class="capacity-hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`).join("");
@@ -615,6 +636,8 @@ function arenaMarkup(uiState) {
         ? "is-resist"
       : activeWrapper === "resist_words"
         ? "is-resist is-resist-words"
+      : activeWrapper === "resist_concept"
+        ? "is-resist is-resist-concept"
       : activeWrapper?.startsWith("and_")
         ? (activeWrapper === "and_noncat" ? "is-and is-and-remap" : "is-and")
         : "is-cat";
@@ -636,6 +659,7 @@ function setupMarkup(uiState) {
   const targetOptions = isBind
     ? `<option value="conj" selected>Colour + Symbol</option>`
     : uiState.settings.wrapper === "resist_vectors"
+      || uiState.settings.wrapper === "resist_concept"
       ? `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Direction</option>`
       : uiState.settings.wrapper === "resist_words"
         ? `<option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Ink colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Word</option>`
@@ -658,7 +682,7 @@ function setupMarkup(uiState) {
           </div>
           ${uiState.settings.mode === "manual"
             ? `
-            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option><option value="resist_vectors" ${uiState.settings.wrapper === "resist_vectors" ? "selected" : ""}>Resist vectors</option><option value="resist_words" ${uiState.settings.wrapper === "resist_words" ? "selected" : ""}>Resist words</option></select></label>
+            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option><option value="resist_vectors" ${uiState.settings.wrapper === "resist_vectors" ? "selected" : ""}>Resist vectors</option><option value="resist_words" ${uiState.settings.wrapper === "resist_words" ? "selected" : ""}>Resist words</option><option value="resist_concept" ${uiState.settings.wrapper === "resist_concept" ? "selected" : ""}>Resist concept</option></select></label>
             <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality" ${isBind ? "disabled" : ""}>${targetOptions}</select></label>
             <label class="capacity-lab-field"><span>Speed</span><select data-lab-setting="speed"><option value="slow" ${uiState.settings.speed === "slow" ? "selected" : ""}>Slow pace</option><option value="fast" ${uiState.settings.speed === "fast" ? "selected" : ""}>Fast pace</option></select></label>
             <label class="capacity-lab-field capacity-lab-field--wide"><span>N-back</span><select data-lab-setting="n">${Array.from({ length: HUB_N_MAX }, (_, index) => { const value = index + 1; return `<option value="${value}" ${uiState.settings.n === value ? "selected" : ""}>N-${value}</option>`; }).join("")}</select></label>
@@ -1234,6 +1258,7 @@ export function mountCapacityLab({ root }) {
       || baseSettings.wrapper === "and_cat"
       || baseSettings.wrapper === "resist_vectors"
       || baseSettings.wrapper === "resist_words"
+      || baseSettings.wrapper === "resist_concept"
       ? hash32(`${tsStart}:${resolvedTarget}:${blockIndex}`)
       : undefined;
     const plan = createHubBlockPlan({
@@ -1306,6 +1331,7 @@ export function mountCapacityLab({ root }) {
 
   window.addEventListener("keydown", handleKeydown);
   initAudio({ enabled: uiState.settings.soundOn, preloadTier: "p0" });
+  preloadImageUrls(HUB_PRELOAD_ASSETS);
   render();
 
   return function unmountCapacityLab() {
