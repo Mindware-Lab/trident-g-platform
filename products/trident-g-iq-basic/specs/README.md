@@ -4,6 +4,8 @@ This folder holds working product specs for `trident-g-iq-basic`.
 
 Current structure:
 
+- `attention-control/`
+  - folder scaffold for the future attention-control game family
 - `capacity-gym/`
   - game-family spec converted from Word to Markdown
   - player-feedback spec converted from Word to Markdown
