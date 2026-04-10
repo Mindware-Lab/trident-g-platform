@@ -8,6 +8,8 @@ Current structure:
   - game-family spec converted from Word to Markdown
   - player-feedback spec converted from Word to Markdown
   - supplied n-back mockup images
+- `forward-flow/`
+  - forward-flow game-family spec and implementation plan
 - `zone-coach/`
   - zone-coach spec converted from Word to Markdown
 - `shared-systems/`
