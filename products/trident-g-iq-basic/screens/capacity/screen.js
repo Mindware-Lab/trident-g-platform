@@ -65,7 +65,7 @@ const capacityGamesStripHtml = `
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="268" x2="148" y2="268"></line>
             <circle class="capacity-route-node" cx="155" cy="268" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="272" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">ARROWS</text>
+            <text class="capacity-route-variant-label" x="167" y="272" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">VECTORS</text>
           </g>
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="296" x2="148" y2="296"></line>
@@ -108,7 +108,7 @@ const capacityGamesStripHtml = `
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="480" x2="148" y2="480"></line>
             <circle class="capacity-route-node" cx="155" cy="480" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="484" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">ARROWS</text>
+            <text class="capacity-route-variant-label" x="167" y="484" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">VECTORS</text>
           </g>
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="508" x2="148" y2="508"></line>

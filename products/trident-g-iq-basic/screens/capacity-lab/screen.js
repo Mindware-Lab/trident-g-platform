@@ -32,7 +32,7 @@ const capacityLabSidePanelHtml = `
           <span class="capacity-games-family-dot" aria-hidden="true"></span>
         </div>
         <div class="capacity-games-variants">
-          <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Arrows</span></div>
+          <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Vectors</span></div>
           <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Words</span></div>
           <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Concept</span></div>
         </div>
@@ -53,7 +53,7 @@ const capacityLabSidePanelHtml = `
           <span class="capacity-games-family-dot" aria-hidden="true"></span>
         </div>
         <div class="capacity-games-variants">
-          <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Arrows</span></div>
+          <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Vectors</span></div>
           <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Angles</span></div>
           <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Numbers</span></div>
         </div>
