@@ -3407,15 +3407,15 @@
   justify-content: center;
   min-height: 26px;
   padding: 4px 8px;
-  border: 1px solid rgba(204, 255, 102, 0.38);
-  background: rgba(204, 255, 102, 0.12);
-  color: var(--credit);
+  border: 1px solid rgba(255, 138, 196, 0.48);
+  background: rgba(255, 118, 186, 0.1);
+  color: #ff9bd0;
   font-family: "Chakra Petch", sans-serif;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
-  box-shadow: 0 0 12px rgba(204, 255, 102, 0.2);
+  box-shadow: 0 0 12px rgba(255, 118, 186, 0.18);
 }
 
 .capacity-coach-panel {
@@ -3863,10 +3863,26 @@
   cursor: pointer;
 }
 
+.capacity-lab-chip[data-mode="coach"] {
+  border-color: rgba(255, 138, 196, 0.42);
+  background: rgba(255, 118, 186, 0.08);
+  color: #ff9bd0;
+  box-shadow: 0 0 12px rgba(255, 118, 186, 0.1);
+}
+
 .capacity-lab-chip.is-active {
   border-color: rgba(125, 234, 255, 0.4);
   background: rgba(84, 162, 255, 0.18);
   color: #d8ecff;
+}
+
+.capacity-lab-chip[data-mode="coach"].is-active {
+  border-color: rgba(255, 138, 196, 0.6);
+  background: rgba(255, 118, 186, 0.16);
+  color: #ffc2e2;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 192, 226, 0.08),
+    0 0 16px rgba(255, 118, 186, 0.16);
 }
 
 .capacity-lab-recommend {
