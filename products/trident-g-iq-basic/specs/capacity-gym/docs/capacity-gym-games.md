@@ -6,7 +6,7 @@
 
 3.  Each game has **2 speed settings**.
 
-### There are 4 **game families**, each with **2â€“3 wrapper/syntax variants**.  **Family 1: XOR (disjunctive) N-backs** 
+### There are 5 **game families**, each with **2-3 wrapper/syntax variants**.  **Family 1: FLEX N-backs** 
 
 <img src="../media/media/image3.png" style="width:2.1031in;height:2.90305in" />
 
@@ -16,33 +16,33 @@ All games have 3 modalities - location, colour and letter/symbol.
   
 Game variants:  
   
-1. Categorical - 4 letters. 4 primary colours. 4 fixed locations  
-2. Non-categorical - 4 random symbols. 4 colours from colour wheel. 4 random locations.  
-3. Conceptual - 4 letters (with different fonts/cases), 4 colour categories (with variations of colours in each category (e.g. light blue and dark blue in same â€˜blueâ€™ category. 4 locations in same quadrant (within +/- 30deg of the 0, 90, 180, 270 angles). So this involves abstracting the concept from instances.  
+1. Known - 4 letters. 4 primary colours. 4 fixed locations  
+2. Unknown - 4 random symbols. 4 colours from colour wheel. 4 random locations.  
+3. Concept - 4 letters (with different fonts/cases), 4 colour categories (with variations of colours in each category (e.g. light blue and dark blue in same 'blue' category. 4 locations in same quadrant (within +/- 30deg of the 0, 90, 180, 270 angles). So this involves abstracting the concept from instances.  
   
 Speed - 2 settings - 3 seconds ISI (default) - also 1.5 seconds ISI.
 
-Both Hub versions use the same core rule: each trial shows a combined token with location + colour + symbol/letter, and at the start of each block the app cues which one to track. You press MATCH only when that cued feature is the same as it was N items ago, while ignoring the other two features. The game also throws in distractor trials where a non-target feature repeats, so part of the challenge is resisting the wrong match signal.
+All Flex variants use the same core rule: each trial shows a combined token with location + colour + symbol/letter, and at the start of each block the app cues which one to track. You press MATCH only when that cued feature is the same as it was N items ago, while ignoring the other two features. The game also throws in distractor trials where a non-target feature repeats, so part of the challenge is resisting the wrong match signal.
 
-- XOR - categorical: the visible options are fixed and easy to label, like fixed positions, fixed colours, and fixed letters. So the task is more about basic n-back tracking with a stable visual vocabulary.
+- FLEX - known: the visible options are fixed and easy to label, like fixed positions, fixed colours, and fixed letters. So the task is more about basic n-back tracking with a stable visual vocabulary.
 
-- XOR - non-categorical: the underlying rule is the same, but the surface mapping changes by block. The positions can rotate, the colour palette shifts, and the symbols come from a larger pool, so you cannot rely as much on a familiar fixed pattern. It is basically the same n-back logic with more abstraction and remapping load.
+- FLEX - unknown: the underlying rule is the same, but the surface mapping changes by block. The positions can rotate, the colour palette shifts, and the symbols come from a larger pool, so you cannot rely as much on a familiar fixed pattern. It is basically the same n-back logic with more abstraction and remapping load.
 
-- XOR - **conceptua**l. This logic is extended to the â€˜conceptualâ€™ variantâ€™
+- FLEX - concept. This logic is extended to the concept variant.
 
-### **Family 2: AND (conjunctive) N-backs** 
+### **Family 2: BIND N-backs** 
 
 Same logic as above but the match stimuli are conjunctions of 2 of the modalities - cued in each block - rather than just one of the modalities - with:
 
 **Variation 1**:  
   
-AND -categorical: 3 modalities - animals (pigs, dogs,cats, and birds), 4 classic colours and cardinal locations.
+BIND - known: 3 modalities - animals (pigs, dogs,cats, and birds), 4 classic colours and cardinal locations.
 
 ### <img src="../media/media/image13.png" style="width:2.30729in;height:3.18507in" />
 
 **Variation 2**:
 
-Same game as above, but using random shapes, random colours on colour wheel, and random locations round the wheel.
+Same game as above, but using random shapes, random colours on colour wheel, and random locations round the wheel. This is the BIND - unknown variant.
 
 <img src="../media/media/image16.png" style="width:2.05846in;height:2.84688in" />
 
@@ -50,15 +50,15 @@ Same game as above, but using random shapes, random colours on colour wheel, and
 
 ### 
 
-### **Family 3: Interference N-Back**
+### **Family 3: RESIST N-Back**
 
 Same single modality at a time n-back as the game but with 2 modalities (not 3)  
   
-**Game variant 1**: Symbol is an arrow with 4 directions (up, down, right left). Location on ring at 0 (top), 90deg (right), 180 (bottom) and 270 (left) - going clockwise. Position on the ring and the direction of the arrows is randomised from trial to trial, and blocks randomly present location on ring vs arrow direction for each block. Example stimuli shown here:
+**Game variant 1: Vectors**: Symbol is an arrow with 4 directions (up, down, right left). Location on ring at 0 (top), 90deg (right), 180 (bottom) and 270 (left) - going clockwise. Position on the ring and the direction of the arrows is randomised from trial to trial, and blocks randomly present location on ring vs arrow direction for each block. Example stimuli shown here:
 
 <img src="../media/media/image5.png" style="width:2.01014in;height:2.76394in" />
 
-**Game variant 2**: (Stroop n-back)
+**Game variant 2: Words** (Stroop n-back)
 
 Same game logic as the spatial game above, but the two stimuli sets are:  
   
@@ -69,17 +69,17 @@ Each block the player is randomly cued to attend to word matches or ink colour m
 
 <img src="../media/media/image4.png" style="width:1.92741in;height:2.64896in" />
 
-**Game variant 3**: (Conceptual stroop)
+**Game variant 3: Concept** (Conceptual stroop)
 
-Same game logic in the conceptual variant in the XOR game - but the iconâ€™s â€˜left right up downâ€™ can be represented by one of three types of graphic: a) face/yes looking direction, b) pointing hand, c) arrow. These are randomly interleaved in the block and the player needs to abstract the underlying direction concept. The location on the circle can be within +/- 30 deg from the 4 cardinal points (so the player needs to abstract the underlying location concept). Example stimuli below.
+Same game logic as the concept variant in Flex - but the icon's 'left right up down' can be represented by one of three types of graphic: a) face/eyes looking direction, b) pointing hand, c) arrow. These are randomly interleaved in the block and the player needs to abstract the underlying direction concept. The location on the circle can be within +/- 30 deg from the 4 cardinal points (so the player needs to abstract the underlying location concept). Example stimuli below.
 
 <img src="../media/media/image15.png" style="width:2.02642in;height:2.79679in" /><img src="../media/media/image17.png" style="width:2.01976in;height:2.77613in" /><img src="../media/media/image2.png" style="width:2.00488in;height:2.76571in" />
 
 <img src="../media/media/image8.png" style="width:2.10365in;height:2.90938in" />
 
-**Family 4: Emotional N-back**
+**Family 4: EMOTION N-back**
 
-**Variation 1:Visuo-spatial**
+**Variation 1: Faces**
 
 This is the same logic as the interference n-back: single modality at a time n-back but with 2 modalities (not 3) - these are -
 
@@ -91,7 +91,7 @@ Example stimuli below:
 
 <img src="../media/media/image9.png" style="width:2.15104in;height:2.95332in" /> <img src="../media/media/image10.png" style="width:2.13148in;height:2.93437in" />
 
-**Variation 2: Verbal:**  
+**Variation 2: Words:**  
   
 Samae as game above but with the two modalities:
 
@@ -103,9 +103,9 @@ Example stimulus below
 
 <img src="../media/media/image6.png" style="width:1.90987in;height:2.6343in" />
 
-**Family 5: Relational N-back**
+**Family 5: RELATE N-back**
 
-**Variant 1: Directions  
+**Variant 1: Vectors  
 **
 
 Same single n-back match game. Instead of one stimulus token presented on each trial, two stimuli in opposite locations on an 8 equi-node circle are shown (see images below). The two arrow tiles on each trial can be presented on any of the 4 possible alignments (vertical, horizontal and 2 diagonals). The arrow-tiles can be either pointing towards each other, away from each other, in the same direction as each other or at diagonals to each other. The task is to match on the relative direcitons of the arrow-tiles (these 4 relative directions are the 4 match stimuli in this relational n-back game). Illustrations of this game idea below.  
@@ -154,19 +154,19 @@ While the specific variants target different neural pathways, the foundational n
 
 - This establishes a baseline of **Interference Control** across all game types.
 
-### **Family 1: XOR (Disjunctive) N-backs**
+### **Family 1: FLEX N-backs**
 
 **Game Mechanics**
 
-- This family utilizes categorical, non-categorical, and conceptual variants.
+- This family utilizes known, unknown, and concept variants.
 
 - The underlying n-back rule is consistent, but the surface mapping changes from block to block.
 
-- In the non-categorical variant, positions can rotate, color palettes shift, and symbols are pulled from a wider pool.
+- In the unknown variant, positions can rotate, color palettes shift, and symbols are pulled from a wider pool.
 
 - This design requires players to handle higher abstraction and an increased remapping load.
 
-- The conceptual variant extends this logic further. Players must match based on broader categories, such as letters presented in different fonts/cases, variations within a color category (e.g., matching light blue and dark blue in the same 'blue' category), or locations falling within the same quadrant.
+- The concept variant extends this logic further. Players must match based on broader categories, such as letters presented in different fonts/cases, variations within a color category (e.g., matching light blue and dark blue in the same 'blue' category), or locations falling within the same quadrant.
 
 **Differentiating Skills: Cognitive Flexibility (Set-Shifting), Selective Attention, & Conceptual Abstraction** Because players cannot rely on a familiar or fixed pattern, this family heavily taxes **cognitive flexibility** (often called set-shifting). The brain must rapidly adapt to entirely new rule sets and conceptual mappings on the fly. Additionally, because each trial shows a combined token with location, color, and a symbol/letter , but the player must actively ignore two of those features to track the cued one, this game heavily trains **selective attention** and feature de-coupling.
 
@@ -180,19 +180,19 @@ Furthermore, the third variant explicitly trains **Conceptual Abstraction**. Bec
 
 - Badre, D. (2008). Cognitive control, hierarchy, and the rostroâ€“caudal organization of the frontal lobes. *Trends in Cognitive Sciences*.
 
-### **Family 2: AND (Conjunctive) N-backs**
+### **Family 2: BIND N-backs**
 
 **Game Mechanics**
 
-- This family utilizes the same core logic as the XOR family, but the match stimuli are conjunctions of two modalities that are cued in each block, rather than just a single modality.
+- This family utilizes the same core logic as the Flex family, but the match stimuli are conjunctions of two modalities that are cued in each block, rather than just a single modality.
 
-- Variation 1 is categorical, featuring three modalities: animals (pigs, dogs, cats, and birds), four classic colors, and cardinal locations.
+- Variation 1 is known, featuring three modalities: animals (pigs, dogs, cats, and birds), four classic colors, and cardinal locations.
 
-- Variation 2 uses random shapes, random colors from a color wheel, and random locations around the wheel.
+- Variation 2 is unknown, using random shapes, random colors from a color wheel, and random locations around the wheel.
 
 **Differentiating Skills: Feature Binding & Associational Memory**
 
-Unlike the XOR family which trains feature de-coupling, this family explicitly trains active feature binding. By requiring the player to match a conjunction of features (e.g., shape + color), the central executive is forced to rely on the episodic buffer to fuse separate visual and spatial streams into a single, cohesive representation. This arbitrary feature binding is a critical component of working memory capacity and a strong predictor of fluid intelligence.
+Unlike the Flex family which trains feature de-coupling, this family explicitly trains active feature binding. By requiring the player to match a conjunction of features (e.g., shape + color), the central executive is forced to rely on the episodic buffer to fuse separate visual and spatial streams into a single, cohesive representation. This arbitrary feature binding is a critical component of working memory capacity and a strong predictor of fluid intelligence.
 
 **Key References**
 
@@ -200,7 +200,7 @@ Unlike the XOR family which trains feature de-coupling, this family explicitly t
 
 - Oberauer, K. (2019). Working memory and intelligenceâ€”their correlation and their relation: Comment on Burgoyne et al. (2019). *Psychological Bulletin*.
 
-### **Family 3: Interference N-Back**
+### **Family 3: RESIST N-Back**
 
 **Game Mechanics**
 
@@ -222,7 +222,7 @@ This family isolates inhibitory control. By forcing the player to suppress prepo
 
 - Engle, R. W. (2002). Working memory capacity as executive attention. *Current Directions in Psychological Science*.
 
-### **Family 4: Emotional N-back**
+### **Family 4: EMOTION N-back**
 
 **Game Mechanics**
 
@@ -242,7 +242,7 @@ This family bridges cognition and emotion by training Affective Working Memory (
 
 - Joormann, J., & Gotlib, I. H. (2008). Updating the contents of working memory in depression: Interference from emotional distractors. *Journal of Abnormal Psychology*.
 
-### **Family 5: Relational N-back**
+### **Family 5: RELATE N-back**
 
 **Game Mechanics**
 
