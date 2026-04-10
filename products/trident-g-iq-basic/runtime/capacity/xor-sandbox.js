@@ -597,7 +597,7 @@ function setupMarkup(uiState) {
             <span>Mode</span>
             <div class="capacity-lab-mode-row" role="group" aria-label="Training mode">
               <button class="capacity-lab-chip${uiState.settings.mode === "coach" ? " is-active" : ""}" type="button" data-lab-action="set-mode" data-mode="coach">Coach guided</button>
-              <button class="capacity-lab-chip${uiState.settings.mode !== "coach" ? " is-active" : ""}" type="button" data-lab-action="set-mode" data-mode="manual">Manual</button>
+              <button class="capacity-lab-chip${uiState.settings.mode !== "coach" ? " is-active" : ""}" type="button" data-lab-action="set-mode" data-mode="manual">You choose</button>
             </div>
           </div>
           ${uiState.settings.mode === "manual"
