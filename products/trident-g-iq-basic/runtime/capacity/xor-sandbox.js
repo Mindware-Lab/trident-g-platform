@@ -41,18 +41,18 @@ function escapeHtml(value) {
 
 function wrapperLabel(wrapper) {
   if (wrapper === "hub_noncat") {
-    return "Non-categorical";
+    return "Flex random";
   }
   if (wrapper === "hub_concept") {
-    return "Conceptual";
+    return "Flex concept";
   }
   if (wrapper === "and_cat") {
-    return "AND categorical";
+    return "Bind fixed";
   }
   if (wrapper === "and_noncat") {
-    return "AND remap";
+    return "Bind random";
   }
-  return "Categorical";
+  return "Flex fixed";
 }
 
 function speedLabel(speed) {
@@ -126,7 +126,7 @@ function recommendSettings(uiState) {
         targetModality: "conj",
         speed: "slow",
         n: 1,
-        reason: "Start with the simplest AND wrapper to establish a stable baseline."
+        reason: "Start with the simplest Bind wrapper to establish a stable baseline."
       };
     }
     return {
@@ -520,7 +520,7 @@ function createUiState() {
     status: "idle",
     activeBlock: null,
     activeMessage: "Pick a wrapper and start a block inside the new capacity shell.",
-    coachMessage: "Use this route to play XOR categorical and non-categorical blocks without wiring the full telemetry stack or official progression engine.",
+    coachMessage: "Use this route to play Flex and Bind blocks without wiring the full telemetry stack or official progression engine.",
     lastSavedEntry: persisted.history[0] || null
   };
 }
@@ -589,7 +589,7 @@ function setupMarkup(uiState) {
     <div class="capacity-sandbox-shell">
       <section class="capacity-sandbox-panel">
         <div class="capacity-live-head">
-          <div class="capacity-live-kicker">XOR hub sandbox</div>
+          <div class="capacity-live-kicker">Capacity sandbox</div>
           <div class="capacity-live-pill">${escapeHtml(statusLabel)}</div>
         </div>
         <div class="capacity-lab-setup-grid">
@@ -602,7 +602,7 @@ function setupMarkup(uiState) {
           </div>
           ${uiState.settings.mode === "manual"
             ? `
-            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>XOR categorical</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>XOR remap</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>XOR conceptual</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>AND categorical</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>AND remap</option></select></label>
+            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex fixed</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex random</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind fixed</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind random</option></select></label>
             <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality" ${isAnd ? "disabled" : ""}>${isAnd
               ? `<option value="conj" selected>Colour + Symbol</option>`
               : `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Symbol</option>`

@@ -52,7 +52,7 @@ export const basicHubTelemetry = [
     lines: ["Fast-speed hold bonus: +20 G", "Variant swap milestone: +1 Trident"],
     streakOn: 6,
     streakTotal: 8,
-    footer: { left: "Next unlock", right: "AND probe lane", rightTone: "accent" }
+    footer: { left: "Next unlock", right: "Bind probe lane", rightTone: "accent" }
   }
 ];
 

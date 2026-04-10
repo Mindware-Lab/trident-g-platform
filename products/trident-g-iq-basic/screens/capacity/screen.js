@@ -8,12 +8,12 @@ const capacityGamesStripHtml = `
         class="capacity-route-map"
         viewBox="0 0 268 548"
         role="img"
-        aria-label="Capacity games route showing open XOR, AND, and Interference families, locked Emotional, and active Relational Numbers."
+        aria-label="Capacity games route showing open Flex and Bind families, locked Resist and Emotion families, and active Relate Numbers."
       >
         <line class="capacity-route-spine" x1="45" y1="82" x2="45" y2="508"></line>
 
         <g class="capacity-route-family capacity-route-family--xor">
-          <text class="capacity-route-family-name" x="45" y="65" text-anchor="middle" font-family="Orbitron, monospace" font-size="7.5" font-weight="700" letter-spacing="1.5">XOR</text>
+          <text class="capacity-route-family-name" x="45" y="65" text-anchor="middle" font-family="Orbitron, monospace" font-size="7.5" font-weight="700" letter-spacing="1.5">FLEX</text>
           <circle class="capacity-route-step" cx="45" cy="82" r="10"></circle>
           <line class="capacity-route-branch" x1="55" y1="82" x2="100" y2="82"></line>
           <circle class="capacity-route-junction" cx="100" cy="82" r="3"></circle>
@@ -22,12 +22,12 @@ const capacityGamesStripHtml = `
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="52" x2="148" y2="52"></line>
             <circle class="capacity-route-node" cx="155" cy="52" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="56" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">CAT</text>
+            <text class="capacity-route-variant-label" x="167" y="56" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">FIXED</text>
           </g>
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="82" x2="148" y2="82"></line>
             <circle class="capacity-route-node" cx="155" cy="82" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="86" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">REMAP</text>
+            <text class="capacity-route-variant-label" x="167" y="86" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">RANDOM</text>
           </g>
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="112" x2="148" y2="112"></line>
@@ -37,7 +37,7 @@ const capacityGamesStripHtml = `
         </g>
 
         <g class="capacity-route-family capacity-route-family--and">
-          <text class="capacity-route-family-name" x="45" y="166" text-anchor="middle" font-family="Orbitron, monospace" font-size="7.5" font-weight="700" letter-spacing="1.5">AND</text>
+          <text class="capacity-route-family-name" x="45" y="166" text-anchor="middle" font-family="Orbitron, monospace" font-size="7.5" font-weight="700" letter-spacing="1.5">BIND</text>
           <circle class="capacity-route-step" cx="45" cy="182" r="10"></circle>
           <line class="capacity-route-branch" x1="55" y1="182" x2="100" y2="182"></line>
           <circle class="capacity-route-junction" cx="100" cy="182" r="3"></circle>
@@ -46,17 +46,17 @@ const capacityGamesStripHtml = `
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="168" x2="148" y2="168"></line>
             <circle class="capacity-route-node" cx="155" cy="168" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="172" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">CAT</text>
+            <text class="capacity-route-variant-label" x="167" y="172" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">FIXED</text>
           </g>
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="196" x2="148" y2="196"></line>
             <circle class="capacity-route-node" cx="155" cy="196" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="200" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">REMAP</text>
+            <text class="capacity-route-variant-label" x="167" y="200" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">RANDOM</text>
           </g>
         </g>
 
         <g class="capacity-route-family capacity-route-family--interference">
-          <text class="capacity-route-family-name" x="45" y="280" text-anchor="middle" font-family="Orbitron, monospace" font-size="6.6" font-weight="700" letter-spacing="0.8">INTERFERENCE</text>
+          <text class="capacity-route-family-name" x="45" y="280" text-anchor="middle" font-family="Orbitron, monospace" font-size="7.5" font-weight="700" letter-spacing="1.2">RESIST</text>
           <circle class="capacity-route-step" cx="45" cy="296" r="10"></circle>
           <line class="capacity-route-branch" x1="55" y1="296" x2="100" y2="296"></line>
           <circle class="capacity-route-junction" cx="100" cy="296" r="3"></circle>
@@ -65,12 +65,12 @@ const capacityGamesStripHtml = `
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="268" x2="148" y2="268"></line>
             <circle class="capacity-route-node" cx="155" cy="268" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="272" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">ARROW</text>
+            <text class="capacity-route-variant-label" x="167" y="272" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">ARROWS</text>
           </g>
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="296" x2="148" y2="296"></line>
             <circle class="capacity-route-node" cx="155" cy="296" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="300" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">STROOP</text>
+            <text class="capacity-route-variant-label" x="167" y="300" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">WORDS</text>
           </g>
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="324" x2="148" y2="324"></line>
@@ -80,7 +80,7 @@ const capacityGamesStripHtml = `
         </g>
 
         <g class="capacity-route-family capacity-route-family--emotional is-locked">
-          <text class="capacity-route-family-name" x="45" y="390" text-anchor="middle" font-family="Orbitron, monospace" font-size="6.6" font-weight="700" letter-spacing="0.8">EMOTIONAL</text>
+          <text class="capacity-route-family-name" x="45" y="390" text-anchor="middle" font-family="Orbitron, monospace" font-size="7.2" font-weight="700" letter-spacing="1.2">EMOTION</text>
           <circle class="capacity-route-step" cx="45" cy="406" r="10"></circle>
           <line class="capacity-route-branch" x1="55" y1="406" x2="100" y2="406"></line>
           <circle class="capacity-route-junction" cx="100" cy="406" r="3"></circle>
@@ -89,17 +89,17 @@ const capacityGamesStripHtml = `
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="392" x2="148" y2="392"></line>
             <circle class="capacity-route-node" cx="155" cy="392" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="396" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">VISUAL</text>
+            <text class="capacity-route-variant-label" x="167" y="396" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">FACES</text>
           </g>
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="420" x2="148" y2="420"></line>
             <circle class="capacity-route-node" cx="155" cy="420" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="424" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">VERBAL</text>
+            <text class="capacity-route-variant-label" x="167" y="424" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">WORDS</text>
           </g>
         </g>
 
         <g class="capacity-route-family capacity-route-family--relational is-current">
-          <text class="capacity-route-family-name" x="45" y="492" text-anchor="middle" font-family="Orbitron, monospace" font-size="6.6" font-weight="700" letter-spacing="0.8">RELATIONAL</text>
+          <text class="capacity-route-family-name" x="45" y="492" text-anchor="middle" font-family="Orbitron, monospace" font-size="7.2" font-weight="700" letter-spacing="1.2">RELATE</text>
           <circle class="capacity-route-step" cx="45" cy="508" r="10"></circle>
           <line class="capacity-route-branch" x1="55" y1="508" x2="100" y2="508"></line>
           <circle class="capacity-route-junction" cx="100" cy="508" r="3"></circle>
@@ -108,7 +108,7 @@ const capacityGamesStripHtml = `
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="480" x2="148" y2="480"></line>
             <circle class="capacity-route-node" cx="155" cy="480" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="484" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">DIRECTION</text>
+            <text class="capacity-route-variant-label" x="167" y="484" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">ARROWS</text>
           </g>
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="508" x2="148" y2="508"></line>
@@ -204,8 +204,8 @@ const capacityTaskHtml = `
             </div>
           </div>
           <button class="capacity-transition-action" type="button">Start block 5</button>
-          <button class="capacity-transition-secondary" type="button" data-go="capacity-lab">Open XOR sandbox</button>
-          <div class="capacity-transition-hint">Public tester route. XOR categorical and non-categorical with local scoring only.</div>
+          <button class="capacity-transition-secondary" type="button" data-go="capacity-lab">Open Capacity sandbox</button>
+          <div class="capacity-transition-hint">Public tester route. Flex and Bind blocks with local scoring only.</div>
         </div>
       </div>
       <div class="capacity-play-panel" data-view-group="capacity-play" data-view-panel="live" hidden>
@@ -246,7 +246,7 @@ export const capacityScreen = {
   module: "capacity",
   banner: {
     title: "Capacity",
-    subtitle: "Relational - relational integration, fluid reasoning",
+    subtitle: "Relate - relational integration, fluid reasoning",
     subcopy: "Capacity Gym - numbers variant live. Next gate: hold this rule after a wrapper swap",
     stage: "N-3",
     stageMeta: "numbers variant"
