@@ -26,14 +26,14 @@ const capacityLabSidePanelHtml = `
           <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Unknown</span></div>
         </div>
       </div>
-      <div class="capacity-games-family is-locked">
+      <div class="capacity-games-family is-active">
         <div class="capacity-games-family-row">
           <span class="capacity-games-family-name">Resist</span>
-          <span class="capacity-games-family-dot" aria-hidden="true"></span>
+          <span class="capacity-games-family-dot is-active" aria-hidden="true"></span>
         </div>
         <div class="capacity-games-variants">
-          <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Vectors</span></div>
-          <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Words</span></div>
+          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Vectors</span></div>
+          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Words</span></div>
           <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Concept</span></div>
         </div>
       </div>
@@ -89,7 +89,7 @@ const capacityLabCoachHtml = `
     <div class="coach-label">Coach tip</div>
     <div class="capacity-coach-panel">
       <div class="capacity-coach-line is-active" data-capacity-lab-coach>
-        Use this route to play Flex and Bind blocks inside the new capacity shell without advancing the official progression engine.
+        Use this route to play Flex, Bind, and Resist blocks inside the new capacity shell without advancing the official progression engine.
       </div>
     </div>
   </div>
@@ -101,7 +101,7 @@ export const capacityLabScreen = {
   module: "capacity",
   banner: {
     title: "Capacity Sandbox",
-    subtitle: "Flex + Bind wrappers in the new shell",
+    subtitle: "Flex, Bind, and Resist wrappers in the new shell",
     subcopy: "Local scoring only",
     stage: "Sandbox",
     stageMeta: "public tester route"
@@ -109,12 +109,12 @@ export const capacityLabScreen = {
   bannerHtml: capacityLabBannerHtml,
   info: [
     { kind: "text", icon: "C", label: "Mode", value: "Sandbox", tone: "positive" },
-    { kind: "text", label: "Scope", value: "Flex + Bind", tone: "accent" },
+    { kind: "text", label: "Scope", value: "Flex + Bind + Resist", tone: "accent" },
     { kind: "text", label: "Storage", value: "Local browser", tone: "credit" }
   ],
   coach: {
     label: "Sandbox",
-    headline: "Flex pull-over live.",
+    headline: "Flex, Bind, Resist live.",
     body: "Basic scoring only."
   },
   coachHtml: capacityLabCoachHtml,

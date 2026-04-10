@@ -30,6 +30,12 @@ const PREVIEW_MARKERS = [
   { xPct: 8, yPct: 50 }
 ];
 
+const WRAPPER_GROUPS = {
+  flex: ["hub_cat", "hub_noncat", "hub_concept"],
+  bind: ["and_cat", "and_noncat"],
+  resist: ["resist_vectors", "resist_words"]
+};
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -52,6 +58,12 @@ function wrapperLabel(wrapper) {
   if (wrapper === "and_noncat") {
     return "Bind unknown";
   }
+  if (wrapper === "resist_vectors") {
+    return "Resist vectors";
+  }
+  if (wrapper === "resist_words") {
+    return "Resist words";
+  }
   return "Flex known";
 }
 
@@ -60,7 +72,7 @@ function speedLabel(speed) {
 }
 
 function modeLabel(mode) {
-  return mode === "coach" ? "Coach guided" : "Manual";
+  return mode === "coach" ? "Coach guided" : "You choose";
 }
 
 function modalityLabel(targetModality, wrapper) {
@@ -97,13 +109,34 @@ function clampN(value) {
 }
 
 function wrapperFamily(wrapper) {
-  return wrapper.startsWith("and_") ? "and" : "xor";
+  if (wrapper.startsWith("and_")) {
+    return "bind";
+  }
+  if (wrapper.startsWith("resist_")) {
+    return "resist";
+  }
+  return "flex";
+}
+
+function familyWrappers(wrapper) {
+  return WRAPPER_GROUPS[wrapperFamily(wrapper)] || WRAPPER_GROUPS.flex;
+}
+
+function familyDefaultTarget(wrapper) {
+  if (wrapperFamily(wrapper) === "bind") {
+    return "conj";
+  }
+  if (wrapper === "resist_words") {
+    return "col";
+  }
+  if (wrapperFamily(wrapper) === "resist") {
+    return "loc";
+  }
+  return "loc";
 }
 
 function nextWrapper(current) {
-  const order = wrapperFamily(current) === "and"
-    ? ["and_cat", "and_noncat"]
-    : ["hub_cat", "hub_noncat", "hub_concept"];
+  const order = familyWrappers(current);
   const index = Math.max(0, order.indexOf(current));
   return order[(index + 1) % order.length];
 }
@@ -120,13 +153,22 @@ function recommendSettings(uiState) {
   };
 
   if (!last) {
-    if (wrapperFamily(uiState.settings.wrapper) === "and") {
+    if (wrapperFamily(uiState.settings.wrapper) === "bind") {
       return {
         wrapper: "and_cat",
         targetModality: "conj",
         speed: "slow",
         n: 1,
         reason: "Start with the simplest Bind wrapper to establish a stable baseline."
+      };
+    }
+    if (wrapperFamily(uiState.settings.wrapper) === "resist") {
+      return {
+        wrapper: "resist_vectors",
+        targetModality: "loc",
+        speed: "slow",
+        n: 1,
+        reason: "Start with the first Resist wrapper and location tracking to establish a stable baseline."
       };
     }
     return {
@@ -153,19 +195,19 @@ function recommendSettings(uiState) {
   if (drop) {
     return {
       wrapper: lastWrapper,
-      targetModality: wrapperFamily(lastWrapper) === "and" ? "conj" : lastTarget,
+      targetModality: wrapperFamily(lastWrapper) === "bind" ? "conj" : lastTarget,
       speed: "slow",
       n: clampN(lastN - 1),
       reason: "Stability dipped; lower the load and slow the pace."
     };
   }
 
-  const swapCap = wrapperFamily(lastWrapper) === "and" ? 2 : 3;
+  const swapCap = familyWrappers(lastWrapper).length;
 
   if (stable && recentWrappers.size < swapCap) {
     return {
       wrapper: nextWrapper(lastWrapper),
-      targetModality: wrapperFamily(lastWrapper) === "and" ? "conj" : lastTarget,
+      targetModality: wrapperFamily(lastWrapper) === "bind" ? "conj" : lastTarget,
       speed: "slow",
       n: lastN,
       reason: "Stability held; swap wrapper before speed or n increases."
@@ -175,7 +217,7 @@ function recommendSettings(uiState) {
   if (stable && lastSpeed === "slow") {
     return {
       wrapper: lastWrapper,
-      targetModality: wrapperFamily(lastWrapper) === "and" ? "conj" : lastTarget,
+      targetModality: wrapperFamily(lastWrapper) === "bind" ? "conj" : lastTarget,
       speed: "fast",
       n: lastN,
       reason: "Confirm stability under faster timing before increasing n."
@@ -185,7 +227,7 @@ function recommendSettings(uiState) {
   if (stable && lastSpeed === "fast") {
     return {
       wrapper: lastWrapper,
-      targetModality: wrapperFamily(lastWrapper) === "and" ? "conj" : lastTarget,
+      targetModality: wrapperFamily(lastWrapper) === "bind" ? "conj" : lastTarget,
       speed: "fast",
       n: clampN(lastN + 1),
       reason: "Stable at fast pace; increase n."
@@ -194,7 +236,7 @@ function recommendSettings(uiState) {
 
   return {
     wrapper: lastWrapper,
-    targetModality: wrapperFamily(lastWrapper) === "and" ? "conj" : lastTarget,
+    targetModality: wrapperFamily(lastWrapper) === "bind" ? "conj" : lastTarget,
     speed: lastSpeed,
     n: lastN,
     reason: "Hold current settings to build stability."
@@ -520,7 +562,7 @@ function createUiState() {
     status: "idle",
     activeBlock: null,
     activeMessage: "Pick a wrapper and start a block inside the new capacity shell.",
-    coachMessage: "Use this route to play Flex and Bind blocks without wiring the full telemetry stack or official progression engine.",
+    coachMessage: "Use this route to play Flex, Bind, and Resist blocks without wiring the full telemetry stack or official progression engine.",
     lastSavedEntry: persisted.history[0] || null
   };
 }
@@ -536,7 +578,8 @@ function arenaMarkup(uiState) {
   const wrapperForMarkers = active?.plan?.wrapper || uiState.settings.wrapper;
   const hideMarkers = wrapperForMarkers === "hub_noncat"
     || wrapperForMarkers === "hub_concept"
-    || wrapperForMarkers === "and_noncat";
+    || wrapperForMarkers === "and_noncat"
+    || wrapperForMarkers === "resist_words";
   const markers = hideMarkers
     ? ""
     : points.map((point) => `<span class="capacity-hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`).join("");
@@ -546,6 +589,8 @@ function arenaMarkup(uiState) {
   const fallbackTextColor = String(trial?.display?.colourHex || "").toLowerCase() === "#ffffff" ? "#102033" : "#ffffff";
   const textColor = trial?.display?.textHex || fallbackTextColor;
   const shapeColor = trial?.display?.colourHex || "#ffffff";
+  const activeWrapper = active?.plan?.wrapper || uiState.settings.wrapper;
+  const isWordWrapper = activeWrapper === "resist_words";
   let token = "";
   const isShape = Boolean(trial?.display?.symbolSvgPath);
   if (visible) {
@@ -562,11 +607,14 @@ function arenaMarkup(uiState) {
   const fontWeight = trial?.display?.symbolFontWeight ? `font-weight:${trial.display.symbolFontWeight};` : "";
   const fontStyle = trial?.display?.symbolFontStyle ? `font-style:${trial.display.symbolFontStyle};` : "";
 
-  const activeWrapper = active?.plan?.wrapper || uiState.settings.wrapper;
   const wrapperClass = activeWrapper === "hub_noncat"
     ? "is-noncat"
     : activeWrapper === "hub_concept"
       ? "is-concept"
+      : activeWrapper === "resist_vectors"
+        ? "is-resist"
+      : activeWrapper === "resist_words"
+        ? "is-resist is-resist-words"
       : activeWrapper?.startsWith("and_")
         ? (activeWrapper === "and_noncat" ? "is-and is-and-remap" : "is-and")
         : "is-cat";
@@ -575,7 +623,7 @@ function arenaMarkup(uiState) {
     <div class="capacity-hub-arena ${wrapperClass}${uiState.status === "paused" ? " is-paused" : ""}">
       <div class="capacity-hub-ring"></div>
       ${markers}
-      <div class="capacity-hub-token${visible ? "" : " is-hidden"}${isShape ? " is-shape" : ""}" style="left:${point.xPct}%;top:${point.yPct}%;background:${isShape ? "transparent" : background};color:${visible ? (isShape ? shapeColor : textColor) : "transparent"};${fontFamily}${fontWeight}${fontStyle}">${token}</div>
+      <div class="capacity-hub-token${visible ? "" : " is-hidden"}${isShape ? " is-shape" : ""}${isWordWrapper ? " is-word" : ""}" style="left:${point.xPct}%;top:${point.yPct}%;background:${isShape || isWordWrapper ? "transparent" : background};color:${visible ? (isShape || isWordWrapper ? shapeColor : textColor) : "transparent"};${fontFamily}${fontWeight}${fontStyle}">${token}</div>
     </div>
   `;
 }
@@ -583,7 +631,15 @@ function arenaMarkup(uiState) {
 function setupMarkup(uiState) {
   const last = uiState.lastSavedEntry;
   const statusLabel = uiState.status === "result" ? "Saved" : "Ready";
-  const isAnd = wrapperFamily(uiState.settings.wrapper) === "and";
+  const family = wrapperFamily(uiState.settings.wrapper);
+  const isBind = family === "bind";
+  const targetOptions = isBind
+    ? `<option value="conj" selected>Colour + Symbol</option>`
+    : uiState.settings.wrapper === "resist_vectors"
+      ? `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Direction</option>`
+      : uiState.settings.wrapper === "resist_words"
+        ? `<option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Ink colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Word</option>`
+      : `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Symbol</option>`;
 
   return `
     <div class="capacity-sandbox-shell">
@@ -602,11 +658,8 @@ function setupMarkup(uiState) {
           </div>
           ${uiState.settings.mode === "manual"
             ? `
-            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option></select></label>
-            <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality" ${isAnd ? "disabled" : ""}>${isAnd
-              ? `<option value="conj" selected>Colour + Symbol</option>`
-              : `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Symbol</option>`
-            }</select></label>
+            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option><option value="resist_vectors" ${uiState.settings.wrapper === "resist_vectors" ? "selected" : ""}>Resist vectors</option><option value="resist_words" ${uiState.settings.wrapper === "resist_words" ? "selected" : ""}>Resist words</option></select></label>
+            <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality" ${isBind ? "disabled" : ""}>${targetOptions}</select></label>
             <label class="capacity-lab-field"><span>Speed</span><select data-lab-setting="speed"><option value="slow" ${uiState.settings.speed === "slow" ? "selected" : ""}>Slow pace</option><option value="fast" ${uiState.settings.speed === "fast" ? "selected" : ""}>Fast pace</option></select></label>
             <label class="capacity-lab-field capacity-lab-field--wide"><span>N-back</span><select data-lab-setting="n">${Array.from({ length: HUB_N_MAX }, (_, index) => { const value = index + 1; return `<option value="${value}" ${uiState.settings.n === value ? "selected" : ""}>N-${value}</option>`; }).join("")}</select></label>
             `
@@ -804,14 +857,16 @@ export function mountCapacityLab({ root }) {
         const key = event.currentTarget.dataset.labSetting;
         const value = key === "n" ? Number(event.currentTarget.value) : event.currentTarget.value;
         if (key === "wrapper") {
-          if (wrapperFamily(value) === "and") {
-            syncSettings({ wrapper: value, targetModality: "conj" });
-          } else {
-            const nextTarget = uiState.settings.targetModality === "conj" ? "loc" : uiState.settings.targetModality;
-            syncSettings({ wrapper: value, targetModality: nextTarget });
-          }
+          const nextTarget = wrapperFamily(value) === "bind"
+            ? "conj"
+            : wrapperFamily(value) === "resist" && uiState.settings.targetModality === "col"
+              ? familyDefaultTarget(value)
+              : uiState.settings.targetModality === "conj"
+                ? familyDefaultTarget(value)
+                : uiState.settings.targetModality;
+          syncSettings({ wrapper: value, targetModality: nextTarget });
         } else if (key === "targetModality") {
-          const nextTarget = wrapperFamily(uiState.settings.wrapper) === "and" ? "conj" : value;
+          const nextTarget = wrapperFamily(uiState.settings.wrapper) === "bind" ? "conj" : value;
           syncSettings({ targetModality: nextTarget });
         } else {
           syncSettings({ [key]: value });
@@ -1168,13 +1223,17 @@ export function mountCapacityLab({ root }) {
     unlockAudioContextFromUserGesture();
     clearTimers();
     const baseSettings = overrideSettings || uiState.settings;
-    const resolvedTarget = wrapperFamily(baseSettings.wrapper) === "and" ? "conj" : baseSettings.targetModality;
+    const resolvedTarget = wrapperFamily(baseSettings.wrapper) === "bind"
+      ? "conj"
+      : baseSettings.targetModality;
     const tsStart = Date.now();
     const blockIndex = uiState.history.length + 1;
     const mappingSeed = baseSettings.wrapper === "hub_noncat"
       || baseSettings.wrapper === "hub_concept"
       || baseSettings.wrapper === "and_noncat"
       || baseSettings.wrapper === "and_cat"
+      || baseSettings.wrapper === "resist_vectors"
+      || baseSettings.wrapper === "resist_words"
       ? hash32(`${tsStart}:${resolvedTarget}:${blockIndex}`)
       : undefined;
     const plan = createHubBlockPlan({

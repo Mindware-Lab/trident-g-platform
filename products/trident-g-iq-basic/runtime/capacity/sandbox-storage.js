@@ -24,10 +24,23 @@ function clampN(value) {
 }
 
 function normalizeWrapper(value) {
-  if (value === "hub_noncat" || value === "hub_concept" || value === "and_cat" || value === "and_noncat") {
+  if (value === "hub_noncat" || value === "hub_concept" || value === "and_cat" || value === "and_noncat" || value === "resist_vectors" || value === "resist_words") {
     return value;
   }
   return "hub_cat";
+}
+
+function normalizeTargetModality(wrapper, value) {
+  if (wrapper.startsWith("and_")) {
+    return "conj";
+  }
+  if (wrapper === "resist_vectors") {
+    return value === "sym" ? "sym" : "loc";
+  }
+  if (wrapper === "resist_words") {
+    return value === "sym" ? "sym" : "col";
+  }
+  return value === "col" || value === "sym" ? value : "loc";
 }
 
 function createDefaultState() {
@@ -55,11 +68,7 @@ function normalizeHistoryEntry(entry) {
   }
 
   const resolvedWrapper = normalizeWrapper(entry.wrapper);
-  const resolvedTarget = resolvedWrapper.startsWith("and_")
-    ? "conj"
-    : entry.targetModality === "col" || entry.targetModality === "sym" || entry.targetModality === "conj"
-      ? entry.targetModality
-      : "loc";
+  const resolvedTarget = normalizeTargetModality(resolvedWrapper, entry.targetModality);
 
   return {
     id: typeof entry.id === "string" ? entry.id : `xor_lab_${entry.tsStart}`,
@@ -95,11 +104,7 @@ function normalizeState(raw) {
     version: 1,
     settings: {
       wrapper: normalizeWrapper(settings.wrapper),
-      targetModality: normalizeWrapper(settings.wrapper).startsWith("and_")
-        ? "conj"
-        : settings.targetModality === "col" || settings.targetModality === "sym" || settings.targetModality === "conj"
-          ? settings.targetModality
-          : "loc",
+      targetModality: normalizeTargetModality(normalizeWrapper(settings.wrapper), settings.targetModality),
       speed: settings.speed === "fast" ? "fast" : "slow",
       mode: settings.mode === "coach" ? "coach" : "manual",
       n: clampN(settings.n),

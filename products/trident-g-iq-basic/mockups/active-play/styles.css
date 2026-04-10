@@ -4025,6 +4025,16 @@
   display: none;
 }
 
+.capacity-hub-arena.is-resist .capacity-hub-token {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.capacity-hub-arena.is-resist-words .capacity-hub-token {
+  border-color: transparent;
+  box-shadow: none;
+}
+
 .capacity-hub-token {
   position: absolute;
   width: 72px;
@@ -4051,6 +4061,12 @@
   display: block;
 }
 
+.capacity-hub-arena.is-resist .capacity-hub-token img {
+  width: 58px;
+  height: 58px;
+  filter: drop-shadow(0 0 10px rgba(84, 162, 255, 0.12));
+}
+
 .capacity-hub-token svg {
   fill: currentColor;
   filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.22));
@@ -4070,6 +4086,20 @@
 .capacity-hub-token.is-shape {
   border-color: transparent;
   box-shadow: none;
+}
+
+.capacity-hub-token.is-word {
+  width: auto;
+  height: auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 42px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(0, 0, 0, 0.28);
 }
 
 .capacity-lab-response-row {

@@ -11,7 +11,7 @@ export const HUB_SOA_MS = {
   fast: 1400
 };
 export const HUB_TARGET_MODALITIES = ["loc", "col", "sym"];
-export const HUB_WRAPPERS = ["hub_cat", "hub_noncat", "hub_concept", "and_cat", "and_noncat"];
+export const HUB_WRAPPERS = ["hub_cat", "hub_noncat", "hub_concept", "and_cat", "and_noncat", "resist_vectors", "resist_words"];
 export const HUB_ARENA_RADIUS_PCT = 42;
 
 const CAT_COLORS = [
@@ -100,6 +100,23 @@ const CONCEPT_FONT_VARIANTS = [
 ];
 
 const CONCEPT_CARDINAL_ANGLES = [-90, 0, 90, 180];
+
+const RESIST_CARDINAL_ANGLES = [-90, 0, 90, 180];
+const RESIST_VECTOR_SYMBOLS = [
+  { label: "Up", url: "./assets/capacity/resist/vectors/vector - up.svg" },
+  { label: "Right", url: "./assets/capacity/resist/vectors/vector - right.svg" },
+  { label: "Down", url: "./assets/capacity/resist/vectors/vector - down.svg" },
+  { label: "Left", url: "./assets/capacity/resist/vectors/vector - left.svg" }
+];
+
+const RESIST_WORD_COLOURS = [
+  { label: "Blue", hex: "#3b82f6", textHex: "#ffffff" },
+  { label: "Green", hex: "#22c55e", textHex: "#ffffff" },
+  { label: "Grey", hex: "#a3a3a3", textHex: "#102033" },
+  { label: "Red", hex: "#f97316", textHex: "#ffffff" }
+];
+
+const RESIST_WORD_SYMBOLS = ["BLUE", "GREEN", "GREY", "RED"];
 
 const SYMBOL_POOL = [
   "▲", "△", "▼", "▽", "◆", "◇", "■", "□", "●", "○", "★", "☆",
@@ -208,6 +225,27 @@ function buildConstrainedStream(totalTrials, n, constraints, rng) {
     values[index] = randomInt(rng, 0, 3);
   }
   return values;
+}
+
+function targetModalitiesForWrapper(wrapper) {
+  if (wrapper === "and_cat" || wrapper === "and_noncat") {
+    return ["conj"];
+  }
+  if (wrapper === "resist_vectors") {
+    return ["loc", "sym"];
+  }
+  if (wrapper === "resist_words") {
+    return ["col", "sym"];
+  }
+  return HUB_TARGET_MODALITIES;
+}
+
+function resolveTargetModalityForWrapper(wrapper, targetModality) {
+  const allowed = targetModalitiesForWrapper(wrapper);
+  if (allowed.includes(targetModality)) {
+    return targetModality;
+  }
+  return allowed[0];
 }
 
 function normaliseShapePoints(points) {
@@ -402,6 +440,31 @@ function buildRenderMapping({ wrapper, mappingSeed }) {
     };
   }
 
+  if (wrapper === "resist_vectors") {
+    return {
+      locRotationDeg: RESIST_CARDINAL_ANGLES[0],
+      radiusPct: HUB_ARENA_RADIUS_PCT,
+      markerPositions: RESIST_CARDINAL_ANGLES.map((angleDeg) => markerPositionForAngle(angleDeg, HUB_ARENA_RADIUS_PCT)),
+      locationAngles: RESIST_CARDINAL_ANGLES.slice(),
+      palette: Array.from({ length: 4 }, () => ({
+        label: "Neutral",
+        hex: "transparent",
+        textHex: "#ffffff"
+      })),
+      symbolSet: RESIST_VECTOR_SYMBOLS.slice()
+    };
+  }
+
+  if (wrapper === "resist_words") {
+    return {
+      locRotationDeg: 0,
+      radiusPct: HUB_ARENA_RADIUS_PCT,
+      markerPositions: [{ xPct: 50, yPct: 50 }],
+      palette: RESIST_WORD_COLOURS.slice(),
+      symbolSet: RESIST_WORD_SYMBOLS.slice()
+    };
+  }
+
   const locRotationDeg = 45;
   return {
     locRotationDeg,
@@ -429,6 +492,15 @@ export function displayHubTargetLabel(targetModality, wrapper) {
   if (targetModality === "conj") {
     return "COLOUR + SYMBOL";
   }
+  if (wrapper === "resist_vectors" && targetModality === "sym") {
+    return "DIRECTION";
+  }
+  if (wrapper === "resist_words" && targetModality === "sym") {
+    return "WORD";
+  }
+  if (wrapper === "resist_words" && targetModality === "col") {
+    return "INK COLOUR";
+  }
   const base = modalityLabel(targetModality);
   if (wrapper !== "hub_noncat" && targetModality === "sym") {
     return "LETTER";
@@ -448,26 +520,34 @@ export function createHubBlockPlan({
     ? "hub_noncat"
     : wrapper === "hub_concept"
       ? "hub_concept"
-      : wrapper === "and_cat"
-        ? "and_cat"
+        : wrapper === "and_cat"
+          ? "and_cat"
         : wrapper === "and_noncat"
           ? "and_noncat"
+          : wrapper === "resist_vectors"
+            ? "resist_vectors"
+            : wrapper === "resist_words"
+              ? "resist_words"
           : "hub_cat";
   const plan = {
     blockIndex,
     wrapper: resolvedWrapper,
     n,
     speed,
-    targetModality
+    targetModality: resolveTargetModalityForWrapper(resolvedWrapper, targetModality)
   };
 
-  if (resolvedWrapper === "hub_noncat" || resolvedWrapper === "hub_concept" || resolvedWrapper === "and_noncat" || resolvedWrapper === "and_cat") {
+  if (resolvedWrapper === "hub_noncat" || resolvedWrapper === "hub_concept" || resolvedWrapper === "and_noncat" || resolvedWrapper === "and_cat" || resolvedWrapper === "resist_vectors" || resolvedWrapper === "resist_words") {
     const seedPrefix = resolvedWrapper === "hub_noncat"
       ? "noncat"
       : resolvedWrapper === "and_noncat"
         ? "and"
         : resolvedWrapper === "and_cat"
           ? "and-cat"
+        : resolvedWrapper === "resist_vectors"
+          ? "resist-vectors"
+        : resolvedWrapper === "resist_words"
+          ? "resist-words"
         : "concept";
     const resolvedSeed = Number.isFinite(mappingSeed) ? (mappingSeed >>> 0) : hash32(`${seedPrefix}:${blockIndex}:${n}`);
     plan.mappingSeed = resolvedSeed;
@@ -486,6 +566,20 @@ function resolveDisplayLocation({ wrapper, locIdx, renderMapping, rng }) {
     };
   }
 
+  if (wrapper === "resist_vectors") {
+    return {
+      pointPct: renderMapping.markerPositions[locIdx],
+      locationLabel: ["Up", "Right", "Down", "Left"][locIdx]
+    };
+  }
+
+  if (wrapper === "resist_words") {
+    return {
+      pointPct: { xPct: 50, yPct: 50 },
+      locationLabel: null
+    };
+  }
+
   return {
     pointPct: renderMapping.markerPositions[locIdx],
     locationLabel: null
@@ -500,6 +594,14 @@ function resolveDisplayColour({ wrapper, colIdx, renderMapping, rng }) {
       colourLabel: category.label,
       colourHex: variant.hex,
       textHex: variant.textHex
+    };
+  }
+
+  if (wrapper === "resist_vectors") {
+    return {
+      colourLabel: "Neutral",
+      colourHex: "transparent",
+      textHex: "#ffffff"
     };
   }
 
@@ -551,6 +653,31 @@ function resolveDisplaySymbol({ wrapper, symIdx, renderMapping, rng }) {
     };
   }
 
+  if (wrapper === "resist_vectors") {
+    const symbol = renderMapping.symbolSet[symIdx];
+    return {
+      symbolLabel: symbol.label,
+      symbolImageUrl: symbol.url,
+      symbolSvgPath: null,
+      symbolSvgRounded: false,
+      symbolFontFamily: null,
+      symbolFontWeight: null,
+      symbolFontStyle: null
+    };
+  }
+
+  if (wrapper === "resist_words") {
+    return {
+      symbolLabel: renderMapping.symbolSet[symIdx],
+      symbolImageUrl: null,
+      symbolSvgPath: null,
+      symbolSvgRounded: false,
+      symbolFontFamily: "\"Orbitron\", monospace",
+      symbolFontWeight: 900,
+      symbolFontStyle: "normal"
+    };
+  }
+
   return {
     symbolLabel: renderMapping.symbolSet[symIdx],
     symbolImageUrl: null,
@@ -572,6 +699,8 @@ export function createHubBlockTrials({
   seed = Date.now()
 }) {
   const isAnd = wrapper === "and_cat" || wrapper === "and_noncat";
+  const wrapperModalities = targetModalitiesForWrapper(wrapper);
+  const resolvedTargetModality = resolveTargetModalityForWrapper(wrapper, targetModality);
   const rng = createSeededRng(seed);
   const schedule = scheduleBlockTrials({
     baseTrials,
@@ -640,24 +769,33 @@ export function createHubBlockTrials({
     sym: Array.from({ length: totalTrials }, () => "free")
   };
   const lureMatchedModality = Array.from({ length: totalTrials }, () => null);
-  const distractorModalities = HUB_TARGET_MODALITIES.filter((modality) => modality !== targetModality);
+  const distractorModalities = wrapperModalities.filter((modality) => modality !== resolvedTargetModality);
   for (let index = n; index < totalTrials; index += 1) {
     if (!lureFlags[index]) {
       continue;
     }
-    const matched = rng() < 0.5 ? distractorModalities[0] : distractorModalities[1];
-    const nonMatched = matched === distractorModalities[0] ? distractorModalities[1] : distractorModalities[0];
+    const matched = distractorModalities.length === 1
+      ? distractorModalities[0]
+      : (rng() < 0.5 ? distractorModalities[0] : distractorModalities[1]);
+    const nonMatched = distractorModalities.length > 1
+      ? (matched === distractorModalities[0] ? distractorModalities[1] : distractorModalities[0])
+      : null;
     constraints[matched][index] = "match";
-    constraints[nonMatched][index] = "nonmatch";
+    if (nonMatched) {
+      constraints[nonMatched][index] = "nonmatch";
+    }
     lureMatchedModality[index] = matched;
   }
 
   const streams = {
-    loc: randomStream(totalTrials, rng),
-    col: randomStream(totalTrials, rng),
-    sym: randomStream(totalTrials, rng)
+    loc: Array.from({ length: totalTrials }, () => 0),
+    col: Array.from({ length: totalTrials }, () => 0),
+    sym: Array.from({ length: totalTrials }, () => 0)
   };
-  streams[targetModality] = buildTargetStream(totalTrials, n, matchFlags, rng);
+  wrapperModalities.forEach((modality) => {
+    streams[modality] = randomStream(totalTrials, rng);
+  });
+  streams[resolvedTargetModality] = buildTargetStream(totalTrials, n, matchFlags, rng);
   for (let index = 0; index < distractorModalities.length; index += 1) {
     const modality = distractorModalities[index];
     streams[modality] = buildConstrainedStream(totalTrials, n, constraints[modality], rng);
@@ -669,9 +807,9 @@ export function createHubBlockTrials({
     const locIdx = streams.loc[index];
     const colIdx = streams.col[index];
     const symIdx = streams.sym[index];
-    const canonValue = targetModality === "loc"
+    const canonValue = resolvedTargetModality === "loc"
       ? locIdx
-      : targetModality === "col"
+      : resolvedTargetModality === "col"
         ? colIdx
         : symIdx;
     const locationDisplay = resolveDisplayLocation({ wrapper, locIdx, renderMapping, rng });
@@ -685,7 +823,7 @@ export function createHubBlockTrials({
       symIdx,
       isLure: Boolean(lureFlags[index]),
       lureMatchedModality: lureMatchedModality[index],
-      canonKey: `${targetModality}:${canonValue}`,
+      canonKey: `${resolvedTargetModality}:${canonValue}`,
       display: {
         pointPct: locationDisplay.pointPct,
         locationLabel: locationDisplay.locationLabel,
