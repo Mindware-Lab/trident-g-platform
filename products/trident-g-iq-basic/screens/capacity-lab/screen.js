@@ -2,6 +2,7 @@ import { capacityLabTelemetrySeed, mountCapacityLab } from "../../runtime/capaci
 
 const capacityLabSidePanelHtml = `
   <div class="capacity-games-panel">
+    <div class="capacity-games-title">Capacity</div>
     <div class="capacity-games-title">Games</div>
     <div class="capacity-games-tree">
       <div class="capacity-games-family is-active">
@@ -10,8 +11,8 @@ const capacityLabSidePanelHtml = `
           <span class="capacity-games-family-dot is-active" aria-hidden="true"></span>
         </div>
         <div class="capacity-games-variants">
-          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Fixed</span></div>
-          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Random</span></div>
+          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Known</span></div>
+          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Unknown</span></div>
           <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Concept</span></div>
         </div>
       </div>
@@ -21,8 +22,8 @@ const capacityLabSidePanelHtml = `
           <span class="capacity-games-family-dot is-active" aria-hidden="true"></span>
         </div>
         <div class="capacity-games-variants">
-          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Fixed</span></div>
-          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Random</span></div>
+          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Known</span></div>
+          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Unknown</span></div>
         </div>
       </div>
       <div class="capacity-games-family is-locked">
@@ -73,7 +74,7 @@ const capacityLabBannerHtml = `
     <span class="capacity-banner-divider" aria-hidden="true"></span>
     <div class="capacity-banner-chip-row" aria-label="Current sandbox context">
       <span class="capacity-banner-chip capacity-banner-chip--level" data-capacity-lab-status>Ready</span>
-      <span class="capacity-banner-chip" data-capacity-lab-wrapper>Flex fixed</span>
+      <span class="capacity-banner-chip" data-capacity-lab-wrapper>Flex known</span>
       <span class="capacity-banner-chip" data-capacity-lab-modality>◯</span>
       <span class="capacity-banner-chip capacity-banner-chip--speed" data-capacity-lab-speed>Slow pace</span>
     </div>

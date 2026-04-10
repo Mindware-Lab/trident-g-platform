@@ -22,12 +22,12 @@ const capacityGamesStripHtml = `
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="52" x2="148" y2="52"></line>
             <circle class="capacity-route-node" cx="155" cy="52" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="56" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">FIXED</text>
+            <text class="capacity-route-variant-label" x="167" y="56" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">KNOWN</text>
           </g>
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="82" x2="148" y2="82"></line>
             <circle class="capacity-route-node" cx="155" cy="82" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="86" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">RANDOM</text>
+            <text class="capacity-route-variant-label" x="167" y="86" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">UNKNOWN</text>
           </g>
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="112" x2="148" y2="112"></line>
@@ -46,12 +46,12 @@ const capacityGamesStripHtml = `
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="168" x2="148" y2="168"></line>
             <circle class="capacity-route-node" cx="155" cy="168" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="172" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">FIXED</text>
+            <text class="capacity-route-variant-label" x="167" y="172" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">KNOWN</text>
           </g>
           <g class="capacity-route-variant">
             <line class="capacity-route-link" x1="100" y1="196" x2="148" y2="196"></line>
             <circle class="capacity-route-node" cx="155" cy="196" r="6"></circle>
-            <text class="capacity-route-variant-label" x="167" y="200" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">RANDOM</text>
+            <text class="capacity-route-variant-label" x="167" y="200" font-family="Chakra Petch, sans-serif" font-size="10" font-weight="600" letter-spacing="2">UNKNOWN</text>
           </g>
         </g>
 

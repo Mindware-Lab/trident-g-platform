@@ -41,18 +41,18 @@ function escapeHtml(value) {
 
 function wrapperLabel(wrapper) {
   if (wrapper === "hub_noncat") {
-    return "Flex random";
+    return "Flex unknown";
   }
   if (wrapper === "hub_concept") {
     return "Flex concept";
   }
   if (wrapper === "and_cat") {
-    return "Bind fixed";
+    return "Bind known";
   }
   if (wrapper === "and_noncat") {
-    return "Bind random";
+    return "Bind unknown";
   }
-  return "Flex fixed";
+  return "Flex known";
 }
 
 function speedLabel(speed) {
@@ -436,7 +436,7 @@ function historyRows(history) {
 
 export const capacityLabTelemetrySeed = [
   {
-    label: "Sandbox",
+    label: "Scores",
     labelClass: "metric-label--credit",
     emphasis: true,
     html: `
@@ -602,7 +602,7 @@ function setupMarkup(uiState) {
           </div>
           ${uiState.settings.mode === "manual"
             ? `
-            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex fixed</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex random</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind fixed</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind random</option></select></label>
+            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option></select></label>
             <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality" ${isAnd ? "disabled" : ""}>${isAnd
               ? `<option value="conj" selected>Colour + Symbol</option>`
               : `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Symbol</option>`

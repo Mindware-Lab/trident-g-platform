@@ -1889,12 +1889,13 @@
 }
 
 .app-shell[data-screen="capacity"] .metric-label--credit {
-  color: var(--credit);
+  color: var(--white);
   font-family: "Chakra Petch", sans-serif;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 2.6px;
-  text-shadow: 0 0 12px rgba(204, 255, 102, 0.18);
+  letter-spacing: 2.8px;
+  text-align: center;
+  text-shadow: none;
 }
 
 .capacity-credit-card {
@@ -3635,6 +3636,11 @@
   display: grid;
   gap: 14px;
   padding: 6px 0 0;
+  transform: translateY(-10px);
+}
+
+.capacity-games-panel .capacity-games-title + .capacity-games-title {
+  margin-top: -10px;
 }
 
 .capacity-games-title {
