@@ -35,7 +35,8 @@ const WRAPPER_GROUPS = {
   flex: ["hub_cat", "hub_noncat", "hub_concept"],
   bind: ["and_cat", "and_noncat"],
   resist: ["resist_vectors", "resist_words", "resist_concept"],
-  emotion: ["emotion_faces", "emotion_words"]
+  emotion: ["emotion_faces", "emotion_words"],
+  relate: ["relate_vectors"]
 };
 
 const CAPACITY_TREE_FAMILIES = [
@@ -83,6 +84,20 @@ const CAPACITY_TREE_FAMILIES = [
     ]
   }
 ];
+
+const LIVE_WRAPPERS = new Set([
+  "hub_cat",
+  "hub_noncat",
+  "hub_concept",
+  "and_cat",
+  "and_noncat",
+  "resist_vectors",
+  "resist_words",
+  "resist_concept",
+  "emotion_faces",
+  "emotion_words",
+  "relate_vectors"
+]);
 
 function preloadImageUrls(urls) {
   if (typeof Image === "undefined") {
@@ -134,6 +149,15 @@ function wrapperLabel(wrapper) {
   if (wrapper === "emotion_words") {
     return "Emotion words";
   }
+  if (wrapper === "relate_vectors") {
+    return "Relate vectors";
+  }
+  if (wrapper === "relate_angles") {
+    return "Relate angles";
+  }
+  if (wrapper === "relate_numbers") {
+    return "Relate numbers";
+  }
   return "Flex known";
 }
 
@@ -150,7 +174,10 @@ function modalityLabel(targetModality, wrapper) {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-function modalityMark(targetModality) {
+function modalityMark(targetModality, wrapper) {
+  if (targetModality === "rel" || (typeof wrapper === "string" && wrapperFamily(wrapper) === "relate")) {
+    return "\u21c4";
+  }
   if (targetModality === "col") {
     return "\u25d0";
   }
@@ -201,6 +228,9 @@ function familyWrappers(wrapper) {
 function familyDefaultTarget(wrapper) {
   if (wrapperFamily(wrapper) === "bind") {
     return "conj";
+  }
+  if (wrapperFamily(wrapper) === "relate") {
+    return "rel";
   }
   if (wrapper === "resist_words") {
     return "col";
@@ -373,8 +403,9 @@ function renderCapacityGamesPanel(uiState) {
             <div class="capacity-games-variants">
               ${family.variants.map((variant) => {
                 const currentVariant = variant.wrapper === activeWrapper;
-                const variantClass = `capacity-games-variant ${unlocked ? "is-unlocked" : "is-locked"}${currentVariant ? " is-current" : ""}`;
-                const variantDotClass = `capacity-games-variant-dot${currentVariant ? " is-current" : unlocked ? " is-unlocked" : ""}`;
+                const variantUnlocked = unlocked && LIVE_WRAPPERS.has(variant.wrapper);
+                const variantClass = `capacity-games-variant ${variantUnlocked ? "is-unlocked" : "is-locked"}${currentVariant ? " is-current" : ""}`;
+                const variantDotClass = `capacity-games-variant-dot${currentVariant ? " is-current" : variantUnlocked ? " is-unlocked" : ""}`;
                 return `
                   <div class="${variantClass}">
                     <span class="${variantDotClass}" aria-hidden="true"></span>
@@ -827,13 +858,26 @@ function createUiState() {
     status: "idle",
     activeBlock: null,
     activeMessage: "Pick a wrapper and start a block inside the new capacity shell.",
-    coachMessage: "Use this route to play Flex, Bind, and Resist blocks without wiring the full telemetry stack or official progression engine.",
+    coachMessage: "Use this route to play Flex, Bind, Resist, and the first Relate vectors block without wiring the full telemetry stack or official progression engine.",
     lastSavedEntry: persisted.history[0] || null
   };
 }
 
 function telemetryCards() {
   return capacityLabTelemetrySeed;
+}
+
+function renderRelateVectorTokenMarkup(token, visible) {
+  const point = token?.pointPct || { xPct: 50, yPct: 50 };
+  const rotationDeg = Number(token?.angleDeg || 0) + 90;
+
+  return `
+    <div class="capacity-hub-token capacity-hub-token--relate${visible ? "" : " is-hidden"}" style="left:${point.xPct}%;top:${point.yPct}%;">
+      <svg class="capacity-relate-arrow" viewBox="0 0 48 48" aria-hidden="true" style="transform:rotate(${rotationDeg}deg);">
+        <path d="M24 6 39 23H30V42H18V23H9L24 6Z"></path>
+      </svg>
+    </div>
+  `;
 }
 
 function arenaMarkup(uiState) {
@@ -857,6 +901,7 @@ function arenaMarkup(uiState) {
   const textColor = trial?.display?.textHex || fallbackTextColor;
   const shapeColor = trial?.display?.colourHex || "#ffffff";
   const activeWrapper = active?.plan?.wrapper || uiState.settings.wrapper;
+  const isRelateWrapper = activeWrapper === "relate_vectors";
   const isWordWrapper = activeWrapper === "resist_words" || activeWrapper === "emotion_words";
   let token = "";
   const isShape = Boolean(trial?.display?.symbolSvgPath);
@@ -887,9 +932,25 @@ function arenaMarkup(uiState) {
         ? "is-resist is-resist-words"
       : activeWrapper === "resist_concept"
         ? "is-resist is-resist-concept"
+      : activeWrapper === "relate_vectors"
+        ? "is-relate"
       : activeWrapper?.startsWith("and_")
         ? (activeWrapper === "and_noncat" ? "is-and is-and-remap" : "is-and")
         : "is-cat";
+
+  if (isRelateWrapper) {
+    const relationTokens = Array.isArray(trial?.display?.pairTokens)
+      ? trial.display.pairTokens.map((token) => renderRelateVectorTokenMarkup(token, visible)).join("")
+      : "";
+
+    return `
+      <div class="capacity-hub-arena ${wrapperClass}${uiState.status === "paused" ? " is-paused" : ""}">
+        <div class="capacity-hub-ring"></div>
+        ${markers}
+        ${relationTokens}
+      </div>
+    `;
+  }
 
   return `
     <div class="capacity-hub-arena ${wrapperClass}${uiState.status === "paused" ? " is-paused" : ""}">
@@ -904,9 +965,11 @@ function setupMarkup(uiState) {
   const last = uiState.lastSavedEntry;
   const statusLabel = uiState.status === "result" ? "Saved" : "Ready";
   const family = wrapperFamily(uiState.settings.wrapper);
-  const isBind = family === "bind";
-  const targetOptions = isBind
+  const isFixedTarget = family === "bind" || family === "relate";
+  const targetOptions = family === "bind"
     ? `<option value="conj" selected>Colour + Symbol</option>`
+    : family === "relate"
+      ? `<option value="rel" selected>Relation</option>`
     : uiState.settings.wrapper === "resist_vectors"
       || uiState.settings.wrapper === "resist_concept"
       ? `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Direction</option>`
@@ -935,8 +998,8 @@ function setupMarkup(uiState) {
           </div>
           ${uiState.settings.mode === "manual"
             ? `
-            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option><option value="resist_vectors" ${uiState.settings.wrapper === "resist_vectors" ? "selected" : ""}>Resist vectors</option><option value="resist_words" ${uiState.settings.wrapper === "resist_words" ? "selected" : ""}>Resist words</option><option value="resist_concept" ${uiState.settings.wrapper === "resist_concept" ? "selected" : ""}>Resist concept</option><option value="emotion_faces" ${uiState.settings.wrapper === "emotion_faces" ? "selected" : ""}>Emotion faces</option><option value="emotion_words" ${uiState.settings.wrapper === "emotion_words" ? "selected" : ""}>Emotion words</option></select></label>
-            <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality" ${isBind ? "disabled" : ""}>${targetOptions}</select></label>
+            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option><option value="resist_vectors" ${uiState.settings.wrapper === "resist_vectors" ? "selected" : ""}>Resist vectors</option><option value="resist_words" ${uiState.settings.wrapper === "resist_words" ? "selected" : ""}>Resist words</option><option value="resist_concept" ${uiState.settings.wrapper === "resist_concept" ? "selected" : ""}>Resist concept</option><option value="emotion_faces" ${uiState.settings.wrapper === "emotion_faces" ? "selected" : ""}>Emotion faces</option><option value="emotion_words" ${uiState.settings.wrapper === "emotion_words" ? "selected" : ""}>Emotion words</option><option value="relate_vectors" ${uiState.settings.wrapper === "relate_vectors" ? "selected" : ""}>Relate vectors</option></select></label>
+            <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality" ${isFixedTarget ? "disabled" : ""}>${targetOptions}</select></label>
             <label class="capacity-lab-field"><span>Speed</span><select data-lab-setting="speed"><option value="slow" ${uiState.settings.speed === "slow" ? "selected" : ""}>Slow pace</option><option value="fast" ${uiState.settings.speed === "fast" ? "selected" : ""}>Fast pace</option></select></label>
             <label class="capacity-lab-field capacity-lab-field--wide"><span>N-back</span><select data-lab-setting="n">${Array.from({ length: HUB_N_MAX }, (_, index) => { const value = index + 1; return `<option value="${value}" ${uiState.settings.n === value ? "selected" : ""}>N-${value}</option>`; }).join("")}</select></label>
             `
@@ -1083,7 +1146,7 @@ export function mountCapacityLab({ root }) {
     }
     if (status) status.textContent = uiState.status === "trial" ? "Live" : uiState.status === "briefing" ? "Cueing" : uiState.status === "paused" ? "Paused" : uiState.status === "result" ? "Saved" : "Ready";
     if (wrapper) wrapper.textContent = active ? wrapperLabel(active.plan.wrapper) : "—";
-    if (modality) modality.textContent = active ? modalityMark(active.plan.targetModality) : "—";
+    if (modality) modality.textContent = active ? modalityMark(active.plan.targetModality, active.plan.wrapper) : "—";
     if (speed) speed.textContent = active ? speedLabel(active.plan.speed) : "—";
     if (runs) runs.textContent = String(uiState.history.length);
     if (sfxButton) {
@@ -1142,22 +1205,25 @@ export function mountCapacityLab({ root }) {
         const key = event.currentTarget.dataset.labSetting;
         const value = key === "n" ? Number(event.currentTarget.value) : event.currentTarget.value;
         if (key === "wrapper") {
-          const nextTarget = wrapperFamily(value) === "bind"
-            ? "conj"
+          const nextTarget = wrapperFamily(value) === "bind" || wrapperFamily(value) === "relate"
+            ? familyDefaultTarget(value)
             : wrapperFamily(value) === "resist" && uiState.settings.targetModality === "col"
               ? familyDefaultTarget(value)
               : wrapperFamily(value) === "emotion" && (
                 uiState.settings.targetModality === "conj"
+                || uiState.settings.targetModality === "rel"
                 || (value === "emotion_faces" && uiState.settings.targetModality === "col")
                 || (value === "emotion_words" && uiState.settings.targetModality === "loc")
               )
               ? familyDefaultTarget(value)
-              : uiState.settings.targetModality === "conj"
+              : uiState.settings.targetModality === "conj" || uiState.settings.targetModality === "rel"
                 ? familyDefaultTarget(value)
                 : uiState.settings.targetModality;
           syncSettings({ wrapper: value, targetModality: nextTarget });
         } else if (key === "targetModality") {
-          const nextTarget = wrapperFamily(uiState.settings.wrapper) === "bind" ? "conj" : value;
+          const nextTarget = wrapperFamily(uiState.settings.wrapper) === "bind" || wrapperFamily(uiState.settings.wrapper) === "relate"
+            ? familyDefaultTarget(uiState.settings.wrapper)
+            : value;
           syncSettings({ targetModality: nextTarget });
         } else {
           syncSettings({ [key]: value });
@@ -1514,8 +1580,8 @@ export function mountCapacityLab({ root }) {
     unlockAudioContextFromUserGesture();
     clearTimers();
     const baseSettings = overrideSettings || uiState.settings;
-    const resolvedTarget = wrapperFamily(baseSettings.wrapper) === "bind"
-      ? "conj"
+    const resolvedTarget = wrapperFamily(baseSettings.wrapper) === "bind" || wrapperFamily(baseSettings.wrapper) === "relate"
+      ? familyDefaultTarget(baseSettings.wrapper)
       : baseSettings.targetModality;
     const tsStart = Date.now();
     const blockIndex = uiState.history.length + 1;

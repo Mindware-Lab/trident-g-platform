@@ -4068,6 +4068,16 @@
   background: transparent;
 }
 
+.capacity-hub-arena.is-relate .capacity-hub-ring {
+  inset: 18px;
+}
+
+.capacity-hub-arena.is-relate .capacity-hub-marker {
+  width: 8px;
+  height: 8px;
+  background: rgba(164, 199, 255, 0.34);
+}
+
 .capacity-hub-token {
   position: absolute;
   width: 72px;
@@ -4126,6 +4136,28 @@
 .capacity-hub-token.is-shape {
   border-color: transparent;
   box-shadow: none;
+}
+
+.capacity-hub-token--relate {
+  width: 62px;
+  height: 62px;
+  border-radius: 16px;
+  border-color: rgba(98, 141, 255, 0.28);
+  background:
+    linear-gradient(180deg, rgba(17, 29, 54, 0.94), rgba(11, 19, 38, 0.94)),
+    radial-gradient(circle at 30% 28%, rgba(245, 181, 68, 0.22), rgba(245, 181, 68, 0));
+  color: #f5b544;
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(111, 170, 255, 0.08) inset;
+}
+
+.capacity-relate-arrow {
+  width: 34px !important;
+  height: 34px !important;
+  fill: currentColor;
+  filter: drop-shadow(0 0 12px rgba(245, 181, 68, 0.18));
+  transform-origin: 50% 50%;
 }
 
 .capacity-hub-token.is-word {

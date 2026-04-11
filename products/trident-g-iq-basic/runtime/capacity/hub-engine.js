@@ -11,7 +11,7 @@ export const HUB_SOA_MS = {
   fast: 1400
 };
 export const HUB_TARGET_MODALITIES = ["loc", "col", "sym"];
-export const HUB_WRAPPERS = ["hub_cat", "hub_noncat", "hub_concept", "and_cat", "and_noncat", "resist_vectors", "resist_words", "resist_concept", "emotion_faces", "emotion_words"];
+export const HUB_WRAPPERS = ["hub_cat", "hub_noncat", "hub_concept", "and_cat", "and_noncat", "resist_vectors", "resist_words", "resist_concept", "emotion_faces", "emotion_words", "relate_vectors"];
 export const HUB_ARENA_RADIUS_PCT = 42;
 
 const CAT_COLORS = [
@@ -107,6 +107,20 @@ const RESIST_VECTOR_SYMBOLS = [
   { label: "Right", url: "./assets/capacity/resist/vectors/vector - right.svg" },
   { label: "Down", url: "./assets/capacity/resist/vectors/vector - down.svg" },
   { label: "Left", url: "./assets/capacity/resist/vectors/vector - left.svg" }
+];
+
+const RELATE_VECTOR_MARKER_ANGLES = [-90, -45, 0, 45, 90, 135, 180, 225];
+const RELATE_VECTOR_ALIGNMENTS = [
+  { label: "Vertical", markerIndices: [0, 4], axisDeg: 90 },
+  { label: "Diagonal descending", markerIndices: [1, 5], axisDeg: 135 },
+  { label: "Horizontal", markerIndices: [2, 6], axisDeg: 180 },
+  { label: "Diagonal ascending", markerIndices: [3, 7], axisDeg: 225 }
+];
+const RELATE_VECTOR_RELATIONS = [
+  { key: "toward", label: "Toward" },
+  { key: "away", label: "Away" },
+  { key: "same", label: "Same direction" },
+  { key: "diagonal", label: "Diagonal" }
 ];
 
 const RESIST_WORD_COLOURS = [
@@ -211,6 +225,11 @@ function hslColor(hue, saturation, lightness) {
   return `hsl(${hue} ${saturation}% ${lightness}%)`;
 }
 
+function normalizeAngleDeg(value) {
+  const normalized = value % 360;
+  return normalized < 0 ? normalized + 360 : normalized;
+}
+
 function markerPositionForAngle(thetaDeg, radiusPct = HUB_ARENA_RADIUS_PCT) {
   const theta = (thetaDeg * Math.PI) / 180;
   return {
@@ -309,6 +328,9 @@ function buildConstrainedStream(totalTrials, n, constraints, rng) {
 function targetModalitiesForWrapper(wrapper) {
   if (wrapper === "and_cat" || wrapper === "and_noncat") {
     return ["conj"];
+  }
+  if (wrapper === "relate_vectors") {
+    return ["rel"];
   }
   if (wrapper === "resist_vectors") {
     return ["loc", "sym"];
@@ -601,6 +623,16 @@ function buildRenderMapping({ wrapper, mappingSeed }) {
     };
   }
 
+  if (wrapper === "relate_vectors") {
+    return {
+      locRotationDeg: RELATE_VECTOR_MARKER_ANGLES[0],
+      radiusPct: HUB_ARENA_RADIUS_PCT,
+      markerPositions: RELATE_VECTOR_MARKER_ANGLES.map((angleDeg) => markerPositionForAngle(angleDeg, HUB_ARENA_RADIUS_PCT)),
+      alignments: RELATE_VECTOR_ALIGNMENTS.map((alignment) => ({ ...alignment })),
+      relationLabels: RELATE_VECTOR_RELATIONS.map((relation) => relation.label)
+    };
+  }
+
   const locRotationDeg = 45;
   return {
     locRotationDeg,
@@ -615,6 +647,9 @@ export function modalityLabel(targetModality) {
   if (targetModality === "conj") {
     return "COLOUR + SYMBOL";
   }
+  if (targetModality === "rel") {
+    return "RELATION";
+  }
   if (targetModality === "loc") {
     return "LOCATION";
   }
@@ -625,6 +660,9 @@ export function modalityLabel(targetModality) {
 }
 
 export function displayHubTargetLabel(targetModality, wrapper) {
+  if (targetModality === "rel" || wrapper === "relate_vectors") {
+    return "RELATION";
+  }
   if (targetModality === "conj") {
     return "COLOUR + SYMBOL";
   }
@@ -682,6 +720,8 @@ export function createHubBlockPlan({
                     ? "emotion_faces"
                     : wrapper === "emotion_words"
                       ? "emotion_words"
+                      : wrapper === "relate_vectors"
+                        ? "relate_vectors"
           : "hub_cat";
   const plan = {
     blockIndex,
@@ -922,6 +962,43 @@ function resolveDisplaySymbol({ wrapper, symIdx, renderMapping, rng }) {
   };
 }
 
+function buildRelateVectorDisplay({ relationIdx, alignmentIdx, renderMapping, rng }) {
+  const alignment = renderMapping.alignments[alignmentIdx];
+  const relation = RELATE_VECTOR_RELATIONS[relationIdx];
+  const points = alignment.markerIndices.map((markerIndex) => renderMapping.markerPositions[markerIndex]);
+  let arrowAngles = [];
+
+  if (relation.key === "toward") {
+    arrowAngles = [
+      normalizeAngleDeg(alignment.axisDeg),
+      normalizeAngleDeg(alignment.axisDeg + 180)
+    ];
+  } else if (relation.key === "away") {
+    arrowAngles = [
+      normalizeAngleDeg(alignment.axisDeg + 180),
+      normalizeAngleDeg(alignment.axisDeg)
+    ];
+  } else if (relation.key === "same") {
+    const baseAngle = RELATE_VECTOR_MARKER_ANGLES[randomInt(rng, 0, RELATE_VECTOR_MARKER_ANGLES.length - 1)];
+    arrowAngles = [baseAngle, baseAngle];
+  } else {
+    const diagonalOffset = rng() < 0.5 ? -45 : 45;
+    arrowAngles = [
+      normalizeAngleDeg(alignment.axisDeg + diagonalOffset),
+      normalizeAngleDeg(alignment.axisDeg - diagonalOffset)
+    ];
+  }
+
+  return {
+    pairTokens: points.map((pointPct, index) => ({
+      pointPct,
+      angleDeg: arrowAngles[index]
+    })),
+    relationLabel: relation.label,
+    alignmentLabel: alignment.label
+  };
+}
+
 export function createHubBlockTrials({
   wrapper,
   n,
@@ -949,6 +1026,50 @@ export function createHubBlockTrials({
     lureRate: LURE_RATE,
     rng
   });
+
+  if (wrapper === "relate_vectors") {
+    const relationStream = buildTargetStream(totalTrials, n, matchFlags, rng);
+    const alignmentConstraints = Array.from({ length: totalTrials }, () => "free");
+
+    for (let index = n; index < totalTrials; index += 1) {
+      if (lureFlags[index]) {
+        alignmentConstraints[index] = "match";
+      } else if (!matchFlags[index]) {
+        alignmentConstraints[index] = "nonmatch";
+      }
+    }
+
+    const alignmentStream = buildConstrainedStream(totalTrials, n, alignmentConstraints, rng);
+    const renderMapping = buildRenderMapping({ wrapper, mappingSeed });
+    const trials = [];
+
+    for (let index = 0; index < totalTrials; index += 1) {
+      const relationIdx = relationStream[index];
+      const alignmentIdx = alignmentStream[index];
+
+      trials.push({
+        trialIndex: index,
+        relationIdx,
+        alignmentIdx,
+        isLure: Boolean(lureFlags[index]),
+        lureMatchedModality: lureFlags[index] ? "align" : null,
+        canonKey: `rel:${relationIdx}`,
+        display: buildRelateVectorDisplay({
+          relationIdx,
+          alignmentIdx,
+          renderMapping,
+          rng
+        })
+      });
+    }
+
+    return {
+      soaMs: HUB_SOA_MS[speed] || HUB_SOA_MS.slow,
+      displayMs: Math.round((HUB_SOA_MS[speed] || HUB_SOA_MS.slow) * HUB_DISPLAY_RATIO),
+      trials,
+      renderMapping
+    };
+  }
 
   if (isAnd) {
     const streams = buildConjunctiveStreams(totalTrials, n, matchFlags, lureFlags, rng);
