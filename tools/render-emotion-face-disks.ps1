@@ -8,8 +8,9 @@ Add-Type -AssemblyName System.Drawing
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $facesRoot = Join-Path $repoRoot "products/trident-g-iq-basic/assets/capacity/emotion/faces"
-$diskInset = 16
-$diskDiameter = 224
+$diskInset = 0
+$diskDiameter = 256
+$diskMargin = 0
 
 function New-ArgbBitmap {
   param(
@@ -100,6 +101,38 @@ function Save-PrimaryFaceOnDisk {
         $subject.SetPixel($point.X, $point.Y, $source.GetPixel($point.X, $point.Y))
       }
 
+      $minX = $subject.Width
+      $minY = $subject.Height
+      $maxX = -1
+      $maxY = -1
+      for ($y = 0; $y -lt $subject.Height; $y++) {
+        for ($x = 0; $x -lt $subject.Width; $x++) {
+          if ($subject.GetPixel($x, $y).A -gt 0) {
+            if ($x -lt $minX) { $minX = $x }
+            if ($y -lt $minY) { $minY = $y }
+            if ($x -gt $maxX) { $maxX = $x }
+            if ($y -gt $maxY) { $maxY = $y }
+          }
+        }
+      }
+
+      if ($maxX -ge 0) {
+        $subjectWidth = $maxX - $minX + 1
+      } else {
+        $subjectWidth = 1
+      }
+      if ($maxY -ge 0) {
+        $subjectHeight = $maxY - $minY + 1
+      } else {
+        $subjectHeight = 1
+      }
+      $targetSize = [Math]::Max(1, $diskDiameter - ($diskMargin * 2))
+      $scale = [Math]::Min($targetSize / $subjectWidth, $targetSize / $subjectHeight)
+      $drawWidth = [int][Math]::Round($subjectWidth * $scale)
+      $drawHeight = [int][Math]::Round($subjectHeight * $scale)
+      $destX = [int][Math]::Round((($source.Width - $drawWidth) / 2))
+      $destY = [int][Math]::Round((($source.Height - $drawHeight) / 2))
+
       $output = New-ArgbBitmap -Width $source.Width -Height $source.Height
 
       try {
@@ -123,7 +156,12 @@ function Save-PrimaryFaceOnDisk {
           try {
             $clipPath.AddEllipse($diskInset, $diskInset, $diskDiameter, $diskDiameter)
             $graphics.SetClip($clipPath)
-            $graphics.DrawImage($subject, 0, 0, $subject.Width, $subject.Height)
+            $graphics.DrawImage(
+              $subject,
+              [System.Drawing.Rectangle]::new($destX, $destY, $drawWidth, $drawHeight),
+              [System.Drawing.Rectangle]::new($minX, $minY, $subjectWidth, $subjectHeight),
+              [System.Drawing.GraphicsUnit]::Pixel
+            )
             $graphics.ResetClip()
           }
           finally {

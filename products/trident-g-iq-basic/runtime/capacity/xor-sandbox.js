@@ -34,7 +34,8 @@ const PREVIEW_MARKERS = [
 const WRAPPER_GROUPS = {
   flex: ["hub_cat", "hub_noncat", "hub_concept"],
   bind: ["and_cat", "and_noncat"],
-  resist: ["resist_vectors", "resist_words", "resist_concept"]
+  resist: ["resist_vectors", "resist_words", "resist_concept"],
+  emotion: ["emotion_faces"]
 };
 
 function preloadImageUrls(urls) {
@@ -80,6 +81,9 @@ function wrapperLabel(wrapper) {
   }
   if (wrapper === "resist_concept") {
     return "Resist concept";
+  }
+  if (wrapper === "emotion_faces") {
+    return "Emotion faces";
   }
   return "Flex known";
 }
@@ -132,6 +136,9 @@ function wrapperFamily(wrapper) {
   if (wrapper.startsWith("resist_")) {
     return "resist";
   }
+  if (wrapper.startsWith("emotion_")) {
+    return "emotion";
+  }
   return "flex";
 }
 
@@ -150,6 +157,9 @@ function familyDefaultTarget(wrapper) {
     return "loc";
   }
   if (wrapperFamily(wrapper) === "resist") {
+    return "loc";
+  }
+  if (wrapperFamily(wrapper) === "emotion") {
     return "loc";
   }
   return "loc";
@@ -189,6 +199,15 @@ function recommendSettings(uiState) {
         speed: "slow",
         n: 1,
         reason: "Start with the first Resist wrapper and location tracking to establish a stable baseline."
+      };
+    }
+    if (wrapperFamily(uiState.settings.wrapper) === "emotion") {
+      return {
+        wrapper: "emotion_faces",
+        targetModality: "loc",
+        speed: "slow",
+        n: 1,
+        reason: "Start with emotion faces and location tracking to establish a baseline."
       };
     }
     return {
@@ -663,6 +682,8 @@ function setupMarkup(uiState) {
       ? `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Direction</option>`
       : uiState.settings.wrapper === "resist_words"
         ? `<option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Ink colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Word</option>`
+      : uiState.settings.wrapper === "emotion_faces"
+        ? `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Emotion</option>`
       : `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Symbol</option>`;
 
   return `
@@ -682,7 +703,7 @@ function setupMarkup(uiState) {
           </div>
           ${uiState.settings.mode === "manual"
             ? `
-            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option><option value="resist_vectors" ${uiState.settings.wrapper === "resist_vectors" ? "selected" : ""}>Resist vectors</option><option value="resist_words" ${uiState.settings.wrapper === "resist_words" ? "selected" : ""}>Resist words</option><option value="resist_concept" ${uiState.settings.wrapper === "resist_concept" ? "selected" : ""}>Resist concept</option></select></label>
+            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option><option value="resist_vectors" ${uiState.settings.wrapper === "resist_vectors" ? "selected" : ""}>Resist vectors</option><option value="resist_words" ${uiState.settings.wrapper === "resist_words" ? "selected" : ""}>Resist words</option><option value="resist_concept" ${uiState.settings.wrapper === "resist_concept" ? "selected" : ""}>Resist concept</option><option value="emotion_faces" ${uiState.settings.wrapper === "emotion_faces" ? "selected" : ""}>Emotion faces</option></select></label>
             <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality" ${isBind ? "disabled" : ""}>${targetOptions}</select></label>
             <label class="capacity-lab-field"><span>Speed</span><select data-lab-setting="speed"><option value="slow" ${uiState.settings.speed === "slow" ? "selected" : ""}>Slow pace</option><option value="fast" ${uiState.settings.speed === "fast" ? "selected" : ""}>Fast pace</option></select></label>
             <label class="capacity-lab-field capacity-lab-field--wide"><span>N-back</span><select data-lab-setting="n">${Array.from({ length: HUB_N_MAX }, (_, index) => { const value = index + 1; return `<option value="${value}" ${uiState.settings.n === value ? "selected" : ""}>N-${value}</option>`; }).join("")}</select></label>
@@ -884,6 +905,8 @@ export function mountCapacityLab({ root }) {
           const nextTarget = wrapperFamily(value) === "bind"
             ? "conj"
             : wrapperFamily(value) === "resist" && uiState.settings.targetModality === "col"
+              ? familyDefaultTarget(value)
+              : wrapperFamily(value) === "emotion" && (uiState.settings.targetModality === "col" || uiState.settings.targetModality === "conj")
               ? familyDefaultTarget(value)
               : uiState.settings.targetModality === "conj"
                 ? familyDefaultTarget(value)
@@ -1259,6 +1282,7 @@ export function mountCapacityLab({ root }) {
       || baseSettings.wrapper === "resist_vectors"
       || baseSettings.wrapper === "resist_words"
       || baseSettings.wrapper === "resist_concept"
+      || baseSettings.wrapper === "emotion_faces"
       ? hash32(`${tsStart}:${resolvedTarget}:${blockIndex}`)
       : undefined;
     const plan = createHubBlockPlan({
