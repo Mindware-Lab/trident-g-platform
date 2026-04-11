@@ -3675,8 +3675,13 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
-.capacity-games-family.is-active {
+.capacity-games-family.is-active,
+.capacity-games-family.is-unlocked {
   color: var(--white);
+}
+
+.capacity-games-family.is-current > .capacity-games-family-row {
+  color: #d9ff5b;
 }
 
 .capacity-games-family-row {
@@ -3698,10 +3703,17 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.capacity-games-family-dot.is-active {
-  border-color: rgba(125, 234, 255, 0.7);
-  background: rgba(125, 234, 255, 0.35);
-  box-shadow: 0 0 10px rgba(125, 234, 255, 0.4);
+.capacity-games-family-dot.is-active,
+.capacity-games-family-dot.is-unlocked {
+  border-color: rgba(68, 221, 136, 0.6);
+  background: rgba(68, 221, 136, 0.26);
+  box-shadow: 0 0 8px rgba(68, 221, 136, 0.22);
+}
+
+.capacity-games-family-dot.is-current {
+  border-color: rgba(217, 255, 91, 0.88);
+  background: rgba(217, 255, 91, 0.52);
+  box-shadow: 0 0 12px rgba(217, 255, 91, 0.3);
 }
 
 .capacity-games-variants {
@@ -3732,10 +3744,21 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.capacity-games-variant-dot.is-active {
+.capacity-games-variant-dot.is-active,
+.capacity-games-variant-dot.is-unlocked {
   border-color: rgba(68, 221, 136, 0.6);
   background: rgba(68, 221, 136, 0.4);
   box-shadow: 0 0 8px rgba(68, 221, 136, 0.4);
+}
+
+.capacity-games-variant.is-current {
+  color: #d9ff5b;
+}
+
+.capacity-games-variant-dot.is-current {
+  border-color: rgba(217, 255, 91, 0.88);
+  background: rgba(217, 255, 91, 0.56);
+  box-shadow: 0 0 10px rgba(217, 255, 91, 0.34);
 }
 
 .capacity-games-family.is-locked,
@@ -3768,14 +3791,16 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.capacity-games-legend-dot.is-active {
+.capacity-games-legend-dot.is-active,
+.capacity-games-legend-dot.is-unlocked {
   border-color: rgba(68, 221, 136, 0.6);
   background: rgba(68, 221, 136, 0.4);
 }
 
 .capacity-games-legend-dot.is-current {
-  border-color: rgba(125, 234, 255, 0.7);
-  background: rgba(125, 234, 255, 0.45);
+  border-color: rgba(217, 255, 91, 0.88);
+  background: rgba(217, 255, 91, 0.56);
+  box-shadow: 0 0 8px rgba(217, 255, 91, 0.26);
 }
 
 .capacity-sandbox-shell {
@@ -4033,6 +4058,8 @@
 .capacity-hub-arena.is-resist-words .capacity-hub-token {
   border-color: transparent;
   box-shadow: none;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .capacity-hub-arena.is-resist-concept .capacity-hub-token {
@@ -4109,6 +4136,8 @@
   border: 0;
   border-radius: 0;
   box-shadow: none;
+  background: transparent !important;
+  background-color: transparent !important;
   font-size: 42px;
   letter-spacing: 2px;
   text-transform: uppercase;

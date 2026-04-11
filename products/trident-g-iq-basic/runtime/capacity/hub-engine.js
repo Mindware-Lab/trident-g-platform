@@ -11,7 +11,7 @@ export const HUB_SOA_MS = {
   fast: 1400
 };
 export const HUB_TARGET_MODALITIES = ["loc", "col", "sym"];
-export const HUB_WRAPPERS = ["hub_cat", "hub_noncat", "hub_concept", "and_cat", "and_noncat", "resist_vectors", "resist_words", "resist_concept", "emotion_faces"];
+export const HUB_WRAPPERS = ["hub_cat", "hub_noncat", "hub_concept", "and_cat", "and_noncat", "resist_vectors", "resist_words", "resist_concept", "emotion_faces", "emotion_words"];
 export const HUB_ARENA_RADIUS_PCT = 42;
 
 const CAT_COLORS = [
@@ -178,6 +178,25 @@ const EMOTION_FACE_SYMBOLS = EMOTION_FACE_CATEGORIES.map((category) => ({
 
 HUB_PRELOAD_ASSETS.push(...EMOTION_FACE_SYMBOLS.flatMap((entry) => entry.variants));
 
+const EMOTION_WORD_CATEGORIES = [
+  {
+    label: "Threat",
+    variants: ["THREAT", "ANGER", "RAGE", "FURY", "HOSTILE", "ENRAGED", "IRATE", "FUMING"]
+  },
+  {
+    label: "Sadness",
+    variants: ["SADNESS", "SAD", "GRIEF", "SORROW", "MISERY", "GLOOMY", "BROKEN", "UNHAPPY"]
+  },
+  {
+    label: "Happy",
+    variants: ["HAPPY", "JOY", "DELIGHT", "CHEERY", "GLAD", "ELATED", "PLEASED", "EXCITED"]
+  },
+  {
+    label: "Neutral",
+    variants: ["NEUTRAL", "CALM", "STEADY", "EVEN", "PLAIN", "LEVEL", "STILL", "MILD"]
+  }
+];
+
 const SYMBOL_POOL = [
   "▲", "△", "▼", "▽", "◆", "◇", "■", "□", "●", "○", "★", "☆",
   "✚", "✖", "✦", "✧", "✳", "✴", "✽", "✶", "✷", "✸",
@@ -302,6 +321,9 @@ function targetModalitiesForWrapper(wrapper) {
   }
   if (wrapper === "emotion_faces") {
     return ["loc", "sym"];
+  }
+  if (wrapper === "emotion_words") {
+    return ["col", "sym"];
   }
   return HUB_TARGET_MODALITIES;
 }
@@ -566,6 +588,19 @@ function buildRenderMapping({ wrapper, mappingSeed }) {
     };
   }
 
+  if (wrapper === "emotion_words") {
+    return {
+      locRotationDeg: 0,
+      radiusPct: HUB_ARENA_RADIUS_PCT,
+      markerPositions: [{ xPct: 50, yPct: 50 }],
+      palette: RESIST_WORD_COLOURS.slice(),
+      symbolSet: EMOTION_WORD_CATEGORIES.map((entry) => ({
+        label: entry.label,
+        variants: entry.variants.slice()
+      }))
+    };
+  }
+
   const locRotationDeg = 45;
   return {
     locRotationDeg,
@@ -608,6 +643,12 @@ export function displayHubTargetLabel(targetModality, wrapper) {
   if (wrapper === "emotion_faces" && targetModality === "sym") {
     return "EMOTION";
   }
+  if (wrapper === "emotion_words" && targetModality === "sym") {
+    return "EMOTION WORD";
+  }
+  if (wrapper === "emotion_words" && targetModality === "col") {
+    return "INK COLOUR";
+  }
   const base = modalityLabel(targetModality);
   if (wrapper !== "hub_noncat" && targetModality === "sym") {
     return "LETTER";
@@ -633,12 +674,14 @@ export function createHubBlockPlan({
           ? "and_noncat"
           : wrapper === "resist_vectors"
             ? "resist_vectors"
-            : wrapper === "resist_words"
-              ? "resist_words"
-              : wrapper === "resist_concept"
-                ? "resist_concept"
-                : wrapper === "emotion_faces"
-                  ? "emotion_faces"
+              : wrapper === "resist_words"
+                ? "resist_words"
+                : wrapper === "resist_concept"
+                  ? "resist_concept"
+                  : wrapper === "emotion_faces"
+                    ? "emotion_faces"
+                    : wrapper === "emotion_words"
+                      ? "emotion_words"
           : "hub_cat";
   const plan = {
     blockIndex,
@@ -648,7 +691,7 @@ export function createHubBlockPlan({
     targetModality: resolveTargetModalityForWrapper(resolvedWrapper, targetModality)
   };
 
-  if (resolvedWrapper === "hub_noncat" || resolvedWrapper === "hub_concept" || resolvedWrapper === "and_noncat" || resolvedWrapper === "and_cat" || resolvedWrapper === "resist_vectors" || resolvedWrapper === "resist_words" || resolvedWrapper === "resist_concept" || resolvedWrapper === "emotion_faces") {
+  if (resolvedWrapper === "hub_noncat" || resolvedWrapper === "hub_concept" || resolvedWrapper === "and_noncat" || resolvedWrapper === "and_cat" || resolvedWrapper === "resist_vectors" || resolvedWrapper === "resist_words" || resolvedWrapper === "resist_concept" || resolvedWrapper === "emotion_faces" || resolvedWrapper === "emotion_words") {
     const seedPrefix = resolvedWrapper === "hub_noncat"
       ? "noncat"
       : resolvedWrapper === "and_noncat"
@@ -663,6 +706,8 @@ export function createHubBlockPlan({
           ? "resist-concept"
         : resolvedWrapper === "emotion_faces"
           ? "emotion-faces"
+        : resolvedWrapper === "emotion_words"
+          ? "emotion-words"
         : "concept";
     const resolvedSeed = Number.isFinite(mappingSeed) ? (mappingSeed >>> 0) : hash32(`${seedPrefix}:${blockIndex}:${n}`);
     plan.mappingSeed = resolvedSeed;
@@ -689,6 +734,13 @@ function resolveDisplayLocation({ wrapper, locIdx, renderMapping, rng }) {
   }
 
   if (wrapper === "resist_words") {
+    return {
+      pointPct: { xPct: 50, yPct: 50 },
+      locationLabel: null
+    };
+  }
+
+  if (wrapper === "emotion_words") {
     return {
       pointPct: { xPct: 50, yPct: 50 },
       locationLabel: null
@@ -842,6 +894,20 @@ function resolveDisplaySymbol({ wrapper, symIdx, renderMapping, rng }) {
       symbolFontFamily: null,
       symbolFontWeight: null,
       symbolFontStyle: null
+    };
+  }
+
+  if (wrapper === "emotion_words") {
+    const symbol = renderMapping.symbolSet[symIdx];
+    const variant = symbol.variants[randomInt(rng, 0, symbol.variants.length - 1)];
+    return {
+      symbolLabel: variant,
+      symbolImageUrl: null,
+      symbolSvgPath: null,
+      symbolSvgRounded: false,
+      symbolFontFamily: "\"Orbitron\", monospace",
+      symbolFontWeight: 900,
+      symbolFontStyle: "normal"
     };
   }
 

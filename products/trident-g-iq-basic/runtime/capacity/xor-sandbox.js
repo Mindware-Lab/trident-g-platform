@@ -35,8 +35,54 @@ const WRAPPER_GROUPS = {
   flex: ["hub_cat", "hub_noncat", "hub_concept"],
   bind: ["and_cat", "and_noncat"],
   resist: ["resist_vectors", "resist_words", "resist_concept"],
-  emotion: ["emotion_faces"]
+  emotion: ["emotion_faces", "emotion_words"]
 };
+
+const CAPACITY_TREE_FAMILIES = [
+  {
+    id: "flex",
+    label: "Flex",
+    variants: [
+      { wrapper: "hub_cat", label: "Known" },
+      { wrapper: "hub_noncat", label: "Unknown" },
+      { wrapper: "hub_concept", label: "Concept" }
+    ]
+  },
+  {
+    id: "bind",
+    label: "Bind",
+    variants: [
+      { wrapper: "and_cat", label: "Known" },
+      { wrapper: "and_noncat", label: "Unknown" }
+    ]
+  },
+  {
+    id: "resist",
+    label: "Resist",
+    variants: [
+      { wrapper: "resist_vectors", label: "Vectors" },
+      { wrapper: "resist_words", label: "Words" },
+      { wrapper: "resist_concept", label: "Concept" }
+    ]
+  },
+  {
+    id: "emotion",
+    label: "Emotion",
+    variants: [
+      { wrapper: "emotion_faces", label: "Faces" },
+      { wrapper: "emotion_words", label: "Words" }
+    ]
+  },
+  {
+    id: "relate",
+    label: "Relate",
+    variants: [
+      { wrapper: "relate_vectors", label: "Vectors" },
+      { wrapper: "relate_angles", label: "Angles" },
+      { wrapper: "relate_numbers", label: "Numbers" }
+    ]
+  }
+];
 
 function preloadImageUrls(urls) {
   if (typeof Image === "undefined") {
@@ -84,6 +130,9 @@ function wrapperLabel(wrapper) {
   }
   if (wrapper === "emotion_faces") {
     return "Emotion faces";
+  }
+  if (wrapper === "emotion_words") {
+    return "Emotion words";
   }
   return "Flex known";
 }
@@ -139,6 +188,9 @@ function wrapperFamily(wrapper) {
   if (wrapper.startsWith("emotion_")) {
     return "emotion";
   }
+  if (wrapper.startsWith("relate_")) {
+    return "relate";
+  }
   return "flex";
 }
 
@@ -156,10 +208,13 @@ function familyDefaultTarget(wrapper) {
   if (wrapper === "resist_concept") {
     return "loc";
   }
-  if (wrapperFamily(wrapper) === "resist") {
+  if (wrapper === "emotion_faces") {
     return "loc";
   }
-  if (wrapperFamily(wrapper) === "emotion") {
+  if (wrapper === "emotion_words") {
+    return "col";
+  }
+  if (wrapperFamily(wrapper) === "resist") {
     return "loc";
   }
   return "loc";
@@ -169,6 +224,175 @@ function nextWrapper(current) {
   const order = familyWrappers(current);
   const index = Math.max(0, order.indexOf(current));
   return order[(index + 1) % order.length];
+}
+
+function blockEndN(entry) {
+  return clampN(entry?.block?.nEnd ?? entry?.block?.nStart ?? 1);
+}
+
+function computeCoachFamilyProgress(history) {
+  const progress = new Map(CAPACITY_TREE_FAMILIES.map((family) => [family.id, {
+    stableWrappers: new Set(),
+    hasFastConfirm: false,
+    hasSwapHold: false
+  }]));
+  const chronological = history.slice().reverse();
+  let prev = null;
+
+  chronological.forEach((entry, index) => {
+    const familyId = wrapperFamily(entry.wrapper);
+    const familyProgress = progress.get(familyId);
+    if (!familyProgress) {
+      prev = entry;
+      return;
+    }
+
+    const recentHistory = chronological.slice(0, index + 1).reverse();
+    const stableLevel = computeStableLevel(recentHistory);
+    const consistencyOk = stableLevel !== null;
+    const accuracy = Number(entry?.block?.accuracy || 0);
+    const nEnd = blockEndN(entry);
+    const stable3Ok = consistencyOk && stableLevel >= 3 && accuracy >= 0.85 && nEnd >= 3;
+
+    if (stable3Ok) {
+      familyProgress.stableWrappers.add(entry.wrapper);
+    }
+    if (entry.speed === "fast" && stable3Ok) {
+      familyProgress.hasFastConfirm = true;
+    }
+    if (
+      prev
+      && wrapperFamily(prev.wrapper) === familyId
+      && prev.wrapper !== entry.wrapper
+      && consistencyOk
+      && accuracy >= 0.85
+      && nEnd >= Math.max(1, blockEndN(prev) - 1)
+    ) {
+      familyProgress.hasSwapHold = true;
+    }
+
+    prev = entry;
+  });
+
+  return progress;
+}
+
+function isCoachFamilyMastered(familyId, progress) {
+  const family = CAPACITY_TREE_FAMILIES.find((entry) => entry.id === familyId);
+  const familyProgress = progress.get(familyId);
+  if (!family || !familyProgress) {
+    return false;
+  }
+
+  const requiredWrappers = family.variants
+    .map((variant) => variant.wrapper)
+    .filter((wrapper) => !wrapper.startsWith("relate_"));
+  if (!requiredWrappers.length) {
+    return false;
+  }
+
+  return requiredWrappers.every((wrapper) => familyProgress.stableWrappers.has(wrapper))
+    && familyProgress.hasFastConfirm
+    && familyProgress.hasSwapHold;
+}
+
+function computeCoachUnlockState(history) {
+  const progress = computeCoachFamilyProgress(history);
+  const mastered = new Set(
+    CAPACITY_TREE_FAMILIES
+      .map((family) => family.id)
+      .filter((familyId) => isCoachFamilyMastered(familyId, progress))
+  );
+  const unlocked = new Set(["flex"]);
+
+  if (mastered.has("flex")) {
+    unlocked.add("bind");
+  }
+  if (mastered.has("flex") && mastered.has("bind")) {
+    unlocked.add("resist");
+  }
+  if (mastered.has("flex") && mastered.has("bind") && mastered.has("resist")) {
+    unlocked.add("emotion");
+    unlocked.add("relate");
+  }
+
+  return { unlocked, mastered };
+}
+
+function firstWrapperForFamily(familyId) {
+  const family = CAPACITY_TREE_FAMILIES.find((entry) => entry.id === familyId);
+  return family?.variants?.[0]?.wrapper || "hub_cat";
+}
+
+function resolveCapacityTreeWrapper(uiState, unlockedFamilies) {
+  if (uiState.activeBlock?.plan?.wrapper) {
+    return uiState.activeBlock.plan.wrapper;
+  }
+  if (uiState.settings.mode !== "coach") {
+    return uiState.settings.wrapper;
+  }
+
+  const recommended = recommendSettings(uiState);
+  if (recommended?.wrapper && unlockedFamilies.has(wrapperFamily(recommended.wrapper))) {
+    return recommended.wrapper;
+  }
+  if (unlockedFamilies.has(wrapperFamily(uiState.settings.wrapper))) {
+    return uiState.settings.wrapper;
+  }
+  if (uiState.lastSavedEntry?.wrapper && unlockedFamilies.has(wrapperFamily(uiState.lastSavedEntry.wrapper))) {
+    return uiState.lastSavedEntry.wrapper;
+  }
+
+  const firstUnlockedFamily = CAPACITY_TREE_FAMILIES.find((family) => unlockedFamilies.has(family.id));
+  return firstWrapperForFamily(firstUnlockedFamily?.id || "flex");
+}
+
+function renderCapacityGamesPanel(uiState) {
+  const unlockedFamilies = uiState.settings.mode === "coach"
+    ? computeCoachUnlockState(uiState.history).unlocked
+    : new Set(CAPACITY_TREE_FAMILIES.map((family) => family.id));
+  const activeWrapper = resolveCapacityTreeWrapper(uiState, unlockedFamilies);
+  const activeFamily = wrapperFamily(activeWrapper);
+
+  return `
+    <div class="capacity-games-title">Capacity</div>
+    <div class="capacity-games-title">Games</div>
+    <div class="capacity-games-tree">
+      ${CAPACITY_TREE_FAMILIES.map((family) => {
+        const unlocked = unlockedFamilies.has(family.id);
+        const currentFamily = family.id === activeFamily;
+        const familyClass = `capacity-games-family ${unlocked ? "is-unlocked" : "is-locked"}${currentFamily ? " is-current" : ""}`;
+        const familyDotClass = `capacity-games-family-dot${currentFamily ? " is-current" : unlocked ? " is-unlocked" : ""}`;
+
+        return `
+          <div class="${familyClass}">
+            <div class="capacity-games-family-row">
+              <span class="capacity-games-family-name">${escapeHtml(family.label)}</span>
+              <span class="${familyDotClass}" aria-hidden="true"></span>
+            </div>
+            <div class="capacity-games-variants">
+              ${family.variants.map((variant) => {
+                const currentVariant = variant.wrapper === activeWrapper;
+                const variantClass = `capacity-games-variant ${unlocked ? "is-unlocked" : "is-locked"}${currentVariant ? " is-current" : ""}`;
+                const variantDotClass = `capacity-games-variant-dot${currentVariant ? " is-current" : unlocked ? " is-unlocked" : ""}`;
+                return `
+                  <div class="${variantClass}">
+                    <span class="${variantDotClass}" aria-hidden="true"></span>
+                    <span>${escapeHtml(variant.label)}</span>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+    <div class="capacity-games-legend">
+      <div><span class="capacity-games-legend-dot is-unlocked"></span>Unlocked</div>
+      <div><span class="capacity-games-legend-dot"></span>Locked</div>
+      <div><span class="capacity-games-legend-dot is-current"></span>Active</div>
+    </div>
+  `;
 }
 
 function recommendSettings(uiState) {
@@ -203,11 +427,13 @@ function recommendSettings(uiState) {
     }
     if (wrapperFamily(uiState.settings.wrapper) === "emotion") {
       return {
-        wrapper: "emotion_faces",
-        targetModality: "loc",
+        wrapper: uiState.settings.wrapper === "emotion_words" ? "emotion_words" : "emotion_faces",
+        targetModality: uiState.settings.wrapper === "emotion_words" ? "col" : "loc",
         speed: "slow",
         n: 1,
-        reason: "Start with emotion faces and location tracking to establish a baseline."
+        reason: uiState.settings.wrapper === "emotion_words"
+          ? "Start with emotion words and ink colour tracking to establish a baseline."
+          : "Start with emotion faces and location tracking to establish a baseline."
       };
     }
     return {
@@ -619,6 +845,7 @@ function arenaMarkup(uiState) {
     || wrapperForMarkers === "hub_concept"
     || wrapperForMarkers === "and_noncat"
     || wrapperForMarkers === "resist_words"
+    || wrapperForMarkers === "emotion_words"
     || wrapperForMarkers === "resist_concept";
   const markers = hideMarkers
     ? ""
@@ -630,7 +857,7 @@ function arenaMarkup(uiState) {
   const textColor = trial?.display?.textHex || fallbackTextColor;
   const shapeColor = trial?.display?.colourHex || "#ffffff";
   const activeWrapper = active?.plan?.wrapper || uiState.settings.wrapper;
-  const isWordWrapper = activeWrapper === "resist_words";
+  const isWordWrapper = activeWrapper === "resist_words" || activeWrapper === "emotion_words";
   let token = "";
   const isShape = Boolean(trial?.display?.symbolSvgPath);
   if (visible) {
@@ -646,6 +873,7 @@ function arenaMarkup(uiState) {
   const fontFamily = trial?.display?.symbolFontFamily ? `font-family:${trial.display.symbolFontFamily};` : "";
   const fontWeight = trial?.display?.symbolFontWeight ? `font-weight:${trial.display.symbolFontWeight};` : "";
   const fontStyle = trial?.display?.symbolFontStyle ? `font-style:${trial.display.symbolFontStyle};` : "";
+  const tokenChrome = isWordWrapper ? "background:transparent;border:0;border-radius:0;box-shadow:none;" : "";
 
   const wrapperClass = activeWrapper === "hub_noncat"
     ? "is-noncat"
@@ -654,6 +882,8 @@ function arenaMarkup(uiState) {
       : activeWrapper === "resist_vectors"
         ? "is-resist"
       : activeWrapper === "resist_words"
+        ? "is-resist is-resist-words"
+      : activeWrapper === "emotion_words"
         ? "is-resist is-resist-words"
       : activeWrapper === "resist_concept"
         ? "is-resist is-resist-concept"
@@ -665,7 +895,7 @@ function arenaMarkup(uiState) {
     <div class="capacity-hub-arena ${wrapperClass}${uiState.status === "paused" ? " is-paused" : ""}">
       <div class="capacity-hub-ring"></div>
       ${markers}
-      <div class="capacity-hub-token${visible ? "" : " is-hidden"}${isShape ? " is-shape" : ""}${isWordWrapper ? " is-word" : ""}" style="left:${point.xPct}%;top:${point.yPct}%;background:${isShape || isWordWrapper ? "transparent" : background};color:${visible ? (isShape || isWordWrapper ? shapeColor : textColor) : "transparent"};${fontFamily}${fontWeight}${fontStyle}">${token}</div>
+      <div class="capacity-hub-token${visible ? "" : " is-hidden"}${isShape ? " is-shape" : ""}${isWordWrapper ? " is-word" : ""}" style="left:${point.xPct}%;top:${point.yPct}%;background:${isShape || isWordWrapper ? "transparent" : background};color:${visible ? (isShape || isWordWrapper ? shapeColor : textColor) : "transparent"};${tokenChrome}${fontFamily}${fontWeight}${fontStyle}">${token}</div>
     </div>
   `;
 }
@@ -684,6 +914,8 @@ function setupMarkup(uiState) {
         ? `<option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Ink colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Word</option>`
       : uiState.settings.wrapper === "emotion_faces"
         ? `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Emotion</option>`
+      : uiState.settings.wrapper === "emotion_words"
+        ? `<option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Ink colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Emotion word</option>`
       : `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="col" ${uiState.settings.targetModality === "col" ? "selected" : ""}>Colour</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Symbol</option>`;
 
   return `
@@ -703,7 +935,7 @@ function setupMarkup(uiState) {
           </div>
           ${uiState.settings.mode === "manual"
             ? `
-            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option><option value="resist_vectors" ${uiState.settings.wrapper === "resist_vectors" ? "selected" : ""}>Resist vectors</option><option value="resist_words" ${uiState.settings.wrapper === "resist_words" ? "selected" : ""}>Resist words</option><option value="resist_concept" ${uiState.settings.wrapper === "resist_concept" ? "selected" : ""}>Resist concept</option><option value="emotion_faces" ${uiState.settings.wrapper === "emotion_faces" ? "selected" : ""}>Emotion faces</option></select></label>
+            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option><option value="resist_vectors" ${uiState.settings.wrapper === "resist_vectors" ? "selected" : ""}>Resist vectors</option><option value="resist_words" ${uiState.settings.wrapper === "resist_words" ? "selected" : ""}>Resist words</option><option value="resist_concept" ${uiState.settings.wrapper === "resist_concept" ? "selected" : ""}>Resist concept</option><option value="emotion_faces" ${uiState.settings.wrapper === "emotion_faces" ? "selected" : ""}>Emotion faces</option><option value="emotion_words" ${uiState.settings.wrapper === "emotion_words" ? "selected" : ""}>Emotion words</option></select></label>
             <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality" ${isBind ? "disabled" : ""}>${targetOptions}</select></label>
             <label class="capacity-lab-field"><span>Speed</span><select data-lab-setting="speed"><option value="slow" ${uiState.settings.speed === "slow" ? "selected" : ""}>Slow pace</option><option value="fast" ${uiState.settings.speed === "fast" ? "selected" : ""}>Fast pace</option></select></label>
             <label class="capacity-lab-field capacity-lab-field--wide"><span>N-back</span><select data-lab-setting="n">${Array.from({ length: HUB_N_MAX }, (_, index) => { const value = index + 1; return `<option value="${value}" ${uiState.settings.n === value ? "selected" : ""}>N-${value}</option>`; }).join("")}</select></label>
@@ -872,6 +1104,13 @@ export function mountCapacityLab({ root }) {
     }
   }
 
+  function updateGamesPanel() {
+    const panel = root.querySelector("[data-capacity-games-panel]");
+    if (panel) {
+      panel.innerHTML = renderCapacityGamesPanel(uiState);
+    }
+  }
+
   function render() {
     if (!taskRoot || !telemetryRail) {
       return;
@@ -880,6 +1119,7 @@ export function mountCapacityLab({ root }) {
     taskRoot.innerHTML = taskMarkup(uiState);
     telemetryRail.innerHTML = renderTelemetryCards(telemetryCards(uiState));
     updateSandboxRail();
+    updateGamesPanel();
     updateBanner();
     updateCoach();
 
@@ -906,7 +1146,11 @@ export function mountCapacityLab({ root }) {
             ? "conj"
             : wrapperFamily(value) === "resist" && uiState.settings.targetModality === "col"
               ? familyDefaultTarget(value)
-              : wrapperFamily(value) === "emotion" && (uiState.settings.targetModality === "col" || uiState.settings.targetModality === "conj")
+              : wrapperFamily(value) === "emotion" && (
+                uiState.settings.targetModality === "conj"
+                || (value === "emotion_faces" && uiState.settings.targetModality === "col")
+                || (value === "emotion_words" && uiState.settings.targetModality === "loc")
+              )
               ? familyDefaultTarget(value)
               : uiState.settings.targetModality === "conj"
                 ? familyDefaultTarget(value)
@@ -1283,6 +1527,7 @@ export function mountCapacityLab({ root }) {
       || baseSettings.wrapper === "resist_words"
       || baseSettings.wrapper === "resist_concept"
       || baseSettings.wrapper === "emotion_faces"
+      || baseSettings.wrapper === "emotion_words"
       ? hash32(`${tsStart}:${resolvedTarget}:${blockIndex}`)
       : undefined;
     const plan = createHubBlockPlan({

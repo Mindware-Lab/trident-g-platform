@@ -1,70 +1,7 @@
 import { capacityLabTelemetrySeed, mountCapacityLab } from "../../runtime/capacity/xor-sandbox.js";
 
 const capacityLabSidePanelHtml = `
-  <div class="capacity-games-panel">
-    <div class="capacity-games-title">Capacity</div>
-    <div class="capacity-games-title">Games</div>
-    <div class="capacity-games-tree">
-      <div class="capacity-games-family is-active">
-        <div class="capacity-games-family-row">
-          <span class="capacity-games-family-name">Flex</span>
-          <span class="capacity-games-family-dot is-active" aria-hidden="true"></span>
-        </div>
-        <div class="capacity-games-variants">
-          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Known</span></div>
-          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Unknown</span></div>
-          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Concept</span></div>
-        </div>
-      </div>
-      <div class="capacity-games-family is-active">
-        <div class="capacity-games-family-row">
-          <span class="capacity-games-family-name">Bind</span>
-          <span class="capacity-games-family-dot is-active" aria-hidden="true"></span>
-        </div>
-        <div class="capacity-games-variants">
-          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Known</span></div>
-          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Unknown</span></div>
-        </div>
-      </div>
-      <div class="capacity-games-family is-active">
-        <div class="capacity-games-family-row">
-          <span class="capacity-games-family-name">Resist</span>
-          <span class="capacity-games-family-dot is-active" aria-hidden="true"></span>
-        </div>
-        <div class="capacity-games-variants">
-          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Vectors</span></div>
-          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Words</span></div>
-          <div class="capacity-games-variant is-active"><span class="capacity-games-variant-dot is-active"></span><span>Concept</span></div>
-        </div>
-      </div>
-      <div class="capacity-games-family is-locked">
-        <div class="capacity-games-family-row">
-          <span class="capacity-games-family-name">Emotion</span>
-          <span class="capacity-games-family-dot" aria-hidden="true"></span>
-        </div>
-        <div class="capacity-games-variants">
-          <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Faces</span></div>
-          <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Words</span></div>
-        </div>
-      </div>
-      <div class="capacity-games-family is-locked">
-        <div class="capacity-games-family-row">
-          <span class="capacity-games-family-name">Relate</span>
-          <span class="capacity-games-family-dot" aria-hidden="true"></span>
-        </div>
-        <div class="capacity-games-variants">
-          <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Vectors</span></div>
-          <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Angles</span></div>
-          <div class="capacity-games-variant"><span class="capacity-games-variant-dot"></span><span>Numbers</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="capacity-games-legend">
-      <div><span class="capacity-games-legend-dot is-active"></span>Unlocked</div>
-      <div><span class="capacity-games-legend-dot"></span>Locked</div>
-      <div><span class="capacity-games-legend-dot is-current"></span>Active</div>
-    </div>
-  </div>
+  <div class="capacity-games-panel" data-capacity-games-panel></div>
 `;
 
 const capacityLabBannerHtml = `
