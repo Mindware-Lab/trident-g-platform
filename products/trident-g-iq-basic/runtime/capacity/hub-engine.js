@@ -11,7 +11,7 @@ export const HUB_SOA_MS = {
   fast: 1400
 };
 export const HUB_TARGET_MODALITIES = ["loc", "col", "sym"];
-export const HUB_WRAPPERS = ["hub_cat", "hub_noncat", "hub_concept", "and_cat", "and_noncat", "resist_vectors", "resist_words", "resist_concept", "emotion_faces", "emotion_words", "relate_vectors", "relate_angles", "relate_numbers"];
+export const HUB_WRAPPERS = ["hub_cat", "hub_noncat", "hub_concept", "and_cat", "and_noncat", "resist_vectors", "resist_words", "resist_concept", "emotion_faces", "emotion_words", "relate_vectors", "relate_numbers", "relate_vectors_dual", "relate_numbers_dual"];
 export const HUB_ARENA_RADIUS_PCT = 42;
 
 const CAT_COLORS = [
@@ -111,10 +111,10 @@ const RESIST_VECTOR_SYMBOLS = [
 
 const RELATE_VECTOR_MARKER_ANGLES = [-90, -45, 0, 45, 90, 135, 180, 225];
 const RELATE_VECTOR_ALIGNMENTS = [
-  { label: "Vertical", markerIndices: [0, 4], axisDeg: 90 },
-  { label: "Diagonal descending", markerIndices: [1, 5], axisDeg: 135 },
-  { label: "Horizontal", markerIndices: [2, 6], axisDeg: 180 },
-  { label: "Diagonal ascending", markerIndices: [3, 7], axisDeg: 225 }
+  { key: "vertical", label: "Vertical", markerIndices: [0, 4], axisDeg: 90 },
+  { key: "diagonal_left", label: "Diagonal left", markerIndices: [1, 5], axisDeg: 135 },
+  { key: "horizontal", label: "Horizontal", markerIndices: [2, 6], axisDeg: 180 },
+  { key: "diagonal_right", label: "Diagonal right", markerIndices: [3, 7], axisDeg: 225 }
 ];
 const RELATE_VECTOR_RELATIONS = [
   { key: "toward", label: "Toward" },
@@ -122,18 +122,21 @@ const RELATE_VECTOR_RELATIONS = [
   { key: "same", label: "Same direction" },
   { key: "diagonal", label: "Diagonal" }
 ];
-const RELATE_ANGLE_CATEGORIES = [
-  { key: "right", label: "Right angle", degrees: 90 },
-  { key: "acute", label: "Acute angle", degrees: 45 },
-  { key: "obtuse", label: "Obtuse angle", degrees: 135 },
-  { key: "straight", label: "Straight angle", degrees: 180 }
-];
-const RELATE_ANGLE_ORIENTATIONS = [0, 45, 90, 135];
 const RELATE_NUMBER_RELATIONS = [
   { key: "increase", label: "Increase by 1" },
   { key: "decrease", label: "Decrease by 1" },
   { key: "same", label: "Same number" },
   { key: "other", label: "None of the above" }
+];
+const RELATE_NUMBER_DIRECTIONS = [
+  { key: "down", label: "Down", alignmentIdx: 0, order: [0, 1] },
+  { key: "up", label: "Up", alignmentIdx: 0, order: [1, 0] },
+  { key: "down_left", label: "Down-left", alignmentIdx: 1, order: [0, 1] },
+  { key: "up_right", label: "Up-right", alignmentIdx: 1, order: [1, 0] },
+  { key: "left", label: "Left", alignmentIdx: 2, order: [0, 1] },
+  { key: "right", label: "Right", alignmentIdx: 2, order: [1, 0] },
+  { key: "up_left", label: "Up-left", alignmentIdx: 3, order: [0, 1] },
+  { key: "down_right", label: "Down-right", alignmentIdx: 3, order: [1, 0] }
 ];
 const RELATE_NUMBER_SEQUENCE_GAP_MS = 200;
 
@@ -289,39 +292,39 @@ function buildNoncatPalette(mappingSeed) {
   });
 }
 
-function pickDifferent(previous, rng) {
-  let next = randomInt(rng, 0, 3);
+function pickDifferent(previous, rng, count = 4) {
+  let next = randomInt(rng, 0, count - 1);
   while (next === previous) {
-    next = randomInt(rng, 0, 3);
+    next = randomInt(rng, 0, count - 1);
   }
   return next;
 }
 
-function buildTargetStream(totalTrials, n, matchFlags, rng) {
+function buildTargetStream(totalTrials, n, matchFlags, rng, count = 4) {
   const values = Array.from({ length: totalTrials }, () => 0);
   for (let index = 0; index < totalTrials; index += 1) {
     if (index < n) {
-      values[index] = randomInt(rng, 0, 3);
+      values[index] = randomInt(rng, 0, count - 1);
       continue;
     }
     if (matchFlags[index]) {
       values[index] = values[index - n];
       continue;
     }
-    values[index] = pickDifferent(values[index - n], rng);
+    values[index] = pickDifferent(values[index - n], rng, count);
   }
   return values;
 }
 
-function randomStream(totalTrials, rng) {
-  return Array.from({ length: totalTrials }, () => randomInt(rng, 0, 3));
+function randomStream(totalTrials, rng, count = 4) {
+  return Array.from({ length: totalTrials }, () => randomInt(rng, 0, count - 1));
 }
 
-function buildConstrainedStream(totalTrials, n, constraints, rng) {
+function buildConstrainedStream(totalTrials, n, constraints, rng, count = 4) {
   const values = Array.from({ length: totalTrials }, () => 0);
   for (let index = 0; index < totalTrials; index += 1) {
     if (index < n) {
-      values[index] = randomInt(rng, 0, 3);
+      values[index] = randomInt(rng, 0, count - 1);
       continue;
     }
 
@@ -331,20 +334,31 @@ function buildConstrainedStream(totalTrials, n, constraints, rng) {
       continue;
     }
     if (rule === "nonmatch") {
-      values[index] = pickDifferent(values[index - n], rng);
+      values[index] = pickDifferent(values[index - n], rng, count);
       continue;
     }
-    values[index] = randomInt(rng, 0, 3);
+    values[index] = randomInt(rng, 0, count - 1);
   }
   return values;
+}
+
+function buildIndependentMatchFlags(totalTrials, n, rng, matchRate = 0.3) {
+  const flags = Array.from({ length: totalTrials }, () => false);
+  for (let index = n; index < totalTrials; index += 1) {
+    flags[index] = rng() < matchRate;
+  }
+  return flags;
 }
 
 function targetModalitiesForWrapper(wrapper) {
   if (wrapper === "and_cat" || wrapper === "and_noncat") {
     return ["conj"];
   }
-  if (wrapper === "relate_vectors" || wrapper === "relate_angles" || wrapper === "relate_numbers") {
-    return ["rel"];
+  if (wrapper === "relate_vectors" || wrapper === "relate_numbers") {
+    return ["rel", "sym"];
+  }
+  if (wrapper === "relate_vectors_dual" || wrapper === "relate_numbers_dual") {
+    return ["dual"];
   }
   if (wrapper === "resist_vectors") {
     return ["loc", "sym"];
@@ -637,7 +651,7 @@ function buildRenderMapping({ wrapper, mappingSeed }) {
     };
   }
 
-  if (wrapper === "relate_vectors") {
+  if (wrapper === "relate_vectors" || wrapper === "relate_vectors_dual") {
     return {
       locRotationDeg: RELATE_VECTOR_MARKER_ANGLES[0],
       radiusPct: HUB_ARENA_RADIUS_PCT,
@@ -647,23 +661,14 @@ function buildRenderMapping({ wrapper, mappingSeed }) {
     };
   }
 
-  if (wrapper === "relate_angles") {
-    return {
-      locRotationDeg: 0,
-      radiusPct: HUB_ARENA_RADIUS_PCT,
-      markerPositions: [{ xPct: 50, yPct: 50 }],
-      angleCategories: RELATE_ANGLE_CATEGORIES.map((entry) => ({ ...entry })),
-      orientations: RELATE_ANGLE_ORIENTATIONS.slice()
-    };
-  }
-
-  if (wrapper === "relate_numbers") {
+  if (wrapper === "relate_numbers" || wrapper === "relate_numbers_dual") {
     return {
       locRotationDeg: RELATE_VECTOR_MARKER_ANGLES[0],
       radiusPct: HUB_ARENA_RADIUS_PCT,
       markerPositions: RELATE_VECTOR_MARKER_ANGLES.map((angleDeg) => markerPositionForAngle(angleDeg, HUB_ARENA_RADIUS_PCT)),
       alignments: RELATE_VECTOR_ALIGNMENTS.map((alignment) => ({ ...alignment })),
-      relationLabels: RELATE_NUMBER_RELATIONS.map((relation) => relation.label)
+      relationLabels: RELATE_NUMBER_RELATIONS.map((relation) => relation.label),
+      directionLabels: RELATE_NUMBER_DIRECTIONS.map((direction) => direction.label)
     };
   }
 
@@ -681,6 +686,9 @@ export function modalityLabel(targetModality) {
   if (targetModality === "conj") {
     return "COLOUR + SYMBOL";
   }
+  if (targetModality === "dual") {
+    return "DUAL";
+  }
   if (targetModality === "rel") {
     return "RELATION";
   }
@@ -694,11 +702,20 @@ export function modalityLabel(targetModality) {
 }
 
 export function displayHubTargetLabel(targetModality, wrapper) {
-  if (wrapper === "relate_numbers") {
-    return "NUMBER RELATION";
+  if (wrapper === "relate_vectors_dual") {
+    return "ORIENTATION + RELATION";
   }
-  if (wrapper === "relate_angles") {
-    return "ANGLE";
+  if (wrapper === "relate_numbers_dual") {
+    return "DIRECTION + RELATION";
+  }
+  if (wrapper === "relate_vectors" && targetModality === "sym") {
+    return "ORIENTATION";
+  }
+  if (wrapper === "relate_numbers" && targetModality === "sym") {
+    return "DIRECTION";
+  }
+  if (wrapper === "relate_numbers" && targetModality === "rel") {
+    return "NUMBER RELATION";
   }
   if (targetModality === "rel" || wrapper === "relate_vectors") {
     return "RELATION";
@@ -742,31 +759,7 @@ export function createHubBlockPlan({
   targetModality,
   mappingSeed
 }) {
-  const resolvedWrapper = wrapper === "hub_noncat"
-    ? "hub_noncat"
-    : wrapper === "hub_concept"
-      ? "hub_concept"
-        : wrapper === "and_cat"
-          ? "and_cat"
-        : wrapper === "and_noncat"
-          ? "and_noncat"
-          : wrapper === "resist_vectors"
-            ? "resist_vectors"
-              : wrapper === "resist_words"
-                ? "resist_words"
-                : wrapper === "resist_concept"
-                  ? "resist_concept"
-                  : wrapper === "emotion_faces"
-                    ? "emotion_faces"
-                    : wrapper === "emotion_words"
-                      ? "emotion_words"
-                      : wrapper === "relate_vectors"
-                        ? "relate_vectors"
-                        : wrapper === "relate_angles"
-                          ? "relate_angles"
-                          : wrapper === "relate_numbers"
-                            ? "relate_numbers"
-          : "hub_cat";
+  const resolvedWrapper = HUB_WRAPPERS.includes(wrapper) ? wrapper : "hub_cat";
   const plan = {
     blockIndex,
     wrapper: resolvedWrapper,
@@ -1043,18 +1036,6 @@ function buildRelateVectorDisplay({ relationIdx, alignmentIdx, renderMapping, rn
   };
 }
 
-function buildRelateAngleDisplay({ angleIdx, orientationIdx, renderMapping }) {
-  const angleCategory = renderMapping.angleCategories[angleIdx];
-  const rotationDeg = renderMapping.orientations[orientationIdx];
-
-  return {
-    pointPct: renderMapping.markerPositions[0],
-    angleDeg: angleCategory.degrees,
-    rotationDeg,
-    angleLabel: angleCategory.label
-  };
-}
-
 function buildRelateNumberPair(relationIdx, rng) {
   const relation = RELATE_NUMBER_RELATIONS[relationIdx];
   if (relation.key === "increase") {
@@ -1079,9 +1060,13 @@ function buildRelateNumberPair(relationIdx, rng) {
   return { first, second, relationLabel: relation.label };
 }
 
-function buildRelateNumberDisplay({ relationIdx, alignmentIdx, renderMapping, rng }) {
-  const alignment = renderMapping.alignments[alignmentIdx];
-  const points = alignment.markerIndices.map((markerIndex) => renderMapping.markerPositions[markerIndex]);
+function buildRelateNumberDisplay({ relationIdx, directionIdx, renderMapping, rng }) {
+  const direction = RELATE_NUMBER_DIRECTIONS[directionIdx];
+  const alignment = renderMapping.alignments[direction.alignmentIdx];
+  const points = direction.order.map((orderIndex) => {
+    const markerIndex = alignment.markerIndices[orderIndex];
+    return renderMapping.markerPositions[markerIndex];
+  });
   const pair = buildRelateNumberPair(relationIdx, rng);
 
   return {
@@ -1094,7 +1079,7 @@ function buildRelateNumberDisplay({ relationIdx, alignmentIdx, renderMapping, rn
       value: pair.second
     },
     relationLabel: pair.relationLabel,
-    alignmentLabel: alignment.label,
+    directionLabel: direction.label,
     sequenceGapMs: RELATE_NUMBER_SEQUENCE_GAP_MS
   };
 }
@@ -1128,32 +1113,35 @@ export function createHubBlockTrials({
   });
 
   if (wrapper === "relate_vectors") {
-    const relationStream = buildTargetStream(totalTrials, n, matchFlags, rng);
-    const alignmentConstraints = Array.from({ length: totalTrials }, () => "free");
+    const relationIsTarget = resolvedTargetModality === "rel";
+    const targetStream = buildTargetStream(totalTrials, n, matchFlags, rng, 4);
+    const nonTargetConstraints = Array.from({ length: totalTrials }, () => "free");
 
     for (let index = n; index < totalTrials; index += 1) {
       if (lureFlags[index]) {
-        alignmentConstraints[index] = "match";
+        nonTargetConstraints[index] = "match";
       } else if (!matchFlags[index]) {
-        alignmentConstraints[index] = "nonmatch";
+        nonTargetConstraints[index] = "nonmatch";
       }
     }
 
-    const alignmentStream = buildConstrainedStream(totalTrials, n, alignmentConstraints, rng);
+    const nonTargetStream = buildConstrainedStream(totalTrials, n, nonTargetConstraints, rng, 4);
     const renderMapping = buildRenderMapping({ wrapper, mappingSeed });
     const trials = [];
 
     for (let index = 0; index < totalTrials; index += 1) {
-      const relationIdx = relationStream[index];
-      const alignmentIdx = alignmentStream[index];
+      const relationIdx = relationIsTarget ? targetStream[index] : nonTargetStream[index];
+      const alignmentIdx = relationIsTarget ? nonTargetStream[index] : targetStream[index];
 
       trials.push({
         trialIndex: index,
         relationIdx,
         alignmentIdx,
         isLure: Boolean(lureFlags[index]),
-        lureMatchedModality: lureFlags[index] ? "align" : null,
-        canonKey: `rel:${relationIdx}`,
+        lureMatchedModality: lureFlags[index] ? (relationIsTarget ? "sym" : "rel") : null,
+        canonKey: relationIsTarget ? `rel:${relationIdx}` : `ori:${alignmentIdx}`,
+        canonRelKey: `rel:${relationIdx}`,
+        canonSymKey: `ori:${alignmentIdx}`,
         display: buildRelateVectorDisplay({
           relationIdx,
           alignmentIdx,
@@ -1171,37 +1159,41 @@ export function createHubBlockTrials({
     };
   }
 
-  if (wrapper === "relate_angles") {
-    const angleStream = buildTargetStream(totalTrials, n, matchFlags, rng);
-    const orientationConstraints = Array.from({ length: totalTrials }, () => "free");
+  if (wrapper === "relate_numbers") {
+    const relationIsTarget = resolvedTargetModality === "rel";
+    const targetStream = buildTargetStream(totalTrials, n, matchFlags, rng, relationIsTarget ? 4 : 8);
+    const nonTargetConstraints = Array.from({ length: totalTrials }, () => "free");
 
     for (let index = n; index < totalTrials; index += 1) {
       if (lureFlags[index]) {
-        orientationConstraints[index] = "match";
+        nonTargetConstraints[index] = "match";
       } else if (!matchFlags[index]) {
-        orientationConstraints[index] = "nonmatch";
+        nonTargetConstraints[index] = "nonmatch";
       }
     }
 
-    const orientationStream = buildConstrainedStream(totalTrials, n, orientationConstraints, rng);
+    const nonTargetStream = buildConstrainedStream(totalTrials, n, nonTargetConstraints, rng, relationIsTarget ? 8 : 4);
     const renderMapping = buildRenderMapping({ wrapper, mappingSeed });
     const trials = [];
 
     for (let index = 0; index < totalTrials; index += 1) {
-      const angleIdx = angleStream[index];
-      const orientationIdx = orientationStream[index];
+      const relationIdx = relationIsTarget ? targetStream[index] : nonTargetStream[index];
+      const directionIdx = relationIsTarget ? nonTargetStream[index] : targetStream[index];
 
       trials.push({
         trialIndex: index,
-        angleIdx,
-        orientationIdx,
+        relationIdx,
+        directionIdx,
         isLure: Boolean(lureFlags[index]),
-        lureMatchedModality: lureFlags[index] ? "orientation" : null,
-        canonKey: `angle:${angleIdx}`,
-        display: buildRelateAngleDisplay({
-          angleIdx,
-          orientationIdx,
-          renderMapping
+        lureMatchedModality: lureFlags[index] ? (relationIsTarget ? "sym" : "rel") : null,
+        canonKey: relationIsTarget ? `numrel:${relationIdx}` : `dir:${directionIdx}`,
+        canonRelKey: `numrel:${relationIdx}`,
+        canonSymKey: `dir:${directionIdx}`,
+        display: buildRelateNumberDisplay({
+          relationIdx,
+          directionIdx,
+          renderMapping,
+          rng
         })
       });
     }
@@ -1214,19 +1206,11 @@ export function createHubBlockTrials({
     };
   }
 
-  if (wrapper === "relate_numbers") {
-    const relationStream = buildTargetStream(totalTrials, n, matchFlags, rng);
-    const alignmentConstraints = Array.from({ length: totalTrials }, () => "free");
-
-    for (let index = n; index < totalTrials; index += 1) {
-      if (lureFlags[index]) {
-        alignmentConstraints[index] = "match";
-      } else if (!matchFlags[index]) {
-        alignmentConstraints[index] = "nonmatch";
-      }
-    }
-
-    const alignmentStream = buildConstrainedStream(totalTrials, n, alignmentConstraints, rng);
+  if (wrapper === "relate_vectors_dual") {
+    const relationMatchFlags = buildIndependentMatchFlags(totalTrials, n, rng);
+    const orientationMatchFlags = buildIndependentMatchFlags(totalTrials, n, rng);
+    const relationStream = buildTargetStream(totalTrials, n, relationMatchFlags, rng, 4);
+    const alignmentStream = buildTargetStream(totalTrials, n, orientationMatchFlags, rng, 4);
     const renderMapping = buildRenderMapping({ wrapper, mappingSeed });
     const trials = [];
 
@@ -1238,12 +1222,52 @@ export function createHubBlockTrials({
         trialIndex: index,
         relationIdx,
         alignmentIdx,
-        isLure: Boolean(lureFlags[index]),
-        lureMatchedModality: lureFlags[index] ? "align" : null,
-        canonKey: `numrel:${relationIdx}`,
-        display: buildRelateNumberDisplay({
+        isLure: false,
+        lureMatchedModality: null,
+        canonKey: `dual:${relationIdx}:${alignmentIdx}`,
+        canonRelKey: `rel:${relationIdx}`,
+        canonSymKey: `ori:${alignmentIdx}`,
+        display: buildRelateVectorDisplay({
           relationIdx,
           alignmentIdx,
+          renderMapping,
+          rng
+        })
+      });
+    }
+
+    return {
+      soaMs: HUB_SOA_MS[speed] || HUB_SOA_MS.slow,
+      displayMs: Math.round((HUB_SOA_MS[speed] || HUB_SOA_MS.slow) * HUB_DISPLAY_RATIO),
+      trials,
+      renderMapping
+    };
+  }
+
+  if (wrapper === "relate_numbers_dual") {
+    const relationMatchFlags = buildIndependentMatchFlags(totalTrials, n, rng);
+    const directionMatchFlags = buildIndependentMatchFlags(totalTrials, n, rng);
+    const relationStream = buildTargetStream(totalTrials, n, relationMatchFlags, rng, 4);
+    const directionStream = buildTargetStream(totalTrials, n, directionMatchFlags, rng, 8);
+    const renderMapping = buildRenderMapping({ wrapper, mappingSeed });
+    const trials = [];
+
+    for (let index = 0; index < totalTrials; index += 1) {
+      const relationIdx = relationStream[index];
+      const directionIdx = directionStream[index];
+
+      trials.push({
+        trialIndex: index,
+        relationIdx,
+        directionIdx,
+        isLure: false,
+        lureMatchedModality: null,
+        canonKey: `dual:${relationIdx}:${directionIdx}`,
+        canonRelKey: `numrel:${relationIdx}`,
+        canonSymKey: `dir:${directionIdx}`,
+        display: buildRelateNumberDisplay({
+          relationIdx,
+          directionIdx,
           renderMapping,
           rng
         })
@@ -1390,11 +1414,60 @@ export function createHubBlockTrials({
   };
 }
 
-export function isHubMatchAtIndex(trials, trialIndex, n) {
+function summariseDualClassifications(trialOutcomes, classificationKey, rtKey) {
+  let hits = 0;
+  let misses = 0;
+  let falseAlarms = 0;
+  let correctRejections = 0;
+  const rtValues = [];
+
+  for (let index = 0; index < trialOutcomes.length; index += 1) {
+    const outcome = trialOutcomes[index];
+    const classification = outcome?.[classificationKey];
+    if (classification === "hit") {
+      hits += 1;
+    } else if (classification === "miss") {
+      misses += 1;
+    } else if (classification === "false_alarm") {
+      falseAlarms += 1;
+    } else if (classification === "correct_rejection") {
+      correctRejections += 1;
+    }
+
+    const rt = outcome?.[rtKey];
+    if (Number.isFinite(rt)) {
+      rtValues.push(Number(rt));
+    }
+  }
+
+  const accuracy = Number(computeAccuracy({
+    hits,
+    correctRejections,
+    totalTrials: trialOutcomes.length
+  }).toFixed(4));
+
+  return {
+    hits,
+    misses,
+    falseAlarms,
+    correctRejections,
+    accuracy,
+    rt: computeRtStats(rtValues)
+  };
+}
+
+export function isHubMatchAtIndex(trials, trialIndex, n, targetModality = "loc") {
   if (trialIndex < n) {
     return false;
   }
-  return trials[trialIndex].canonKey === trials[trialIndex - n].canonKey;
+  const current = trials[trialIndex];
+  const previous = trials[trialIndex - n];
+  const key = targetModality === "rel"
+    ? "canonRelKey"
+    : targetModality === "sym"
+      ? "canonSymKey"
+      : "canonKey";
+  return String(current?.[key] ?? current?.canonKey ?? "") === String(previous?.[key] ?? previous?.canonKey ?? "");
 }
 
 export function summarizeHubBlock({
@@ -1403,6 +1476,77 @@ export function summarizeHubBlock({
   trialOutcomes,
   nMax = HUB_N_MAX
 }) {
+  if (plan.targetModality === "dual") {
+    const relationMetrics = summariseDualClassifications(trialOutcomes, "classificationRel", "responseRelRtMs");
+    const surfaceMetrics = summariseDualClassifications(trialOutcomes, "classificationSym", "responseSymRtMs");
+    const accuracy = Number((((relationMetrics.accuracy || 0) + (surfaceMetrics.accuracy || 0)) / 2).toFixed(4));
+    const allRtValues = trialOutcomes.flatMap((outcome) => {
+      const values = [];
+      const relRt = outcome?.responseRelRtMs;
+      const symRt = outcome?.responseSymRtMs;
+      if (Number.isFinite(relRt)) values.push(Number(relRt));
+      if (Number.isFinite(symRt)) values.push(Number(symRt));
+      return values;
+    });
+    const rtStats = computeRtStats(allRtValues);
+    const errorFlags = trialOutcomes.map((outcome) => {
+      const relError = outcome?.classificationRel === "miss" || outcome?.classificationRel === "false_alarm";
+      const symError = outcome?.classificationSym === "miss" || outcome?.classificationSym === "false_alarm";
+      return relError || symError;
+    });
+    const errorBursts = countErrorBursts(errorFlags, 8, 3);
+    const lapseCount = relationMetrics.misses + surfaceMetrics.misses;
+
+    let outcomeBand = "HOLD";
+    if (relationMetrics.accuracy >= 0.8 && surfaceMetrics.accuracy >= 0.8 && accuracy >= 0.9) {
+      outcomeBand = "UP";
+    } else if (relationMetrics.accuracy < 0.75 || surfaceMetrics.accuracy < 0.75 || accuracy < 0.75) {
+      outcomeBand = "DOWN";
+    }
+
+    let nEnd = plan.n;
+    if (outcomeBand === "UP") {
+      nEnd = Math.min(plan.n + 1, nMax);
+    } else if (outcomeBand === "DOWN") {
+      nEnd = Math.max(plan.n - 1, 1);
+    }
+
+    return {
+      nEnd,
+      outcomeBand,
+      blockResult: {
+        blockIndex: plan.blockIndex,
+        wrapper: plan.wrapper,
+        nStart: plan.n,
+        nEnd,
+        speed: plan.speed,
+        targetModality: plan.targetModality,
+        trials: trials.length,
+        hits: relationMetrics.hits + surfaceMetrics.hits,
+        misses: relationMetrics.misses + surfaceMetrics.misses,
+        falseAlarms: relationMetrics.falseAlarms + surfaceMetrics.falseAlarms,
+        correctRejections: relationMetrics.correctRejections + surfaceMetrics.correctRejections,
+        accuracy,
+        accuracyRel: relationMetrics.accuracy,
+        accuracySym: surfaceMetrics.accuracy,
+        hitsRel: relationMetrics.hits,
+        missesRel: relationMetrics.misses,
+        falseAlarmsRel: relationMetrics.falseAlarms,
+        correctRejectionsRel: relationMetrics.correctRejections,
+        hitsSym: surfaceMetrics.hits,
+        missesSym: surfaceMetrics.misses,
+        falseAlarmsSym: surfaceMetrics.falseAlarms,
+        correctRejectionsSym: surfaceMetrics.correctRejections,
+        meanRtMs: rtStats.meanRtMs,
+        rtSdMs: rtStats.rtSdMs,
+        lapseCount,
+        errorBursts,
+        faOnLures: 0,
+        lureTrials: 0
+      }
+    };
+  }
+
   let hits = 0;
   let misses = 0;
   let falseAlarms = 0;

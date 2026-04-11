@@ -4160,40 +4160,6 @@
   transform-origin: 50% 50%;
 }
 
-.capacity-hub-token--relate-angle {
-  width: 132px;
-  height: 132px;
-  border-radius: 28px;
-  border-color: rgba(98, 141, 255, 0.22);
-  background:
-    radial-gradient(circle at 50% 46%, rgba(245, 181, 68, 0.14), rgba(245, 181, 68, 0) 62%),
-    linear-gradient(180deg, rgba(15, 26, 50, 0.96), rgba(10, 18, 36, 0.96));
-  color: #f5b544;
-  box-shadow:
-    0 14px 28px rgba(0, 0, 0, 0.36),
-    0 0 0 1px rgba(111, 170, 255, 0.06) inset;
-}
-
-.capacity-relate-angle {
-  width: 96px !important;
-  height: 96px !important;
-  overflow: visible;
-  transform-origin: 50% 50%;
-}
-
-.capacity-relate-angle path {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 6.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 0 14px rgba(245, 181, 68, 0.14));
-}
-
-.capacity-relate-angle circle {
-  fill: currentColor;
-}
-
 .capacity-hub-token--relate-number {
   width: 72px;
   height: 72px;
@@ -4246,8 +4212,22 @@
   justify-self: center;
 }
 
+.capacity-live-dual-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .capacity-phone-action--sandbox {
   margin-top: 0;
+}
+
+.capacity-live-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+  color: rgba(222, 232, 248, 0.74);
 }
 
 .capacity-live-secondary-row {

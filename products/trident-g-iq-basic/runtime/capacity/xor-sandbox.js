@@ -36,7 +36,7 @@ const WRAPPER_GROUPS = {
   bind: ["and_cat", "and_noncat"],
   resist: ["resist_vectors", "resist_words", "resist_concept"],
   emotion: ["emotion_faces", "emotion_words"],
-  relate: ["relate_vectors", "relate_angles", "relate_numbers"]
+  relate: ["relate_vectors", "relate_numbers", "relate_vectors_dual", "relate_numbers_dual"]
 };
 
 const CAPACITY_TREE_FAMILIES = [
@@ -78,9 +78,10 @@ const CAPACITY_TREE_FAMILIES = [
     id: "relate",
     label: "Relate",
     variants: [
-      { wrapper: "relate_vectors", label: "Vectors" },
-      { wrapper: "relate_angles", label: "Angles" },
-      { wrapper: "relate_numbers", label: "Numbers" }
+      { wrapper: "relate_vectors", label: "Vectors mono" },
+      { wrapper: "relate_numbers", label: "Numbers mono" },
+      { wrapper: "relate_vectors_dual", label: "Vectors dual" },
+      { wrapper: "relate_numbers_dual", label: "Numbers dual" }
     ]
   }
 ];
@@ -97,8 +98,9 @@ const LIVE_WRAPPERS = new Set([
   "emotion_faces",
   "emotion_words",
   "relate_vectors",
-  "relate_angles",
-  "relate_numbers"
+  "relate_numbers",
+  "relate_vectors_dual",
+  "relate_numbers_dual"
 ]);
 
 function preloadImageUrls(urls) {
@@ -152,13 +154,16 @@ function wrapperLabel(wrapper) {
     return "Emotion words";
   }
   if (wrapper === "relate_vectors") {
-    return "Relate vectors";
-  }
-  if (wrapper === "relate_angles") {
-    return "Relate angles";
+    return "Relate vectors mono";
   }
   if (wrapper === "relate_numbers") {
-    return "Relate numbers";
+    return "Relate numbers mono";
+  }
+  if (wrapper === "relate_vectors_dual") {
+    return "Relate vectors dual";
+  }
+  if (wrapper === "relate_numbers_dual") {
+    return "Relate numbers dual";
   }
   return "Flex known";
 }
@@ -177,7 +182,13 @@ function modalityLabel(targetModality, wrapper) {
 }
 
 function modalityMark(targetModality, wrapper) {
-  if (targetModality === "rel" || (typeof wrapper === "string" && wrapperFamily(wrapper) === "relate")) {
+  if (targetModality === "dual") {
+    return "\u2295";
+  }
+  if (typeof wrapper === "string" && wrapperFamily(wrapper) === "relate") {
+    return targetModality === "sym" ? "\u2197" : "\u21c4";
+  }
+  if (targetModality === "rel") {
     return "\u21c4";
   }
   if (targetModality === "col") {
@@ -231,6 +242,9 @@ function familyDefaultTarget(wrapper) {
   if (wrapperFamily(wrapper) === "bind") {
     return "conj";
   }
+  if (wrapper === "relate_vectors_dual" || wrapper === "relate_numbers_dual") {
+    return "dual";
+  }
   if (wrapperFamily(wrapper) === "relate") {
     return "rel";
   }
@@ -252,6 +266,46 @@ function familyDefaultTarget(wrapper) {
   return "loc";
 }
 
+function isRelateDualWrapper(wrapper) {
+  return wrapper === "relate_vectors_dual" || wrapper === "relate_numbers_dual";
+}
+
+function isFixedTargetWrapper(wrapper) {
+  return wrapperFamily(wrapper) === "bind" || isRelateDualWrapper(wrapper);
+}
+
+function isTargetAllowedForWrapper(wrapper, targetModality) {
+  if (wrapper.startsWith("and_")) {
+    return targetModality === "conj";
+  }
+  if (wrapper === "relate_vectors" || wrapper === "relate_numbers") {
+    return targetModality === "rel" || targetModality === "sym";
+  }
+  if (isRelateDualWrapper(wrapper)) {
+    return targetModality === "dual";
+  }
+  if (wrapper === "resist_vectors" || wrapper === "resist_concept") {
+    return targetModality === "loc" || targetModality === "sym";
+  }
+  if (wrapper === "resist_words" || wrapper === "emotion_words") {
+    return targetModality === "col" || targetModality === "sym";
+  }
+  if (wrapper === "emotion_faces") {
+    return targetModality === "loc" || targetModality === "sym";
+  }
+  return targetModality === "loc" || targetModality === "col" || targetModality === "sym";
+}
+
+function relateSecondaryLabel(wrapper) {
+  if (wrapper === "relate_vectors" || wrapper === "relate_vectors_dual") {
+    return "Orientation";
+  }
+  if (wrapper === "relate_numbers" || wrapper === "relate_numbers_dual") {
+    return "Direction";
+  }
+  return "Symbol";
+}
+
 function nextWrapper(current) {
   const order = familyWrappers(current);
   const index = Math.max(0, order.indexOf(current));
@@ -265,6 +319,7 @@ function blockEndN(entry) {
 function computeCoachFamilyProgress(history) {
   const progress = new Map(CAPACITY_TREE_FAMILIES.map((family) => [family.id, {
     stableWrappers: new Set(),
+    stableRelateTargets: new Set(),
     hasFastConfirm: false,
     hasSwapHold: false
   }]));
@@ -287,7 +342,22 @@ function computeCoachFamilyProgress(history) {
     const stable3Ok = consistencyOk && stableLevel >= 3 && accuracy >= 0.85 && nEnd >= 3;
 
     if (stable3Ok) {
-      familyProgress.stableWrappers.add(entry.wrapper);
+      if (familyId === "relate" && (entry.wrapper === "relate_vectors" || entry.wrapper === "relate_numbers")) {
+        const recentTargetHistory = recentHistory.filter((candidate) => candidate.wrapper === entry.wrapper && candidate.targetModality === entry.targetModality);
+        const targetStableLevel = computeStableLevel(recentTargetHistory);
+        const targetStable3Ok = targetStableLevel !== null && targetStableLevel >= 3 && accuracy >= 0.85 && nEnd >= 3;
+        if (targetStable3Ok) {
+          familyProgress.stableRelateTargets.add(`${entry.wrapper}:${entry.targetModality}`);
+        }
+        if (
+          familyProgress.stableRelateTargets.has(`${entry.wrapper}:rel`)
+          && familyProgress.stableRelateTargets.has(`${entry.wrapper}:sym`)
+        ) {
+          familyProgress.stableWrappers.add(entry.wrapper);
+        }
+      } else {
+        familyProgress.stableWrappers.add(entry.wrapper);
+      }
     }
     if (entry.speed === "fast" && stable3Ok) {
       familyProgress.hasFastConfirm = true;
@@ -316,9 +386,7 @@ function isCoachFamilyMastered(familyId, progress) {
     return false;
   }
 
-  const requiredWrappers = family.variants
-    .map((variant) => variant.wrapper)
-    .filter((wrapper) => !wrapper.startsWith("relate_"));
+  const requiredWrappers = family.variants.map((variant) => variant.wrapper);
   if (!requiredWrappers.length) {
     return false;
   }
@@ -351,13 +419,64 @@ function computeCoachUnlockState(history) {
   return { unlocked, mastered };
 }
 
+function latestHistoryEntries(history, predicate, count = 3) {
+  return history.filter(predicate).slice(0, count);
+}
+
+function hasRelateMonoCompetence(history, wrapper) {
+  const relationEntries = latestHistoryEntries(history, (entry) => entry.wrapper === wrapper && entry.targetModality === "rel");
+  const surfaceEntries = latestHistoryEntries(history, (entry) => entry.wrapper === wrapper && entry.targetModality === "sym");
+  if (relationEntries.length < 3 || surfaceEntries.length < 3) {
+    return false;
+  }
+  const trackOk = (entries) => entries.every((entry) => Number(entry?.block?.accuracy || 0) >= 0.75 && blockEndN(entry) >= 2);
+  return trackOk(relationEntries) && trackOk(surfaceEntries);
+}
+
+function hasRelateDualCompetence(history, wrapper) {
+  const dualEntries = latestHistoryEntries(history, (entry) => entry.wrapper === wrapper && entry.targetModality === "dual");
+  if (dualEntries.length < 3) {
+    return false;
+  }
+  return dualEntries.every((entry) => blockEndN(entry) >= 2 && Number(entry?.block?.accuracyRel || 0) >= 0.75 && Number(entry?.block?.accuracySym || 0) >= 0.75);
+}
+
+function computeUnlockedVariantWrappers(uiState, unlockedFamilies) {
+  const unlocked = new Set();
+  CAPACITY_TREE_FAMILIES.forEach((family) => {
+    if (!unlockedFamilies.has(family.id)) {
+      return;
+    }
+    if (family.id !== "relate") {
+      family.variants.forEach((variant) => {
+        if (LIVE_WRAPPERS.has(variant.wrapper)) {
+          unlocked.add(variant.wrapper);
+        }
+      });
+      return;
+    }
+
+    unlocked.add("relate_vectors");
+    if (hasRelateMonoCompetence(uiState.history, "relate_vectors")) {
+      unlocked.add("relate_numbers");
+    }
+    if (hasRelateMonoCompetence(uiState.history, "relate_numbers")) {
+      unlocked.add("relate_vectors_dual");
+    }
+    if (hasRelateDualCompetence(uiState.history, "relate_vectors_dual")) {
+      unlocked.add("relate_numbers_dual");
+    }
+  });
+  return unlocked;
+}
+
 function firstWrapperForFamily(familyId) {
   const family = CAPACITY_TREE_FAMILIES.find((entry) => entry.id === familyId);
   return family?.variants?.[0]?.wrapper || "hub_cat";
 }
 
-function resolveCapacityTreeWrapper(uiState, unlockedFamilies) {
-  if (uiState.activeBlock?.plan?.wrapper) {
+function resolveCapacityTreeWrapper(uiState, unlockedFamilies, unlockedWrappers) {
+  if (uiState.activeBlock?.plan?.wrapper && unlockedWrappers.has(uiState.activeBlock.plan.wrapper)) {
     return uiState.activeBlock.plan.wrapper;
   }
   if (uiState.settings.mode !== "coach") {
@@ -365,13 +484,13 @@ function resolveCapacityTreeWrapper(uiState, unlockedFamilies) {
   }
 
   const recommended = recommendSettings(uiState);
-  if (recommended?.wrapper && unlockedFamilies.has(wrapperFamily(recommended.wrapper))) {
+  if (recommended?.wrapper && unlockedWrappers.has(recommended.wrapper)) {
     return recommended.wrapper;
   }
-  if (unlockedFamilies.has(wrapperFamily(uiState.settings.wrapper))) {
+  if (unlockedWrappers.has(uiState.settings.wrapper)) {
     return uiState.settings.wrapper;
   }
-  if (uiState.lastSavedEntry?.wrapper && unlockedFamilies.has(wrapperFamily(uiState.lastSavedEntry.wrapper))) {
+  if (uiState.lastSavedEntry?.wrapper && unlockedWrappers.has(uiState.lastSavedEntry.wrapper)) {
     return uiState.lastSavedEntry.wrapper;
   }
 
@@ -383,7 +502,10 @@ function renderCapacityGamesPanel(uiState) {
   const unlockedFamilies = uiState.settings.mode === "coach"
     ? computeCoachUnlockState(uiState.history).unlocked
     : new Set(CAPACITY_TREE_FAMILIES.map((family) => family.id));
-  const activeWrapper = resolveCapacityTreeWrapper(uiState, unlockedFamilies);
+  const unlockedWrappers = uiState.settings.mode === "coach"
+    ? computeUnlockedVariantWrappers(uiState, unlockedFamilies)
+    : new Set(LIVE_WRAPPERS);
+  const activeWrapper = resolveCapacityTreeWrapper(uiState, unlockedFamilies, unlockedWrappers);
   const activeFamily = wrapperFamily(activeWrapper);
 
   return `
@@ -405,7 +527,7 @@ function renderCapacityGamesPanel(uiState) {
             <div class="capacity-games-variants">
               ${family.variants.map((variant) => {
                 const currentVariant = variant.wrapper === activeWrapper;
-                const variantUnlocked = unlocked && LIVE_WRAPPERS.has(variant.wrapper);
+                const variantUnlocked = unlocked && unlockedWrappers.has(variant.wrapper);
                 const variantClass = `capacity-games-variant ${variantUnlocked ? "is-unlocked" : "is-locked"}${currentVariant ? " is-current" : ""}`;
                 const variantDotClass = `capacity-games-variant-dot${currentVariant ? " is-current" : variantUnlocked ? " is-unlocked" : ""}`;
                 return `
@@ -471,19 +593,27 @@ function recommendSettings(uiState) {
     }
     if (wrapperFamily(uiState.settings.wrapper) === "relate") {
       return {
-        wrapper: uiState.settings.wrapper === "relate_angles"
-          ? "relate_angles"
-          : uiState.settings.wrapper === "relate_numbers"
-            ? "relate_numbers"
-            : "relate_vectors",
-        targetModality: "rel",
+        wrapper: uiState.settings.wrapper === "relate_numbers"
+          || uiState.settings.wrapper === "relate_vectors_dual"
+          || uiState.settings.wrapper === "relate_numbers_dual"
+          ? uiState.settings.wrapper
+          : "relate_vectors",
+        targetModality: familyDefaultTarget(
+          uiState.settings.wrapper === "relate_numbers"
+            || uiState.settings.wrapper === "relate_vectors_dual"
+            || uiState.settings.wrapper === "relate_numbers_dual"
+            ? uiState.settings.wrapper
+            : "relate_vectors"
+        ),
         speed: "slow",
         n: 1,
-        reason: uiState.settings.wrapper === "relate_angles"
-          ? "Start with angle-category matching to establish a stable relational baseline."
-          : uiState.settings.wrapper === "relate_numbers"
-            ? "Start with the numbers relation block to establish a stable relational baseline."
-            : "Start with the vectors relation block to establish a stable relational baseline."
+        reason: uiState.settings.wrapper === "relate_numbers"
+          ? "Start with the numbers mono block to establish a stable relational baseline."
+          : uiState.settings.wrapper === "relate_vectors_dual"
+            ? "Start with the vectors dual block to establish a stable relational baseline."
+            : uiState.settings.wrapper === "relate_numbers_dual"
+              ? "Start with the numbers dual block to establish a stable relational baseline."
+              : "Start with the vectors mono block to establish a stable relational baseline."
       };
     }
     return {
@@ -510,7 +640,7 @@ function recommendSettings(uiState) {
   if (drop) {
     return {
       wrapper: lastWrapper,
-      targetModality: wrapperFamily(lastWrapper) === "bind" ? "conj" : lastTarget,
+      targetModality: isFixedTargetWrapper(lastWrapper) ? familyDefaultTarget(lastWrapper) : lastTarget,
       speed: "slow",
       n: clampN(lastN - 1),
       reason: "Stability dipped; lower the load and slow the pace."
@@ -518,11 +648,15 @@ function recommendSettings(uiState) {
   }
 
   const swapCap = familyWrappers(lastWrapper).length;
+  const swappedWrapper = nextWrapper(lastWrapper);
+  const swappedTarget = isTargetAllowedForWrapper(swappedWrapper, lastTarget)
+    ? lastTarget
+    : familyDefaultTarget(swappedWrapper);
 
   if (stable && recentWrappers.size < swapCap) {
     return {
-      wrapper: nextWrapper(lastWrapper),
-      targetModality: wrapperFamily(lastWrapper) === "bind" ? "conj" : lastTarget,
+      wrapper: swappedWrapper,
+      targetModality: swappedTarget,
       speed: "slow",
       n: lastN,
       reason: "Stability held; swap wrapper before speed or n increases."
@@ -532,7 +666,7 @@ function recommendSettings(uiState) {
   if (stable && lastSpeed === "slow") {
     return {
       wrapper: lastWrapper,
-      targetModality: wrapperFamily(lastWrapper) === "bind" ? "conj" : lastTarget,
+      targetModality: isFixedTargetWrapper(lastWrapper) ? familyDefaultTarget(lastWrapper) : lastTarget,
       speed: "fast",
       n: lastN,
       reason: "Confirm stability under faster timing before increasing n."
@@ -542,7 +676,7 @@ function recommendSettings(uiState) {
   if (stable && lastSpeed === "fast") {
     return {
       wrapper: lastWrapper,
-      targetModality: wrapperFamily(lastWrapper) === "bind" ? "conj" : lastTarget,
+      targetModality: isFixedTargetWrapper(lastWrapper) ? familyDefaultTarget(lastWrapper) : lastTarget,
       speed: "fast",
       n: clampN(lastN + 1),
       reason: "Stable at fast pace; increase n."
@@ -551,7 +685,7 @@ function recommendSettings(uiState) {
 
   return {
     wrapper: lastWrapper,
-    targetModality: wrapperFamily(lastWrapper) === "bind" ? "conj" : lastTarget,
+    targetModality: isFixedTargetWrapper(lastWrapper) ? familyDefaultTarget(lastWrapper) : lastTarget,
     speed: lastSpeed,
     n: lastN,
     reason: "Hold current settings to build stability."
@@ -877,7 +1011,7 @@ function createUiState() {
     status: "idle",
     activeBlock: null,
     activeMessage: "Pick a wrapper and start a block inside the new capacity shell.",
-    coachMessage: "Use this route to play Flex, Bind, Resist, and the live Relate vector, angle, and numbers blocks without wiring the full telemetry stack or official progression engine.",
+    coachMessage: "Use this route to play Flex, Bind, Resist, Emotion, and the live Relate mono and dual blocks without wiring the full telemetry stack or official progression engine.",
     lastSavedEntry: persisted.history[0] || null
   };
 }
@@ -894,37 +1028,6 @@ function renderRelateVectorTokenMarkup(token, visible) {
     <div class="capacity-hub-token capacity-hub-token--relate${visible ? "" : " is-hidden"}" style="left:${point.xPct}%;top:${point.yPct}%;">
       <svg class="capacity-relate-arrow" viewBox="0 0 48 48" aria-hidden="true" style="transform:rotate(${rotationDeg}deg);">
         <path d="M24 6 39 23H30V42H18V23H9L24 6Z"></path>
-      </svg>
-    </div>
-  `;
-}
-
-function relateAnglePath(angleDeg) {
-  const centerX = 24;
-  const centerY = 24;
-  const radius = 16;
-  const halfAngle = Number(angleDeg || 90) / 2;
-  const points = [-halfAngle, halfAngle].map((offsetDeg) => {
-    const theta = (offsetDeg * Math.PI) / 180;
-    return {
-      x: centerX + (radius * Math.sin(theta)),
-      y: centerY - (radius * Math.cos(theta))
-    };
-  });
-
-  return `M ${centerX} ${centerY} L ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)} M ${centerX} ${centerY} L ${points[1].x.toFixed(2)} ${points[1].y.toFixed(2)}`;
-}
-
-function renderRelateAngleTokenMarkup(display, visible) {
-  const point = display?.pointPct || { xPct: 50, yPct: 50 };
-  const rotationDeg = Number(display?.rotationDeg || 0);
-  const path = relateAnglePath(display?.angleDeg);
-
-  return `
-    <div class="capacity-hub-token capacity-hub-token--relate-angle${visible ? "" : " is-hidden"}" style="left:${point.xPct}%;top:${point.yPct}%;">
-      <svg class="capacity-relate-angle" viewBox="0 0 48 48" aria-hidden="true" style="transform:rotate(${rotationDeg}deg);">
-        <path d="${path}"></path>
-        <circle cx="24" cy="24" r="2.6"></circle>
       </svg>
     </div>
   `;
@@ -947,7 +1050,14 @@ function trialSequenceGapMs(trial) {
 
 function isMatchWindowOpen(uiState) {
   const active = uiState.activeBlock;
-  if (!active || uiState.status !== "trial" || active.responseCaptured) {
+  if (!active || uiState.status !== "trial") {
+    return false;
+  }
+  if (active.plan?.targetModality === "dual") {
+    if (active.responseRelCaptured && active.responseSymCaptured) {
+      return false;
+    }
+  } else if (active.responseCaptured) {
     return false;
   }
 
@@ -966,8 +1076,7 @@ function arenaMarkup(uiState) {
     || wrapperForMarkers === "and_noncat"
     || wrapperForMarkers === "resist_words"
     || wrapperForMarkers === "emotion_words"
-    || wrapperForMarkers === "resist_concept"
-    || wrapperForMarkers === "relate_angles";
+    || wrapperForMarkers === "resist_concept";
   const markers = hideMarkers
     ? ""
     : points.map((point) => `<span class="capacity-hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`).join("");
@@ -978,9 +1087,8 @@ function arenaMarkup(uiState) {
   const textColor = trial?.display?.textHex || fallbackTextColor;
   const shapeColor = trial?.display?.colourHex || "#ffffff";
   const activeWrapper = active?.plan?.wrapper || uiState.settings.wrapper;
-  const isRelateVectorWrapper = activeWrapper === "relate_vectors";
-  const isRelateAngleWrapper = activeWrapper === "relate_angles";
-  const isRelateNumbersWrapper = activeWrapper === "relate_numbers";
+  const isRelateVectorWrapper = activeWrapper === "relate_vectors" || activeWrapper === "relate_vectors_dual";
+  const isRelateNumbersWrapper = activeWrapper === "relate_numbers" || activeWrapper === "relate_numbers_dual";
   const isWordWrapper = activeWrapper === "resist_words" || activeWrapper === "emotion_words";
   let token = "";
   const isShape = Boolean(trial?.display?.symbolSvgPath);
@@ -1011,7 +1119,7 @@ function arenaMarkup(uiState) {
         ? "is-resist is-resist-words"
       : activeWrapper === "resist_concept"
         ? "is-resist is-resist-concept"
-      : activeWrapper === "relate_vectors" || activeWrapper === "relate_angles" || activeWrapper === "relate_numbers"
+      : isRelateVectorWrapper || isRelateNumbersWrapper
         ? "is-relate"
       : activeWrapper?.startsWith("and_")
         ? (activeWrapper === "and_noncat" ? "is-and is-and-remap" : "is-and")
@@ -1027,16 +1135,6 @@ function arenaMarkup(uiState) {
         <div class="capacity-hub-ring"></div>
         ${markers}
         ${relationTokens}
-      </div>
-    `;
-  }
-
-  if (isRelateAngleWrapper) {
-    return `
-      <div class="capacity-hub-arena ${wrapperClass}${uiState.status === "paused" ? " is-paused" : ""}">
-        <div class="capacity-hub-ring"></div>
-        ${markers}
-        ${trial ? renderRelateAngleTokenMarkup(trial.display, visible) : ""}
       </div>
     `;
   }
@@ -1067,17 +1165,19 @@ function setupMarkup(uiState) {
   const last = uiState.lastSavedEntry;
   const statusLabel = uiState.status === "result" ? "Saved" : "Ready";
   const family = wrapperFamily(uiState.settings.wrapper);
-  const isFixedTarget = family === "bind" || family === "relate";
-  const relateTargetLabel = uiState.settings.wrapper === "relate_angles"
-    ? "Angle"
-    : uiState.settings.wrapper === "relate_numbers"
-      ? "Number relation"
-      : "Relation";
+  const isFixedTarget = isFixedTargetWrapper(uiState.settings.wrapper);
+  const relateTargetLabel = uiState.settings.wrapper === "relate_numbers"
+    ? "Number relation"
+    : "Relation";
   const targetOptions = family === "bind"
     ? `<option value="conj" selected>Colour + Symbol</option>`
-    : family === "relate"
-      ? `<option value="rel" selected>${relateTargetLabel}</option>`
-    : uiState.settings.wrapper === "resist_vectors"
+    : uiState.settings.wrapper === "relate_vectors"
+      ? `<option value="rel" ${uiState.settings.targetModality === "rel" ? "selected" : ""}>Relation</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Orientation</option>`
+      : uiState.settings.wrapper === "relate_numbers"
+        ? `<option value="rel" ${uiState.settings.targetModality === "rel" ? "selected" : ""}>${relateTargetLabel}</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Direction</option>`
+        : isRelateDualWrapper(uiState.settings.wrapper)
+          ? `<option value="dual" selected>Dual</option>`
+      : uiState.settings.wrapper === "resist_vectors"
       || uiState.settings.wrapper === "resist_concept"
       ? `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Direction</option>`
       : uiState.settings.wrapper === "resist_words"
@@ -1105,7 +1205,7 @@ function setupMarkup(uiState) {
           </div>
           ${uiState.settings.mode === "manual"
             ? `
-            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option><option value="resist_vectors" ${uiState.settings.wrapper === "resist_vectors" ? "selected" : ""}>Resist vectors</option><option value="resist_words" ${uiState.settings.wrapper === "resist_words" ? "selected" : ""}>Resist words</option><option value="resist_concept" ${uiState.settings.wrapper === "resist_concept" ? "selected" : ""}>Resist concept</option><option value="emotion_faces" ${uiState.settings.wrapper === "emotion_faces" ? "selected" : ""}>Emotion faces</option><option value="emotion_words" ${uiState.settings.wrapper === "emotion_words" ? "selected" : ""}>Emotion words</option><option value="relate_vectors" ${uiState.settings.wrapper === "relate_vectors" ? "selected" : ""}>Relate vectors</option><option value="relate_angles" ${uiState.settings.wrapper === "relate_angles" ? "selected" : ""}>Relate angles</option><option value="relate_numbers" ${uiState.settings.wrapper === "relate_numbers" ? "selected" : ""}>Relate numbers</option></select></label>
+            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option><option value="resist_vectors" ${uiState.settings.wrapper === "resist_vectors" ? "selected" : ""}>Resist vectors</option><option value="resist_words" ${uiState.settings.wrapper === "resist_words" ? "selected" : ""}>Resist words</option><option value="resist_concept" ${uiState.settings.wrapper === "resist_concept" ? "selected" : ""}>Resist concept</option><option value="emotion_faces" ${uiState.settings.wrapper === "emotion_faces" ? "selected" : ""}>Emotion faces</option><option value="emotion_words" ${uiState.settings.wrapper === "emotion_words" ? "selected" : ""}>Emotion words</option><option value="relate_vectors" ${uiState.settings.wrapper === "relate_vectors" ? "selected" : ""}>Relate vectors mono</option><option value="relate_numbers" ${uiState.settings.wrapper === "relate_numbers" ? "selected" : ""}>Relate numbers mono</option><option value="relate_vectors_dual" ${uiState.settings.wrapper === "relate_vectors_dual" ? "selected" : ""}>Relate vectors dual</option><option value="relate_numbers_dual" ${uiState.settings.wrapper === "relate_numbers_dual" ? "selected" : ""}>Relate numbers dual</option></select></label>
             <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality" ${isFixedTarget ? "disabled" : ""}>${targetOptions}</select></label>
             <label class="capacity-lab-field"><span>Speed</span><select data-lab-setting="speed"><option value="slow" ${uiState.settings.speed === "slow" ? "selected" : ""}>Slow pace</option><option value="fast" ${uiState.settings.speed === "fast" ? "selected" : ""}>Fast pace</option></select></label>
             <label class="capacity-lab-field capacity-lab-field--wide"><span>N-back</span><select data-lab-setting="n">${Array.from({ length: HUB_N_MAX }, (_, index) => { const value = index + 1; return `<option value="${value}" ${uiState.settings.n === value ? "selected" : ""}>N-${value}</option>`; }).join("")}</select></label>
@@ -1126,7 +1226,23 @@ function liveMarkup(uiState) {
   const active = uiState.activeBlock;
   const pauseAction = uiState.status === "paused" ? "resume" : "pause";
   const pauseLabel = uiState.status === "paused" ? "Resume" : "Pause";
-  const matchDisabled = !isMatchWindowOpen(uiState);
+  const matchWindowOpen = isMatchWindowOpen(uiState);
+  const isDual = active?.plan?.targetModality === "dual";
+  const secondaryLabel = relateSecondaryLabel(active?.plan?.wrapper);
+  const secondaryDisabled = !matchWindowOpen || Boolean(active?.responseSymCaptured);
+  const relationDisabled = !matchWindowOpen || Boolean(active?.responseRelCaptured);
+  const singleMatchDisabled = !matchWindowOpen;
+  const actionRow = isDual
+    ? `
+      <div class="capacity-live-dual-row">
+        <button class="capacity-phone-action capacity-phone-action--sandbox" type="button" data-lab-action="match-sym" ${secondaryDisabled ? "disabled" : ""}>${escapeHtml(secondaryLabel)}</button>
+        <button class="capacity-phone-action capacity-phone-action--sandbox" type="button" data-lab-action="match-rel" ${relationDisabled ? "disabled" : ""}>Relation</button>
+      </div>
+    `
+    : `<button class="capacity-phone-action capacity-phone-action--sandbox" type="button" data-lab-action="match" ${singleMatchDisabled ? "disabled" : ""}>Match</button>`;
+  const hintMarkup = isDual
+    ? `<p class="capacity-live-hint">Keys: Left Arrow = ${escapeHtml(secondaryLabel.toLowerCase())}, Right Arrow = relation.</p>`
+    : "";
 
   return `
     <div class="capacity-sandbox-shell capacity-sandbox-shell--live">
@@ -1135,7 +1251,8 @@ function liveMarkup(uiState) {
           ${arenaMarkup(uiState)}
         </div>
         <div class="capacity-live-actions capacity-live-actions--sandbox">
-          <button class="capacity-phone-action capacity-phone-action--sandbox" type="button" data-lab-action="match" ${matchDisabled ? "disabled" : ""}>Match</button>
+          ${actionRow}
+          ${hintMarkup}
           <div class="capacity-live-secondary-row">
             <button class="capacity-lab-secondary-btn" type="button" data-lab-action="${pauseAction}">${pauseLabel}</button>
             <button class="capacity-lab-secondary-btn" type="button" data-lab-action="discard">Stop block</button>
@@ -1334,23 +1451,12 @@ export function mountCapacityLab({ root }) {
         const key = event.currentTarget.dataset.labSetting;
         const value = key === "n" ? Number(event.currentTarget.value) : event.currentTarget.value;
         if (key === "wrapper") {
-          const nextTarget = wrapperFamily(value) === "bind" || wrapperFamily(value) === "relate"
-            ? familyDefaultTarget(value)
-            : wrapperFamily(value) === "resist" && uiState.settings.targetModality === "col"
-              ? familyDefaultTarget(value)
-              : wrapperFamily(value) === "emotion" && (
-                uiState.settings.targetModality === "conj"
-                || uiState.settings.targetModality === "rel"
-                || (value === "emotion_faces" && uiState.settings.targetModality === "col")
-                || (value === "emotion_words" && uiState.settings.targetModality === "loc")
-              )
-              ? familyDefaultTarget(value)
-              : uiState.settings.targetModality === "conj" || uiState.settings.targetModality === "rel"
-                ? familyDefaultTarget(value)
-                : uiState.settings.targetModality;
+          const nextTarget = isTargetAllowedForWrapper(value, uiState.settings.targetModality)
+            ? uiState.settings.targetModality
+            : familyDefaultTarget(value);
           syncSettings({ wrapper: value, targetModality: nextTarget });
         } else if (key === "targetModality") {
-          const nextTarget = wrapperFamily(uiState.settings.wrapper) === "bind" || wrapperFamily(uiState.settings.wrapper) === "relate"
+          const nextTarget = isFixedTargetWrapper(uiState.settings.wrapper)
             ? familyDefaultTarget(uiState.settings.wrapper)
             : value;
           syncSettings({ targetModality: nextTarget });
@@ -1384,6 +1490,12 @@ export function mountCapacityLab({ root }) {
         } else if (action === "match") {
           unlockAudioContextFromUserGesture();
           captureResponse();
+        } else if (action === "match-rel") {
+          unlockAudioContextFromUserGesture();
+          captureResponse("rel");
+        } else if (action === "match-sym") {
+          unlockAudioContextFromUserGesture();
+          captureResponse("sym");
         } else if (action === "pause") {
           pauseBlock();
         } else if (action === "resume") {
@@ -1508,11 +1620,39 @@ export function mountCapacityLab({ root }) {
     }
   }
 
-  function captureResponse() {
+  function classifyResponse(responded, isMatch) {
+    if (responded && isMatch) {
+      return "hit";
+    }
+    if (responded && !isMatch) {
+      return "false_alarm";
+    }
+    if (!responded && isMatch) {
+      return "miss";
+    }
+    return "correct_rejection";
+  }
+
+  function captureResponse(targetModality = "primary") {
     const active = uiState.activeBlock;
     if (!isMatchWindowOpen(uiState)) {
       return false;
     }
+    if (active.plan?.targetModality === "dual") {
+      const responseKey = targetModality === "rel" ? "rel" : "sym";
+      const capturedKey = responseKey === "rel" ? "responseRelCaptured" : "responseSymCaptured";
+      const rtKey = responseKey === "rel" ? "responseRelRtMs" : "responseSymRtMs";
+      if (active[capturedKey]) {
+        return false;
+      }
+      active[capturedKey] = true;
+      active[rtKey] = Math.max(0, Math.round(performance.now() - active.trialStartedAtMs));
+      uiState.coachMessage = `${responseKey === "rel" ? "Relation" : relateSecondaryLabel(active.plan.wrapper)} response logged. Hold for the next trial.`;
+      playSfx("game_match_press");
+      render();
+      return true;
+    }
+
     active.responseCaptured = true;
     active.responseRtMs = Math.max(0, Math.round(performance.now() - active.trialStartedAtMs));
     playSfx("game_match_press");
@@ -1607,6 +1747,10 @@ export function mountCapacityLab({ root }) {
     active.stimulusVisible = true;
     active.responseCaptured = false;
     active.responseRtMs = null;
+    active.responseRelCaptured = false;
+    active.responseSymCaptured = false;
+    active.responseRelRtMs = null;
+    active.responseSymRtMs = null;
     active.trialStartedAtMs = performance.now();
     active.pausedState = null;
     active.trialVisualStage = trialSequenceGapMs(active.trials[index]) > 0 ? 1 : 2;
@@ -1665,40 +1809,74 @@ export function mountCapacityLab({ root }) {
     }
 
     const trial = active.trials[active.trialIndex];
-    const isMatch = isHubMatchAtIndex(active.trials, active.trialIndex, active.plan.n);
-    const responded = active.responseCaptured;
+    if (active.plan.targetModality === "dual") {
+      const isMatchRel = isHubMatchAtIndex(active.trials, active.trialIndex, active.plan.n, "rel");
+      const isMatchSym = isHubMatchAtIndex(active.trials, active.trialIndex, active.plan.n, "sym");
+      const respondedRel = Boolean(active.responseRelCaptured);
+      const respondedSym = Boolean(active.responseSymCaptured);
+      const classificationRel = classifyResponse(respondedRel, isMatchRel);
+      const classificationSym = classifyResponse(respondedSym, isMatchSym);
+      const relError = classificationRel === "miss" || classificationRel === "false_alarm";
+      const symError = classificationSym === "miss" || classificationSym === "false_alarm";
+      const isError = relError || symError;
+      const sfxClassification = classificationRel === "false_alarm" || classificationSym === "false_alarm"
+        ? "false_alarm"
+        : (classificationRel === "miss" || classificationSym === "miss"
+          ? "miss"
+          : (classificationRel === "hit" || classificationSym === "hit" ? "hit" : "correct_rejection"));
 
-    let classification = "correct_rejection";
-    let isError = false;
-    if (responded && isMatch) {
-      classification = "hit";
-    } else if (responded && !isMatch) {
-      classification = "false_alarm";
-      isError = true;
-    } else if (!responded && isMatch) {
-      classification = "miss";
-      isError = true;
+      if (sfxClassification === "hit") {
+        playSfx("trial_hit");
+      } else if (sfxClassification === "false_alarm") {
+        playSfx("trial_false_alarm");
+      } else if (sfxClassification === "miss") {
+        playSfx("trial_miss");
+      }
+
+      active.trialOutcomes.push({
+        trialIndex: active.trialIndex,
+        canonKey: trial.canonKey,
+        canonRelKey: trial.canonRelKey,
+        canonSymKey: trial.canonSymKey,
+        isMatchRel,
+        isMatchSym,
+        respondedRel,
+        respondedSym,
+        responseRelRtMs: respondedRel ? active.responseRelRtMs : null,
+        responseSymRtMs: respondedSym ? active.responseSymRtMs : null,
+        classificationRel,
+        classificationSym,
+        classification: isError ? "error" : "ok",
+        isError,
+        isLapse: (!respondedRel && isMatchRel) || (!respondedSym && isMatchSym),
+        isLure: false
+      });
+    } else {
+      const isMatch = isHubMatchAtIndex(active.trials, active.trialIndex, active.plan.n, active.plan.targetModality);
+      const responded = active.responseCaptured;
+      const classification = classifyResponse(responded, isMatch);
+      const isError = classification === "miss" || classification === "false_alarm";
+
+      if (classification === "hit") {
+        playSfx("trial_hit");
+      } else if (classification === "false_alarm") {
+        playSfx("trial_false_alarm");
+      } else if (classification === "miss") {
+        playSfx("trial_miss");
+      }
+
+      active.trialOutcomes.push({
+        trialIndex: active.trialIndex,
+        canonKey: trial.canonKey,
+        isMatch,
+        isLure: Boolean(trial.isLure),
+        responded,
+        rtMs: responded ? active.responseRtMs : null,
+        isError,
+        isLapse: !responded && isMatch,
+        classification
+      });
     }
-
-    if (classification === "hit") {
-      playSfx("trial_hit");
-    } else if (classification === "false_alarm") {
-      playSfx("trial_false_alarm");
-    } else if (classification === "miss") {
-      playSfx("trial_miss");
-    }
-
-    active.trialOutcomes.push({
-      trialIndex: active.trialIndex,
-      canonKey: trial.canonKey,
-      isMatch,
-      isLure: Boolean(trial.isLure),
-      responded,
-      rtMs: responded ? active.responseRtMs : null,
-      isError,
-      isLapse: !responded && isMatch,
-      classification
-    });
 
     if (timers.display) {
       clearTimeout(timers.display);
@@ -1729,7 +1907,7 @@ export function mountCapacityLab({ root }) {
     unlockAudioContextFromUserGesture();
     clearTimers();
     const baseSettings = overrideSettings || uiState.settings;
-    const resolvedTarget = wrapperFamily(baseSettings.wrapper) === "bind" || wrapperFamily(baseSettings.wrapper) === "relate"
+    const resolvedTarget = isFixedTargetWrapper(baseSettings.wrapper)
       ? familyDefaultTarget(baseSettings.wrapper)
       : baseSettings.targetModality;
     const tsStart = Date.now();
@@ -1774,6 +1952,10 @@ export function mountCapacityLab({ root }) {
       stimulusVisible: false,
       responseCaptured: false,
       responseRtMs: null,
+      responseRelCaptured: false,
+      responseSymCaptured: false,
+      responseRelRtMs: null,
+      responseSymRtMs: null,
       trialStartedAtMs: 0,
       trialVisualStage: 0,
       cueEndsAtMs: 0,
@@ -1806,6 +1988,27 @@ export function mountCapacityLab({ root }) {
     const tagName = String(event.target?.tagName || "").toLowerCase();
     if (tagName === "select") {
       return;
+    }
+    const active = uiState.activeBlock;
+    if (active?.plan?.targetModality === "dual") {
+      if (event.code === "ArrowLeft") {
+        unlockAudioContextFromUserGesture();
+        if (captureResponse("sym")) {
+          event.preventDefault();
+        }
+        return;
+      }
+      if (event.code === "ArrowRight") {
+        unlockAudioContextFromUserGesture();
+        if (captureResponse("rel")) {
+          event.preventDefault();
+        }
+        return;
+      }
+      if (event.code === "Space" || event.code === "Enter") {
+        event.preventDefault();
+        return;
+      }
     }
     if (event.code === "Space" || event.code === "Enter") {
       unlockAudioContextFromUserGesture();

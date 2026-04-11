@@ -24,7 +24,10 @@ function clampN(value) {
 }
 
 function normalizeWrapper(value) {
-  if (value === "hub_noncat" || value === "hub_concept" || value === "and_cat" || value === "and_noncat" || value === "resist_vectors" || value === "resist_words" || value === "resist_concept" || value === "emotion_faces" || value === "emotion_words" || value === "relate_vectors" || value === "relate_angles" || value === "relate_numbers") {
+  if (value === "relate_angles") {
+    return "relate_vectors";
+  }
+  if (value === "hub_noncat" || value === "hub_concept" || value === "and_cat" || value === "and_noncat" || value === "resist_vectors" || value === "resist_words" || value === "resist_concept" || value === "emotion_faces" || value === "emotion_words" || value === "relate_vectors" || value === "relate_numbers" || value === "relate_vectors_dual" || value === "relate_numbers_dual") {
     return value;
   }
   return "hub_cat";
@@ -34,8 +37,11 @@ function normalizeTargetModality(wrapper, value) {
   if (wrapper.startsWith("and_")) {
     return "conj";
   }
-  if (wrapper === "relate_vectors" || wrapper === "relate_angles" || wrapper === "relate_numbers") {
-    return "rel";
+  if (wrapper === "relate_vectors" || wrapper === "relate_numbers") {
+    return value === "sym" ? "sym" : "rel";
+  }
+  if (wrapper === "relate_vectors_dual" || wrapper === "relate_numbers_dual") {
+    return "dual";
   }
   if (wrapper === "resist_vectors") {
     return value === "sym" ? "sym" : "loc";
