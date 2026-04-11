@@ -1222,10 +1222,9 @@ export const capacityLabTelemetrySeed = [
           <div class="capacity-sandbox-reward">
             <div class="capacity-sandbox-reward-coin" aria-hidden="true"></div>
             <div>
-              <div class="capacity-sandbox-reward-label" data-sandbox-reward-label>Tridents</div>
+              <div class="capacity-sandbox-reward-label">Tridents</div>
               <div class="capacity-sandbox-reward-value">--</div>
-              <div class="capacity-sandbox-reward-sub" data-sandbox-reward-sub>Session reward</div>
-              <div class="capacity-sandbox-subline" data-sandbox-route-summary>Run Zone Coach to open a guided session.</div>
+              <div class="capacity-sandbox-reward-sub">Session reward</div>
             </div>
           </div>
         </div>
@@ -1256,12 +1255,6 @@ export const capacityLabTelemetrySeed = [
               <div class="capacity-sandbox-label">Pressure status</div>
               <div class="capacity-sandbox-value" data-sandbox-pressure>--</div>
             </div>
-          </div>
-          <div class="capacity-sandbox-ledger">
-            <div class="capacity-sandbox-row"><span>20-Day Rewire</span><span data-sandbox-core-count>0 / 20</span></div>
-            <div class="capacity-sandbox-row"><span>Support work</span><span data-sandbox-support-count>0</span></div>
-            <div class="capacity-sandbox-row"><span>Reset work</span><span data-sandbox-reset-count>0</span></div>
-            <div class="capacity-sandbox-row"><span>In-zone check-ins</span><span data-sandbox-zone-count>0</span></div>
           </div>
         </div>
 
@@ -1461,7 +1454,6 @@ function setupMarkup(uiState) {
   const statusLabel = uiState.status === "result" ? "Saved" : "Ready";
   const family = wrapperFamily(uiState.settings.wrapper);
   const guidedPlan = activeGuidedPlan(uiState);
-  const zoneReady = Boolean(guidedPlan);
   const guidedStartDisabled = uiState.settings.mode === "coach" && (!guidedPlan || guidedPlan.routeClass === "recovery");
   const guidedStatusTitle = guidedPlan
     ? `${routeClassLabel(guidedPlan.routeClass)} route · ${guidedPlan.blocksMin}-${guidedPlan.blocksMax} blocks`
@@ -1498,10 +1490,6 @@ function setupMarkup(uiState) {
         <div class="capacity-live-head">
           <div class="capacity-live-kicker">Capacity sandbox</div>
           <div class="capacity-live-pill">${escapeHtml(statusLabel)}</div>
-        </div>
-        <div class="capacity-lab-route-card${zoneReady ? " is-ready" : ""}">
-          <div class="capacity-lab-route-title">${escapeHtml(guidedStatusTitle)}</div>
-          <div class="capacity-lab-route-copy">${escapeHtml(guidedStatusBody)}</div>
         </div>
         <div class="capacity-lab-setup-grid">
           <div class="capacity-lab-field capacity-lab-field--wide">
@@ -1724,6 +1712,8 @@ export function mountCapacityLab({ root }) {
         } else {
           coach.textContent = `${buildCoachMessage(recommendation)} Session bounds: ${guidedPlan.blocksMin}-${guidedPlan.blocksMax} blocks, ${rewardModeLabel(guidedPlan.rewardMode)} lane.`;
         }
+      } else if (!uiState.activeBlock) {
+        coach.textContent = "Manual mode: choose your own settings for the next block. Open play stays local and never counts toward the 20-session core route.";
       } else {
         coach.textContent = uiState.coachMessage;
       }
@@ -1871,57 +1861,35 @@ export function mountCapacityLab({ root }) {
     if (!rail) return;
 
     const history = uiState.history;
-    const progression = progressionHistory(history);
     const active = uiState.activeBlock;
-    const rewards = computeRewards(progression);
+    const rewards = computeRewards(history);
     const events = rewards.timeline;
     const readiness = transferReadinessLabel(events);
-    const stable = computeStableLevel(progression);
-    const guidedPlan = activeGuidedPlan(uiState);
-    const session = uiState.currentSession || guidedPlan;
-    const sessionEntries = session?.sessionId ? currentSessionEntries(history, session.sessionId) : [];
-    const blocksCompleted = uiState.currentSession?.blocksCompleted || 0;
-    const sessionBlockNumber = session ? Math.min(session.plannedBlocks || 0, blocksCompleted + 1) : 0;
-    const sessionProgress = session?.plannedBlocks
-      ? Math.min(100, Math.round((blocksCompleted / session.plannedBlocks) * 100))
-      : 0;
-    const sessionAvg = sessionEntries.length
-      ? (sessionEntries.reduce((sum, entry) => sum + clampN(entry.block?.nEnd ?? entry.block?.nStart ?? 1), 0) / sessionEntries.length)
+    const stable = computeStableLevel(history);
+    const sessionBlocks = sessionHistory(history);
+    const sessionTridents = events
+      .filter((event) => event.sessionIndex === (Math.floor(history.length / 10) + 1))
+      .reduce((sum, event) => sum + (REWARD_EVENTS[event.name]?.tridents || 0), 0);
+    const sessionBlockNumber = sessionBlockIndex(history, active);
+    const sessionProgress = Math.min(100, Math.round((sessionBlockNumber / 10) * 100));
+    const sessionAvg = sessionBlocks.length
+      ? (sessionBlocks.reduce((sum, entry) => sum + clampN(entry.block?.nEnd ?? entry.block?.nStart ?? 1), 0) / sessionBlocks.length)
       : null;
     const last = history[0] || null;
     const lastSummary = lastBlockSummary(last);
     const recommendation = recommendSettings(uiState);
-    const zoneState = loadZoneRuntimeState();
-    const zonePasses = zoneState.history.filter((entry) => entry.valid && entry.state === "in_zone").length;
-    const coreCount = uiState.sessionResolutions.filter((entry) => entry.countedAsEncoding20).length;
-    const supportCount = uiState.sessionResolutions.filter((entry) => entry.sessionClassResolved === "support").length;
-    const resetCount = uiState.sessionResolutions.filter((entry) => Number(entry.resetCreditsEarned || 0) > 0).length;
 
     const sessionRewardValue = rail.querySelector(".capacity-sandbox-reward-value");
     if (sessionRewardValue) {
-      sessionRewardValue.textContent = session ? rewardModeLabel(session.rewardMode).toUpperCase() : (uiState.settings.mode === "coach" ? "WAIT" : "OPEN");
-    }
-    const rewardLabel = rail.querySelector("[data-sandbox-reward-label]");
-    if (rewardLabel) {
-      rewardLabel.textContent = "Reward lane";
-    }
-    const rewardSub = rail.querySelector("[data-sandbox-reward-sub]");
-    if (rewardSub) {
-      rewardSub.textContent = session ? `${routeClassLabel(session.routeClass)} route` : (uiState.settings.mode === "coach" ? "Zone-gated session" : "Manual open play");
-    }
-    const routeSummary = rail.querySelector("[data-sandbox-route-summary]");
-    if (routeSummary) {
-      routeSummary.textContent = session
-        ? `${session.uiState} · ${session.blocksMin}-${session.blocksMax} blocks`
-        : "Run Zone Coach to open a guided session.";
+      sessionRewardValue.textContent = sessionBlocks.length ? `+${sessionTridents}` : "--";
     }
     const sessionBlockLabel = rail.querySelector("[data-sandbox-session-block]");
     if (sessionBlockLabel) {
-      sessionBlockLabel.textContent = session ? `BLOCK ${sessionBlockNumber} OF ${session.plannedBlocks}` : "--";
+      sessionBlockLabel.textContent = sessionBlockNumber ? `BLOCK ${sessionBlockNumber} OF 10` : "--";
     }
     const sessionCounted = rail.querySelector("[data-sandbox-session-counted]");
     if (sessionCounted) {
-      sessionCounted.textContent = session ? (session.eligibleForEncoding20 ? "ELIGIBLE" : rewardModeLabel(session.rewardMode).toUpperCase()) : "--";
+      sessionCounted.textContent = sessionBlockNumber ? "COUNTED" : "--";
     }
     const sessionProgressBar = rail.querySelector("[data-sandbox-session-progress]");
     if (sessionProgressBar) {
@@ -1941,10 +1909,8 @@ export function mountCapacityLab({ root }) {
     }
     const pressure = rail.querySelector("[data-sandbox-pressure]");
     if (pressure) {
-      const fastConfirmed = progression.some((entry) => entry.speed === "fast" && Number(entry.block?.accuracy || 0) >= 0.9);
-      pressure.textContent = session
-        ? rewardModeLabel(session.rewardMode)
-        : stable ? (fastConfirmed ? "Fast confirmed" : "Fast hold next") : "--";
+      const fastConfirmed = history.some((entry) => entry.speed === "fast" && Number(entry.block?.accuracy || 0) >= 0.9);
+      pressure.textContent = stable ? (fastConfirmed ? "Fast confirmed" : "Fast hold next") : "--";
     }
 
     const nextBlock = rail.querySelector("[data-sandbox-next]");
@@ -1973,23 +1939,7 @@ export function mountCapacityLab({ root }) {
     }
     const spark = rail.querySelector("[data-sandbox-spark]");
     if (spark) {
-      spark.setAttribute("points", progression.length ? sparkPoints(progression) : "2,22 168,22");
-    }
-    const coreCountNode = rail.querySelector("[data-sandbox-core-count]");
-    if (coreCountNode) {
-      coreCountNode.textContent = `${coreCount} / ${ECONOMY.CHALLENGE_SESSION_LIMIT}`;
-    }
-    const supportCountNode = rail.querySelector("[data-sandbox-support-count]");
-    if (supportCountNode) {
-      supportCountNode.textContent = String(supportCount);
-    }
-    const resetCountNode = rail.querySelector("[data-sandbox-reset-count]");
-    if (resetCountNode) {
-      resetCountNode.textContent = String(resetCount);
-    }
-    const zoneCountNode = rail.querySelector("[data-sandbox-zone-count]");
-    if (zoneCountNode) {
-      zoneCountNode.textContent = String(zonePasses);
+      spark.setAttribute("points", history.length ? sparkPoints(history) : "2,22 168,22");
     }
   }
 
