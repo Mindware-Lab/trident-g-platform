@@ -1,5 +1,7 @@
-const STORAGE_KEY = "tg_iq_basic_capacity_lab_v1";
+const STORAGE_KEY = "tg_iq_basic_capacity_lab_v2";
+const LEGACY_STORAGE_KEY = "tg_iq_basic_capacity_lab_v1";
 const HISTORY_LIMIT = 24;
+const SESSION_LIMIT = 24;
 
 function isObject(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -63,7 +65,7 @@ function normalizeTargetModality(wrapper, value) {
 
 function createDefaultState() {
   return {
-    version: 1,
+    version: 2,
     settings: {
       wrapper: "hub_cat",
       targetModality: "loc",
@@ -72,7 +74,9 @@ function createDefaultState() {
       n: 1,
       soundOn: true
     },
-    history: []
+    history: [],
+    currentSession: null,
+    sessionResolutions: []
   };
 }
 
@@ -92,6 +96,11 @@ function normalizeHistoryEntry(entry) {
     id: typeof entry.id === "string" ? entry.id : `xor_lab_${entry.tsStart}`,
     tsStart: Math.round(entry.tsStart),
     tsEnd: Number.isFinite(entry.tsEnd) ? Math.round(entry.tsEnd) : Math.round(entry.tsStart),
+    sessionId: typeof entry.sessionId === "string" ? entry.sessionId : null,
+    zoneState: typeof entry.zoneState === "string" ? entry.zoneState : null,
+    routeClass: typeof entry.routeClass === "string" ? entry.routeClass : "core",
+    rewardMode: typeof entry.rewardMode === "string" ? entry.rewardMode : "core",
+    eligibleForEncoding20: entry.eligibleForEncoding20 === false ? false : true,
     wrapper: resolvedWrapper,
     targetModality: resolvedTarget,
     speed: entry.speed === "fast" ? "fast" : "slow",
@@ -107,9 +116,59 @@ function normalizeHistoryEntry(entry) {
   };
 }
 
+function normalizeCurrentSession(session) {
+  if (!isObject(session) || typeof session.sessionId !== "string") {
+    return null;
+  }
+  return {
+    sessionId: session.sessionId,
+    zoneState: typeof session.zoneState === "string" ? session.zoneState : "invalid",
+    uiState: typeof session.uiState === "string" ? session.uiState : "Invalid",
+    recommendation: typeof session.recommendation === "string" ? session.recommendation : "defer",
+    routeClass: typeof session.routeClass === "string" ? session.routeClass : "support",
+    defaultBlocks: Number.isFinite(session.defaultBlocks) ? Math.max(0, Math.round(session.defaultBlocks)) : 0,
+    blocksMin: Number.isFinite(session.blocksMin) ? Math.max(0, Math.round(session.blocksMin)) : 0,
+    blocksMax: Number.isFinite(session.blocksMax) ? Math.max(0, Math.round(session.blocksMax)) : 0,
+    plannedBlocks: Number.isFinite(session.plannedBlocks) ? Math.max(0, Math.round(session.plannedBlocks)) : 0,
+    blocksCompleted: Number.isFinite(session.blocksCompleted) ? Math.max(0, Math.round(session.blocksCompleted)) : 0,
+    progressionMode: typeof session.progressionMode === "string" ? session.progressionMode : "none",
+    swapPolicy: typeof session.swapPolicy === "string" ? session.swapPolicy : "none",
+    focusBias: typeof session.focusBias === "string" ? session.focusBias : "stabilise",
+    preferredFamilies: Array.isArray(session.preferredFamilies) ? session.preferredFamilies.filter((value) => typeof value === "string") : [],
+    blockedFamilies: Array.isArray(session.blockedFamilies) ? session.blockedFamilies.filter((value) => typeof value === "string") : [],
+    blockedModes: Array.isArray(session.blockedModes) ? session.blockedModes.filter((value) => typeof value === "string") : [],
+    rewardMode: typeof session.rewardMode === "string" ? session.rewardMode : "none",
+    eligibleForEncoding20: session.eligibleForEncoding20 === true,
+    startedAt: Number.isFinite(session.startedAt) ? Math.round(session.startedAt) : Date.now()
+  };
+}
+
+function normalizeSessionResolution(resolution) {
+  if (!isObject(resolution) || typeof resolution.sessionId !== "string") {
+    return null;
+  }
+  const resolvedClass = resolution.sessionClassResolved === "core" || resolution.sessionClassResolved === "support" || resolution.sessionClassResolved === "recovery"
+    ? resolution.sessionClassResolved
+    : "support";
+  return {
+    sessionId: resolution.sessionId,
+    countedAsEncoding20: resolution.countedAsEncoding20 === true,
+    sessionClassResolved: resolvedClass,
+    coreCreditsEarned: Number.isFinite(resolution.coreCreditsEarned) ? Math.max(0, Math.round(resolution.coreCreditsEarned)) : 0,
+    supportCreditsEarned: Number.isFinite(resolution.supportCreditsEarned) ? Math.max(0, Math.round(resolution.supportCreditsEarned)) : 0,
+    resetCreditsEarned: Number.isFinite(resolution.resetCreditsEarned) ? Math.max(0, Math.round(resolution.resetCreditsEarned)) : 0,
+    reasonIfNotCounted: typeof resolution.reasonIfNotCounted === "string" ? resolution.reasonIfNotCounted : null,
+    zoneState: typeof resolution.zoneState === "string" ? resolution.zoneState : null,
+    rewardMode: typeof resolution.rewardMode === "string" ? resolution.rewardMode : "none",
+    blocksPlanned: Number.isFinite(resolution.blocksPlanned) ? Math.max(0, Math.round(resolution.blocksPlanned)) : 0,
+    blocksCompleted: Number.isFinite(resolution.blocksCompleted) ? Math.max(0, Math.round(resolution.blocksCompleted)) : 0,
+    createdAt: Number.isFinite(resolution.createdAt) ? Math.round(resolution.createdAt) : Date.now()
+  };
+}
+
 function normalizeState(raw) {
   const defaults = createDefaultState();
-  if (!isObject(raw) || raw.version !== 1) {
+  if (!isObject(raw)) {
     return defaults;
   }
 
@@ -117,9 +176,13 @@ function normalizeState(raw) {
   const history = Array.isArray(raw.history)
     ? raw.history.map(normalizeHistoryEntry).filter(Boolean).slice(0, HISTORY_LIMIT)
     : [];
+  const currentSession = normalizeCurrentSession(raw.currentSession);
+  const sessionResolutions = Array.isArray(raw.sessionResolutions)
+    ? raw.sessionResolutions.map(normalizeSessionResolution).filter(Boolean).slice(0, SESSION_LIMIT)
+    : [];
 
   return {
-    version: 1,
+    version: 2,
     settings: {
       wrapper: normalizeWrapper(settings.wrapper),
       targetModality: normalizeTargetModality(normalizeWrapper(settings.wrapper), settings.targetModality),
@@ -128,7 +191,9 @@ function normalizeState(raw) {
       n: clampN(settings.n),
       soundOn: settings.soundOn !== false
     },
-    history
+    history,
+    currentSession,
+    sessionResolutions
   };
 }
 
@@ -145,9 +210,9 @@ export function loadCapacityLabState() {
   if (typeof localStorage === "undefined") {
     return createDefaultState();
   }
-  const parsed = safeParse(localStorage.getItem(STORAGE_KEY));
+  const parsed = safeParse(localStorage.getItem(STORAGE_KEY)) || safeParse(localStorage.getItem(LEGACY_STORAGE_KEY));
   const state = normalizeState(parsed);
-  if (!parsed || parsed.version !== 1) {
+  if (!parsed || parsed.version !== 2) {
     persist(state);
   }
   return state;
@@ -180,6 +245,40 @@ export function clearCapacityLabHistory() {
   const state = loadCapacityLabState();
   return persist({
     ...state,
-    history: []
+    history: [],
+    currentSession: null,
+    sessionResolutions: []
+  });
+}
+
+export function updateCapacityLabCurrentSession(session) {
+  const state = loadCapacityLabState();
+  return persist({
+    ...state,
+    currentSession: normalizeCurrentSession(session)
+  });
+}
+
+export function clearCapacityLabCurrentSession() {
+  const state = loadCapacityLabState();
+  return persist({
+    ...state,
+    currentSession: null
+  });
+}
+
+export function appendCapacityLabSessionResolution(resolution) {
+  const state = loadCapacityLabState();
+  const normalized = normalizeSessionResolution(resolution);
+  if (!normalized) {
+    return state;
+  }
+  return persist({
+    ...state,
+    currentSession: null,
+    sessionResolutions: [
+      normalized,
+      ...state.sessionResolutions.filter((entry) => entry.sessionId !== normalized.sessionId)
+    ].slice(0, SESSION_LIMIT)
   });
 }

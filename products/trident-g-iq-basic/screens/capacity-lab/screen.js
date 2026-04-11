@@ -26,7 +26,7 @@ const capacityLabCoachHtml = `
     <div class="coach-label">Coach tip</div>
     <div class="capacity-coach-panel">
       <div class="capacity-coach-line is-active" data-capacity-lab-coach>
-        Use this route to play Flex, Bind, Resist, Emotion, and the live Relate mono and dual blocks inside the new capacity shell without advancing the official progression engine.
+        Guided mode now reads a session-scoped Zone handoff and enforces core, support, or reset bounds. Manual mode remains open play and never counts toward the encode route.
       </div>
     </div>
   </div>
@@ -38,8 +38,8 @@ export const capacityLabScreen = {
   module: "capacity",
   banner: {
     title: "Capacity Sandbox",
-    subtitle: "Flex, Bind, Resist, and live Relate wrappers in the new shell",
-    subcopy: "Local scoring only; Relate vectors and numbers mono plus dual blocks now live",
+    subtitle: "Zone-gated guided sessions plus manual open play in the new shell",
+    subcopy: "Guided mode uses a fresh Zone handoff; manual mode stays local only",
     stage: "Sandbox",
     stageMeta: "public tester route"
   },
@@ -51,8 +51,8 @@ export const capacityLabScreen = {
   ],
   coach: {
     label: "Sandbox",
-    headline: "Flex, Bind, Resist, full Relate set live.",
-    body: "Basic scoring only."
+    headline: "Zone-gated guidance live.",
+    body: "Manual open play remains available."
   },
   coachHtml: capacityLabCoachHtml,
   sidePanelClass: "capacity-side-panel",

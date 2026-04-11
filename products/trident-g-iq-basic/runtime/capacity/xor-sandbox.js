@@ -13,10 +13,14 @@ import {
 import { hash32 } from "./rng.js";
 import {
   appendCapacityLabHistory,
+  appendCapacityLabSessionResolution,
+  clearCapacityLabCurrentSession,
   clearCapacityLabHistory,
   loadCapacityLabState,
+  updateCapacityLabCurrentSession,
   updateCapacityLabSettings
 } from "./sandbox-storage.js";
+import { loadLatestZoneHandoff, loadZoneRuntimeState } from "../zone/storage.js";
 import {
   initAudio,
   playSfx,
@@ -316,14 +320,114 @@ function blockEndN(entry) {
   return clampN(entry?.block?.nEnd ?? entry?.block?.nStart ?? 1);
 }
 
+function entryRewardMode(entry) {
+  return typeof entry?.rewardMode === "string" ? entry.rewardMode : "core";
+}
+
+function progressionHistory(history) {
+  return history.filter((entry) => entryRewardMode(entry) === "core");
+}
+
+function currentSessionEntries(history, sessionId) {
+  return history.filter((entry) => entry.sessionId === sessionId).slice().reverse();
+}
+
+function hasResolvedSession(sessionResolutions, sessionId) {
+  return sessionResolutions.some((entry) => entry.sessionId === sessionId);
+}
+
+function freshZoneHandoff(uiState) {
+  const handoff = uiState.zoneHandoff;
+  if (!handoff || handoff.freshForSession === false) {
+    return null;
+  }
+  if (uiState.currentSession?.sessionId === handoff.sessionId) {
+    return handoff;
+  }
+  if (hasResolvedSession(uiState.sessionResolutions, handoff.sessionId)) {
+    return null;
+  }
+  return handoff;
+}
+
+function createGuidedSession(handoff) {
+  if (!handoff?.capacityPlan) {
+    return null;
+  }
+  return {
+    sessionId: handoff.sessionId,
+    zoneState: handoff.state,
+    uiState: handoff.uiState,
+    recommendation: handoff.recommendation,
+    routeClass: handoff.capacityPlan.routeClass,
+    defaultBlocks: handoff.capacityPlan.defaultBlocks,
+    blocksMin: handoff.capacityPlan.blocksMin,
+    blocksMax: handoff.capacityPlan.blocksMax,
+    plannedBlocks: handoff.capacityPlan.defaultBlocks,
+    blocksCompleted: 0,
+    progressionMode: handoff.capacityPlan.progressionMode,
+    swapPolicy: handoff.capacityPlan.swapPolicy,
+    focusBias: handoff.capacityPlan.focusBias,
+    preferredFamilies: handoff.capacityPlan.preferredFamilies.slice(),
+    blockedFamilies: handoff.capacityPlan.blockedFamilies.slice(),
+    blockedModes: handoff.capacityPlan.blockedModes.slice(),
+    rewardMode: handoff.capacityPlan.rewardMode,
+    eligibleForEncoding20: handoff.capacityPlan.eligibleForEncoding20 === true,
+    startedAt: Date.now()
+  };
+}
+
+function activeGuidedPlan(uiState) {
+  if (uiState.currentSession) {
+    return uiState.currentSession;
+  }
+  if (uiState.settings.mode !== "coach") {
+    return null;
+  }
+  const handoff = freshZoneHandoff(uiState);
+  return handoff ? createGuidedSession(handoff) : null;
+}
+
+function routeClassLabel(routeClass) {
+  if (routeClass === "core") {
+    return "Core";
+  }
+  if (routeClass === "support") {
+    return "Support";
+  }
+  return "Recovery";
+}
+
+function rewardModeLabel(rewardMode) {
+  if (rewardMode === "reset_only") {
+    return "Reset only";
+  }
+  if (rewardMode === "support") {
+    return "Support";
+  }
+  if (rewardMode === "core") {
+    return "Core";
+  }
+  return "None";
+}
+
+function familyAllowedByPlan(familyId, plan) {
+  return !plan?.blockedFamilies?.includes(familyId);
+}
+
+function wrapperAllowedByPlan(wrapper, plan) {
+  return familyAllowedByPlan(wrapperFamily(wrapper), plan);
+}
+
 function computeCoachFamilyProgress(history) {
+  const eligibleHistory = progressionHistory(history);
   const progress = new Map(CAPACITY_TREE_FAMILIES.map((family) => [family.id, {
     stableWrappers: new Set(),
     stableRelateTargets: new Set(),
     hasFastConfirm: false,
     hasSwapHold: false
   }]));
-  const chronological = history.slice().reverse();
+  const chronological = eligibleHistory.slice().reverse();
   let prev = null;
 
   chronological.forEach((entry, index) => {
@@ -424,8 +528,9 @@ function latestHistoryEntries(history, predicate, count = 3) {
 }
 
 function hasRelateMonoCompetence(history, wrapper) {
-  const relationEntries = latestHistoryEntries(history, (entry) => entry.wrapper === wrapper && entry.targetModality === "rel");
-  const surfaceEntries = latestHistoryEntries(history, (entry) => entry.wrapper === wrapper && entry.targetModality === "sym");
+  const eligible = progressionHistory(history);
+  const relationEntries = latestHistoryEntries(eligible, (entry) => entry.wrapper === wrapper && entry.targetModality === "rel");
+  const surfaceEntries = latestHistoryEntries(eligible, (entry) => entry.wrapper === wrapper && entry.targetModality === "sym");
   if (relationEntries.length < 3 || surfaceEntries.length < 3) {
     return false;
   }
@@ -434,7 +539,8 @@ function hasRelateMonoCompetence(history, wrapper) {
 }
 
 function hasRelateDualCompetence(history, wrapper) {
-  const dualEntries = latestHistoryEntries(history, (entry) => entry.wrapper === wrapper && entry.targetModality === "dual");
+  const eligible = progressionHistory(history);
+  const dualEntries = latestHistoryEntries(eligible, (entry) => entry.wrapper === wrapper && entry.targetModality === "dual");
   if (dualEntries.length < 3) {
     return false;
   }
@@ -499,22 +605,33 @@ function resolveCapacityTreeWrapper(uiState, unlockedFamilies, unlockedWrappers)
 }
 
 function renderCapacityGamesPanel(uiState) {
+  const guidedPlan = activeGuidedPlan(uiState);
   const unlockedFamilies = uiState.settings.mode === "coach"
     ? computeCoachUnlockState(uiState.history).unlocked
     : new Set(CAPACITY_TREE_FAMILIES.map((family) => family.id));
   const unlockedWrappers = uiState.settings.mode === "coach"
     ? computeUnlockedVariantWrappers(uiState, unlockedFamilies)
     : new Set(LIVE_WRAPPERS);
-  const activeWrapper = resolveCapacityTreeWrapper(uiState, unlockedFamilies, unlockedWrappers);
+  const visibleFamilies = new Set(
+    Array.from(unlockedFamilies).filter((familyId) => familyAllowedByPlan(familyId, guidedPlan))
+  );
+  const visibleWrappers = new Set(
+    Array.from(unlockedWrappers).filter((wrapper) => wrapperAllowedByPlan(wrapper, guidedPlan))
+  );
+  const activeWrapper = resolveCapacityTreeWrapper(
+    uiState,
+    visibleFamilies.size ? visibleFamilies : unlockedFamilies,
+    visibleWrappers.size ? visibleWrappers : unlockedWrappers
+  );
   const activeFamily = wrapperFamily(activeWrapper);
 
   return `
     <div class="capacity-games-title">Capacity</div>
-    <div class="capacity-games-title">Games</div>
+    <div class="capacity-games-title">${escapeHtml(guidedPlan ? `${routeClassLabel(guidedPlan.routeClass)} route` : "Games")}</div>
     <div class="capacity-games-tree">
       ${CAPACITY_TREE_FAMILIES.map((family) => {
-        const unlocked = unlockedFamilies.has(family.id);
-        const currentFamily = family.id === activeFamily;
+        const unlocked = visibleFamilies.has(family.id);
+        const currentFamily = family.id === activeFamily && unlocked;
         const familyClass = `capacity-games-family ${unlocked ? "is-unlocked" : "is-locked"}${currentFamily ? " is-current" : ""}`;
         const familyDotClass = `capacity-games-family-dot${currentFamily ? " is-current" : unlocked ? " is-unlocked" : ""}`;
 
@@ -527,7 +644,7 @@ function renderCapacityGamesPanel(uiState) {
             <div class="capacity-games-variants">
               ${family.variants.map((variant) => {
                 const currentVariant = variant.wrapper === activeWrapper;
-                const variantUnlocked = unlocked && unlockedWrappers.has(variant.wrapper);
+                const variantUnlocked = unlocked && visibleWrappers.has(variant.wrapper);
                 const variantClass = `capacity-games-variant ${variantUnlocked ? "is-unlocked" : "is-locked"}${currentVariant ? " is-current" : ""}`;
                 const variantDotClass = `capacity-games-variant-dot${currentVariant ? " is-current" : variantUnlocked ? " is-unlocked" : ""}`;
                 return `
@@ -550,79 +667,70 @@ function renderCapacityGamesPanel(uiState) {
   `;
 }
 
-function recommendSettings(uiState) {
-  const history = uiState.history;
-  const last = history[0];
-  const fallback = {
-    wrapper: uiState.settings.wrapper,
-    targetModality: uiState.settings.targetModality,
-    speed: uiState.settings.speed,
-    n: uiState.settings.n,
-    reason: "Start with your current sandbox settings."
-  };
-
-  if (!last) {
-    if (wrapperFamily(uiState.settings.wrapper) === "bind") {
-      return {
-        wrapper: "and_cat",
-        targetModality: "conj",
-        speed: "slow",
-        n: 1,
-        reason: "Start with the simplest Bind wrapper to establish a stable baseline."
-      };
-    }
-    if (wrapperFamily(uiState.settings.wrapper) === "resist") {
-      return {
-        wrapper: "resist_vectors",
-        targetModality: "loc",
-        speed: "slow",
-        n: 1,
-        reason: "Start with the first Resist wrapper and location tracking to establish a stable baseline."
-      };
-    }
-    if (wrapperFamily(uiState.settings.wrapper) === "emotion") {
-      return {
-        wrapper: uiState.settings.wrapper === "emotion_words" ? "emotion_words" : "emotion_faces",
-        targetModality: uiState.settings.wrapper === "emotion_words" ? "col" : "loc",
-        speed: "slow",
-        n: 1,
-        reason: uiState.settings.wrapper === "emotion_words"
-          ? "Start with emotion words and ink colour tracking to establish a baseline."
-          : "Start with emotion faces and location tracking to establish a baseline."
-      };
-    }
-    if (wrapperFamily(uiState.settings.wrapper) === "relate") {
-      return {
-        wrapper: uiState.settings.wrapper === "relate_numbers"
-          || uiState.settings.wrapper === "relate_vectors_dual"
-          || uiState.settings.wrapper === "relate_numbers_dual"
-          ? uiState.settings.wrapper
-          : "relate_vectors",
-        targetModality: familyDefaultTarget(
-          uiState.settings.wrapper === "relate_numbers"
-            || uiState.settings.wrapper === "relate_vectors_dual"
-            || uiState.settings.wrapper === "relate_numbers_dual"
-            ? uiState.settings.wrapper
-            : "relate_vectors"
-        ),
-        speed: "slow",
-        n: 1,
-        reason: uiState.settings.wrapper === "relate_numbers"
-          ? "Start with the numbers mono block to establish a stable relational baseline."
-          : uiState.settings.wrapper === "relate_vectors_dual"
-            ? "Start with the vectors dual block to establish a stable relational baseline."
-            : uiState.settings.wrapper === "relate_numbers_dual"
-              ? "Start with the numbers dual block to establish a stable relational baseline."
-              : "Start with the vectors mono block to establish a stable relational baseline."
-      };
-    }
+function baselineRecommendationForWrapper(wrapper) {
+  if (wrapperFamily(wrapper) === "bind") {
     return {
-      wrapper: "hub_cat",
+      wrapper: "and_cat",
+      targetModality: "conj",
+      speed: "slow",
+      n: 1,
+      reason: "Start with the simplest Bind wrapper to establish a stable baseline."
+    };
+  }
+  if (wrapperFamily(wrapper) === "resist") {
+    return {
+      wrapper: "resist_vectors",
       targetModality: "loc",
       speed: "slow",
       n: 1,
-      reason: "Start with the simplest wrapper to establish a stable baseline."
+      reason: "Start with the first Resist wrapper and location tracking to establish a stable baseline."
     };
+  }
+  if (wrapperFamily(wrapper) === "emotion") {
+    const useWords = wrapper === "emotion_words";
+    return {
+      wrapper: useWords ? "emotion_words" : "emotion_faces",
+      targetModality: useWords ? "col" : "loc",
+      speed: "slow",
+      n: 1,
+      reason: useWords
+        ? "Start with emotion words and ink colour tracking to establish a baseline."
+        : "Start with emotion faces and location tracking to establish a baseline."
+    };
+  }
+  if (wrapperFamily(wrapper) === "relate") {
+    const resolvedWrapper = wrapper === "relate_numbers" || wrapper === "relate_vectors_dual" || wrapper === "relate_numbers_dual"
+      ? wrapper
+      : "relate_vectors";
+    return {
+      wrapper: resolvedWrapper,
+      targetModality: familyDefaultTarget(resolvedWrapper),
+      speed: "slow",
+      n: 1,
+      reason: resolvedWrapper === "relate_numbers"
+        ? "Start with the numbers mono block to establish a stable relational baseline."
+        : resolvedWrapper === "relate_vectors_dual"
+          ? "Start with the vectors dual block to establish a stable relational baseline."
+          : resolvedWrapper === "relate_numbers_dual"
+            ? "Start with the numbers dual block to establish a stable relational baseline."
+            : "Start with the vectors mono block to establish a stable relational baseline."
+    };
+  }
+  return {
+    wrapper: "hub_cat",
+    targetModality: "loc",
+    speed: "slow",
+    n: 1,
+    reason: "Start with the simplest wrapper to establish a stable baseline."
+  };
+}
+
+function recommendCoreProgressionSettings(uiState) {
+  const history = progressionHistory(uiState.history);
+  const last = history[0];
+
+  if (!last) {
+    return baselineRecommendationForWrapper(uiState.settings.wrapper);
   }
 
   const lastN = clampN(last.block?.nEnd ?? last.block?.nStart ?? uiState.settings.n);
@@ -692,7 +800,118 @@ function recommendSettings(uiState) {
   };
 }
 
+function preferredWrapperForGuidedPlan(plan, history, indexInSession = 0) {
+  const last = history[0];
+  if (plan.focusBias === "stabilise") {
+    return "hub_cat";
+  }
+  if (plan.focusBias === "activate_then_stabilise") {
+    if (last && (wrapperFamily(last.wrapper) === "flex" || wrapperFamily(last.wrapper) === "bind")) {
+      return wrapperAllowedByPlan(last.wrapper, plan) ? last.wrapper : "hub_cat";
+    }
+    return "hub_cat";
+  }
+  if (plan.focusBias === "flexibility_reset") {
+    const rotation = ["hub_noncat", "hub_concept", "resist_vectors"];
+    const next = rotation[indexInSession % rotation.length];
+    return wrapperAllowedByPlan(next, plan) ? next : "hub_noncat";
+  }
+  if (last && wrapperAllowedByPlan(last.wrapper, plan)) {
+    return last.wrapper;
+  }
+  return "hub_cat";
+}
+
+function guidedTargetForWrapper(wrapper) {
+  if (isFixedTargetWrapper(wrapper)) {
+    return familyDefaultTarget(wrapper);
+  }
+  if (wrapper === "hub_cat" || wrapper === "hub_noncat" || wrapper === "hub_concept") {
+    return "loc";
+  }
+  return familyDefaultTarget(wrapper);
+}
+
+function recommendGuidedSettings(uiState, plan) {
+  if (!plan) {
+    return null;
+  }
+  const history = uiState.history;
+  const progression = progressionHistory(history);
+  const lastAny = history[0];
+  const lastCore = progression[0];
+  const stable = computeStableLevel(progression) || 1;
+  const sessionIndex = plan.blocksCompleted || 0;
+
+  if (plan.routeClass === "core") {
+    const recommendation = recommendCoreProgressionSettings(uiState);
+    return recommendation;
+  }
+
+  if (plan.routeClass === "recovery") {
+    return {
+      wrapper: "hub_cat",
+      targetModality: "loc",
+      speed: "slow",
+      n: 1,
+      reason: "No guided Capacity route is available from an invalid Zone check."
+    };
+  }
+
+  if (plan.focusBias === "stabilise") {
+    return {
+      wrapper: "hub_cat",
+      targetModality: "loc",
+      speed: "slow",
+      n: Math.max(1, stable - 1),
+      reason: "Spun Out route: keep the simplest stable wrapper, slow pace, and lower load."
+    };
+  }
+
+  if (plan.focusBias === "activate_then_stabilise") {
+    const wrapper = preferredWrapperForGuidedPlan(plan, history, sessionIndex);
+    return {
+      wrapper,
+      targetModality: guidedTargetForWrapper(wrapper),
+      speed: "slow",
+      n: clampN(lastCore ? blockEndN(lastCore) : 1),
+      reason: "Flat route: stay with lighter established core families, no speed push, no n increase."
+    };
+  }
+
+  const wrapper = preferredWrapperForGuidedPlan(plan, history, sessionIndex);
+  const lastN = clampN(lastAny ? blockEndN(lastAny) : stable);
+  return {
+    wrapper,
+    targetModality: guidedTargetForWrapper(wrapper),
+    speed: "slow",
+    n: lastN,
+    reason: "Locked In route: hold level, force a wrapper shift, and reward flexibility instead of pressure."
+  };
+}
+
+function recommendSettings(uiState) {
+  if (uiState.settings.mode === "coach") {
+    const plan = activeGuidedPlan(uiState);
+    if (!plan) {
+      return null;
+    }
+    return recommendGuidedSettings(uiState, plan);
+  }
+
+  return {
+    wrapper: uiState.settings.wrapper,
+    targetModality: uiState.settings.targetModality,
+    speed: uiState.settings.speed,
+    n: uiState.settings.n,
+    reason: "Manual open play uses your current sandbox settings and never counts toward the core route."
+  };
+}
+
 function buildCoachMessage(recommendation) {
+  if (!recommendation) {
+    return "Run Zone Coach first to open a guided session, or switch to manual open play. Manual blocks never count toward the 20-session encode route.";
+  }
   return `The recommended option for far transfer training is ${wrapperLabel(recommendation.wrapper)} ${modalityLabel(recommendation.targetModality, recommendation.wrapper)}, N-${recommendation.n}, ${speedLabel(recommendation.speed)}. ${recommendation.reason}`;
 }
 
@@ -743,6 +962,7 @@ function computeStableLevel(history) {
 }
 
 function computeRewardTimeline(history) {
+  const eligibleHistory = progressionHistory(history);
   const events = [];
   const counters = new Map();
   const best = {
@@ -757,7 +977,7 @@ function computeRewardTimeline(history) {
   let sessionIndex = 1;
   let sessionBlock = 0;
 
-  const chronological = history.slice().reverse();
+  const chronological = eligibleHistory.slice().reverse();
   let prev = null;
   chronological.forEach((entry, index) => {
     const block = entry.block || {};
@@ -916,6 +1136,71 @@ function nextBlockHint(recommendation, lastEntry) {
   return "Hold";
 }
 
+function createCurrentSessionRecord(handoff) {
+  const session = createGuidedSession(handoff);
+  if (!session) {
+    return null;
+  }
+  const persisted = updateCapacityLabCurrentSession(session);
+  return persisted.currentSession;
+}
+
+function sessionIntegrityFailure(entries) {
+  if (!entries.length) {
+    return "No completed blocks were recorded for this session.";
+  }
+  const lastThree = entries.slice(-3);
+  const lastThreeAvg = lastThree.reduce((sum, entry) => sum + Number(entry?.block?.accuracy || 0), 0) / lastThree.length;
+  const unstableLastThree = lastThree.some((entry) => Number(entry?.block?.accuracy || 0) < 0.75);
+  const severeLateCollapse = lastThreeAvg < 0.75;
+  const heavyLapses = entries.some((entry) => Number(entry?.block?.lapseCount || 0) >= 4);
+  const heavyBursts = entries.some((entry) => Number(entry?.block?.errorBursts || 0) >= 2);
+
+  if (unstableLastThree) {
+    return "Last-3-block consistency collapsed below the encode threshold.";
+  }
+  if (severeLateCollapse) {
+    return "Late-session collapse made the run a poor encoding repetition.";
+  }
+  if (heavyLapses) {
+    return "Major lapse burden broke session integrity.";
+  }
+  if (heavyBursts) {
+    return "Error bursts made the session unstable.";
+  }
+  return null;
+}
+
+function resolveSessionOutcome(session, history) {
+  const entries = currentSessionEntries(history, session.sessionId);
+  const completed = entries.length;
+  const integrityFailure = session.routeClass === "core" && session.eligibleForEncoding20 && completed >= session.plannedBlocks
+    ? sessionIntegrityFailure(entries)
+    : null;
+  const counted = session.routeClass === "core"
+    && session.eligibleForEncoding20
+    && completed >= session.plannedBlocks
+    && !integrityFailure;
+  return {
+    sessionId: session.sessionId,
+    countedAsEncoding20: counted,
+    sessionClassResolved: session.routeClass,
+    coreCreditsEarned: counted ? 1 : 0,
+    supportCreditsEarned: session.routeClass === "support" ? 1 : 0,
+    resetCreditsEarned: session.rewardMode === "reset_only" ? 1 : 0,
+    reasonIfNotCounted: counted
+      ? null
+      : integrityFailure || (session.routeClass === "core"
+        ? "Core eligibility was present, but the session did not finish cleanly enough to count."
+        : "Support and reset routes never count toward the 20-session encode phase."),
+    zoneState: session.zoneState,
+    rewardMode: session.rewardMode,
+    blocksPlanned: session.plannedBlocks,
+    blocksCompleted: completed,
+    createdAt: Date.now()
+  };
+}
+
 function historyRows(history) {
   return history.slice(0, 4).map((entry) => `
     <div class="capacity-lab-history-row">
@@ -937,9 +1222,10 @@ export const capacityLabTelemetrySeed = [
           <div class="capacity-sandbox-reward">
             <div class="capacity-sandbox-reward-coin" aria-hidden="true"></div>
             <div>
-              <div class="capacity-sandbox-reward-label">Tridents</div>
+              <div class="capacity-sandbox-reward-label" data-sandbox-reward-label>Tridents</div>
               <div class="capacity-sandbox-reward-value">--</div>
-              <div class="capacity-sandbox-reward-sub">Session reward</div>
+              <div class="capacity-sandbox-reward-sub" data-sandbox-reward-sub>Session reward</div>
+              <div class="capacity-sandbox-subline" data-sandbox-route-summary>Run Zone Coach to open a guided session.</div>
             </div>
           </div>
         </div>
@@ -970,6 +1256,12 @@ export const capacityLabTelemetrySeed = [
               <div class="capacity-sandbox-label">Pressure status</div>
               <div class="capacity-sandbox-value" data-sandbox-pressure>--</div>
             </div>
+          </div>
+          <div class="capacity-sandbox-ledger">
+            <div class="capacity-sandbox-row"><span>20-Day Rewire</span><span data-sandbox-core-count>0 / 20</span></div>
+            <div class="capacity-sandbox-row"><span>Support work</span><span data-sandbox-support-count>0</span></div>
+            <div class="capacity-sandbox-row"><span>Reset work</span><span data-sandbox-reset-count>0</span></div>
+            <div class="capacity-sandbox-row"><span>In-zone check-ins</span><span data-sandbox-zone-count>0</span></div>
           </div>
         </div>
 
@@ -1008,10 +1300,13 @@ function createUiState() {
   return {
     settings: { ...persisted.settings },
     history: persisted.history.slice(),
+    currentSession: persisted.currentSession ? { ...persisted.currentSession } : null,
+    sessionResolutions: Array.isArray(persisted.sessionResolutions) ? persisted.sessionResolutions.slice() : [],
+    zoneHandoff: loadLatestZoneHandoff(),
     status: "idle",
     activeBlock: null,
-    activeMessage: "Pick a wrapper and start a block inside the new capacity shell.",
-    coachMessage: "Use this route to play Flex, Bind, Resist, Emotion, and the live Relate mono and dual blocks without wiring the full telemetry stack or official progression engine.",
+    activeMessage: "Run Zone Coach first for a guided session, or switch to manual open play.",
+    coachMessage: "Guided mode now requires a fresh Zone handoff. Manual mode remains open play and never counts toward the 20-session core route.",
     lastSavedEntry: persisted.history[0] || null
   };
 }
@@ -1165,6 +1460,15 @@ function setupMarkup(uiState) {
   const last = uiState.lastSavedEntry;
   const statusLabel = uiState.status === "result" ? "Saved" : "Ready";
   const family = wrapperFamily(uiState.settings.wrapper);
+  const guidedPlan = activeGuidedPlan(uiState);
+  const zoneReady = Boolean(guidedPlan);
+  const guidedStartDisabled = uiState.settings.mode === "coach" && (!guidedPlan || guidedPlan.routeClass === "recovery");
+  const guidedStatusTitle = guidedPlan
+    ? `${routeClassLabel(guidedPlan.routeClass)} route · ${guidedPlan.blocksMin}-${guidedPlan.blocksMax} blocks`
+    : "Zone gate required";
+  const guidedStatusBody = guidedPlan
+    ? `Zone state ${guidedPlan.uiState}. Reward lane ${rewardModeLabel(guidedPlan.rewardMode)}.`
+    : "Run Zone Coach first for a fresh session-scoped handoff, or switch to manual open play.";
   const isFixedTarget = isFixedTargetWrapper(uiState.settings.wrapper);
   const relateTargetLabel = uiState.settings.wrapper === "relate_numbers"
     ? "Number relation"
@@ -1195,6 +1499,10 @@ function setupMarkup(uiState) {
           <div class="capacity-live-kicker">Capacity sandbox</div>
           <div class="capacity-live-pill">${escapeHtml(statusLabel)}</div>
         </div>
+        <div class="capacity-lab-route-card${zoneReady ? " is-ready" : ""}">
+          <div class="capacity-lab-route-title">${escapeHtml(guidedStatusTitle)}</div>
+          <div class="capacity-lab-route-copy">${escapeHtml(guidedStatusBody)}</div>
+        </div>
         <div class="capacity-lab-setup-grid">
           <div class="capacity-lab-field capacity-lab-field--wide">
             <span>Mode</span>
@@ -1214,7 +1522,7 @@ function setupMarkup(uiState) {
           }
         </div>
         <div class="capacity-lab-action-row">
-          <button class="capacity-transition-action capacity-transition-action--lab" type="button" data-lab-action="start">Run block</button>
+          <button class="capacity-transition-action capacity-transition-action--lab" type="button" data-lab-action="start" ${guidedStartDisabled ? "disabled" : ""}>${uiState.settings.mode === "coach" ? "Run guided block" : "Run open-play block"}</button>
           <button class="capacity-lab-secondary-btn" type="button" data-lab-action="reset-history">Reset history</button>
         </div>
       </section>
@@ -1377,6 +1685,7 @@ export function mountCapacityLab({ root }) {
     const runs = root.querySelector("[data-capacity-lab-runs]");
     const sfxButton = root.querySelector("[data-capacity-lab-sfx]");
     const active = uiState.activeBlock;
+    const guidedPlan = activeGuidedPlan(uiState);
     if (track) {
       if (uiState.status === "trial" && active) {
         track.textContent = `Trial ${active.trialIndex + 1} of ${active.trials.length}`;
@@ -1386,8 +1695,10 @@ export function mountCapacityLab({ root }) {
         track.textContent = `Paused on trial ${active.trialIndex + 1} of ${active.trials.length}`;
       } else if (uiState.status === "paused") {
         track.textContent = "Block paused";
+      } else if (guidedPlan) {
+        track.textContent = `${routeClassLabel(guidedPlan.routeClass)} route · block ${Math.min(guidedPlan.blocksCompleted + 1, guidedPlan.plannedBlocks)} of ${guidedPlan.plannedBlocks}`;
       } else {
-        track.textContent = "Public sandbox";
+        track.textContent = uiState.settings.mode === "coach" ? "Zone handoff required" : "Manual open play";
       }
     }
     if (status) status.textContent = uiState.status === "trial" ? "Live" : uiState.status === "briefing" ? "Cueing" : uiState.status === "paused" ? "Paused" : uiState.status === "result" ? "Saved" : "Ready";
@@ -1406,7 +1717,13 @@ export function mountCapacityLab({ root }) {
     const coach = root.querySelector("[data-capacity-lab-coach]");
     if (coach) {
       if (!uiState.activeBlock && uiState.settings.mode === "coach") {
-        coach.textContent = buildCoachMessage(recommendSettings(uiState));
+        const guidedPlan = activeGuidedPlan(uiState);
+        const recommendation = recommendSettings(uiState);
+        if (!guidedPlan) {
+          coach.textContent = "Run Zone Coach first to open a guided session. Manual open play stays available, but it never counts toward the 20-session encode route.";
+        } else {
+          coach.textContent = `${buildCoachMessage(recommendation)} Session bounds: ${guidedPlan.blocksMin}-${guidedPlan.blocksMax} blocks, ${rewardModeLabel(guidedPlan.rewardMode)} lane.`;
+        }
       } else {
         coach.textContent = uiState.coachMessage;
       }
@@ -1477,6 +1794,12 @@ export function mountCapacityLab({ root }) {
           playSfx("ui_tap_soft");
           if (uiState.settings.mode === "coach") {
             const recommended = recommendSettings(uiState);
+            if (!recommended) {
+              uiState.activeMessage = "No guided session is available. Run Zone Coach first or switch to manual open play.";
+              uiState.coachMessage = uiState.activeMessage;
+              render();
+              return;
+            }
             syncSettings({
               wrapper: recommended.wrapper,
               targetModality: recommended.targetModality,
@@ -1504,6 +1827,10 @@ export function mountCapacityLab({ root }) {
           playSfx("ui_tap_soft");
           const mode = event.currentTarget.dataset.mode === "coach" ? "coach" : "manual";
           syncSettings({ mode });
+          if (mode !== "coach" && uiState.currentSession) {
+            const persisted = clearCapacityLabCurrentSession();
+            uiState.currentSession = persisted.currentSession;
+          }
           uiState.activeMessage = `Mode set to ${modeLabel(mode)}.`;
           uiState.coachMessage = mode === "coach"
             ? buildCoachMessage(recommendSettings(uiState))
@@ -1514,6 +1841,10 @@ export function mountCapacityLab({ root }) {
           clearTimers();
           uiState.activeBlock = null;
           uiState.status = "idle";
+          if (uiState.settings.mode === "coach" && uiState.currentSession) {
+            const persisted = clearCapacityLabCurrentSession();
+            uiState.currentSession = persisted.currentSession;
+          }
           uiState.activeMessage = "Block discarded. Settings are unlocked again.";
           uiState.coachMessage = uiState.activeMessage;
           render();
@@ -1522,6 +1853,8 @@ export function mountCapacityLab({ root }) {
           const persisted = clearCapacityLabHistory();
           uiState.history = persisted.history.slice();
           uiState.lastSavedEntry = null;
+          uiState.currentSession = persisted.currentSession;
+          uiState.sessionResolutions = persisted.sessionResolutions.slice();
           uiState.activeMessage = "Local sandbox history cleared.";
           uiState.coachMessage = uiState.activeMessage;
           if (!uiState.activeBlock) {
@@ -1538,35 +1871,57 @@ export function mountCapacityLab({ root }) {
     if (!rail) return;
 
     const history = uiState.history;
+    const progression = progressionHistory(history);
     const active = uiState.activeBlock;
-    const rewards = computeRewards(history);
+    const rewards = computeRewards(progression);
     const events = rewards.timeline;
     const readiness = transferReadinessLabel(events);
-    const stable = computeStableLevel(history);
-    const sessionBlocks = sessionHistory(history);
-    const sessionTridents = events
-      .filter((event) => event.sessionIndex === (Math.floor(history.length / 10) + 1))
-      .reduce((sum, event) => sum + (REWARD_EVENTS[event.name]?.tridents || 0), 0);
-    const sessionBlockNumber = sessionBlockIndex(history, active);
-    const sessionProgress = Math.min(100, Math.round((sessionBlockNumber / 10) * 100));
-    const sessionAvg = sessionBlocks.length
-      ? (sessionBlocks.reduce((sum, entry) => sum + clampN(entry.block?.nEnd ?? entry.block?.nStart ?? 1), 0) / sessionBlocks.length)
+    const stable = computeStableLevel(progression);
+    const guidedPlan = activeGuidedPlan(uiState);
+    const session = uiState.currentSession || guidedPlan;
+    const sessionEntries = session?.sessionId ? currentSessionEntries(history, session.sessionId) : [];
+    const blocksCompleted = uiState.currentSession?.blocksCompleted || 0;
+    const sessionBlockNumber = session ? Math.min(session.plannedBlocks || 0, blocksCompleted + 1) : 0;
+    const sessionProgress = session?.plannedBlocks
+      ? Math.min(100, Math.round((blocksCompleted / session.plannedBlocks) * 100))
+      : 0;
+    const sessionAvg = sessionEntries.length
+      ? (sessionEntries.reduce((sum, entry) => sum + clampN(entry.block?.nEnd ?? entry.block?.nStart ?? 1), 0) / sessionEntries.length)
       : null;
     const last = history[0] || null;
     const lastSummary = lastBlockSummary(last);
     const recommendation = recommendSettings(uiState);
+    const zoneState = loadZoneRuntimeState();
+    const zonePasses = zoneState.history.filter((entry) => entry.valid && entry.state === "in_zone").length;
+    const coreCount = uiState.sessionResolutions.filter((entry) => entry.countedAsEncoding20).length;
+    const supportCount = uiState.sessionResolutions.filter((entry) => entry.sessionClassResolved === "support").length;
+    const resetCount = uiState.sessionResolutions.filter((entry) => Number(entry.resetCreditsEarned || 0) > 0).length;
 
     const sessionRewardValue = rail.querySelector(".capacity-sandbox-reward-value");
     if (sessionRewardValue) {
-      sessionRewardValue.textContent = sessionBlocks.length ? `+${sessionTridents}` : "--";
+      sessionRewardValue.textContent = session ? rewardModeLabel(session.rewardMode).toUpperCase() : (uiState.settings.mode === "coach" ? "WAIT" : "OPEN");
+    }
+    const rewardLabel = rail.querySelector("[data-sandbox-reward-label]");
+    if (rewardLabel) {
+      rewardLabel.textContent = "Reward lane";
+    }
+    const rewardSub = rail.querySelector("[data-sandbox-reward-sub]");
+    if (rewardSub) {
+      rewardSub.textContent = session ? `${routeClassLabel(session.routeClass)} route` : (uiState.settings.mode === "coach" ? "Zone-gated session" : "Manual open play");
+    }
+    const routeSummary = rail.querySelector("[data-sandbox-route-summary]");
+    if (routeSummary) {
+      routeSummary.textContent = session
+        ? `${session.uiState} · ${session.blocksMin}-${session.blocksMax} blocks`
+        : "Run Zone Coach to open a guided session.";
     }
     const sessionBlockLabel = rail.querySelector("[data-sandbox-session-block]");
     if (sessionBlockLabel) {
-      sessionBlockLabel.textContent = sessionBlockNumber ? `BLOCK ${sessionBlockNumber} OF 10` : "--";
+      sessionBlockLabel.textContent = session ? `BLOCK ${sessionBlockNumber} OF ${session.plannedBlocks}` : "--";
     }
     const sessionCounted = rail.querySelector("[data-sandbox-session-counted]");
     if (sessionCounted) {
-      sessionCounted.textContent = sessionBlockNumber ? "COUNTED" : "--";
+      sessionCounted.textContent = session ? (session.eligibleForEncoding20 ? "ELIGIBLE" : rewardModeLabel(session.rewardMode).toUpperCase()) : "--";
     }
     const sessionProgressBar = rail.querySelector("[data-sandbox-session-progress]");
     if (sessionProgressBar) {
@@ -1586,8 +1941,10 @@ export function mountCapacityLab({ root }) {
     }
     const pressure = rail.querySelector("[data-sandbox-pressure]");
     if (pressure) {
-      const fastConfirmed = history.some((entry) => entry.speed === "fast" && Number(entry.block?.accuracy || 0) >= 0.9);
-      pressure.textContent = stable ? (fastConfirmed ? "Fast confirmed" : "Fast hold next") : "--";
+      const fastConfirmed = progression.some((entry) => entry.speed === "fast" && Number(entry.block?.accuracy || 0) >= 0.9);
+      pressure.textContent = session
+        ? rewardModeLabel(session.rewardMode)
+        : stable ? (fastConfirmed ? "Fast confirmed" : "Fast hold next") : "--";
     }
 
     const nextBlock = rail.querySelector("[data-sandbox-next]");
@@ -1616,7 +1973,23 @@ export function mountCapacityLab({ root }) {
     }
     const spark = rail.querySelector("[data-sandbox-spark]");
     if (spark) {
-      spark.setAttribute("points", history.length ? sparkPoints(history) : "2,22 168,22");
+      spark.setAttribute("points", progression.length ? sparkPoints(progression) : "2,22 168,22");
+    }
+    const coreCountNode = rail.querySelector("[data-sandbox-core-count]");
+    if (coreCountNode) {
+      coreCountNode.textContent = `${coreCount} / ${ECONOMY.CHALLENGE_SESSION_LIMIT}`;
+    }
+    const supportCountNode = rail.querySelector("[data-sandbox-support-count]");
+    if (supportCountNode) {
+      supportCountNode.textContent = String(supportCount);
+    }
+    const resetCountNode = rail.querySelector("[data-sandbox-reset-count]");
+    if (resetCountNode) {
+      resetCountNode.textContent = String(resetCount);
+    }
+    const zoneCountNode = rail.querySelector("[data-sandbox-zone-count]");
+    if (zoneCountNode) {
+      zoneCountNode.textContent = String(zonePasses);
     }
   }
 
@@ -1784,6 +2157,11 @@ export function mountCapacityLab({ root }) {
       id: `xor_lab_${active.tsStart}`,
       tsStart: active.tsStart,
       tsEnd: Date.now(),
+      sessionId: active.sessionContext?.sessionId || null,
+      zoneState: active.sessionContext?.zoneState || null,
+      routeClass: active.sessionContext?.routeClass || "manual",
+      rewardMode: active.sessionContext?.rewardMode || "none",
+      eligibleForEncoding20: active.sessionContext?.eligibleForEncoding20 === true,
       wrapper: active.plan.wrapper,
       targetModality: active.plan.targetModality,
       speed: active.plan.speed,
@@ -1797,8 +2175,34 @@ export function mountCapacityLab({ root }) {
     uiState.lastSavedEntry = uiState.history[0] || entry;
     uiState.activeBlock = null;
     uiState.status = "result";
-    uiState.activeMessage = `Saved ${wrapperLabel(entry.wrapper)} ${modalityLabel(entry.targetModality, entry.wrapper)} locally with ${accuracyPercent(entry.block.accuracy)} accuracy.`;
-    uiState.coachMessage = `${entry.outcomeBand} block saved. Local sandbox hint: N-${entry.recommendedN}. Official progression still follows the updated stability, speed, and wrapper rules.`;
+    if (active.sessionContext) {
+      const nextBlocksCompleted = active.sessionContext.blocksCompleted + 1;
+      const sessionPersist = updateCapacityLabCurrentSession({
+        ...active.sessionContext,
+        blocksCompleted: nextBlocksCompleted
+      });
+      uiState.currentSession = sessionPersist.currentSession;
+
+      if (uiState.currentSession && nextBlocksCompleted >= uiState.currentSession.plannedBlocks) {
+        const resolution = resolveSessionOutcome(uiState.currentSession, uiState.history);
+        const resolvedState = appendCapacityLabSessionResolution(resolution);
+        uiState.currentSession = resolvedState.currentSession;
+        uiState.sessionResolutions = resolvedState.sessionResolutions.slice();
+        uiState.zoneHandoff = loadLatestZoneHandoff();
+        uiState.activeMessage = resolution.countedAsEncoding20
+          ? `Session complete. ${routeClassLabel(resolution.sessionClassResolved)} route counted toward the 20.`
+          : `Session complete. ${resolution.reasonIfNotCounted || "This route does not count toward the 20-session encode phase."}`;
+        uiState.coachMessage = resolution.countedAsEncoding20
+          ? "Core route held cleanly across the full session. The encode counter can move."
+          : resolution.reasonIfNotCounted || "Support and reset routes stay logged separately from core encode repetitions.";
+      } else {
+        uiState.activeMessage = `Saved block ${nextBlocksCompleted} of ${active.sessionContext.plannedBlocks} for the current ${routeClassLabel(active.sessionContext.routeClass).toLowerCase()} route.`;
+        uiState.coachMessage = `${entry.outcomeBand} block saved inside the ${routeClassLabel(active.sessionContext.routeClass).toLowerCase()} lane. Keep the next block inside the same Zone bounds.`;
+      }
+    } else {
+      uiState.activeMessage = `Saved ${wrapperLabel(entry.wrapper)} ${modalityLabel(entry.targetModality, entry.wrapper)} locally with ${accuracyPercent(entry.block.accuracy)} accuracy.`;
+      uiState.coachMessage = `${entry.outcomeBand} block saved. Manual open play never counts toward the core encode route.`;
+    }
     render();
   }
 
@@ -1907,6 +2311,22 @@ export function mountCapacityLab({ root }) {
     unlockAudioContextFromUserGesture();
     clearTimers();
     const baseSettings = overrideSettings || uiState.settings;
+    let sessionContext = null;
+    if (uiState.settings.mode === "coach") {
+      sessionContext = uiState.currentSession;
+      if (!sessionContext) {
+        const handoff = freshZoneHandoff(uiState);
+        if (!handoff || handoff.capacityPlan.routeClass === "recovery") {
+          uiState.activeMessage = "Run Zone Coach first for a usable guided session. Invalid Zone checks never open Capacity.";
+          uiState.coachMessage = uiState.activeMessage;
+          render();
+          return;
+        }
+        const created = createCurrentSessionRecord(handoff);
+        uiState.currentSession = created;
+        sessionContext = created;
+      }
+    }
     const resolvedTarget = isFixedTargetWrapper(baseSettings.wrapper)
       ? familyDefaultTarget(baseSettings.wrapper)
       : baseSettings.targetModality;
@@ -1963,7 +2383,8 @@ export function mountCapacityLab({ root }) {
       sequenceEndsAtMs: 0,
       trialEndsAtMs: 0,
       pausedState: null,
-      trialOutcomes: []
+      trialOutcomes: [],
+      sessionContext
     };
     if (build.trials) {
       const urls = new Set();
@@ -1978,8 +2399,12 @@ export function mountCapacityLab({ root }) {
       });
     }
     uiState.status = "briefing";
-    uiState.activeMessage = `Starting ${wrapperLabel(plan.wrapper)} ${modalityLabel(plan.targetModality, plan.wrapper)} at N-${plan.n}.`;
-    uiState.coachMessage = `Get ready. Match the ${displayHubTargetLabel(plan.targetModality, plan.wrapper).toLowerCase()} from ${plan.n} turns ago. Official progression is not advanced from this sandbox alone.`;
+    uiState.activeMessage = sessionContext
+      ? `Starting block ${sessionContext.blocksCompleted + 1} of ${sessionContext.plannedBlocks}: ${wrapperLabel(plan.wrapper)} ${modalityLabel(plan.targetModality, plan.wrapper)} at N-${plan.n}.`
+      : `Starting ${wrapperLabel(plan.wrapper)} ${modalityLabel(plan.targetModality, plan.wrapper)} at N-${plan.n}.`;
+    uiState.coachMessage = sessionContext
+      ? `Get ready. Match the ${displayHubTargetLabel(plan.targetModality, plan.wrapper).toLowerCase()} from ${plan.n} turns ago. Route: ${routeClassLabel(sessionContext.routeClass)} · reward lane ${rewardModeLabel(sessionContext.rewardMode)}.`
+      : `Get ready. Match the ${displayHubTargetLabel(plan.targetModality, plan.wrapper).toLowerCase()} from ${plan.n} turns ago. Manual open play does not advance the core route.`;
     render();
     scheduleCue(HUB_CUE_MS);
   }

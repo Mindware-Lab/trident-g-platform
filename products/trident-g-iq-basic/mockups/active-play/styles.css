@@ -4319,3 +4319,507 @@
     grid-template-columns: 1fr;
   }
 }
+
+.app-shell[data-screen="zone"] {
+  --banner-height: 62px;
+  --coach-height: 78px;
+}
+
+.app-shell[data-screen="zone"] .play-main--split {
+  grid-template-columns: 200px 520px;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  justify-content: end;
+  align-items: start;
+}
+
+.app-shell[data-screen="zone"] .zone-side-panel {
+  width: 200px;
+  padding-top: calc(var(--banner-height) - 34px);
+  min-height: 0;
+}
+
+.app-shell[data-screen="zone"] .game-window {
+  width: 520px;
+  max-width: 520px;
+  justify-self: end;
+}
+
+.app-shell[data-screen="zone"] .game-window__banner {
+  padding: 8px 12px;
+  align-items: center;
+  gap: 12px;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--zone) 34%, black 66%) 0%,
+      color-mix(in srgb, var(--zone) 56%, black 44%) 58%,
+      color-mix(in srgb, var(--zone) 72%, white 14%) 100%
+    );
+}
+
+.app-shell[data-screen="zone"] .game-window__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+}
+
+.app-shell[data-screen="zone"] .task-area,
+.app-shell[data-screen="zone"] .response-area {
+  min-width: 0;
+  min-height: 0;
+}
+
+.app-shell[data-screen="zone"] .task-area {
+  justify-content: flex-start;
+}
+
+.app-shell[data-screen="zone"] .response-area {
+  display: block;
+}
+
+.app-shell[data-screen="zone"] .coach-strip {
+  width: 520px;
+  margin-left: auto;
+  padding: 0 12px 10px;
+  display: block;
+  margin-top: -20px;
+  transform: translateY(-10px);
+}
+
+.zone-banner-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.zone-banner-track {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  max-width: 224px;
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  text-align: right;
+}
+
+.play-side-panel.zone-side-panel {
+  min-width: 0;
+}
+
+.zone-trident-panel {
+  display: grid;
+  gap: 12px;
+  min-height: 100%;
+  padding: 14px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(14, 18, 27, 0.95), rgba(10, 13, 19, 0.88));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  align-content: start;
+}
+
+.zone-trident-kicker {
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.zone-trident-graphic {
+  position: relative;
+  width: 104px;
+  height: 176px;
+  margin: 2px auto 0;
+}
+
+.zone-trident-line {
+  position: absolute;
+  display: block;
+  background: linear-gradient(180deg, rgba(113, 193, 255, 0.55), rgba(255, 194, 74, 0.42));
+  box-shadow: 0 0 18px rgba(113, 193, 255, 0.12);
+}
+
+.zone-trident-line--shaft {
+  left: 50px;
+  top: 86px;
+  width: 4px;
+  height: 74px;
+  border-radius: 999px;
+}
+
+.zone-trident-line--stem {
+  left: 50px;
+  top: 42px;
+  width: 4px;
+  height: 48px;
+  border-radius: 999px;
+}
+
+.zone-trident-line--left,
+.zone-trident-line--right {
+  top: 42px;
+  width: 4px;
+  height: 62px;
+  border-radius: 999px;
+  transform-origin: top center;
+}
+
+.zone-trident-line--left {
+  left: 32px;
+  transform: rotate(-28deg);
+}
+
+.zone-trident-line--right {
+  right: 32px;
+  transform: rotate(28deg);
+}
+
+.zone-trident-node {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  background: rgba(14, 22, 33, 0.92);
+  box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.02);
+}
+
+.zone-trident-node--shaft {
+  left: 44px;
+  bottom: 8px;
+}
+
+.zone-trident-node--hub {
+  left: 44px;
+  top: 76px;
+}
+
+.zone-trident-node--left {
+  left: 14px;
+  top: 16px;
+}
+
+.zone-trident-node--right {
+  right: 14px;
+  top: 16px;
+}
+
+.zone-trident-node.is-active {
+  border-color: rgba(245, 181, 68, 0.95);
+  background: rgba(245, 181, 68, 0.22);
+  box-shadow: 0 0 0 8px rgba(245, 181, 68, 0.09), 0 0 24px rgba(245, 181, 68, 0.34);
+}
+
+.zone-trident-node.is-pulse {
+  border-color: rgba(113, 193, 255, 0.95);
+  background: rgba(113, 193, 255, 0.18);
+  box-shadow: 0 0 0 8px rgba(113, 193, 255, 0.08), 0 0 24px rgba(113, 193, 255, 0.34);
+  animation: zone-node-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes zone-node-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.12);
+    opacity: 0.8;
+  }
+}
+
+.zone-trident-copy {
+  color: var(--text);
+  font-family: "Exo 2", sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.zone-runtime-shell {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  align-content: start;
+}
+
+.zone-task-stage {
+  width: 100%;
+}
+
+.zone-task-kicker {
+  color: rgba(245, 181, 68, 0.92);
+  font-family: "Orbitron", monospace;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.zone-task-copy,
+.zone-last-line,
+.zone-task-quality {
+  color: var(--muted);
+  font-family: "Exo 2", sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.zone-task-canvas-wrap {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: radial-gradient(circle at 50% 35%, rgba(113, 193, 255, 0.06), rgba(8, 11, 18, 0.96));
+  min-height: 268px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zone-task-canvas {
+  display: block;
+  width: 100%;
+  height: 252px;
+  border: 0;
+}
+
+.zone-task-preflight {
+  position: absolute;
+  inset: 8px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 12px;
+  padding: 24px 28px;
+  background:
+    linear-gradient(180deg, rgba(11, 17, 28, 0.94), rgba(9, 14, 23, 0.98)),
+    radial-gradient(circle at top left, rgba(245, 181, 68, 0.1), transparent 58%);
+  text-align: center;
+}
+
+.zone-task-preflight[hidden] {
+  display: none !important;
+}
+
+.zone-task-preflight .zone-task-copy {
+  max-width: 320px;
+}
+
+.zone-task-start {
+  width: min(100%, 220px);
+}
+
+.zone-task-progress {
+  display: grid;
+  gap: 6px;
+}
+
+.zone-task-progress[hidden] {
+  display: none !important;
+}
+
+.zone-task-progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.zone-task-progress-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(113, 193, 255, 0.92), rgba(245, 181, 68, 0.92));
+}
+
+.zone-task-progress-copy {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 10px;
+  color: var(--text);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+}
+
+.zone-result-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(245, 181, 68, 0.18);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.zone-result-heading {
+  color: var(--text);
+  font-family: "Orbitron", monospace;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.zone-result-body {
+  display: grid;
+  gap: 8px;
+}
+
+.zone-result-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+}
+
+.zone-result-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.zone-reason-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+}
+
+.zone-response-shell {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.zone-response-shell .response-buttons {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.zone-response-shell .response-buttons[hidden],
+.zone-response-actions[hidden] {
+  display: none !important;
+}
+
+.zone-response-shell .response-button {
+  min-height: 48px;
+}
+
+.zone-response-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.zone-response-actions[data-zone-idle-actions] {
+  grid-template-columns: minmax(0, 220px);
+  justify-content: center;
+}
+
+.capacity-lab-route-card {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.capacity-lab-route-card.is-ready {
+  border-color: rgba(113, 193, 255, 0.22);
+  box-shadow: inset 0 1px 0 rgba(113, 193, 255, 0.06);
+}
+
+.capacity-lab-route-title {
+  color: var(--text);
+  font-family: "Orbitron", monospace;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.capacity-lab-route-copy {
+  color: var(--muted);
+  font-family: "Exo 2", sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.capacity-sandbox-ledger {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 860px) {
+  .app-shell[data-screen="zone"] .play-main--split {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .app-shell[data-screen="zone"] .zone-side-panel {
+    width: 100%;
+    padding-top: 0;
+  }
+
+  .app-shell[data-screen="zone"] .game-window,
+  .app-shell[data-screen="zone"] .coach-strip {
+    width: 100%;
+    max-width: none;
+  }
+
+  .app-shell[data-screen="zone"] .coach-strip {
+    height: auto;
+    margin-top: -20px;
+    transform: translateY(-10px);
+  }
+
+  .app-shell[data-screen="zone"] .game-window__body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .zone-banner-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .zone-response-shell .response-buttons,
+  .zone-response-actions {
+    grid-template-columns: 1fr;
+  }
+}
