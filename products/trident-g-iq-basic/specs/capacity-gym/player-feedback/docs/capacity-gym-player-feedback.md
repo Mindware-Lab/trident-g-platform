@@ -169,6 +169,8 @@ The new wording is better because the player is progressing through:
 
 not only a single family in isolation.
 
+For the **Relational** family, Track progress should report progress across **4 variants**. The mono wrappers should only count as stabilised once **both** of their single-dimension tracks are stable.
+
 ## **E. Why â€œTransfer Readinessâ€ should stay**
 
 The app should use:
@@ -472,6 +474,18 @@ The placeholder family template should now use the **real family names and funct
 **Trains:** relational integration, fluid reasoning  
 **Why it matters:** helps you track patterns and rules between items rather than only isolated tokens
 
+Player-facing progression for this family should follow:
+
+1.  **Vectors mono**
+
+2.  **Numbers mono**
+
+3.  **Vectors dual**
+
+4.  **Numbers dual**
+
+For player feedback, the two mono wrappers should still read as single variants in the progress strip, but each only counts once both of its target tracks are stable. In Vectors mono, those tracks are **relation** and **orientation**. In Numbers mono, they are **relation** and **direction**. In the dual variants, feedback should surface both dimension accuracies together because the block result depends on the mean of the two dimension scores.
+
 ## **M. Placeholder coaching copy â€” revised set**
 
 ## **1. Initial onboarding**
@@ -593,6 +607,20 @@ Stable at: 2-back
 Trend: Recovering  
 Transfer Readiness: Broadening  
 Track progress: Consolidate Day 3 of 10 \| Emotional: 1 of 2 variants stabilised
+
+### **Example 4 â€” Relational progression**
+
+**Phase 2 â€” Consolidate  
+**Day 5 of 10  
+**Family: Relational  
+**Training focus: relational integration, fluid reasoning  
+Next gate: stabilise numbers mono before moving into dual tracking
+
+Session average: 2.3  
+Stable at: 2-back  
+Trend: Rising  
+Transfer Readiness: Broadening  
+Track progress: Consolidate Day 5 of 10 \| Relational: 2 of 4 variants stabilised
 
 ## **O. Summary rule**
 

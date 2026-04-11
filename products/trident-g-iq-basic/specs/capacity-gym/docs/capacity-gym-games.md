@@ -6,7 +6,7 @@
 
 3.  Each game has **2 speed settings**.
 
-### There are 5 **game families**, each with **2-3 wrapper/syntax variants**.  **Family 1: FLEX N-backs** 
+### There are 5 **game families**, each with **2-4 wrapper/syntax variants**.  **Family 1: FLEX N-backs** 
 
 <img src="../media/media/image3.png" style="width:2.1031in;height:2.90305in" />
 
@@ -105,40 +105,56 @@ Example stimulus below
 
 **Family 5: RELATE N-back**
 
-**Variant 1: Vectors  
-**
+**Variant 1: Vectors mono**
 
-Same single n-back match game. Instead of one stimulus token presented on each trial, two stimuli in opposite locations on an 8 equi-node circle are shown (see images below). The two arrow tiles on each trial can be presented on any of the 4 possible alignments (vertical, horizontal and 2 diagonals). The arrow-tiles can be either pointing towards each other, away from each other, in the same direction as each other or at diagonals to each other. The task is to match on the relative direcitons of the arrow-tiles (these 4 relative directions are the 4 match stimuli in this relational n-back game). Illustrations of this game idea below.  
-  
+This mono relational n-back uses two arrow tiles presented in opposite locations on an 8 equi-node circle. Each block cues one of two target dimensions, and the player uses a single **MATCH** button exactly as in the other mono families:
+
+1.  **Relation**: the 4 possible arrow relationships are pointing towards each other, away from each other, in the same direction, or in a diagonal mismatch class.
+2.  **Orientation**: the 4 possible across-circle alignments are vertical, horizontal, diagonal-left, and diagonal-right.
+
+The non-target dimension can repeat while the cued target does not. That is a lure and must count as a **non-match**.
+
 <img src="../media/media/image1.png" style="width:2.25195in;height:3.1199in" /><img src="../media/media/image14.png" style="width:2.91119in;height:3.13229in" />
 
-**Variant 2**: **Angles**
+**Variant 2: Numbers mono**
 
-Same n-back match logic as above, but now we just have a central symbol defined by its angle - irrespective of orientation.
+This mono relational n-back uses two numbers presented in rapid succession on the 8-pointed circle, with the second number shown **200 msec** after the first. Each block cues one of two target dimensions, and the player uses a single **MATCH** button:
 
-Equivalent angle sets - rotated randomly but always the same angle:
+1.  **Relation**: the 4 possible number relations are increasing by 1, decreasing by 1, staying the same, or none of the above.
+2.  **Direction**: the temporal sequence from `t1` to `t2` can move in 8 Euclidean directions across the circle: up, down, left, right, up-right, up-left, down-right, and down-left.
 
-90 deg: à­® ã âˆŸ  
-Acute angle (e.g. 40 deg): Î› ï¼œ  
-Obtuse angle: (e.g. 140 deg) ã„‘ ã€‰  
-180 deg:ï¼¼ä¸¨ãƒŽ ä¸€
-
-Example Stimuli shown below:
-
-<img src="../media/media/image12.png" style="width:2.26563in;height:3.0948in" />
-
-**Variant 3**: **Numbers**
-
-Same n-back match logic as the games above, but now we have two numbers presented in rapid succession on the 8 pointed circle (e. 200msec apart):
-
-The 4 relations to match are:  
-  
-1. Numbers increasing by 1 (any number pairs from 1 to 9 following this rule)  
-2. Numbers decreasing by 1 (any number pairs from 1 to 9 following his rule)  
-3. Numbers the same (any number pairs from 1 to 9 following this rule)  
-4. Number pairs that are none of the above (any number pairs following this rule - e.g. 1 \> 4)
+The non-target dimension can repeat while the cued target does not. That is a lure and must count as a **non-match**.
 
 <img src="../media/media/image11.png" style="width:2.0187in;height:2.77821in" /> <img src="../media/media/image7.png" style="width:2.01871in;height:2.77812in" />
+
+**Variant 3: Vectors dual**
+
+This uses the same vector stimuli as the mono vectors game, but now both target dimensions are live at the same time. The player tracks a shared **n** across:
+
+1.  **Orientation**
+2.  **Relation**
+
+There are two response buttons shown side by side: **orientation** and **relation**. Either, both, or neither can be correct on a given trial.
+
+**Variant 4: Numbers dual**
+
+This uses the same number-pair stimuli as the mono numbers game, including the **200 msec** within-trial timing gap. The player tracks a shared **n** across:
+
+1.  **Direction**
+2.  **Relation**
+
+There are two response buttons shown side by side: **direction** and **relation**. Either, both, or neither can be correct on a given trial.
+
+For both dual variants, the scoring logic is the same as **Emotional dual**. Each dimension is classified independently as **hit**, **miss**, **false alarm**, or **correct rejection**. Block accuracy is the mean of the two dimension accuracies. **UP** requires both dimensions to reach at least **80%** accuracy and the combined block average to reach at least **90%**. **DOWN** triggers if either dimension falls below **75%**, or if the combined block accuracy falls below **75%**.
+
+Within the Relate family, progression should follow a strict ladder:
+
+1.  **Vectors mono**
+2.  **Numbers mono**
+3.  **Vectors dual**
+4.  **Numbers dual**
+
+Mono competence requires both single-dimension tracks inside that wrapper to reach final level **>=2-back**, with **3 stable blocks at >=75%** on each track. Dual competence requires final level **>=2-back** plus **3 stable dual blocks** where both dimensions are **>=75%**.
 
 # Cognitive Skills Trained
 
@@ -246,17 +262,23 @@ This family bridges cognition and emotion by training Affective Working Memory (
 
 **Game Mechanics**
 
-- In this single n-back match game, players evaluate two stimuli presented in opposite locations on an 8 equi-node circle instead of one token.
+- This family now contains **4 variants**: Vectors mono, Numbers mono, Vectors dual, and Numbers dual.
 
-- Variant 1 tasks players with matching the relative directions of two arrow-tiles, which can point towards each other, away from each other, in the same direction, or at diagonals.
+- All Relate variants present paired stimuli rather than a single token. The player must abstract a relationship or alignment from the pair and compare that underlying structure at n-back.
 
-- Variant 2 requires matching a central symbol defined strictly by its angle, completely irrespective of its orientation.
+- **Vectors mono** uses one **MATCH** button and block-cues either the vector **relation** or the pair **orientation**. Non-target repeats are lures and do not count as matches.
 
-- Variant 3 involves two numbers presented in rapid succession, where the player must match the mathematical relation between them (e.g., numbers increasing by 1, decreasing by 1, staying the same, or none of the above).
+- **Numbers mono** uses one **MATCH** button and block-cues either the number **relation** or the temporal-sequence **direction** from the first number to the second. The two numbers remain separated by a **200 msec** gap.
+
+- **Vectors dual** and **Numbers dual** combine both dimensions at once with a shared **n** and two response buttons shown side by side.
+
+- In both dual variants, each dimension is scored independently as a hit, miss, false alarm, or correct rejection, and block accuracy is the mean of the two dimension accuracies, matching the Emotional dual rule set.
+
+- Relate progression runs in a fixed order: **Vectors mono -> Numbers mono -> Vectors dual -> Numbers dual**.
 
 **Differentiating Skills: Relational Integration & Fluid Reasoning**
 
-This family targets relational integration, the fundamental building block of fluid intelligence. Rather than holding static items in mind, the central executive must abstract a rule or relationship from discrete parts, maintain that abstract relationship, and continuously compare it to incoming sets of relationships.
+This family targets relational integration, the fundamental building block of fluid intelligence. Rather than holding static items in mind, the central executive must abstract a rule or relationship from discrete parts, maintain that abstract relationship, and continuously compare it to incoming sets of relationships. The mono variants isolate one relational axis at a time, while the dual variants require the player to hold both the abstract relation and the spatial orientation or direction structure simultaneously.
 
 **Key References**
 

@@ -18,7 +18,7 @@ and prevents users from mistaking brief local performance gains for installed, w
 
 ## **B. Canonical correction to the game map**
 
-The Capacity Gym game set should be treated as containing **5 families and 13 variants**:
+The Capacity Gym game set should be treated as containing **5 families and 14 variants**:
 
 - **Family 1: XOR** â€” 3 variants
 
@@ -28,7 +28,7 @@ The Capacity Gym game set should be treated as containing **5 families and 13 va
 
 - **Family 4: Emotional** â€” 2 variants
 
-- **Family 5: Relational** â€” 3 variants
+- **Family 5: Relational** â€” 4 variants
 
 These all share the same n-back backbone but foreground different skill clusters:
 
@@ -214,6 +214,18 @@ A family is **permanently unlocked** only when the user shows:
 
 3.  **at least one same-level hold after wrapper change inside that family**
 
+For the **Relational** family, this rule should now be interpreted using the 4-variant ladder:
+
+1.  **Vectors mono**
+
+2.  **Numbers mono**
+
+3.  **Vectors dual**
+
+4.  **Numbers dual**
+
+The two mono wrappers each contain two block-cued target tracks. A mono Relational wrapper counts as stabilised or mastered only when **both** of its single-dimension tracks meet the wrapper standard.
+
 This is a cleaner motor-habit interpretation of family mastery:
 
 - **stable level** proves the policy exists
@@ -231,6 +243,38 @@ This is a cleaner motor-habit interpretation of family mastery:
 - one spike does **not** grant permanent unlock
 
 Permanent unlock is a **validated portability gate**, not a novelty reward.
+
+### **G4. Relational internal progression rule**
+
+The Relational family should keep its current position as a post-Emotional branch, but its internal progression should now be explicit:
+
+1.  **Vectors mono** opens when the Relational family opens.
+
+2.  **Numbers mono** opens after Vectors mono competence.
+
+3.  **Vectors dual** opens after Numbers mono competence.
+
+4.  **Numbers dual** opens after Vectors dual competence.
+
+Relational mono competence means **both** target tracks inside that wrapper have reached final level **>=2-back** and each has **3 stable blocks at >=75%**.
+
+Relational dual competence means final level **>=2-back** plus **3 stable dual blocks** where **both dimensions are >=75%**.
+
+The dual variants should use the same response and scoring logic as Emotional dual: each dimension is classified independently, the block score is the mean of the two dimension accuracies, **UP** requires both dimensions to reach at least **80%** with combined block accuracy at least **90%**, and **DOWN** triggers if either dimension or the combined block accuracy falls below **75%**.
+
+### **G5. Relational credits and mastery counting**
+
+The credit and Trident schedule stays unchanged for this revision:
+
+- **wrapper / variant swap** = 30
+
+- **fast-speed hold** = 20
+
+- **next n-level attempt** = 10
+
+No extra bonus should be introduced for unlocking a dual Relational wrapper.
+
+Family mastery for Relational should now mean stable 3-back evidence across **all 4 variants**, with each mono wrapper counting only after both of its target tracks meet the required standard.
 
 ## **H. Revised developmental backbone**
 
