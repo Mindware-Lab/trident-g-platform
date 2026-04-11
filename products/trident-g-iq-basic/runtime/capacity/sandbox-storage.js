@@ -24,7 +24,7 @@ function clampN(value) {
 }
 
 function normalizeWrapper(value) {
-  if (value === "hub_noncat" || value === "hub_concept" || value === "and_cat" || value === "and_noncat" || value === "resist_vectors" || value === "resist_words" || value === "resist_concept" || value === "emotion_faces" || value === "emotion_words" || value === "relate_vectors") {
+  if (value === "hub_noncat" || value === "hub_concept" || value === "and_cat" || value === "and_noncat" || value === "resist_vectors" || value === "resist_words" || value === "resist_concept" || value === "emotion_faces" || value === "emotion_words" || value === "relate_vectors" || value === "relate_angles" || value === "relate_numbers") {
     return value;
   }
   return "hub_cat";
@@ -34,7 +34,7 @@ function normalizeTargetModality(wrapper, value) {
   if (wrapper.startsWith("and_")) {
     return "conj";
   }
-  if (wrapper === "relate_vectors") {
+  if (wrapper === "relate_vectors" || wrapper === "relate_angles" || wrapper === "relate_numbers") {
     return "rel";
   }
   if (wrapper === "resist_vectors") {

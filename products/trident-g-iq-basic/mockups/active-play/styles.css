@@ -4160,6 +4160,62 @@
   transform-origin: 50% 50%;
 }
 
+.capacity-hub-token--relate-angle {
+  width: 132px;
+  height: 132px;
+  border-radius: 28px;
+  border-color: rgba(98, 141, 255, 0.22);
+  background:
+    radial-gradient(circle at 50% 46%, rgba(245, 181, 68, 0.14), rgba(245, 181, 68, 0) 62%),
+    linear-gradient(180deg, rgba(15, 26, 50, 0.96), rgba(10, 18, 36, 0.96));
+  color: #f5b544;
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.36),
+    0 0 0 1px rgba(111, 170, 255, 0.06) inset;
+}
+
+.capacity-relate-angle {
+  width: 96px !important;
+  height: 96px !important;
+  overflow: visible;
+  transform-origin: 50% 50%;
+}
+
+.capacity-relate-angle path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 6.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 14px rgba(245, 181, 68, 0.14));
+}
+
+.capacity-relate-angle circle {
+  fill: currentColor;
+}
+
+.capacity-hub-token--relate-number {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  border-color: rgba(112, 142, 255, 0.34);
+  background:
+    linear-gradient(180deg, rgba(71, 93, 212, 0.98), rgba(56, 77, 185, 0.98)),
+    radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0));
+  color: #ffffff;
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+}
+
+.capacity-relate-number-value {
+  font-family: "Orbitron", monospace;
+  font-size: 46px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.12);
+}
+
 .capacity-hub-token.is-word {
   width: auto;
   height: auto;

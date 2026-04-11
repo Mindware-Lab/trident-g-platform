@@ -36,7 +36,7 @@ const WRAPPER_GROUPS = {
   bind: ["and_cat", "and_noncat"],
   resist: ["resist_vectors", "resist_words", "resist_concept"],
   emotion: ["emotion_faces", "emotion_words"],
-  relate: ["relate_vectors"]
+  relate: ["relate_vectors", "relate_angles", "relate_numbers"]
 };
 
 const CAPACITY_TREE_FAMILIES = [
@@ -96,7 +96,9 @@ const LIVE_WRAPPERS = new Set([
   "resist_concept",
   "emotion_faces",
   "emotion_words",
-  "relate_vectors"
+  "relate_vectors",
+  "relate_angles",
+  "relate_numbers"
 ]);
 
 function preloadImageUrls(urls) {
@@ -465,6 +467,23 @@ function recommendSettings(uiState) {
         reason: uiState.settings.wrapper === "emotion_words"
           ? "Start with emotion words and ink colour tracking to establish a baseline."
           : "Start with emotion faces and location tracking to establish a baseline."
+      };
+    }
+    if (wrapperFamily(uiState.settings.wrapper) === "relate") {
+      return {
+        wrapper: uiState.settings.wrapper === "relate_angles"
+          ? "relate_angles"
+          : uiState.settings.wrapper === "relate_numbers"
+            ? "relate_numbers"
+            : "relate_vectors",
+        targetModality: "rel",
+        speed: "slow",
+        n: 1,
+        reason: uiState.settings.wrapper === "relate_angles"
+          ? "Start with angle-category matching to establish a stable relational baseline."
+          : uiState.settings.wrapper === "relate_numbers"
+            ? "Start with the numbers relation block to establish a stable relational baseline."
+            : "Start with the vectors relation block to establish a stable relational baseline."
       };
     }
     return {
@@ -858,7 +877,7 @@ function createUiState() {
     status: "idle",
     activeBlock: null,
     activeMessage: "Pick a wrapper and start a block inside the new capacity shell.",
-    coachMessage: "Use this route to play Flex, Bind, Resist, and the first Relate vectors block without wiring the full telemetry stack or official progression engine.",
+    coachMessage: "Use this route to play Flex, Bind, Resist, and the live Relate vector, angle, and numbers blocks without wiring the full telemetry stack or official progression engine.",
     lastSavedEntry: persisted.history[0] || null
   };
 }
@@ -880,6 +899,63 @@ function renderRelateVectorTokenMarkup(token, visible) {
   `;
 }
 
+function relateAnglePath(angleDeg) {
+  const centerX = 24;
+  const centerY = 24;
+  const radius = 16;
+  const halfAngle = Number(angleDeg || 90) / 2;
+  const points = [-halfAngle, halfAngle].map((offsetDeg) => {
+    const theta = (offsetDeg * Math.PI) / 180;
+    return {
+      x: centerX + (radius * Math.sin(theta)),
+      y: centerY - (radius * Math.cos(theta))
+    };
+  });
+
+  return `M ${centerX} ${centerY} L ${points[0].x.toFixed(2)} ${points[0].y.toFixed(2)} M ${centerX} ${centerY} L ${points[1].x.toFixed(2)} ${points[1].y.toFixed(2)}`;
+}
+
+function renderRelateAngleTokenMarkup(display, visible) {
+  const point = display?.pointPct || { xPct: 50, yPct: 50 };
+  const rotationDeg = Number(display?.rotationDeg || 0);
+  const path = relateAnglePath(display?.angleDeg);
+
+  return `
+    <div class="capacity-hub-token capacity-hub-token--relate-angle${visible ? "" : " is-hidden"}" style="left:${point.xPct}%;top:${point.yPct}%;">
+      <svg class="capacity-relate-angle" viewBox="0 0 48 48" aria-hidden="true" style="transform:rotate(${rotationDeg}deg);">
+        <path d="${path}"></path>
+        <circle cx="24" cy="24" r="2.6"></circle>
+      </svg>
+    </div>
+  `;
+}
+
+function renderRelateNumberTokenMarkup(token, visible, isVisibleNow) {
+  const point = token?.pointPct || { xPct: 50, yPct: 50 };
+  return `
+    <div class="capacity-hub-token capacity-hub-token--relate-number${visible && isVisibleNow ? "" : " is-hidden"}" style="left:${point.xPct}%;top:${point.yPct}%;">
+      <span class="capacity-relate-number-value">${escapeHtml(token?.value ?? "")}</span>
+    </div>
+  `;
+}
+
+function trialSequenceGapMs(trial) {
+  return Number.isFinite(trial?.display?.sequenceGapMs)
+    ? Math.max(0, Math.round(trial.display.sequenceGapMs))
+    : 0;
+}
+
+function isMatchWindowOpen(uiState) {
+  const active = uiState.activeBlock;
+  if (!active || uiState.status !== "trial" || active.responseCaptured) {
+    return false;
+  }
+
+  const trial = active.trials[active.trialIndex];
+  const sequenceGapMs = trialSequenceGapMs(trial);
+  return !sequenceGapMs || active.trialVisualStage >= 2;
+}
+
 function arenaMarkup(uiState) {
   const active = uiState.activeBlock;
   const trial = active && active.trialIndex >= 0 ? active.trials[active.trialIndex] : null;
@@ -890,7 +966,8 @@ function arenaMarkup(uiState) {
     || wrapperForMarkers === "and_noncat"
     || wrapperForMarkers === "resist_words"
     || wrapperForMarkers === "emotion_words"
-    || wrapperForMarkers === "resist_concept";
+    || wrapperForMarkers === "resist_concept"
+    || wrapperForMarkers === "relate_angles";
   const markers = hideMarkers
     ? ""
     : points.map((point) => `<span class="capacity-hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`).join("");
@@ -901,7 +978,9 @@ function arenaMarkup(uiState) {
   const textColor = trial?.display?.textHex || fallbackTextColor;
   const shapeColor = trial?.display?.colourHex || "#ffffff";
   const activeWrapper = active?.plan?.wrapper || uiState.settings.wrapper;
-  const isRelateWrapper = activeWrapper === "relate_vectors";
+  const isRelateVectorWrapper = activeWrapper === "relate_vectors";
+  const isRelateAngleWrapper = activeWrapper === "relate_angles";
+  const isRelateNumbersWrapper = activeWrapper === "relate_numbers";
   const isWordWrapper = activeWrapper === "resist_words" || activeWrapper === "emotion_words";
   let token = "";
   const isShape = Boolean(trial?.display?.symbolSvgPath);
@@ -932,13 +1011,13 @@ function arenaMarkup(uiState) {
         ? "is-resist is-resist-words"
       : activeWrapper === "resist_concept"
         ? "is-resist is-resist-concept"
-      : activeWrapper === "relate_vectors"
+      : activeWrapper === "relate_vectors" || activeWrapper === "relate_angles" || activeWrapper === "relate_numbers"
         ? "is-relate"
       : activeWrapper?.startsWith("and_")
         ? (activeWrapper === "and_noncat" ? "is-and is-and-remap" : "is-and")
         : "is-cat";
 
-  if (isRelateWrapper) {
+  if (isRelateVectorWrapper) {
     const relationTokens = Array.isArray(trial?.display?.pairTokens)
       ? trial.display.pairTokens.map((token) => renderRelateVectorTokenMarkup(token, visible)).join("")
       : "";
@@ -948,6 +1027,29 @@ function arenaMarkup(uiState) {
         <div class="capacity-hub-ring"></div>
         ${markers}
         ${relationTokens}
+      </div>
+    `;
+  }
+
+  if (isRelateAngleWrapper) {
+    return `
+      <div class="capacity-hub-arena ${wrapperClass}${uiState.status === "paused" ? " is-paused" : ""}">
+        <div class="capacity-hub-ring"></div>
+        ${markers}
+        ${trial ? renderRelateAngleTokenMarkup(trial.display, visible) : ""}
+      </div>
+    `;
+  }
+
+  if (isRelateNumbersWrapper) {
+    const showFirst = Boolean(visible && active?.trialVisualStage >= 1);
+    const showSecond = Boolean(visible && active?.trialVisualStage >= 2);
+    return `
+      <div class="capacity-hub-arena ${wrapperClass}${uiState.status === "paused" ? " is-paused" : ""}">
+        <div class="capacity-hub-ring"></div>
+        ${markers}
+        ${trial ? renderRelateNumberTokenMarkup(trial.display.firstToken, visible, showFirst) : ""}
+        ${trial ? renderRelateNumberTokenMarkup(trial.display.secondToken, visible, showSecond) : ""}
       </div>
     `;
   }
@@ -966,10 +1068,15 @@ function setupMarkup(uiState) {
   const statusLabel = uiState.status === "result" ? "Saved" : "Ready";
   const family = wrapperFamily(uiState.settings.wrapper);
   const isFixedTarget = family === "bind" || family === "relate";
+  const relateTargetLabel = uiState.settings.wrapper === "relate_angles"
+    ? "Angle"
+    : uiState.settings.wrapper === "relate_numbers"
+      ? "Number relation"
+      : "Relation";
   const targetOptions = family === "bind"
     ? `<option value="conj" selected>Colour + Symbol</option>`
     : family === "relate"
-      ? `<option value="rel" selected>Relation</option>`
+      ? `<option value="rel" selected>${relateTargetLabel}</option>`
     : uiState.settings.wrapper === "resist_vectors"
       || uiState.settings.wrapper === "resist_concept"
       ? `<option value="loc" ${uiState.settings.targetModality === "loc" ? "selected" : ""}>Location</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Direction</option>`
@@ -998,7 +1105,7 @@ function setupMarkup(uiState) {
           </div>
           ${uiState.settings.mode === "manual"
             ? `
-            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option><option value="resist_vectors" ${uiState.settings.wrapper === "resist_vectors" ? "selected" : ""}>Resist vectors</option><option value="resist_words" ${uiState.settings.wrapper === "resist_words" ? "selected" : ""}>Resist words</option><option value="resist_concept" ${uiState.settings.wrapper === "resist_concept" ? "selected" : ""}>Resist concept</option><option value="emotion_faces" ${uiState.settings.wrapper === "emotion_faces" ? "selected" : ""}>Emotion faces</option><option value="emotion_words" ${uiState.settings.wrapper === "emotion_words" ? "selected" : ""}>Emotion words</option><option value="relate_vectors" ${uiState.settings.wrapper === "relate_vectors" ? "selected" : ""}>Relate vectors</option></select></label>
+            <label class="capacity-lab-field"><span>Wrapper</span><select data-lab-setting="wrapper"><option value="hub_cat" ${uiState.settings.wrapper === "hub_cat" ? "selected" : ""}>Flex known</option><option value="hub_noncat" ${uiState.settings.wrapper === "hub_noncat" ? "selected" : ""}>Flex unknown</option><option value="hub_concept" ${uiState.settings.wrapper === "hub_concept" ? "selected" : ""}>Flex concept</option><option value="and_cat" ${uiState.settings.wrapper === "and_cat" ? "selected" : ""}>Bind known</option><option value="and_noncat" ${uiState.settings.wrapper === "and_noncat" ? "selected" : ""}>Bind unknown</option><option value="resist_vectors" ${uiState.settings.wrapper === "resist_vectors" ? "selected" : ""}>Resist vectors</option><option value="resist_words" ${uiState.settings.wrapper === "resist_words" ? "selected" : ""}>Resist words</option><option value="resist_concept" ${uiState.settings.wrapper === "resist_concept" ? "selected" : ""}>Resist concept</option><option value="emotion_faces" ${uiState.settings.wrapper === "emotion_faces" ? "selected" : ""}>Emotion faces</option><option value="emotion_words" ${uiState.settings.wrapper === "emotion_words" ? "selected" : ""}>Emotion words</option><option value="relate_vectors" ${uiState.settings.wrapper === "relate_vectors" ? "selected" : ""}>Relate vectors</option><option value="relate_angles" ${uiState.settings.wrapper === "relate_angles" ? "selected" : ""}>Relate angles</option><option value="relate_numbers" ${uiState.settings.wrapper === "relate_numbers" ? "selected" : ""}>Relate numbers</option></select></label>
             <label class="capacity-lab-field"><span>Target</span><select data-lab-setting="targetModality" ${isFixedTarget ? "disabled" : ""}>${targetOptions}</select></label>
             <label class="capacity-lab-field"><span>Speed</span><select data-lab-setting="speed"><option value="slow" ${uiState.settings.speed === "slow" ? "selected" : ""}>Slow pace</option><option value="fast" ${uiState.settings.speed === "fast" ? "selected" : ""}>Fast pace</option></select></label>
             <label class="capacity-lab-field capacity-lab-field--wide"><span>N-back</span><select data-lab-setting="n">${Array.from({ length: HUB_N_MAX }, (_, index) => { const value = index + 1; return `<option value="${value}" ${uiState.settings.n === value ? "selected" : ""}>N-${value}</option>`; }).join("")}</select></label>
@@ -1019,7 +1126,7 @@ function liveMarkup(uiState) {
   const active = uiState.activeBlock;
   const pauseAction = uiState.status === "paused" ? "resume" : "pause";
   const pauseLabel = uiState.status === "paused" ? "Resume" : "Pause";
-  const matchDisabled = uiState.status !== "trial" || active.responseCaptured;
+  const matchDisabled = !isMatchWindowOpen(uiState);
 
   return `
     <div class="capacity-sandbox-shell capacity-sandbox-shell--live">
@@ -1051,7 +1158,7 @@ export function mountCapacityLab({ root }) {
   const taskRoot = root.querySelector("[data-capacity-lab-root]");
   const telemetryRail = root.querySelector(".telemetry-rail");
   const uiState = createUiState();
-  const timers = { cue: null, display: null, trial: null };
+  const timers = { cue: null, display: null, trial: null, sequence: null };
 
   function clearTimers() {
     Object.keys(timers).forEach((key) => {
@@ -1077,14 +1184,33 @@ export function mountCapacityLab({ root }) {
     }, safeDelayMs);
   }
 
-  function scheduleTrialTimers(index, { displayDelayMs, trialDelayMs } = {}) {
+  function scheduleTrialTimers(index, { displayDelayMs, trialDelayMs, sequenceDelayMs } = {}) {
     const active = uiState.activeBlock;
     if (!active) {
       return;
     }
 
+    const trial = active.trials[index];
     const safeDisplayMs = Number.isFinite(displayDelayMs) ? Math.max(0, Math.round(displayDelayMs)) : active.displayMs;
     const safeTrialMs = Number.isFinite(trialDelayMs) ? Math.max(0, Math.round(trialDelayMs)) : active.soaMs;
+    const safeSequenceMs = Number.isFinite(sequenceDelayMs)
+      ? Math.max(0, Math.round(sequenceDelayMs))
+      : trialSequenceGapMs(trial);
+
+    if (active.stimulusVisible && safeSequenceMs > 0 && active.trialVisualStage < 2) {
+      active.sequenceEndsAtMs = performance.now() + safeSequenceMs;
+      timers.sequence = setTimeout(() => {
+        if (!uiState.activeBlock || uiState.activeBlock.trialIndex !== index) {
+          return;
+        }
+        uiState.activeBlock.trialVisualStage = 2;
+        uiState.activeBlock.sequenceEndsAtMs = 0;
+        timers.sequence = null;
+        render();
+      }, safeSequenceMs);
+    } else {
+      active.sequenceEndsAtMs = 0;
+    }
 
     if (active.stimulusVisible && safeDisplayMs > 0) {
       active.displayEndsAtMs = performance.now() + safeDisplayMs;
@@ -1094,6 +1220,8 @@ export function mountCapacityLab({ root }) {
         }
         uiState.activeBlock.stimulusVisible = false;
         uiState.activeBlock.displayEndsAtMs = 0;
+        uiState.activeBlock.trialVisualStage = 0;
+        uiState.activeBlock.sequenceEndsAtMs = 0;
         timers.display = null;
         render();
       }, safeDisplayMs);
@@ -1101,6 +1229,7 @@ export function mountCapacityLab({ root }) {
       active.displayEndsAtMs = 0;
       if (safeDisplayMs === 0) {
         active.stimulusVisible = false;
+        active.trialVisualStage = 0;
       }
     }
 
@@ -1381,7 +1510,7 @@ export function mountCapacityLab({ root }) {
 
   function captureResponse() {
     const active = uiState.activeBlock;
-    if (!active || uiState.status !== "trial" || active.responseCaptured) {
+    if (!isMatchWindowOpen(uiState)) {
       return false;
     }
     active.responseCaptured = true;
@@ -1410,8 +1539,12 @@ export function mountCapacityLab({ root }) {
           displayRemainingMs: active.stimulusVisible
             ? Math.max(0, Math.round(active.displayEndsAtMs - now))
             : 0,
+          sequenceRemainingMs: active.trialVisualStage > 0 && active.trialVisualStage < 2
+            ? Math.max(0, Math.round(active.sequenceEndsAtMs - now))
+            : 0,
           trialRemainingMs: Math.max(0, Math.round(active.trialEndsAtMs - now)),
-          elapsedTrialMs: Math.max(0, Math.round(now - active.trialStartedAtMs))
+          elapsedTrialMs: Math.max(0, Math.round(now - active.trialStartedAtMs)),
+          trialVisualStage: active.trialVisualStage
         };
 
     clearTimers();
@@ -1443,15 +1576,25 @@ export function mountCapacityLab({ root }) {
 
     if (active.stimulusVisible && pausedState.displayRemainingMs <= 0) {
       active.stimulusVisible = false;
+      active.trialVisualStage = 0;
     }
 
+    active.trialVisualStage = Number.isFinite(pausedState.trialVisualStage)
+      ? pausedState.trialVisualStage
+      : active.trialVisualStage;
+    if (!active.stimulusVisible) {
+      active.trialVisualStage = 0;
+    }
     active.trialStartedAtMs = performance.now() - (pausedState.elapsedTrialMs || 0);
     uiState.status = "trial";
     uiState.coachMessage = `Resumed. Match the ${displayHubTargetLabel(active.plan.targetModality, active.plan.wrapper).toLowerCase()} from ${active.plan.n} turns ago. Sandbox scoring stays local.`;
     render();
     scheduleTrialTimers(active.trialIndex, {
       displayDelayMs: active.stimulusVisible ? pausedState.displayRemainingMs : 0,
-      trialDelayMs: pausedState.trialRemainingMs
+      trialDelayMs: pausedState.trialRemainingMs,
+      sequenceDelayMs: active.stimulusVisible && active.trialVisualStage < 2
+        ? pausedState.sequenceRemainingMs
+        : 0
     });
   }
 
@@ -1466,6 +1609,8 @@ export function mountCapacityLab({ root }) {
     active.responseRtMs = null;
     active.trialStartedAtMs = performance.now();
     active.pausedState = null;
+    active.trialVisualStage = trialSequenceGapMs(active.trials[index]) > 0 ? 1 : 2;
+    active.sequenceEndsAtMs = 0;
     uiState.status = "trial";
     uiState.coachMessage = `Match the ${displayHubTargetLabel(active.plan.targetModality, active.plan.wrapper).toLowerCase()} from ${active.plan.n} turns ago. Sandbox scoring only; official progression stays spec-gated.`;
     render();
@@ -1559,6 +1704,10 @@ export function mountCapacityLab({ root }) {
       clearTimeout(timers.display);
       timers.display = null;
     }
+    if (timers.sequence) {
+      clearTimeout(timers.sequence);
+      timers.sequence = null;
+    }
     if (timers.trial) {
       clearTimeout(timers.trial);
       timers.trial = null;
@@ -1626,8 +1775,10 @@ export function mountCapacityLab({ root }) {
       responseCaptured: false,
       responseRtMs: null,
       trialStartedAtMs: 0,
+      trialVisualStage: 0,
       cueEndsAtMs: 0,
       displayEndsAtMs: 0,
+      sequenceEndsAtMs: 0,
       trialEndsAtMs: 0,
       pausedState: null,
       trialOutcomes: []

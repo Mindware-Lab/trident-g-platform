@@ -26,7 +26,7 @@ const capacityLabCoachHtml = `
     <div class="coach-label">Coach tip</div>
     <div class="capacity-coach-panel">
       <div class="capacity-coach-line is-active" data-capacity-lab-coach>
-        Use this route to play Flex, Bind, Resist, and the first Relate vectors block inside the new capacity shell without advancing the official progression engine.
+        Use this route to play Flex, Bind, Resist, and the live Relate vectors, angles, and numbers blocks inside the new capacity shell without advancing the official progression engine.
       </div>
     </div>
   </div>
@@ -38,8 +38,8 @@ export const capacityLabScreen = {
   module: "capacity",
   banner: {
     title: "Capacity Sandbox",
-    subtitle: "Flex, Bind, Resist, and first Relate wrapper in the new shell",
-    subcopy: "Local scoring only; Relate vectors now live",
+    subtitle: "Flex, Bind, Resist, and live Relate wrappers in the new shell",
+    subcopy: "Local scoring only; Relate vectors, angles, and numbers now live",
     stage: "Sandbox",
     stageMeta: "public tester route"
   },
@@ -51,7 +51,7 @@ export const capacityLabScreen = {
   ],
   coach: {
     label: "Sandbox",
-    headline: "Flex, Bind, Resist, Relate live.",
+    headline: "Flex, Bind, Resist, full Relate set live.",
     body: "Basic scoring only."
   },
   coachHtml: capacityLabCoachHtml,
