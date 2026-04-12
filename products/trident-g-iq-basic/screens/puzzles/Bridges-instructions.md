@@ -59,3 +59,9 @@ High expansion factors usually mean easier puzzles with fewer possible islands; 
 
 26.3 Bridges user preferences
 On platforms that support user preferences, the ‘Preferences’ option on the ‘Game’ menu will let you configure whether possible bridge locations are shown. Unlike the ‘G’ key, this will persist between games.
+
+<img width="283" height="274" alt="image" src="https://github.com/user-attachments/assets/2845e010-4004-454d-a02f-1f2bb12621b9" />
+
+<img width="285" height="274" alt="image" src="https://github.com/user-attachments/assets/8f046804-b83c-4125-b31b-3c01e565985b" />
+
+
