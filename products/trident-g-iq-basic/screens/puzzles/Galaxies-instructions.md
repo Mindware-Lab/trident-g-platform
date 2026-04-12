@@ -25,3 +25,14 @@ Width, Height
 Size of grid in squares.
 Difficulty
 Controls the difficulty of the generated puzzle. More difficult puzzles require more complex deductions, and the ‘Unreasonable’ difficulty level may require backtracking.
+
+<img width="412" height="413" alt="image" src="https://github.com/user-attachments/assets/031ff023-9580-4aec-9725-894bcfe1a31a" />
+
+<img width="417" height="415" alt="image" src="https://github.com/user-attachments/assets/ec212d12-d271-4d40-9e01-8b4c802fd62b" />
+
+
+
+
+
+
+
