@@ -1,0 +1,67 @@
+Bridges
+
+You have a set of islands distributed across the playing area. Each island contains a number. Your aim is to connect the islands together with bridges, in such a way that:
+
+Bridges run horizontally or vertically.
+The number of bridges terminating at any island is equal to the number written in that island.
+Two bridges may run in parallel between the same two islands, but no more than two may do so.
+No bridge crosses another bridge.
+All the islands are connected together.
+There are some configurable alternative modes, which involve changing the parallel-bridge limit to something other than 2, and introducing the additional constraint that no sequence of bridges may form a loop from one island back to the same island. The rules stated above are the default ones.
+
+Credit for this puzzle goes to Nikoli [12].
+
+Bridges was contributed to this collection by James Harvey.
+
+[12] https://www.nikoli.co.jp/en/puzzles/Hashiwokakero/
+
+26.1 Bridges controls
+To place a bridge between two islands, click the mouse down on one island and drag it towards the other. You do not need to drag all the way to the other island; you only need to move the mouse far enough for the intended bridge direction to be unambiguous. (So you can keep the mouse near the starting island and conveniently throw bridges out from it in many directions.)
+
+Doing this again when a bridge is already present will add another parallel bridge. If there are already as many bridges between the two islands as permitted by the current game rules (i.e. two by default), the same dragging action will remove all of them.
+
+If you want to remind yourself that two islands definitely do not have a bridge between them, you can right-drag between them in the same way to draw a ‘non-bridge’ marker.
+
+If you think you have finished with an island (i.e. you have placed all its bridges and are confident that they are in the right places), you can mark the island as finished by left-clicking on it. This will highlight it and all the bridges connected to it, and you will be prevented from accidentally modifying any of those bridges in future. Left-clicking again on a highlighted island will unmark it and restore your ability to modify it.
+
+You can also use the cursor keys to move around the grid: if possible the cursor will always move orthogonally, otherwise it will move towards the nearest island to the indicated direction. Holding Control and pressing a cursor key will lay a bridge in that direction (if available); Shift and a cursor key will lay a ‘non-bridge’ marker. Pressing the return key followed by a cursor key will also lay a bridge in that direction.
+
+You can mark an island as finished by pressing the space bar or by pressing the return key twice.
+
+By pressing a number key, you can jump to the nearest island with that number. Letters ‘a’, ..., ‘f’ count as 10, ..., 15 and ‘0’ as 16.
+
+The ‘G’ key will draw a grey line between each pair of islands that could be connected with a bridge or non-bridge but are currently not.
+
+Violations of the puzzle rules will be marked in red:
+
+An island with too many bridges will be highlighted in red.
+An island with too few bridges will be highlighted in red if it is definitely an error (as opposed to merely not being finished yet): if adding enough bridges would involve having to cross another bridge or remove a non-bridge marker, or if the island has been highlighted as complete.
+A group of islands and bridges may be highlighted in red if it is a closed subset of the puzzle with no way to connect it to the rest of the islands. For example, if you directly connect two 1s together with a bridge and they are not the only two islands on the grid, they will light up red to indicate that such a group cannot be contained in any valid solution.
+If you have selected the (non-default) option to disallow loops in the solution, a group of bridges which forms a loop will be highlighted.
+(All the actions described in section 2.1 are also available.)
+
+26.2 Bridges parameters
+These parameters are available from the ‘Custom...’ option on the ‘Type’ menu.
+
+Width, Height
+Size of grid in squares.
+Difficulty
+Difficulty level of puzzle.
+Allow loops
+This is set by default. If cleared, puzzles will be generated in such a way that they are always soluble without creating a loop, and solutions which do involve a loop will be disallowed.
+Max. bridges per direction
+Maximum number of bridges in any particular direction. The default is 2, but you can change it to 1, 3 or 4. In general, fewer is easier.
+%age of island squares
+Gives a rough percentage of islands the generator will try and lay before finishing the puzzle. Certain layouts will not manage to lay enough islands; this is an upper bound.
+Expansion factor (%age)
+The grid generator works by picking an existing island at random (after first creating an initial island somewhere). It then decides on a direction (at random), and then works out how far it could extend before creating another island. This parameter determines how likely it is to extend as far as it can, rather than choosing somewhere closer.
+High expansion factors usually mean easier puzzles with fewer possible islands; low expansion factors can create lots of tightly-packed islands.
+
+26.3 Bridges user preferences
+On platforms that support user preferences, the ‘Preferences’ option on the ‘Game’ menu will let you configure whether possible bridge locations are shown. Unlike the ‘G’ key, this will persist between games.
+
+<img width="283" height="274" alt="image" src="https://github.com/user-attachments/assets/2845e010-4004-454d-a02f-1f2bb12621b9" />
+
+<img width="285" height="274" alt="image" src="https://github.com/user-attachments/assets/8f046804-b83c-4125-b31b-3c01e565985b" />
+
+
