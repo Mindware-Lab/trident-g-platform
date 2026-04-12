@@ -66,3 +66,10 @@ Width, Height
 Size of grid in squares. There are 2 × Width × Height lasers per grid, two per row and two per column.
 No. of balls
 Number of balls to place in the grid. This can be a single number, or a range (separated with a hyphen, like ‘2-6’), and determines the number of balls to place on the grid. The ‘reveal’ button is only enabled if you have guessed an appropriate number of balls; a guess using a different number to the original solution is still acceptable, if all the beam inputs and outputs match.
+
+
+<img width="530" height="528" alt="image" src="https://github.com/user-attachments/assets/f049ce33-5600-4fcd-b45a-69e352bed117" />
+
+<img width="519" height="542" alt="image" src="https://github.com/user-attachments/assets/efa4c128-391c-4ea8-9c28-865073835514" />
+
+
