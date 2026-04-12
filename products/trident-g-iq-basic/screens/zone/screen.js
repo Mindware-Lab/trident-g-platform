@@ -5,10 +5,19 @@ const zoneSidePanelHtml = `
   <div class="zone-trident-panel">
     <div class="zone-trident-kicker">Trident state</div>
     <div class="zone-trident-graphic" aria-label="Zone position on the Trident">
-      <span class="zone-trident-line zone-trident-line--shaft" aria-hidden="true"></span>
-      <span class="zone-trident-line zone-trident-line--stem" aria-hidden="true"></span>
-      <span class="zone-trident-line zone-trident-line--left" aria-hidden="true"></span>
-      <span class="zone-trident-line zone-trident-line--right" aria-hidden="true"></span>
+      <svg class="zone-trident-svg" viewBox="0 0 104 176" aria-hidden="true">
+        <defs>
+          <linearGradient id="zone-trident-gradient" x1="52" y1="20" x2="52" y2="160" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#71c1ff" stop-opacity="0.62"></stop>
+            <stop offset="68%" stop-color="#aad6ff" stop-opacity="0.52"></stop>
+            <stop offset="100%" stop-color="#ffc24a" stop-opacity="0.46"></stop>
+          </linearGradient>
+        </defs>
+        <path class="zone-trident-stroke zone-trident-stroke--shaft" d="M52 92 L52 152"></path>
+        <path class="zone-trident-stroke zone-trident-stroke--center" d="M52 84 L52 28"></path>
+        <path class="zone-trident-stroke zone-trident-stroke--left" d="M52 84 C50 70 42 54 31 40 C27 34 24 29 22 24"></path>
+        <path class="zone-trident-stroke zone-trident-stroke--right" d="M52 84 C54 70 62 54 73 40 C77 34 80 29 82 24"></path>
+      </svg>
       <span class="zone-trident-node zone-trident-node--shaft" data-zone-node="shaft" aria-hidden="true"></span>
       <span class="zone-trident-node zone-trident-node--hub" data-zone-node="hub" aria-hidden="true"></span>
       <span class="zone-trident-node zone-trident-node--left" data-zone-node="left" aria-hidden="true"></span>

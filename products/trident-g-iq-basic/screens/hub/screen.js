@@ -1,3 +1,5 @@
+import { mountHubScreen } from "../../runtime/hub/mount.js";
+
 const coreSegments = [
   1, 0, 1, 1, 0,
   1, 0, 0, 1, 1,
@@ -131,157 +133,127 @@ export const hubScreen = {
     stageMeta: ""
   },
   dashboardHtml: `
-    <div class="hub-dashboard">
-      <div class="hub-top-grid">
-        <section class="hub-panel hub-panel--mission frame-corners">
-          <div class="hub-panel-head">
-            <span class="hub-panel-kicker">What to do today</span>
-          </div>
-          <div class="hub-mission-layout">
-            <div class="hub-mission-main">
-              <div class="hub-mission-title">Recommended mission.</div>
-              <div class="hub-mission-route-chips" aria-label="Programme selection">
-                <span class="hub-mission-route-chip">20 session</span>
-                <span class="hub-mission-route-chip hub-mission-route-chip--active">10 session</span>
-                <span class="hub-mission-route-chip">3 session</span>
-                <span class="hub-mission-route-label">Choose Program</span>
-                <span class="hub-mission-route-help" aria-label="Help about choosing a programme" title="Help about choosing a programme">?</span>
+    <div class="hub-dashboard hub-dashboard--rails">
+      <div class="hub-rails-layout">
+        <aside class="hub-panel hub-panel--tree frame-corners" data-hub-mission-tree></aside>
+
+        <section class="hub-metrics-stage">
+          <div class="hub-top-grid">
+            <section class="hub-panel hub-panel--programme frame-corners" data-hub-programme-panel></section>
+
+            <section class="hub-panel hub-panel--wallet frame-corners">
+              <div class="hub-panel-head">
+                <span class="hub-panel-kicker">Wallet</span>
+                <span class="hub-panel-badge">Rewards</span>
               </div>
-              <div class="hub-mission-flow" aria-label="Recommended mission flow">
-                <span class="hub-mission-step hub-mission-step--tests">Take Psi-CBS Test</span>
-                <span class="hub-mission-arrow" aria-hidden="true">></span>
-                <span class="hub-mission-step hub-mission-step--zone">Assess Zone</span>
-                <span class="hub-mission-arrow" aria-hidden="true">></span>
-                <span class="hub-mission-step hub-mission-step--capacity">Train Emotional N-Back</span>
-              </div>
-              <div class="hub-mission-instruction">Click on the mission elements to access the tasks</div>
-            </div>
-            <div class="hub-core-visual">
-              <div class="hub-core-kicker">Training rate</div>
-              <div class="hub-ring" style="--hub-ring-value: 40;">
-                <div class="hub-ring-inner">
-                  <span class="hub-ring-number">40%</span>
-                  <span class="hub-ring-label">Efficiency</span>
+              <div class="hub-wallet-body">
+                <img class="hub-wallet-coins" src="./mockups/Digital coins with trident and G credit.png" alt="Updated Trident and G coin artwork">
+                <div class="hub-wallet-stats">
+                  <div class="hub-wallet-stat hub-wallet-stat--g">
+                    <span class="hub-wallet-value">3.8 G</span>
+                    <span class="hub-wallet-label">Wallet balance</span>
+                  </div>
+                  <div class="hub-wallet-stat hub-wallet-stat--trident">
+                    <span class="hub-wallet-value">3,800</span>
+                    <span class="hub-wallet-label">Tridents</span>
+                  </div>
+                  <div class="hub-wallet-stat hub-wallet-stat--flash">
+                    <span class="hub-wallet-value">GBP 38</span>
+                    <span class="hub-wallet-label">Trident Credit</span>
+                  </div>
                 </div>
               </div>
-              <div class="hub-progress-track" aria-hidden="true">${coreSegments}</div>
-            </div>
-          </div>
-          <div class="hub-programme-grid">
-            ${programmeCards}
-          </div>
-        </section>
-
-        <aside class="hub-panel hub-panel--wallet">
-          <div class="hub-panel-head">
-            <span class="hub-panel-kicker">Wallet</span>
-            <span class="hub-panel-badge">Rewards</span>
-          </div>
-          <div class="hub-wallet-body">
-            <img class="hub-wallet-coins" src="./mockups/Digital coins with trident and G credit.png" alt="Updated Trident and G coin artwork">
-            <div class="hub-wallet-stats">
-              <div class="hub-wallet-stat hub-wallet-stat--g">
-                <span class="hub-wallet-value">3.8 G</span>
-                <span class="hub-wallet-label">Wallet balance</span>
-              </div>
-              <div class="hub-wallet-stat hub-wallet-stat--trident">
-                <span class="hub-wallet-value">3,800</span>
-                <span class="hub-wallet-label">Tridents</span>
-              </div>
-              <div class="hub-wallet-stat hub-wallet-stat--flash">
-                <span class="hub-wallet-value">GBP 38</span>
-                <span class="hub-wallet-label">Trident Credit</span>
-              </div>
-            </div>
-          </div>
-          <div class="hub-store-banner">
-            <div class="hub-store-head">
-              <div class="hub-store-brand" aria-hidden="true">
-                <span class="hub-store-logo">
-                  <img class="hub-store-logo-image" src="./mockups/iqmindware%20eye.png" alt="">
-                </span>
-                <span class="hub-store-wordmark">IQMindware</span>
-              </div>
-              <span class="hub-store-cart" aria-hidden="true">
-                <svg viewBox="0 0 24 24" focusable="false">
-                  <path d="M3 5h2l2 10h9l3-7H7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
-                  <circle cx="10" cy="19" r="1.7" fill="currentColor"></circle>
-                  <circle cx="17" cy="19" r="1.7" fill="currentColor"></circle>
-                </svg>
-              </span>
-            </div>
-            <div class="hub-store-copy">
-              Find the IQ Mindware store at
-              <span class="hub-store-link">www.iqmindware.com</span>
-            </div>
-          </div>
-        </aside>
-      </div>
-
-      <div class="hub-summary-grid">
-        <section class="hub-panel hub-panel--summary">
-          <div class="hub-panel-head">
-            <span class="hub-panel-kicker">Zone summary</span>
-            <span class="hub-panel-badge hub-panel-badge--zone">In-zone trend</span>
-          </div>
-          <div class="hub-summary-title">Bits/second cognitive capacity</div>
-          <div class="hub-summary-topline">
-            <div class="hub-summary-value">3 bits/sec</div>
-          </div>
-          <svg class="hub-sparkline hub-sparkline--zone" viewBox="0 0 180 38" preserveAspectRatio="none" aria-hidden="true">
-            <polyline fill="none" stroke="currentColor" stroke-width="3" points="4,28 28,24 52,27 76,20 100,17 124,22 148,14 176,10"></polyline>
-          </svg>
-          <div class="hub-summary-title hub-summary-title--secondary">In-the-zone consistency per session</div>
-          <div class="hub-state-row">${zoneDots}</div>
-          <div class="hub-state-legend">${zoneLegend}</div>
-        </section>
-
-        <section class="hub-panel hub-panel--summary">
-          <div class="hub-panel-head">
-            <span class="hub-panel-kicker">Capacity summary</span>
-            <span class="hub-panel-badge">Far transfer</span>
-          </div>
-          <div class="hub-summary-title">WM capacity gain estimate</div>
-          <div class="hub-summary-topline">
-            <div class="hub-summary-value">2.0 -> 3.0</div>
-            <div class="hub-transfer-badge">Learn more</div>
-          </div>
-          <div class="hub-compare-bars">
-            <div class="hub-compare-bar">
-              <span class="hub-compare-label">Baseline</span>
-              <div class="hub-compare-track"><span class="hub-compare-fill hub-compare-fill--muted" style="width: 44%;"></span></div>
-            </div>
-            <div class="hub-compare-bar">
-              <span class="hub-compare-label">Current</span>
-              <div class="hub-compare-track"><span class="hub-compare-fill hub-compare-fill--capacity" style="width: 72%;"></span></div>
-            </div>
-          </div>
-          <div class="hub-summary-subhead">Cognitive skill gains from baseline</div>
-          <div class="hub-skills-block">
-            ${skillBars}
-          </div>
-        </section>
-
-        <section class="hub-panel hub-panel--summary">
-          <div class="hub-panel-head">
-            <span class="hub-panel-kicker">Tests summary</span>
-            <span class="hub-panel-badge">Evidence</span>
-          </div>
-            <div class="hub-summary-title">Psychometric IQ score</div>
-            <div class="hub-summary-topline">
-              <div class="hub-summary-value">100 -> 115</div>
-              <div class="hub-iq-chart" aria-hidden="true">
-                <div class="hub-iq-bars">
-                  ${psychometricBars}
+              <div class="hub-store-banner">
+                <div class="hub-store-head">
+                  <div class="hub-store-brand" aria-hidden="true">
+                    <span class="hub-store-logo">
+                      <img class="hub-store-logo-image" src="./mockups/iqmindware%20eye.png" alt="">
+                    </span>
+                    <span class="hub-store-wordmark">IQMindware</span>
+                  </div>
+                  <span class="hub-store-cart" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" focusable="false">
+                      <path d="M3 5h2l2 10h9l3-7H7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                      <circle cx="10" cy="19" r="1.7" fill="currentColor"></circle>
+                      <circle cx="17" cy="19" r="1.7" fill="currentColor"></circle>
+                    </svg>
+                  </span>
+                </div>
+                <div class="hub-store-copy">
+                  Find the IQ Mindware store at
+                  <span class="hub-store-link">www.iqmindware.com</span>
                 </div>
               </div>
-            </div>
-          <div class="hub-summary-subhead">Applied intelligence scores</div>
-          <div class="hub-ai-block">
-            ${appliedIntelligenceRows}
+            </section>
+          </div>
+
+          <div class="hub-summary-grid">
+            <section class="hub-panel hub-panel--summary frame-corners">
+              <div class="hub-panel-head">
+                <span class="hub-panel-kicker">Zone summary</span>
+                <span class="hub-panel-badge hub-panel-badge--zone">In-zone trend</span>
+              </div>
+              <div class="hub-summary-title">Bits/second cognitive capacity</div>
+              <div class="hub-summary-topline">
+                <div class="hub-summary-value">3 bits/sec</div>
+              </div>
+              <svg class="hub-sparkline hub-sparkline--zone" viewBox="0 0 180 38" preserveAspectRatio="none" aria-hidden="true">
+                <polyline fill="none" stroke="currentColor" stroke-width="3" points="4,28 28,24 52,27 76,20 100,17 124,22 148,14 176,10"></polyline>
+              </svg>
+              <div class="hub-summary-title hub-summary-title--secondary">In-the-zone consistency per session</div>
+              <div class="hub-state-row">${zoneDots}</div>
+              <div class="hub-state-legend">${zoneLegend}</div>
+            </section>
+
+            <section class="hub-panel hub-panel--summary frame-corners">
+              <div class="hub-panel-head">
+                <span class="hub-panel-kicker">Capacity summary</span>
+                <span class="hub-panel-badge">Far transfer</span>
+              </div>
+              <div class="hub-summary-title">WM capacity gain estimate</div>
+              <div class="hub-summary-topline">
+                <div class="hub-summary-value">2.0 -> 3.0</div>
+                <div class="hub-transfer-badge">Learn more</div>
+              </div>
+              <div class="hub-compare-bars">
+                <div class="hub-compare-bar">
+                  <span class="hub-compare-label">Baseline</span>
+                  <div class="hub-compare-track"><span class="hub-compare-fill hub-compare-fill--muted" style="width: 44%;"></span></div>
+                </div>
+                <div class="hub-compare-bar">
+                  <span class="hub-compare-label">Current</span>
+                  <div class="hub-compare-track"><span class="hub-compare-fill hub-compare-fill--capacity" style="width: 72%;"></span></div>
+                </div>
+              </div>
+              <div class="hub-summary-subhead">Cognitive skill gains from baseline</div>
+              <div class="hub-skills-block">
+                ${skillBars}
+              </div>
+            </section>
+
+            <section class="hub-panel hub-panel--summary frame-corners">
+              <div class="hub-panel-head">
+                <span class="hub-panel-kicker">Tests summary</span>
+                <span class="hub-panel-badge">Evidence</span>
+              </div>
+              <div class="hub-summary-title">Psychometric IQ score</div>
+              <div class="hub-summary-topline">
+                <div class="hub-summary-value">100 -> 115</div>
+                <div class="hub-iq-chart" aria-hidden="true">
+                  <div class="hub-iq-bars">
+                    ${psychometricBars}
+                  </div>
+                </div>
+              </div>
+              <div class="hub-summary-subhead">Applied intelligence scores</div>
+              <div class="hub-ai-block">
+                ${appliedIntelligenceRows}
+              </div>
+            </section>
           </div>
         </section>
       </div>
     </div>
-  `
+  `,
+  mount: mountHubScreen
 };

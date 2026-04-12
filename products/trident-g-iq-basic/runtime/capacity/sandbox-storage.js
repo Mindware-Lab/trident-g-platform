@@ -122,6 +122,7 @@ function normalizeCurrentSession(session) {
   }
   return {
     sessionId: session.sessionId,
+    missionRailId: typeof session.missionRailId === "string" ? session.missionRailId : null,
     zoneState: typeof session.zoneState === "string" ? session.zoneState : "invalid",
     uiState: typeof session.uiState === "string" ? session.uiState : "Invalid",
     recommendation: typeof session.recommendation === "string" ? session.recommendation : "defer",

@@ -20,7 +20,18 @@ import {
   updateCapacityLabCurrentSession,
   updateCapacityLabSettings
 } from "./sandbox-storage.js";
-import { loadLatestZoneHandoff, loadZoneRuntimeState } from "../zone/storage.js";
+import {
+  familyDisplayLabel,
+  familyEntryTargetModality,
+  familyEntryWrapper,
+  missionFamilyReason,
+  phaseWindowLabel
+} from "../programme/mission.js";
+import {
+  loadProgrammeState,
+  recordProgrammeResolution
+} from "../programme/storage.js";
+import { loadLatestZoneHandoff } from "../zone/storage.js";
 import {
   initAudio,
   playSfx,
@@ -328,6 +339,88 @@ function progressionHistory(history) {
   return history.filter((entry) => entryRewardMode(entry) === "core");
 }
 
+function familyProgressionHistory(history, familyId) {
+  return progressionHistory(history).filter((entry) => wrapperFamily(entry.wrapper) === familyId);
+}
+
+function stableRun(entries, { minCount = 3, minAccuracy = 0.85, minN = 1 } = {}) {
+  const recent = entries.slice(0, minCount);
+  return recent.length >= minCount && recent.every((entry) => Number(entry?.block?.accuracy || 0) >= minAccuracy && blockEndN(entry) >= minN);
+}
+
+function wrapperCompetence(entries) {
+  return stableRun(entries, { minCount: 3, minAccuracy: 0.85, minN: 2 });
+}
+
+function familyWrapperOrder(familyId) {
+  return WRAPPER_GROUPS[familyId] || WRAPPER_GROUPS.flex;
+}
+
+function foundationCalibrationFamily(uiState) {
+  const candidates = ["flex", "resist", "bind"];
+  const scores = candidates.map((familyId) => {
+    const entries = familyProgressionHistory(uiState.history, familyId);
+    const stable = computeStableLevel(entries) || 0;
+    return {
+      familyId,
+      stable,
+      count: entries.length
+    };
+  });
+
+  scores.sort((left, right) => {
+    if (left.stable !== right.stable) {
+      return left.stable - right.stable;
+    }
+    if (left.count !== right.count) {
+      return left.count - right.count;
+    }
+    return candidates.indexOf(left.familyId) - candidates.indexOf(right.familyId);
+  });
+
+  return scores[0]?.familyId || "flex";
+}
+
+function currentProgrammeFamilyId(uiState) {
+  if (!uiState.programme) {
+    return null;
+  }
+  return uiState.programme.currentFamilyId || (uiState.programme.nextCoreSessionNumber === 5 ? foundationCalibrationFamily(uiState) : null);
+}
+
+function missionRailLabel(uiState) {
+  return uiState.programme?.mission?.label || "Probe Lab";
+}
+
+function missionPhaseLabel(uiState) {
+  return phaseWindowLabel(uiState.programme?.currentRailPhase);
+}
+
+function missionFamilyLabel(uiState) {
+  if (uiState.programme?.currentFamilyId) {
+    return familyDisplayLabel(uiState.programme.currentFamilyId);
+  }
+  if (uiState.programme?.nextCoreSessionNumber === 5) {
+    return "Calibration";
+  }
+  return "--";
+}
+
+function missionBranchFamilyLabel(uiState, index = 0) {
+  const familyId = uiState.programme?.mission?.families?.[index]?.familyId;
+  return familyId ? familyDisplayLabel(familyId) : "--";
+}
+
+function coachRouteTitle(uiState, guidedPlan) {
+  if (uiState.settings.mode !== "coach") {
+    return guidedPlan ? `${routeClassLabel(guidedPlan.routeClass)} route` : "Games";
+  }
+  if (uiState.programme?.currentRailPhase === "foundation") {
+    return `${missionRailLabel(uiState)} / shared foundation / next ${missionBranchFamilyLabel(uiState, 0)}`;
+  }
+  return `${missionRailLabel(uiState)} / ${missionPhaseLabel(uiState)} / ${missionFamilyLabel(uiState)}`;
+}
+
 function currentSessionEntries(history, sessionId) {
   return history.filter((entry) => entry.sessionId === sessionId).slice().reverse();
 }
@@ -350,12 +443,13 @@ function freshZoneHandoff(uiState) {
   return handoff;
 }
 
-function createGuidedSession(handoff) {
+function createGuidedSession(handoff, missionRailId = null) {
   if (!handoff?.capacityPlan) {
     return null;
   }
   return {
     sessionId: handoff.sessionId,
+    missionRailId,
     zoneState: handoff.state,
     uiState: handoff.uiState,
     recommendation: handoff.recommendation,
@@ -377,15 +471,21 @@ function createGuidedSession(handoff) {
   };
 }
 
+function currentSessionMatchesMission(uiState) {
+  const missionRailId = uiState.programme?.missionRailId || null;
+  const sessionMissionRailId = uiState.currentSession?.missionRailId || null;
+  return Boolean(missionRailId) && sessionMissionRailId === missionRailId;
+}
+
 function activeGuidedPlan(uiState) {
-  if (uiState.currentSession) {
+  if (uiState.currentSession && currentSessionMatchesMission(uiState)) {
     return uiState.currentSession;
   }
   if (uiState.settings.mode !== "coach") {
     return null;
   }
   const handoff = freshZoneHandoff(uiState);
-  return handoff ? createGuidedSession(handoff) : null;
+  return handoff ? createGuidedSession(handoff, uiState.programme?.missionRailId || null) : null;
 }
 
 function routeClassLabel(routeClass) {
@@ -606,6 +706,7 @@ function resolveCapacityTreeWrapper(uiState, unlockedFamilies, unlockedWrappers)
 
 function renderCapacityGamesPanel(uiState) {
   const guidedPlan = activeGuidedPlan(uiState);
+  const routeTitle = coachRouteTitle(uiState, guidedPlan);
   const unlockedFamilies = uiState.settings.mode === "coach"
     ? computeCoachUnlockState(uiState.history).unlocked
     : new Set(CAPACITY_TREE_FAMILIES.map((family) => family.id));
@@ -627,7 +728,7 @@ function renderCapacityGamesPanel(uiState) {
 
   return `
     <div class="capacity-games-title">Capacity</div>
-    <div class="capacity-games-title">${escapeHtml(guidedPlan ? `${routeClassLabel(guidedPlan.routeClass)} route` : "Games")}</div>
+    <div class="capacity-games-title">${escapeHtml(routeTitle)}</div>
     <div class="capacity-games-tree">
       ${CAPACITY_TREE_FAMILIES.map((family) => {
         const unlocked = visibleFamilies.has(family.id);
@@ -648,10 +749,17 @@ function renderCapacityGamesPanel(uiState) {
                 const variantClass = `capacity-games-variant ${variantUnlocked ? "is-unlocked" : "is-locked"}${currentVariant ? " is-current" : ""}`;
                 const variantDotClass = `capacity-games-variant-dot${currentVariant ? " is-current" : variantUnlocked ? " is-unlocked" : ""}`;
                 return `
-                  <div class="${variantClass}">
+                  <button
+                    class="${variantClass}"
+                    type="button"
+                    data-capacity-tree-wrapper="${variant.wrapper}"
+                    aria-pressed="${currentVariant ? "true" : "false"}"
+                    aria-label="Select ${escapeHtml(wrapperLabel(variant.wrapper))}"
+                    ${variantUnlocked ? "" : "disabled"}
+                  >
                     <span class="${variantDotClass}" aria-hidden="true"></span>
                     <span>${escapeHtml(variant.label)}</span>
-                  </div>
+                  </button>
                 `;
               }).join("")}
             </div>
@@ -725,25 +833,36 @@ function baselineRecommendationForWrapper(wrapper) {
   };
 }
 
-function recommendCoreProgressionSettings(uiState) {
-  const history = progressionHistory(uiState.history);
-  const last = history[0];
+function baselineRecommendationForFamily(familyId) {
+  const entryWrapper = familyEntryWrapper(familyId);
+  return {
+    wrapper: entryWrapper,
+    targetModality: familyEntryTargetModality(familyId),
+    speed: "slow",
+    n: 1,
+    reason: `Start ${familyDisplayLabel(familyId).toLowerCase()} on its entry wrapper before portability or speed pressure opens.`
+  };
+}
+
+function recommendCoreProgressionSettings(uiState, familyId) {
+  const resolvedFamilyId = familyId || currentProgrammeFamilyId(uiState) || wrapperFamily(uiState.settings.wrapper);
+  const familyHistory = familyProgressionHistory(uiState.history, resolvedFamilyId);
+  const last = familyHistory[0];
 
   if (!last) {
-    return baselineRecommendationForWrapper(uiState.settings.wrapper);
+    return baselineRecommendationForFamily(resolvedFamilyId);
   }
 
-  const lastN = clampN(last.block?.nEnd ?? last.block?.nStart ?? uiState.settings.n);
-  const lastWrapper = last.wrapper || uiState.settings.wrapper;
-  const lastSpeed = last.speed || uiState.settings.speed;
-  const lastTarget = last.targetModality || uiState.settings.targetModality;
-  const lastThree = history.slice(0, 3);
-  const avgAcc = lastThree.length
-    ? lastThree.reduce((sum, entry) => sum + Number(entry?.block?.accuracy || 0), 0) / lastThree.length
+  const lastWrapper = last.wrapper || familyEntryWrapper(resolvedFamilyId);
+  const lastTarget = last.targetModality || familyEntryTargetModality(resolvedFamilyId);
+  const lastSpeed = last.speed || "slow";
+  const lastN = clampN(last.block?.nEnd ?? last.block?.nStart ?? 1);
+  const currentWrapperHistory = familyHistory.filter((entry) => entry.wrapper === lastWrapper);
+  const lastThreeFamily = familyHistory.slice(0, 3);
+  const averageAccuracy = lastThreeFamily.length
+    ? lastThreeFamily.reduce((sum, entry) => sum + Number(entry?.block?.accuracy || 0), 0) / lastThreeFamily.length
     : Number(last?.block?.accuracy || 0);
-  const stable = avgAcc >= 0.9;
-  const drop = avgAcc < 0.75;
-  const recentWrappers = new Set(lastThree.map((entry) => entry.wrapper));
+  const drop = averageAccuracy < 0.75;
 
   if (drop) {
     return {
@@ -751,43 +870,77 @@ function recommendCoreProgressionSettings(uiState) {
       targetModality: isFixedTargetWrapper(lastWrapper) ? familyDefaultTarget(lastWrapper) : lastTarget,
       speed: "slow",
       n: clampN(lastN - 1),
-      reason: "Stability dipped; lower the load and slow the pace."
+      reason: "Stability dipped. Lower the load and slow the pace before reopening the family ladder."
     };
   }
 
-  const swapCap = familyWrappers(lastWrapper).length;
-  const swappedWrapper = nextWrapper(lastWrapper);
-  const swappedTarget = isTargetAllowedForWrapper(swappedWrapper, lastTarget)
-    ? lastTarget
-    : familyDefaultTarget(swappedWrapper);
-
-  if (stable && recentWrappers.size < swapCap) {
+  if (lastN < 2) {
+    if (stableRun(currentWrapperHistory, { minCount: 3, minAccuracy: 0.85, minN: 1 })) {
+      return {
+        wrapper: lastWrapper,
+        targetModality: isFixedTargetWrapper(lastWrapper) ? familyDefaultTarget(lastWrapper) : lastTarget,
+        speed: "slow",
+        n: 2,
+        reason: "Reach 2-back on the entry wrapper first. Swap, speed, and higher-n choices stay closed at n-1."
+      };
+    }
     return {
-      wrapper: swappedWrapper,
-      targetModality: swappedTarget,
+      wrapper: lastWrapper,
+      targetModality: isFixedTargetWrapper(lastWrapper) ? familyDefaultTarget(lastWrapper) : lastTarget,
+      speed: "slow",
+      n: 1,
+      reason: "Hold the entry wrapper at slow pace until the family is clean enough to establish 2-back."
+    };
+  }
+
+  if (!stableRun(currentWrapperHistory, { minCount: 3, minAccuracy: 0.85, minN: 2 })) {
+    return {
+      wrapper: lastWrapper,
+      targetModality: isFixedTargetWrapper(lastWrapper) ? familyDefaultTarget(lastWrapper) : lastTarget,
       speed: "slow",
       n: lastN,
-      reason: "Stability held; swap wrapper before speed or n increases."
+      reason: "Hold the current wrapper at 2-back or above until three stable blocks unlock portability choices."
     };
   }
 
-  if (stable && lastSpeed === "slow") {
+  const wrapperOrder = familyWrapperOrder(resolvedFamilyId);
+  const competentWrappers = new Set(wrapperOrder.filter((wrapper) => wrapperCompetence(familyHistory.filter((entry) => entry.wrapper === wrapper))));
+  const dualUnlocked = resolvedFamilyId !== "relate"
+    || (competentWrappers.has("relate_vectors") && competentWrappers.has("relate_numbers"));
+  const eligibleOrder = resolvedFamilyId === "relate" && !dualUnlocked
+    ? ["relate_vectors", "relate_numbers"]
+    : wrapperOrder;
+  const nextUnmasteredWrapper = eligibleOrder.find((wrapper) => !competentWrappers.has(wrapper));
+
+  if (nextUnmasteredWrapper && nextUnmasteredWrapper !== lastWrapper) {
+    return {
+      wrapper: nextUnmasteredWrapper,
+      targetModality: familyDefaultTarget(nextUnmasteredWrapper),
+      speed: "slow",
+      n: Math.max(2, lastN),
+      reason: resolvedFamilyId === "relate" && !dualUnlocked
+        ? "Relate mono competence opens first. Carry the level into the next mono wrapper before any dual push."
+        : "Portability opens first. Carry the current level into the next wrapper before speed or higher-n pressure."
+    };
+  }
+
+  if (lastSpeed === "slow") {
     return {
       wrapper: lastWrapper,
       targetModality: isFixedTargetWrapper(lastWrapper) ? familyDefaultTarget(lastWrapper) : lastTarget,
       speed: "fast",
       n: lastN,
-      reason: "Confirm stability under faster timing before increasing n."
+      reason: "Wrapper portability held. Confirm robustness under faster timing next."
     };
   }
 
-  if (stable && lastSpeed === "fast") {
+  if (lastSpeed === "fast") {
     return {
       wrapper: lastWrapper,
       targetModality: isFixedTargetWrapper(lastWrapper) ? familyDefaultTarget(lastWrapper) : lastTarget,
       speed: "fast",
       n: clampN(lastN + 1),
-      reason: "Stable at fast pace; increase n."
+      reason: "Wrapper and fast pace held. Increase n now."
     };
   }
 
@@ -796,7 +949,7 @@ function recommendCoreProgressionSettings(uiState) {
     targetModality: isFixedTargetWrapper(lastWrapper) ? familyDefaultTarget(lastWrapper) : lastTarget,
     speed: lastSpeed,
     n: lastN,
-    reason: "Hold current settings to build stability."
+    reason: "Hold the current family settings to keep the rail stable."
   };
 }
 
@@ -844,8 +997,14 @@ function recommendGuidedSettings(uiState, plan) {
   const sessionIndex = plan.blocksCompleted || 0;
 
   if (plan.routeClass === "core") {
-    const recommendation = recommendCoreProgressionSettings(uiState);
-    return recommendation;
+    const familyId = currentProgrammeFamilyId(uiState);
+    if (!familyId) {
+      return null;
+    }
+    return {
+      ...recommendCoreProgressionSettings(uiState, familyId),
+      familyId
+    };
   }
 
   if (plan.routeClass === "recovery") {
@@ -908,11 +1067,15 @@ function recommendSettings(uiState) {
   };
 }
 
-function buildCoachMessage(recommendation) {
+function buildCoachMessage(uiState, recommendation) {
   if (!recommendation) {
     return "Run Zone Coach first to open a guided session, or switch to manual open play. Manual blocks never count toward the 20-session encode route.";
   }
-  return `The recommended option for far transfer training is ${wrapperLabel(recommendation.wrapper)} ${modalityLabel(recommendation.targetModality, recommendation.wrapper)}, N-${recommendation.n}, ${speedLabel(recommendation.speed)}. ${recommendation.reason}`;
+  const mission = uiState.programme?.mission;
+  const missionPrefix = uiState.settings.mode === "coach" && mission
+    ? `${mission.label} · ${missionPhaseLabel(uiState)} · ${missionFamilyLabel(uiState)}. ${uiState.programme?.currentFamilyReason || ""} `
+    : "";
+  return `${missionPrefix}The recommended option for guided training is ${wrapperLabel(recommendation.wrapper)} ${modalityLabel(recommendation.targetModality, recommendation.wrapper)}, N-${recommendation.n}, ${speedLabel(recommendation.speed)}. ${recommendation.reason}`.trim();
 }
 
 function sparkPoints(history) {
@@ -1137,7 +1300,7 @@ function nextBlockHint(recommendation, lastEntry) {
 }
 
 function createCurrentSessionRecord(handoff) {
-  const session = createGuidedSession(handoff);
+  const session = createGuidedSession(handoff, loadProgrammeState().missionRailId || null);
   if (!session) {
     return null;
   }
@@ -1290,16 +1453,18 @@ export const capacityLabTelemetrySeed = [
 
 function createUiState() {
   const persisted = loadCapacityLabState();
+  const programme = loadProgrammeState();
   return {
     settings: { ...persisted.settings },
     history: persisted.history.slice(),
     currentSession: persisted.currentSession ? { ...persisted.currentSession } : null,
     sessionResolutions: Array.isArray(persisted.sessionResolutions) ? persisted.sessionResolutions.slice() : [],
+    programme,
     zoneHandoff: loadLatestZoneHandoff(),
     status: "idle",
     activeBlock: null,
     activeMessage: "Run Zone Coach first for a guided session, or switch to manual open play.",
-    coachMessage: "Guided mode now requires a fresh Zone handoff. Manual mode remains open play and never counts toward the 20-session core route.",
+    coachMessage: "Guided mode now follows the selected mission rail and counted core-session rules. Manual mode remains open play and never counts toward the 20-session core route.",
     lastSavedEntry: persisted.history[0] || null
   };
 }
@@ -1453,6 +1618,7 @@ function setupMarkup(uiState) {
   const last = uiState.lastSavedEntry;
   const statusLabel = uiState.status === "result" ? "Saved" : "Ready";
   const family = wrapperFamily(uiState.settings.wrapper);
+  const programme = uiState.programme;
   const guidedPlan = activeGuidedPlan(uiState);
   const guidedStartDisabled = uiState.settings.mode === "coach" && (!guidedPlan || guidedPlan.routeClass === "recovery");
   const guidedStatusTitle = guidedPlan
@@ -1461,6 +1627,76 @@ function setupMarkup(uiState) {
   const guidedStatusBody = guidedPlan
     ? `Zone state ${guidedPlan.uiState}. Reward lane ${rewardModeLabel(guidedPlan.rewardMode)}.`
     : "Run Zone Coach first for a fresh session-scoped handoff, or switch to manual open play.";
+  const resolvedGuidedStatusTitle = guidedStatusTitle;
+  const resolvedGuidedStatusBody = guidedStatusBody;
+  const foundationShared = programme.currentRailPhase === "foundation";
+  const missionPreviewCopy = foundationShared
+    ? `Core sessions 1-5 are shared across every mission. ${missionBranchFamilyLabel(uiState, 0)} opens at core ${programme.mission?.families?.[0]?.start || 6}.`
+    : `Selected rail: ${missionBranchFamilyLabel(uiState, 0)} -> ${missionBranchFamilyLabel(uiState, 1)} -> ${missionBranchFamilyLabel(uiState, 2)}.`;
+  const missionSummaryMarkup = uiState.settings.mode === "coach"
+    ? `
+      <div class="capacity-lab-mission-shell">
+        <div class="capacity-lab-mission-head">
+          <div>
+            <div class="capacity-lab-mission-kicker">${escapeHtml(missionRailLabel(uiState))}</div>
+            <div class="capacity-lab-mission-title">${escapeHtml(`${missionPhaseLabel(uiState)} · ${missionFamilyLabel(uiState)}`)}</div>
+          </div>
+          <span class="capacity-lab-mission-pill">Core ${programme.coreSessionNumber}/20</span>
+        </div>
+        <div class="capacity-lab-mission-copy">${escapeHtml(
+          `${programme.currentFamilyReason || missionFamilyReason(programme.missionRailId, programme.currentFamilyId, programme.nextCoreSessionNumber)} ${missionPreviewCopy}`
+        )}</div>
+        <div class="capacity-lab-mission-stats">
+          <div class="capacity-lab-mission-stat">
+            <span>Core</span>
+            <strong>${safeValue(`${programme.coreSessionNumber}/20`)}</strong>
+          </div>
+          <div class="capacity-lab-mission-stat">
+            <span>Phase</span>
+            <strong>${escapeHtml(missionPhaseLabel(uiState))}</strong>
+          </div>
+          <div class="capacity-lab-mission-stat">
+            <span>Family</span>
+            <strong>${escapeHtml(missionFamilyLabel(uiState))}</strong>
+          </div>
+          <div class="capacity-lab-mission-stat">
+            <span>Support</span>
+            <strong>${programme.supportSessionCount}</strong>
+          </div>
+          <div class="capacity-lab-mission-stat">
+            <span>Reset</span>
+            <strong>${programme.resetSessionCount}</strong>
+          </div>
+          <div class="capacity-lab-mission-stat">
+            <span>Lane</span>
+            <strong>${escapeHtml(guidedPlan ? routeClassLabel(guidedPlan.routeClass) : "--")}</strong>
+          </div>
+        </div>
+        <div class="capacity-lab-mission-rail">
+          <div class="capacity-lab-mission-rail-card${programme.currentRailPhase === "foundation" ? " is-active" : ""}">
+            <strong>Foundation</strong>
+            <span>Shared 1-5</span>
+          </div>
+          <div class="capacity-lab-mission-rail-card${programme.currentRailPhase === "rail_family_1" ? " is-active" : ""}">
+            <strong>${escapeHtml(missionBranchFamilyLabel(uiState, 0))}</strong>
+            <span>${escapeHtml(`${programme.mission?.families?.[0]?.start || 6}-${programme.mission?.families?.[0]?.end || 10}`)}</span>
+          </div>
+          <div class="capacity-lab-mission-rail-card${programme.currentRailPhase === "rail_family_2" ? " is-active" : ""}">
+            <strong>${escapeHtml(missionBranchFamilyLabel(uiState, 1))}</strong>
+            <span>${escapeHtml(`${programme.mission?.families?.[1]?.start || 11}-${programme.mission?.families?.[1]?.end || 15}`)}</span>
+          </div>
+          <div class="capacity-lab-mission-rail-card${programme.currentRailPhase === "rail_family_3" ? " is-active" : ""}">
+            <strong>${escapeHtml(missionBranchFamilyLabel(uiState, 2))}</strong>
+            <span>${escapeHtml(`${programme.mission?.families?.[2]?.start || 16}-${programme.mission?.families?.[2]?.end || 20}`)}</span>
+          </div>
+        </div>
+        <div class="capacity-lab-mission-callout">
+          <strong>${escapeHtml(resolvedGuidedStatusTitle)}</strong>
+          <span>${escapeHtml(resolvedGuidedStatusBody)}</span>
+        </div>
+      </div>
+    `
+    : "";
   const isFixedTarget = isFixedTargetWrapper(uiState.settings.wrapper);
   const relateTargetLabel = uiState.settings.wrapper === "relate_numbers"
     ? "Number relation"
@@ -1491,6 +1727,7 @@ function setupMarkup(uiState) {
           <div class="capacity-live-kicker">Capacity sandbox</div>
           <div class="capacity-live-pill">${escapeHtml(statusLabel)}</div>
         </div>
+        ${missionSummaryMarkup}
         <div class="capacity-lab-setup-grid">
           <div class="capacity-lab-field capacity-lab-field--wide">
             <span>Mode</span>
@@ -1664,6 +1901,37 @@ export function mountCapacityLab({ root }) {
     uiState.settings = { ...persisted.settings };
   }
 
+  function applyWrapperSelection(wrapper) {
+    const nextTarget = isTargetAllowedForWrapper(wrapper, uiState.settings.targetModality)
+      ? uiState.settings.targetModality
+      : familyDefaultTarget(wrapper);
+    syncSettings({ wrapper, targetModality: nextTarget });
+    uiState.activeMessage = "Sandbox selection updated for the next block.";
+    uiState.coachMessage = `Sandbox selection updated: ${wrapperLabel(uiState.settings.wrapper)}, ${modalityLabel(uiState.settings.targetModality, uiState.settings.wrapper)}, N-${uiState.settings.n}.`;
+  }
+
+  function syncProgrammeRuntimeState() {
+    const latestProgramme = loadProgrammeState();
+    const missionChanged = latestProgramme.missionRailId !== uiState.programme?.missionRailId;
+    uiState.programme = latestProgramme;
+    uiState.zoneHandoff = loadLatestZoneHandoff();
+
+    if (
+      !uiState.activeBlock
+      && uiState.currentSession
+      && uiState.settings.mode === "coach"
+      && !currentSessionMatchesMission(uiState)
+    ) {
+      const persisted = clearCapacityLabCurrentSession();
+      uiState.currentSession = persisted.currentSession;
+    }
+
+    if (missionChanged && !uiState.activeBlock && uiState.settings.mode === "coach") {
+      uiState.activeMessage = `Guided route updated for ${missionRailLabel(uiState)}.`;
+      uiState.coachMessage = buildCoachMessage(uiState, recommendSettings(uiState));
+    }
+  }
+
   function updateBanner() {
     const track = root.querySelector("[data-capacity-lab-track]");
     const status = root.querySelector("[data-capacity-lab-status]");
@@ -1689,6 +1957,15 @@ export function mountCapacityLab({ root }) {
         track.textContent = uiState.settings.mode === "coach" ? "Zone handoff required" : "Manual open play";
       }
     }
+    if (
+      track
+      && !active
+      && uiState.status !== "briefing"
+      && uiState.status !== "paused"
+      && guidedPlan
+    ) {
+      track.textContent = `${missionRailLabel(uiState)} · core ${uiState.programme.coreSessionNumber}/20 · ${routeClassLabel(guidedPlan.routeClass)} route`;
+    }
     if (status) status.textContent = uiState.status === "trial" ? "Live" : uiState.status === "briefing" ? "Cueing" : uiState.status === "paused" ? "Paused" : uiState.status === "result" ? "Saved" : "Ready";
     if (wrapper) wrapper.textContent = active ? wrapperLabel(active.plan.wrapper) : "—";
     if (modality) modality.textContent = active ? modalityMark(active.plan.targetModality, active.plan.wrapper) : "—";
@@ -1710,7 +1987,7 @@ export function mountCapacityLab({ root }) {
         if (!guidedPlan) {
           coach.textContent = "Run Zone Coach first to open a guided session. Manual open play stays available, but it never counts toward the 20-session encode route.";
         } else {
-          coach.textContent = `${buildCoachMessage(recommendation)} Session bounds: ${guidedPlan.blocksMin}-${guidedPlan.blocksMax} blocks, ${rewardModeLabel(guidedPlan.rewardMode)} lane.`;
+          coach.textContent = `${buildCoachMessage(uiState, recommendation)} Session bounds: ${guidedPlan.blocksMin}-${guidedPlan.blocksMax} blocks, ${rewardModeLabel(guidedPlan.rewardMode)} lane.`;
         }
       } else if (!uiState.activeBlock) {
         coach.textContent = "Manual mode: choose your own settings for the next block. Open play stays local and never counts toward the 20-session core route.";
@@ -1724,6 +2001,34 @@ export function mountCapacityLab({ root }) {
     const panel = root.querySelector("[data-capacity-games-panel]");
     if (panel) {
       panel.innerHTML = renderCapacityGamesPanel(uiState);
+      panel.querySelectorAll("[data-capacity-tree-wrapper]").forEach((element) => {
+        element.addEventListener("click", (event) => {
+          const wrapper = event.currentTarget.dataset.capacityTreeWrapper;
+          if (!wrapper) {
+            return;
+          }
+
+          unlockAudioContextFromUserGesture();
+          playSfx("ui_tap_soft");
+
+          if (uiState.activeBlock) {
+            uiState.activeMessage = "Finish the current block first.";
+            uiState.coachMessage = "Game selection unlocks between blocks. Finish, pause, or discard the current block first.";
+            render();
+            return;
+          }
+
+          if (uiState.settings.mode !== "manual") {
+            uiState.activeMessage = "Coach guided is active.";
+            uiState.coachMessage = "Switch to You choose if you want to select a specific game from the left tree.";
+            render();
+            return;
+          }
+
+          applyWrapperSelection(wrapper);
+          render();
+        });
+      });
     }
   }
 
@@ -1731,6 +2036,8 @@ export function mountCapacityLab({ root }) {
     if (!taskRoot || !telemetryRail) {
       return;
     }
+
+    syncProgrammeRuntimeState();
 
     taskRoot.innerHTML = taskMarkup(uiState);
     telemetryRail.innerHTML = renderTelemetryCards(telemetryCards(uiState));
@@ -1758,20 +2065,19 @@ export function mountCapacityLab({ root }) {
         const key = event.currentTarget.dataset.labSetting;
         const value = key === "n" ? Number(event.currentTarget.value) : event.currentTarget.value;
         if (key === "wrapper") {
-          const nextTarget = isTargetAllowedForWrapper(value, uiState.settings.targetModality)
-            ? uiState.settings.targetModality
-            : familyDefaultTarget(value);
-          syncSettings({ wrapper: value, targetModality: nextTarget });
+          applyWrapperSelection(value);
         } else if (key === "targetModality") {
           const nextTarget = isFixedTargetWrapper(uiState.settings.wrapper)
             ? familyDefaultTarget(uiState.settings.wrapper)
             : value;
           syncSettings({ targetModality: nextTarget });
+          uiState.activeMessage = "Sandbox selection updated for the next block.";
+          uiState.coachMessage = `Sandbox selection updated: ${wrapperLabel(uiState.settings.wrapper)}, ${modalityLabel(uiState.settings.targetModality, uiState.settings.wrapper)}, N-${uiState.settings.n}.`;
         } else {
           syncSettings({ [key]: value });
+          uiState.activeMessage = "Sandbox selection updated for the next block.";
+          uiState.coachMessage = `Sandbox selection updated: ${wrapperLabel(uiState.settings.wrapper)}, ${modalityLabel(uiState.settings.targetModality, uiState.settings.wrapper)}, N-${uiState.settings.n}.`;
         }
-        uiState.activeMessage = "Sandbox selection updated for the next block.";
-        uiState.coachMessage = `Sandbox selection updated: ${wrapperLabel(uiState.settings.wrapper)}, ${modalityLabel(uiState.settings.targetModality, uiState.settings.wrapper)}, N-${uiState.settings.n}.`;
         render();
       });
     });
@@ -1823,7 +2129,7 @@ export function mountCapacityLab({ root }) {
           }
           uiState.activeMessage = `Mode set to ${modeLabel(mode)}.`;
           uiState.coachMessage = mode === "coach"
-            ? buildCoachMessage(recommendSettings(uiState))
+            ? buildCoachMessage(uiState, recommendSettings(uiState))
             : "Manual mode: choose your own settings for the next block.";
           render();
         } else if (action === "discard") {
@@ -1845,7 +2151,7 @@ export function mountCapacityLab({ root }) {
           uiState.lastSavedEntry = null;
           uiState.currentSession = persisted.currentSession;
           uiState.sessionResolutions = persisted.sessionResolutions.slice();
-          uiState.activeMessage = "Local sandbox history cleared.";
+          uiState.activeMessage = "Local sandbox history cleared. Programme progress is unchanged.";
           uiState.coachMessage = uiState.activeMessage;
           if (!uiState.activeBlock) {
             uiState.status = "idle";
@@ -2138,13 +2444,16 @@ export function mountCapacityLab({ root }) {
         const resolvedState = appendCapacityLabSessionResolution(resolution);
         uiState.currentSession = resolvedState.currentSession;
         uiState.sessionResolutions = resolvedState.sessionResolutions.slice();
+        uiState.programme = recordProgrammeResolution(resolution);
         uiState.zoneHandoff = loadLatestZoneHandoff();
         uiState.activeMessage = resolution.countedAsEncoding20
-          ? `Session complete. ${routeClassLabel(resolution.sessionClassResolved)} route counted toward the 20.`
+          ? (uiState.programme.programmeComplete
+            ? "Session complete. The 20-session guided programme is now complete."
+            : `Session complete. Core session ${uiState.programme.coreSessionNumber} of 20 is now banked.`)
           : `Session complete. ${resolution.reasonIfNotCounted || "This route does not count toward the 20-session encode phase."}`;
         uiState.coachMessage = resolution.countedAsEncoding20
-          ? "Core route held cleanly across the full session. The encode counter can move."
-          : resolution.reasonIfNotCounted || "Support and reset routes stay logged separately from core encode repetitions.";
+          ? `Core route held cleanly. ${missionRailLabel(uiState)} now sits at ${uiState.programme.coreSessionNumber}/20 counted core sessions.`
+          : resolution.reasonIfNotCounted || "Support and reset routes stay logged separately from counted core repetitions.";
       } else {
         uiState.activeMessage = `Saved block ${nextBlocksCompleted} of ${active.sessionContext.plannedBlocks} for the current ${routeClassLabel(active.sessionContext.routeClass).toLowerCase()} route.`;
         uiState.coachMessage = `${entry.outcomeBand} block saved inside the ${routeClassLabel(active.sessionContext.routeClass).toLowerCase()} lane. Keep the next block inside the same Zone bounds.`;

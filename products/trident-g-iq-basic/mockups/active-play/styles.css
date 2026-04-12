@@ -1338,6 +1338,28 @@
   gap: 14px;
 }
 
+.hub-dashboard--rails {
+  width: min(1088px, 100%);
+  height: auto;
+  grid-template-rows: 1fr;
+}
+
+.hub-rails-layout {
+  display: grid;
+  grid-template-columns: 204px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  min-height: 0;
+}
+
+.hub-metrics-stage,
+.hub-telemetry-stack {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-width: 0;
+}
+
 .hub-top-grid,
 .hub-summary-grid {
   display: grid;
@@ -1346,12 +1368,12 @@
 }
 
 .hub-top-grid {
-  grid-template-columns: minmax(0, 1.56fr) minmax(250px, 0.84fr);
+  grid-template-columns: minmax(0, 1.48fr) minmax(260px, 0.86fr);
 }
 
 .hub-summary-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 27px;
+  margin-top: 0;
 }
 
 .hub-panel {
@@ -1359,11 +1381,200 @@
   min-height: 0;
 }
 
+.hub-panel--programme,
 .hub-panel--mission,
 .hub-panel--wallet,
 .hub-panel--summary {
   display: flex;
   flex-direction: column;
+}
+
+.hub-panel--tree {
+  padding: 14px 12px;
+}
+
+.hub-rail-shell {
+  display: grid;
+  gap: 14px;
+}
+
+.hub-rail-title {
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.hub-rail-subcopy {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.hub-rail-list {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  padding-left: 14px;
+}
+
+.hub-rail-list::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  bottom: 0;
+  width: 1px;
+  background: rgba(125, 234, 255, 0.2);
+}
+
+.hub-rail-node {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--white);
+  text-align: left;
+  cursor: pointer;
+}
+
+.hub-rail-node:disabled {
+  cursor: default;
+}
+
+.hub-rail-node-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.hub-rail-node-label {
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.hub-rail-node-sub,
+.hub-rail-node-meta,
+.hub-rail-legend-item {
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
+.hub-rail-node-meta {
+  color: var(--muted-2);
+}
+
+.hub-rail-node-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  margin-top: 3px;
+}
+
+.hub-rail-node-dot.is-available {
+  border-color: rgba(68, 221, 136, 0.6);
+  background: rgba(68, 221, 136, 0.24);
+  box-shadow: 0 0 8px rgba(68, 221, 136, 0.18);
+}
+
+.hub-rail-node-dot.is-current {
+  border-color: rgba(217, 255, 91, 0.88);
+  background: rgba(217, 255, 91, 0.5);
+  box-shadow: 0 0 12px rgba(217, 255, 91, 0.26);
+}
+
+.hub-rail-node-dot.is-locked {
+  border-color: rgba(255, 255, 255, 0.26);
+  background: transparent;
+}
+
+.hub-rail-node-dot.is-complete {
+  border-color: rgba(84, 162, 255, 0.72);
+  background: rgba(84, 162, 255, 0.44);
+  box-shadow: 0 0 12px rgba(84, 162, 255, 0.22);
+}
+
+.hub-rail-node.is-current .hub-rail-node-label,
+.hub-rail-node.is-complete .hub-rail-node-label {
+  color: #d9ff5a;
+}
+
+.hub-rail-node.is-locked {
+  opacity: 0.72;
+}
+
+.hub-rail-legend {
+  display: grid;
+  gap: 6px;
+}
+
+.hub-rail-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hub-programme-shell {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.hub-programme-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 176px;
+  gap: 12px;
+  align-items: start;
+}
+
+.hub-programme-main {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.hub-programme-title {
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.08;
+  text-transform: uppercase;
+}
+
+.hub-programme-sub {
+  color: #d9ff5a;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.hub-programme-note {
+  color: var(--text);
+  font-size: 10px;
+  line-height: 1.45;
 }
 
 .hub-mission-layout {
@@ -1382,6 +1593,28 @@
   font-weight: 900;
   line-height: 1.08;
   text-transform: uppercase;
+}
+
+.hub-mission-layout--coach {
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 14px;
+}
+
+.hub-mission-main,
+.hub-core-visual--coach {
+  min-width: 0;
+}
+
+.hub-mission-headline {
+  margin-top: 6px;
+  color: #d9ff5a;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
 .hub-mission-route-chips {
@@ -1534,10 +1767,165 @@
   text-transform: uppercase;
 }
 
+button.hub-mission-pill,
+button.hub-mission-step {
+  appearance: none;
+  cursor: pointer;
+}
+
+button.hub-mission-pill:disabled,
+button.hub-mission-step:disabled {
+  cursor: default;
+  opacity: 0.56;
+}
+
 .hub-mission-pill--active {
   border-color: rgba(84, 162, 255, 0.34);
   background: rgba(84, 162, 255, 0.12);
   color: #bfe2ff;
+}
+
+.hub-mission-meta-card {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgba(125, 234, 255, 0.18);
+  background: rgba(9, 16, 30, 0.72);
+}
+
+.hub-mission-meta-kicker {
+  color: var(--credit);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+
+.hub-mission-meta-title {
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.hub-mission-meta-copy {
+  color: var(--text);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.hub-mission-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.hub-mission-stat {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.hub-mission-stat-label {
+  display: block;
+  color: var(--muted-2);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.hub-mission-stat-value {
+  display: block;
+  margin-top: 4px;
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.hub-rail-phase-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.hub-rail-phase-card {
+  min-width: 0;
+  padding: 8px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.hub-rail-phase-card.is-active {
+  border-color: rgba(217, 255, 91, 0.34);
+  background: rgba(217, 255, 91, 0.08);
+}
+
+.hub-rail-phase-card.is-complete {
+  border-color: rgba(84, 162, 255, 0.3);
+  background: rgba(84, 162, 255, 0.08);
+}
+
+.hub-rail-phase-title {
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.hub-rail-phase-copy {
+  margin-top: 4px;
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.hub-mission-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.hub-mission-action {
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.hub-mission-action--primary {
+  border-color: rgba(154, 233, 77, 0.34);
+  background: rgba(154, 233, 77, 0.12);
+  color: #e4ff9e;
+}
+
+.hub-core-visual--coach {
+  min-width: 0;
 }
 
 .hub-cta-row {
@@ -3447,11 +3835,19 @@
     grid-template-rows: auto;
   }
 
+  .hub-rails-layout {
+    grid-template-columns: 1fr;
+  }
+
   .hub-top-grid,
   .hub-summary-grid,
+  .hub-programme-top,
   .hub-mission-layout,
+  .hub-mission-layout--coach,
   .hub-cta-row,
-  .hub-programme-grid {
+  .hub-programme-grid,
+  .hub-rail-phase-grid,
+  .hub-mission-actions {
     grid-template-columns: 1fr;
   }
 
@@ -3464,7 +3860,8 @@
 
   .hub-wallet-body,
   .hub-compare-bar,
-  .hub-skill-row {
+  .hub-skill-row,
+  .hub-mission-stats {
     grid-template-columns: 1fr;
   }
 
@@ -3728,12 +4125,31 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
   font-family: "Chakra Petch", sans-serif;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 1.6px;
   text-transform: uppercase;
   color: inherit;
+  cursor: pointer;
+  transition: color 140ms ease, transform 140ms ease;
+}
+
+.capacity-games-variant:hover {
+  transform: translateX(1px);
+}
+
+.capacity-games-variant:disabled {
+  cursor: default;
+}
+
+.capacity-games-variant:disabled:hover {
+  transform: none;
 }
 
 .capacity-games-variant-dot {
@@ -3828,6 +4244,166 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.capacity-lab-mission-shell {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px;
+  border: 1px solid rgba(125, 234, 255, 0.18);
+  background: rgba(8, 16, 31, 0.78);
+}
+
+.capacity-lab-mission-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.capacity-lab-mission-kicker {
+  color: var(--credit);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.capacity-lab-mission-title {
+  margin-top: 2px;
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.capacity-lab-mission-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 8px;
+  border: 1px solid rgba(84, 162, 255, 0.3);
+  background: rgba(84, 162, 255, 0.12);
+  color: #d8ecff;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.capacity-lab-mission-copy {
+  color: var(--text);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.capacity-lab-mission-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.capacity-lab-mission-rail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.capacity-lab-mission-rail-card {
+  min-width: 0;
+  padding: 8px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.capacity-lab-mission-rail-card.is-active {
+  border-color: rgba(217, 255, 91, 0.34);
+  background: rgba(217, 255, 91, 0.08);
+}
+
+.capacity-lab-mission-rail-card strong,
+.capacity-lab-mission-rail-card span {
+  display: block;
+}
+
+.capacity-lab-mission-rail-card strong {
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.capacity-lab-mission-rail-card span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.capacity-lab-mission-stat {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.capacity-lab-mission-stat span {
+  display: block;
+  color: var(--muted-2);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.capacity-lab-mission-stat strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.capacity-lab-mission-callout {
+  display: grid;
+  gap: 4px;
+  padding: 8px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.capacity-lab-mission-callout strong {
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.capacity-lab-mission-callout span {
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.45;
 }
 
 .capacity-lab-field {
@@ -4306,7 +4882,10 @@
 
 @media (max-width: 640px) {
   .capacity-lab-setup-grid,
-  .capacity-lab-result-grid {
+  .capacity-lab-result-grid,
+  .capacity-lab-mission-stats,
+  .capacity-lab-mission-rail,
+  .hub-mission-stats {
     grid-template-columns: 1fr;
   }
 
@@ -4444,46 +5023,20 @@
   margin: 2px auto 0;
 }
 
-.zone-trident-line {
-  position: absolute;
+.zone-trident-svg {
   display: block;
-  background: linear-gradient(180deg, rgba(113, 193, 255, 0.55), rgba(255, 194, 74, 0.42));
-  box-shadow: 0 0 18px rgba(113, 193, 255, 0.12);
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 0 18px rgba(113, 193, 255, 0.12));
 }
 
-.zone-trident-line--shaft {
-  left: 50px;
-  top: 86px;
-  width: 4px;
-  height: 74px;
-  border-radius: 999px;
-}
-
-.zone-trident-line--stem {
-  left: 50px;
-  top: 42px;
-  width: 4px;
-  height: 48px;
-  border-radius: 999px;
-}
-
-.zone-trident-line--left,
-.zone-trident-line--right {
-  top: 42px;
-  width: 4px;
-  height: 62px;
-  border-radius: 999px;
-  transform-origin: top center;
-}
-
-.zone-trident-line--left {
-  left: 32px;
-  transform: rotate(-28deg);
-}
-
-.zone-trident-line--right {
-  right: 32px;
-  transform: rotate(28deg);
+.zone-trident-stroke {
+  fill: none;
+  stroke: url(#zone-trident-gradient);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .zone-trident-node {
@@ -4820,6 +5373,536 @@
 
   .zone-response-shell .response-buttons,
   .zone-response-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+.app-shell[data-screen="tests"] {
+  --banner-height: 62px;
+  --coach-height: 78px;
+}
+
+.app-shell[data-screen="tests"] .play-main--split {
+  grid-template-columns: 200px 520px;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  justify-content: end;
+  align-items: start;
+}
+
+.app-shell[data-screen="tests"] .tests-side-panel {
+  width: 200px;
+  padding-top: calc(var(--banner-height) - 34px);
+  min-height: 0;
+}
+
+.app-shell[data-screen="tests"] .game-window {
+  width: 520px;
+  max-width: 520px;
+  justify-self: end;
+}
+
+.app-shell[data-screen="tests"] .game-window__banner {
+  padding: 8px 12px;
+  align-items: center;
+  gap: 12px;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--tests) 30%, black 70%) 0%,
+      color-mix(in srgb, var(--tests) 52%, black 48%) 58%,
+      color-mix(in srgb, var(--tests) 68%, white 16%) 100%
+    );
+}
+
+.app-shell[data-screen="tests"] .game-window__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+}
+
+.app-shell[data-screen="tests"] .task-area,
+.app-shell[data-screen="tests"] .response-area {
+  min-width: 0;
+  min-height: 0;
+}
+
+.app-shell[data-screen="tests"] .task-area {
+  justify-content: flex-start;
+}
+
+.app-shell[data-screen="tests"] .response-area {
+  display: block;
+}
+
+.app-shell[data-screen="tests"] .coach-strip {
+  width: 520px;
+  margin-left: auto;
+  padding: 0 12px 10px;
+  display: block;
+  margin-top: -20px;
+  transform: translateY(-10px);
+}
+
+.tests-banner-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.tests-banner-track {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  max-width: 232px;
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  text-align: right;
+}
+
+.play-side-panel.tests-side-panel {
+  min-width: 0;
+}
+
+.tests-route-shell {
+  display: grid;
+  gap: 14px;
+  min-height: 100%;
+  padding: 16px 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(14, 18, 27, 0.95), rgba(10, 13, 19, 0.88));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  align-content: start;
+}
+
+.tests-route-title,
+.tests-stage-kicker,
+.tests-likert-copy,
+.tests-summary-stat span,
+.tests-stage-progress {
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.tests-route-title {
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: 3px;
+}
+
+.tests-route-family {
+  display: grid;
+  gap: 6px;
+}
+
+.tests-route-family-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tests-route-family-name {
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.tests-route-family.is-current .tests-route-family-name {
+  color: #d9ff5a;
+}
+
+.tests-route-family-step {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(114, 212, 145, 0.92);
+  box-shadow: 0 0 0 3px rgba(114, 212, 145, 0.08);
+}
+
+.tests-route-family.is-current .tests-route-family-step {
+  border-color: rgba(217, 255, 90, 0.96);
+  box-shadow: 0 0 0 3px rgba(217, 255, 90, 0.1);
+}
+
+.tests-route-family-branch {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  margin-left: 18px;
+  padding-left: 14px;
+}
+
+.tests-route-family-branch::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(111, 190, 255, 0.36), rgba(111, 190, 255, 0.04));
+}
+
+.tests-route-node {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--white);
+  text-align: left;
+  cursor: pointer;
+  transition: color 140ms ease, transform 140ms ease;
+}
+
+.tests-route-node::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: rgba(111, 190, 255, 0.34);
+  transform: translateY(-50%);
+}
+
+.tests-route-node:hover {
+  transform: translateX(1px);
+}
+
+.tests-route-node-label {
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.tests-route-node-dot,
+.tests-route-key-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(114, 212, 145, 0.92);
+  box-shadow: 0 0 0 2px rgba(114, 212, 145, 0.09);
+  background: rgba(114, 212, 145, 0.22);
+  flex: 0 0 auto;
+}
+
+.tests-route-node.is-locked {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.tests-route-node.is-locked .tests-route-node-dot,
+.tests-route-key-dot--locked {
+  border-color: rgba(255, 255, 255, 0.36);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.06);
+  background: transparent;
+}
+
+.tests-route-node.is-due .tests-route-node-dot,
+.tests-route-node.is-ready .tests-route-node-dot,
+.tests-route-node.is-done .tests-route-node-dot,
+.tests-route-node.is-optional .tests-route-node-dot,
+.tests-route-key-dot--unlocked {
+  border-color: rgba(114, 212, 145, 0.92);
+  box-shadow: 0 0 0 2px rgba(114, 212, 145, 0.09);
+  background: rgba(114, 212, 145, 0.24);
+}
+
+.tests-route-node.is-active .tests-route-node-dot,
+.tests-route-key-dot--active {
+  border-color: rgba(217, 255, 90, 0.96);
+  box-shadow: 0 0 0 2px rgba(217, 255, 90, 0.12);
+  background: rgba(217, 255, 90, 0.32);
+}
+
+.tests-route-node.is-active .tests-route-node-label {
+  color: #d9ff5a;
+}
+
+.tests-route-key {
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.tests-route-key-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted-2);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+
+.tests-summary-note {
+  color: rgba(222, 232, 248, 0.72);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.tests-runtime-shell,
+.tests-task-root,
+.tests-response-root {
+  display: grid;
+  gap: 10px;
+}
+
+.tests-launch-shell {
+  width: 100%;
+  display: grid;
+  gap: 10px;
+}
+
+.tests-launch-panel {
+  width: 100%;
+  max-width: none;
+}
+
+.tests-launch-panel .capacity-live-head {
+  width: 100%;
+}
+
+.tests-stage-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px 14px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(18, 23, 33, 0.96), rgba(11, 14, 21, 0.94));
+}
+
+.tests-stage-card--active {
+  border-color: rgba(111, 190, 255, 0.22);
+}
+
+.tests-stage-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tests-question-title {
+  margin: 0;
+  color: var(--white);
+  font-family: "Exo 2", sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.tests-question-kicker {
+  margin: -2px 0 -2px;
+  color: #d9ff5a;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.tests-question-note {
+  margin: 0;
+  color: rgba(222, 232, 248, 0.74);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.tests-stem-media {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tests-stem-image {
+  display: block;
+  max-width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  background: #fff;
+}
+
+.tests-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tests-summary-stat {
+  min-width: 0;
+  padding: 8px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tests-summary-stat strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.tests-response-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.tests-response-stack--choices {
+  gap: 8px;
+}
+
+.tests-response-stack--actions {
+  grid-template-columns: 1fr;
+}
+
+.tests-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tests-choice-grid--decision {
+  grid-template-columns: 1fr;
+}
+
+.tests-choice-card {
+  min-height: 72px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tests-choice-card--decision {
+  min-height: 88px;
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.tests-choice-card--decision .choice-title {
+  letter-spacing: 1.6px;
+}
+
+.tests-choice-card--decision .choice-subtitle {
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.tests-choice-card:hover {
+  border-color: rgba(111, 190, 255, 0.22);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tests-likert-shell {
+  display: grid;
+  gap: 8px;
+}
+
+.tests-likert-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tests-response-chip {
+  display: grid;
+  gap: 6px;
+  min-height: 88px;
+  padding: 12px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--white);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.tests-response-chip:hover,
+.tests-response-chip.is-selected {
+  border-color: rgba(111, 190, 255, 0.24);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+}
+
+.tests-response-chip-value {
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.tests-response-chip-label {
+  color: rgba(222, 232, 248, 0.72);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+@media (max-width: 860px) {
+  .app-shell[data-screen="tests"] .play-main--split {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .app-shell[data-screen="tests"] .tests-side-panel {
+    width: 100%;
+    padding-top: 0;
+  }
+
+  .app-shell[data-screen="tests"] .game-window,
+  .app-shell[data-screen="tests"] .coach-strip {
+    width: 100%;
+    max-width: none;
+  }
+
+  .app-shell[data-screen="tests"] .coach-strip {
+    height: auto;
+    margin-top: -20px;
+    transform: translateY(-10px);
+  }
+
+  .tests-banner-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .tests-choice-grid,
+  .tests-summary-grid,
+  .tests-likert-grid {
     grid-template-columns: 1fr;
   }
 }
