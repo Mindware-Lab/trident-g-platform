@@ -20,3 +20,8 @@ Moving the cursor while holding Control will colour the moved-over squares black
 
 10.2 Pattern parameters
 The only options available from the ‘Custom...’ option on the ‘Type’ menu are Width and Height, which are self-explanatory.
+
+<img width="784" height="778" alt="image" src="https://github.com/user-attachments/assets/28a672e8-fd40-4cc4-ad57-799028f7d903" />
+
+<img width="606" height="691" alt="image" src="https://github.com/user-attachments/assets/1ffcc391-a5ac-490c-8c57-14086ce9d2e7" />
+
