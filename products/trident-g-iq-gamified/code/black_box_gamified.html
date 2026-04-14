@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Black Box — Gamified</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #030608; display: flex; justify-content: center; padding: 2rem 1rem; min-height: 100vh; font-family: system-ui, sans-serif; }
+  #root { width: 100%; max-width: 520px; }
+
+  @keyframes ballPop{0%{transform:scale(0)rotate(-15deg);opacity:0}65%{transform:scale(1.25)rotate(3deg);opacity:1}100%{transform:scale(1)rotate(0deg)}}
+  @keyframes ballPulse{0%,100%{box-shadow:0 0 8px 3px #3b82f6}50%{box-shadow:0 0 18px 8px #60a5fa}}
+  @keyframes cellFlash{0%{background:#ffffff!important;transform:scale(1.12)}100%{transform:scale(1)}}
+  @keyframes reflectFlash{0%{background:#e2e8f0!important;transform:scale(1.1)}100%{transform:scale(1)}}
+  @keyframes hitFlash{0%{background:#ff4444!important;transform:scale(1.15)}100%{transform:scale(1)}}
+  @keyframes winGlow{0%,100%{box-shadow:0 0 20px 6px #22c55e,inset 0 0 20px rgba(34,197,94,0.1)}50%{box-shadow:0 0 40px 15px #22c55e,inset 0 0 40px rgba(34,197,94,0.2)}}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .b-pop{animation:ballPop 0.28s cubic-bezier(.36,.07,.19,.97) forwards}
+  .b-pulse{animation:ballPulse 2.2s ease-in-out infinite}
+  .flash-num{animation:cellFlash 0.35s ease-out}
+  .flash-ref{animation:reflectFlash 0.35s ease-out}
+  .flash-hit{animation:hitFlash 0.35s ease-out}
+  .win-board{animation:winGlow 1.5s ease-in-out infinite}
+  .result-fade{animation:fadeIn 0.3s ease-out}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const{useState,useRef,useCallback,useEffect}=React;
+const OFF=[{x:0,y:-1},{x:1,y:0},{x:0,y:1},{x:-1,y:0}];
+function r2g(w,h,rn){if(rn<w)return{x:rn+1,y:0,d:2};let r=rn-w;if(r<h)return{x:w+1,y:r+1,d:3};r-=h;if(r<w)return{x:w-r,y:h+1,d:0};r-=w;return{x:0,y:h-r,d:1};}
+function g2r(w,h,x,y){const x1=w+1,y1=h+1;if(x>0&&x<x1&&y>0&&y<y1)return -1;if(x<0||x>x1||y<0||y>y1)return -1;if((x===0||x===x1)&&(y===0||y===y1))return -1;if(y===0)return x-1;if(x===x1)return y-1+w;if(y===y1)return(w-x)+w+h;return(h-y)+2*w+h;}
+function hb(balls,w,h,gx,gy,dir,look){let nx=gx+OFF[dir].x,ny=gy+OFF[dir].y;if(look==='L'){const d=(dir+3)%4;nx+=OFF[d].x;ny+=OFF[d].y;}else if(look==='R'){const d=(dir+1)%4;nx+=OFF[d].x;ny+=OFF[d].y;}if(nx<1||ny<1||nx>w||ny>h)return false;return balls.has(nx+','+ny);}
+function traceLaser(balls,w,h,en){const{x:sx,y:sy,d:sd}=r2g(w,h,en);if(hb(balls,w,h,sx,sy,sd,'F'))return'H';if(hb(balls,w,h,sx,sy,sd,'L')||hb(balls,w,h,sx,sy,sd,'R'))return'R';let x=sx+OFF[sd].x,y=sy+OFF[sd].y,d=sd;for(let i=0;i<600;i++){const rn=g2r(w,h,x,y);if(rn>=0)return rn===en?'R':rn;if(hb(balls,w,h,x,y,d,'F'))return'H';if(hb(balls,w,h,x,y,d,'L')){d=(d+1)%4;continue;}if(hb(balls,w,h,x,y,d,'R')){d=(d+3)%4;continue;}x+=OFF[d].x;y+=OFF[d].y;}return'H';}
+function genBalls(w,h,n){const s=new Set();while(s.size<n)s.add((Math.floor(Math.random()*w)+1)+','+(Math.floor(Math.random()*h)+1));return s;}
+
+let _ac=null;
+function ac(){if(!_ac)try{_ac=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}return _ac;}
+function sweep(f1,f2,dur,type,vol){const c=ac();if(!c)return;c.resume();const o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f1,c.currentTime);o.frequency.exponentialRampToValueAtTime(f2,c.currentTime+dur);g.gain.setValueAtTime(vol||0.2,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+dur+0.05);}
+function tn(f,d,v){sweep(f,f*0.98,d,'sine',v||0.18);}
+function noise(dur,vol){const c=ac();if(!c)return;c.resume();const b=c.createBuffer(1,c.sampleRate*dur,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length)*0.9;const s=c.createBufferSource(),g=c.createGain();g.gain.value=vol||0.3;s.buffer=b;s.connect(g);g.connect(c.destination);s.start();}
+const SND={
+  fire:()=>sweep(680,120,0.2,'sawtooth',0.1),
+  hit:()=>{noise(0.15,0.4);sweep(260,55,0.18,'square',0.14);},
+  reflect:()=>{tn(740,0.07,0.22);setTimeout(()=>tn(520,0.09,0.16),85);},
+  pair:()=>{sweep(440,900,0.12,'sine',0.18);setTimeout(()=>sweep(900,1400,0.1,'sine',0.14),140);},
+  place:()=>sweep(560,850,0.08,'sine',0.14),
+  remove:()=>sweep(420,300,0.08,'sine',0.11),
+  win:()=>{[[523,0],[659,140],[784,290],[1047,480]].forEach(([f,d])=>setTimeout(()=>tn(f,0.38,0.28),d));},
+  lose:()=>sweep(380,160,0.55,'sawtooth',0.18),
+  newgame:()=>{sweep(160,480,0.28,'sine',0.16);setTimeout(()=>sweep(480,800,0.2,'sine',0.1),260);}
+};
+
+const NEON=['#00e5ff','#76ff03','#ffd600','#ff6d00','#e040fb','#ff4081','#40c4ff','#b2ff59'];
+const ARROWS=['\u25bc','\u25c4','\u25b2','\u25ba'];
+function arrowFor(w,h,rn){if(rn<w)return ARROWS[0];if(rn<w+h)return ARROWS[1];if(rn<2*w+h)return ARROWS[2];return ARROWS[3];}
+function nc(n){return NEON[(n-1)%NEON.length];}
+function hexRgb(h){return parseInt(h.slice(1,3),16)+','+parseInt(h.slice(3,5),16)+','+parseInt(h.slice(5,7),16);}
+
+function App(){
+  const W=8,H=8,N=5,C=44;
+  const[balls,setBalls]=useState(()=>genBalls(W,H,N));
+  const[guesses,setGuesses]=useState(new Set());
+  const[lasers,setLasers]=useState({});
+  const[nxt,setNxt]=useState(1);
+  const[revealed,setRevealed]=useState(false);
+  const[hov,setHov]=useState(null);
+  const[fset,setFset]=useState({});
+  const[pset,setPset]=useState(new Set());
+  const[shots,setShots]=useState(0);
+  const[won,setWon]=useState(null);
+
+  function addFlash(rns,type){const upd={};rns.forEach(r=>upd[r]=type);setFset(p=>({...p,...upd}));setTimeout(()=>setFset(p=>{const n={...p};rns.forEach(r=>delete n[r]);return n;}),380);}
+  function fire(rn){
+    if(revealed||lasers[rn]!==undefined)return;
+    SND.fire();
+    const res=traceLaser(balls,W,H,rn);
+    const num=typeof res==='number'?nxt:null;
+    const ft=res==='H'?'hit':res==='R'?'ref':'num';
+    const targets=[rn];if(typeof res==='number')targets.push(res);
+    setTimeout(()=>addFlash(targets,ft),60);
+    if(res==='H')setTimeout(()=>SND.hit(),170);
+    else if(res==='R')setTimeout(()=>SND.reflect(),100);
+    else setTimeout(()=>SND.pair(),130);
+    setLasers(p=>{const n={...p,[rn]:{res,num}};if(typeof res==='number')n[res]={res:rn,num};return n;});
+    if(typeof res==='number')setNxt(n=>n+1);
+    setShots(s=>s+1);
+  }
+  function toggle(x,y){
+    if(revealed)return;
+    const k=x+','+y;const adding=!guesses.has(k);
+    adding?SND.place():SND.remove();
+    if(adding){setPset(p=>{const n=new Set(p);n.add(k);return n;});setTimeout(()=>setPset(p=>{const n=new Set(p);n.delete(k);return n;}),320);}
+    setGuesses(p=>{const n=new Set(p);n.has(k)?n.delete(k):n.add(k);return n;});
+  }
+  function doReveal(){
+    setRevealed(true);
+    let c=0;guesses.forEach(k=>balls.has(k)&&c++);
+    const w=c===N&&guesses.size===N;
+    setWon(w);
+    setTimeout(()=>w?SND.win():SND.lose(),200);
+  }
+  function reset(){
+    SND.newgame();setBalls(genBalls(W,H,N));setGuesses(new Set());setLasers({});setNxt(1);
+    setRevealed(false);setHov(null);setFset({});setPset(new Set());setShots(0);setWon(null);
+  }
+
+  let correct=0,wrong=0,missed=0;
+  if(revealed){guesses.forEach(k=>balls.has(k)?correct++:wrong++);missed=N-correct;}
+  const hovRn=hov?g2r(W,H,...hov.split(':').map(Number)):null;
+  const hovEntry=hovRn!=null&&hovRn>=0?lasers[hovRn]:null;
+  const hovPairNum=hovEntry&&typeof hovEntry.res==='number'?hovEntry.num:null;
+
+  function cell(gx,gy){
+    const isC=(gx===0||gx===W+1)&&(gy===0||gy===H+1);
+    const isA=gx>=1&&gx<=W&&gy>=1&&gy<=H;
+    const rn=isC?-2:g2r(W,H,gx,gy);
+    const isL=rn>=0;
+    const hk=gx+':'+gy;
+    const isHov=hov===hk;
+    const entry=lasers[rn];
+    const ft=fset[rn];
+    const flashCls=ft==='hit'?'flash-hit':ft==='ref'?'flash-ref':ft==='num'?'flash-num':'';
+
+    if(isC)return React.createElement('div',{key:hk,style:{width:C,height:C,background:'#04070f',border:'1px solid #0a1526',boxSizing:'border-box'}});
+
+    if(isA){
+      const k=gx+','+gy;const isG=guesses.has(k),isB=balls.has(k);
+      const pop=pset.has(k);
+      let ball=null;
+      if(revealed){
+        if(isG&&isB)ball=React.createElement('div',{style:{width:29,height:29,borderRadius:'50%',background:'#16a34a',border:'3px solid #4ade80',boxSizing:'border-box',display:'flex',alignItems:'center',justifyContent:'center',color:'#bbf7d0',fontSize:15,fontWeight:900,boxShadow:'0 0 14px 5px #22c55e'}},'\u2713');
+        else if(isG&&!isB)ball=React.createElement('div',{style:{width:29,height:29,borderRadius:'50%',background:'#991b1b',border:'3px solid #f87171',boxSizing:'border-box',display:'flex',alignItems:'center',justifyContent:'center',color:'#fecaca',fontSize:15,fontWeight:900,boxShadow:'0 0 14px 5px #ef4444'}},'\u2715');
+        else if(isB)ball=React.createElement('div',{style:{width:29,height:29,borderRadius:'50%',border:'3px dashed #f87171',boxSizing:'border-box',opacity:0.65}});
+      }else if(isG){
+        ball=React.createElement('div',{className:pop?'b-pop':'b-pulse',style:{width:28,height:28,borderRadius:'50%',background:'#1d4ed8',border:'3px solid #60a5fa',boxSizing:'border-box',boxShadow:'0 0 10px 3px #3b82f6'}});
+      }
+      return React.createElement('div',{key:hk,style:{width:C,height:C,background:isHov&&!revealed?'#1a2940':'#0d1626',border:'1px solid #1a2f4a',boxSizing:'border-box',display:'flex',alignItems:'center',justifyContent:'center',cursor:revealed?'default':'pointer',transition:'background 0.1s'},onClick:()=>toggle(gx,gy),onMouseEnter:()=>setHov(hk),onMouseLeave:()=>setHov(null)},ball);
+    }
+
+    if(isL){
+      let bg='#06101c',bdr='1px solid #0f2040',content=null,cursor=entry||revealed?'default':'pointer';
+      const isPairHov=hovPairNum!==null&&entry?.num===hovPairNum;
+      if(entry){
+        const{res,num}=entry;
+        if(res==='H'){
+          bg='#200505';bdr='2.5px solid #ef4444';
+          content=React.createElement('div',{style:{fontSize:20,lineHeight:1,filter:'drop-shadow(0 0 8px #ff4444) drop-shadow(0 0 16px #ff4444)'}},'\u26a1');
+        }else if(res==='R'){
+          bg='#0c1a2a';bdr='2.5px solid #64748b';
+          content=React.createElement('div',{style:{fontSize:17,fontWeight:900,color:'#94a3b8',fontFamily:'monospace',textShadow:'0 0 8px #94a3b8, 0 0 16px #64748b'}},'\u21a9');
+        }else{
+          const col=nc(num);
+          bg=isPairHov?'rgba('+hexRgb(col)+',0.18)':'#060e1a';
+          bdr='2.5px solid '+col;
+          content=React.createElement('div',{style:{fontSize:14,fontWeight:900,color:col,fontFamily:'monospace',textShadow:'0 0 8px '+col+', 0 0 20px '+col,letterSpacing:-0.5}},num);
+        }
+      }else{
+        const arr=arrowFor(W,H,rn);
+        if(isHov){bg='#0d2040';bdr='1.5px solid #38bdf8';}
+        content=React.createElement('div',{style:{fontSize:11,color:isHov?'#38bdf8':'#1a3558',transition:'color 0.12s',filter:isHov?'drop-shadow(0 0 4px #38bdf8)':'none',fontWeight:900}},arr);
+      }
+      if(isPairHov&&entry){const col=nc(entry.num);bdr='2.5px solid '+col;bg='rgba('+hexRgb(col)+',0.18)';}
+      return React.createElement('div',{key:hk,className:flashCls,style:{width:C,height:C,background:bg,border:bdr,boxSizing:'border-box',display:'flex',alignItems:'center',justifyContent:'center',cursor,transition:'background 0.15s, border-color 0.15s'},onClick:()=>fire(rn),onMouseEnter:()=>setHov(hk),onMouseLeave:()=>setHov(null)},content);
+    }
+    return React.createElement('div',{key:hk,style:{width:C,height:C}});
+  }
+
+  const rows=[];
+  for(let gy=0;gy<=H+1;gy++){const cs=[];for(let gx=0;gx<=W+1;gx++)cs.push(cell(gx,gy));rows.push(React.createElement('div',{key:gy,style:{display:'flex'}},cs));}
+  const boardCls=won===true?'win-board':'';
+  const stars=won?Math.max(1,Math.min(3,shots<=8?3:shots<=12?2:1)):null;
+
+  return React.createElement('div',{style:{fontFamily:'system-ui,sans-serif',userSelect:'none'}},
+    React.createElement('div',{style:{background:'#070c1a',borderRadius:14,border:'3px solid #1a3560',padding:'18px 18px 16px',boxShadow:'0 0 40px rgba(0,150,255,0.07),inset 0 1px 0 rgba(255,255,255,0.03)'}},
+      React.createElement('div',{style:{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14}},
+        React.createElement('div',null,
+          React.createElement('div',{style:{fontSize:24,fontWeight:900,color:'#e2e8f0',letterSpacing:5,textTransform:'uppercase',textShadow:'0 0 20px rgba(56,189,248,0.45),0 0 40px rgba(56,189,248,0.2)'}},'Black Box'),
+          React.createElement('div',{style:{fontSize:11,color:'#334e6e',letterSpacing:2,marginTop:2,textTransform:'uppercase'}},N+' hidden balls \u2014 fire lasers to find them')
+        ),
+        React.createElement('div',{style:{display:'flex',gap:8}},
+          ...[{icon:'\u26a1',v:shots,l:'shots'},{icon:'\ud83c\udfaf',v:guesses.size+'/'+N,l:'placed'}].map(({icon,v,l})=>
+            React.createElement('div',{key:l,style:{background:'#0a1528',border:'1.5px solid #1a3050',borderRadius:8,padding:'6px 10px',textAlign:'center',minWidth:54}},
+              React.createElement('div',{style:{fontSize:10,color:'#334e6e',letterSpacing:1.5,textTransform:'uppercase',marginBottom:2}},icon),
+              React.createElement('div',{style:{fontSize:19,fontWeight:800,color:'#94c8ff',lineHeight:1,fontFamily:'monospace'}},v)
+            )
+          )
+        )
+      ),
+      React.createElement('div',{className:boardCls,style:{display:'inline-block',border:'3px solid #1a3560',borderRadius:6,overflow:'hidden',boxShadow:'0 0 0 1px #0a1a30',marginBottom:14}},rows),
+      React.createElement('div',{style:{display:'flex',gap:10,marginBottom:revealed?14:0}},
+        !revealed&&React.createElement('button',{onClick:doReveal,style:{background:'#0f2a50',color:'#38bdf8',border:'2px solid #38bdf8',borderRadius:8,padding:'10px 22px',fontSize:14,fontWeight:800,cursor:'pointer',letterSpacing:2,textTransform:'uppercase',textShadow:'0 0 10px #38bdf8',boxShadow:'0 0 14px rgba(56,189,248,0.25)'}},'\u2b50\ufe0f Reveal'),
+        React.createElement('button',{onClick:reset,style:{background:'#0a1525',color:'#64748b',border:'2px solid #1e3050',borderRadius:8,padding:'10px 22px',fontSize:14,fontWeight:700,cursor:'pointer',letterSpacing:2,textTransform:'uppercase'}},'\u21ba New Game')
+      ),
+      revealed&&React.createElement('div',{className:'result-fade',style:{padding:'13px 16px',background:won?'rgba(21,128,61,0.15)':'rgba(120,20,20,0.2)',border:'2px solid '+(won?'#16a34a':'#dc2626'),borderRadius:10,marginBottom:10}},
+        won
+          ?React.createElement('div',null,
+              React.createElement('div',{style:{fontSize:18,fontWeight:900,color:'#4ade80',letterSpacing:2,textTransform:'uppercase',textShadow:'0 0 12px #22c55e',marginBottom:4}},'\ud83c\udf89 PERFECT! All '+N+' balls found!'),
+              React.createElement('div',{style:{fontSize:13,color:'#86efac'}},'Completed in '+shots+' shots  \u00b7  Rating: '+'★'.repeat(stars)+'☆'.repeat(3-stars))
+            )
+          :React.createElement('div',null,
+              React.createElement('div',{style:{fontSize:16,fontWeight:800,color:'#f87171',letterSpacing:1,marginBottom:4}},'\u274c WRONG'),
+              React.createElement('div',{style:{fontSize:13,color:'#fca5a5'}},correct+' correct  \u00b7  '+wrong+' wrong  \u00b7  '+missed+' missed')
+            )
+      ),
+      React.createElement('div',{style:{display:'flex',gap:16,flexWrap:'wrap',fontSize:12,color:'#334e6e',marginTop:revealed?0:4}},
+        React.createElement('span',null,React.createElement('span',{style:{filter:'drop-shadow(0 0 4px #ff4444)',marginRight:4}},'\u26a1'),'= absorbed'),
+        React.createElement('span',null,React.createElement('span',{style:{color:'#64748b',fontWeight:800,marginRight:4}},'\u21a9'),'= reflected'),
+        React.createElement('span',{style:{color:'#38bdf8'}},'numbers = matched pair'),
+        React.createElement('span',null,'hover a number to highlight its pair')
+      )
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>
