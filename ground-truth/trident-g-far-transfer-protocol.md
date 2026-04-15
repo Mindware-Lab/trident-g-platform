@@ -110,6 +110,4 @@ Trident-G far transfer is best defined as a **Ψ-gated two-axis protocol**. Vert
 
 This protocol is for supporting healthy performance and more reliable intelligent action. It should not be framed as medical treatment or as a guaranteed outcome system. If users are concerned about sleep, mood, anxiety, pain, or related health issues, they should consult their GP. 
 
----
 
-I can also turn this into a tighter **one-page canonical appendix** in your house style, with numbered clauses only and no commentary.
