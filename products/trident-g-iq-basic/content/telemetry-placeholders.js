@@ -227,3 +227,50 @@ export const capacityTelemetry = [
     `
   }
 ];
+
+export const reasoningTelemetry = [
+  {
+    type: "splitMetric",
+    label: "Mode status",
+    value: "Ready",
+    valueTone: "accent",
+    subline: "Probe Gym is live. Relation load is tracked by PAB.",
+    badge: "Reasoning",
+    emphasis: true
+  },
+  {
+    type: "ring",
+    label: "Round progress",
+    ringValue: 0,
+    ringNumber: "--",
+    ringLabel: "of 6",
+    subline: "Start a round to populate live reasoning metrics."
+  },
+  {
+    type: "list",
+    label: "Relation load",
+    rows: [
+      { label: "Current band", value: "A" },
+      { label: "Current load", value: "PAB 1-2" },
+      { label: "Highest stable", value: "Not banked" },
+      { label: "Next target", value: "PAB 2" }
+    ]
+  },
+  {
+    type: "metric",
+    label: "Credit score",
+    value: "0",
+    valueTone: "credit",
+    subline: "Credits climb faster when higher relation-load items are solved correctly."
+  },
+  {
+    type: "list",
+    label: "Probe metrics",
+    rows: [
+      { label: "Accuracy", value: "--" },
+      { label: "Mean RT", value: "--" },
+      { label: "Lure resistance", value: "--" },
+      { label: "Model revision", value: "--" }
+    ]
+  }
+];

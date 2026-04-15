@@ -1643,9 +1643,6 @@ function setupMarkup(uiState) {
           </div>
           <span class="capacity-lab-mission-pill">Core ${programme.coreSessionNumber}/20</span>
         </div>
-        <div class="capacity-lab-mission-copy">${escapeHtml(
-          `${programme.currentFamilyReason || missionFamilyReason(programme.missionRailId, programme.currentFamilyId, programme.nextCoreSessionNumber)} ${missionPreviewCopy}`
-        )}</div>
         <div class="capacity-lab-mission-stats">
           <div class="capacity-lab-mission-stat">
             <span>Core</span>
@@ -1689,10 +1686,6 @@ function setupMarkup(uiState) {
             <strong>${escapeHtml(missionBranchFamilyLabel(uiState, 2))}</strong>
             <span>${escapeHtml(`${programme.mission?.families?.[2]?.start || 16}-${programme.mission?.families?.[2]?.end || 20}`)}</span>
           </div>
-        </div>
-        <div class="capacity-lab-mission-callout">
-          <strong>${escapeHtml(resolvedGuidedStatusTitle)}</strong>
-          <span>${escapeHtml(resolvedGuidedStatusBody)}</span>
         </div>
       </div>
     `

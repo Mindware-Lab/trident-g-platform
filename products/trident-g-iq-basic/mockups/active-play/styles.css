@@ -5906,3 +5906,536 @@ button.hub-mission-step:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+.app-shell[data-screen="reasoning"] {
+  --banner-height: 62px;
+  --coach-height: 78px;
+}
+
+.app-shell[data-screen="reasoning"] .play-main--split {
+  grid-template-columns: 210px 540px;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  justify-content: end;
+  align-items: start;
+}
+
+.app-shell[data-screen="reasoning"] .reasoning-side-panel {
+  width: 210px;
+  padding-top: calc(var(--banner-height) - 34px);
+  min-height: 0;
+}
+
+.app-shell[data-screen="reasoning"] .game-window {
+  width: 540px;
+  max-width: 540px;
+  justify-self: end;
+}
+
+.app-shell[data-screen="reasoning"] .game-window__banner {
+  padding: 8px 12px;
+  align-items: center;
+  gap: 12px;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--capacity) 18%, black 82%) 0%,
+      color-mix(in srgb, #58a3ff 30%, black 70%) 58%,
+      color-mix(in srgb, #e9ff55 22%, black 78%) 100%
+    );
+}
+
+.app-shell[data-screen="reasoning"] .game-window__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+}
+
+.app-shell[data-screen="reasoning"] .task-area,
+.app-shell[data-screen="reasoning"] .response-area {
+  min-width: 0;
+  min-height: 0;
+}
+
+.app-shell[data-screen="reasoning"] .coach-strip {
+  width: 540px;
+  margin-left: auto;
+  padding: 0 12px 10px;
+  display: block;
+  margin-top: -20px;
+  transform: translateY(-10px);
+}
+
+.reasoning-banner-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.reasoning-banner-track {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  max-width: 236px;
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  text-align: right;
+}
+
+.reasoning-route-shell {
+  display: grid;
+  gap: 14px;
+  min-height: 100%;
+  padding: 16px 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(14, 18, 27, 0.95), rgba(10, 13, 19, 0.88));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  align-content: start;
+}
+
+.reasoning-route-title,
+.reasoning-stage-kicker,
+.reasoning-summary-stat span,
+.reasoning-clue-index,
+.reasoning-choice-eyebrow {
+  color: var(--muted);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.reasoning-route-title {
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: 3px;
+}
+
+.reasoning-route-family {
+  display: grid;
+  gap: 6px;
+}
+
+.reasoning-route-family-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reasoning-route-family-name {
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.reasoning-route-family.is-current .reasoning-route-family-name {
+  color: #d9ff5a;
+}
+
+.reasoning-route-family-step {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(114, 212, 145, 0.92);
+  box-shadow: 0 0 0 3px rgba(114, 212, 145, 0.08);
+}
+
+.reasoning-route-family.is-current .reasoning-route-family-step {
+  border-color: rgba(217, 255, 90, 0.96);
+  box-shadow: 0 0 0 3px rgba(217, 255, 90, 0.1);
+}
+
+.reasoning-route-family-branch {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  margin-left: 18px;
+  padding-left: 14px;
+}
+
+.reasoning-route-family-branch::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(111, 190, 255, 0.36), rgba(111, 190, 255, 0.04));
+}
+
+.reasoning-route-node {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--white);
+  text-align: left;
+  cursor: pointer;
+  transition: color 140ms ease, transform 140ms ease;
+}
+
+.reasoning-route-node::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: rgba(111, 190, 255, 0.34);
+  transform: translateY(-50%);
+}
+
+.reasoning-route-node:hover {
+  transform: translateX(1px);
+}
+
+.reasoning-route-node-label {
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  line-height: 1.35;
+}
+
+.reasoning-route-node-dot,
+.reasoning-route-key-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(114, 212, 145, 0.92);
+  box-shadow: 0 0 0 2px rgba(114, 212, 145, 0.09);
+  background: rgba(114, 212, 145, 0.22);
+  flex: 0 0 auto;
+}
+
+.reasoning-route-node.is-locked {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.reasoning-route-node.is-locked .reasoning-route-node-dot,
+.reasoning-route-key-dot--locked {
+  border-color: rgba(255, 255, 255, 0.36);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.06);
+  background: transparent;
+}
+
+.reasoning-route-node.is-ready .reasoning-route-node-dot,
+.reasoning-route-key-dot--unlocked {
+  border-color: rgba(114, 212, 145, 0.92);
+  box-shadow: 0 0 0 2px rgba(114, 212, 145, 0.09);
+  background: rgba(114, 212, 145, 0.24);
+}
+
+.reasoning-route-node.is-active .reasoning-route-node-dot,
+.reasoning-route-key-dot--active {
+  border-color: rgba(217, 255, 90, 0.96);
+  box-shadow: 0 0 0 2px rgba(217, 255, 90, 0.12);
+  background: rgba(217, 255, 90, 0.32);
+}
+
+.reasoning-route-node.is-active .reasoning-route-node-label {
+  color: #d9ff5a;
+}
+
+.reasoning-route-key {
+  display: grid;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.reasoning-route-key-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted-2);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+
+.reasoning-runtime-shell,
+.reasoning-task-root,
+.reasoning-response-root,
+.reasoning-launch-shell,
+.reasoning-response-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.reasoning-launch-panel {
+  width: 100%;
+  max-width: none;
+}
+
+.reasoning-stage-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(18, 23, 33, 0.96), rgba(11, 14, 21, 0.94));
+}
+
+.reasoning-stage-card--live {
+  border-color: rgba(111, 190, 255, 0.22);
+}
+
+.reasoning-stage-card--feedback.is-correct {
+  border-color: rgba(114, 212, 145, 0.32);
+}
+
+.reasoning-stage-card--feedback.is-incorrect {
+  border-color: rgba(255, 166, 79, 0.32);
+}
+
+.reasoning-stage-card.is-locked {
+  opacity: 0.9;
+}
+
+.reasoning-stage-topline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reasoning-mode-headline {
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.reasoning-stage-pill-row,
+.reasoning-overview-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.reasoning-stage-pill,
+.reasoning-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  line-height: 1;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.reasoning-stage-pill.is-accent {
+  border-color: rgba(84, 162, 255, 0.36);
+  color: #8dd9ff;
+}
+
+.reasoning-stage-pill.is-credit,
+.reasoning-chip {
+  border-color: rgba(217, 255, 90, 0.28);
+  color: #d9ff5a;
+}
+
+.reasoning-question-title {
+  margin: 0;
+  color: #fcfeff;
+  font-family: "Orbitron", monospace;
+  font-size: 31px;
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.reasoning-question-note,
+.reasoning-feedback-copy,
+.reasoning-lock-card p,
+.reasoning-rule-box span,
+.reasoning-candidate-box span {
+  margin: 0;
+  color: rgba(230, 238, 249, 0.8);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.reasoning-rule-box,
+.reasoning-candidate-box,
+.reasoning-lock-card {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.reasoning-rule-box strong,
+.reasoning-candidate-title,
+.reasoning-lock-title {
+  color: #d9ff5a;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+}
+
+.reasoning-clue-stack {
+  display: grid;
+  gap: 8px;
+}
+
+.reasoning-clue-card {
+  display: grid;
+  gap: 4px;
+  padding: 10px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.reasoning-clue-card.is-key {
+  border-color: rgba(217, 255, 90, 0.3);
+  background: rgba(217, 255, 90, 0.06);
+}
+
+.reasoning-clue-text {
+  color: var(--white);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.reasoning-response-stack--choices {
+  gap: 8px;
+}
+
+.reasoning-choice-card {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid rgba(111, 190, 255, 0.18);
+  background: linear-gradient(180deg, rgba(24, 31, 44, 0.96), rgba(14, 18, 27, 0.96));
+  color: var(--white);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.reasoning-choice-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(217, 255, 90, 0.32);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.reasoning-choice-text {
+  color: #fcfeff;
+  font-family: "Exo 2", sans-serif;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.reasoning-feedback-grid,
+.reasoning-summary-grid,
+.reasoning-process-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.reasoning-feedback-stat,
+.reasoning-summary-stat,
+.reasoning-process-card {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.reasoning-feedback-stat strong,
+.reasoning-summary-stat strong,
+.reasoning-process-card strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1.16;
+}
+
+.reasoning-response-stack--actions {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 860px) {
+  .app-shell[data-screen="reasoning"] .play-main--split {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .app-shell[data-screen="reasoning"] .reasoning-side-panel {
+    width: 100%;
+    padding-top: 0;
+  }
+
+  .app-shell[data-screen="reasoning"] .game-window,
+  .app-shell[data-screen="reasoning"] .coach-strip {
+    width: 100%;
+    max-width: none;
+  }
+
+  .reasoning-banner-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .reasoning-feedback-grid,
+  .reasoning-summary-grid,
+  .reasoning-process-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reasoning-question-title {
+    font-size: 24px;
+  }
+
+  .reasoning-choice-text {
+    font-size: 17px;
+  }
+}

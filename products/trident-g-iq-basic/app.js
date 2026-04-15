@@ -1,16 +1,18 @@
-import { mountAppShell } from "../trident-g-iq-shared/runtime/app-shell.js";
+﻿import { mountAppShell } from "../trident-g-iq-shared/runtime/app-shell.js";
 import { createScreenRegistry } from "../trident-g-iq-shared/runtime/screen-registry.js";
 import { basicNavItems } from "./content/nav.js";
 import { hubScreen } from "./screens/hub/screen.js";
 import { testsScreen } from "./screens/tests/screen.js";
 import { zoneScreen } from "./screens/zone/screen.js";
 import { capacityLabScreen } from "./screens/capacity-lab/screen.js";
+import { reasoningScreen } from "./screens/reasoning/screen.js";
 
 const registry = createScreenRegistry([
   hubScreen,
   testsScreen,
   zoneScreen,
-  capacityLabScreen
+  capacityLabScreen,
+  reasoningScreen
 ]);
 
 mountAppShell({

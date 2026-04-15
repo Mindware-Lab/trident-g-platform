@@ -1,6 +1,7 @@
-export const basicNavItems = [
+﻿export const basicNavItems = [
   { id: "hub", label: "Hub" },
   { id: "tests", label: "Tests" },
   { id: "zone", label: "Zone" },
-  { id: "capacity", label: "Capacity" }
+  { id: "capacity", label: "Capacity" },
+  { id: "reasoning", label: "Reasoning" }
 ];
