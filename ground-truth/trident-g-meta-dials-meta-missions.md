@@ -2,13 +2,15 @@
 
 ## Z0. Purpose
 
-This appendix defines a clearer meta-dial layer for Trident-G and H-AGI training.
+This appendix defines a clearer meta-level governance layer for Trident-G and H-AGI training.
 
-The purpose of this layer is not to replace the G-Loop kernel, the operator algebra, or mission grammar. Its purpose is to provide a small set of higher-order training principles that organise how the loop is run across many operators, many missions, and many contexts.
+The purpose of this layer is not to replace the G-Loop kernel, the mission framework, or the formal layer of reasoning and action. Its purpose is to provide a small set of higher-order training principles that organise how the loop is run across many operators, tactics, strategies, missions, and contexts.
 
-This is needed because some of the most important determinants of intelligence in real environments are not single operators. They are slower, cross-cutting governance competences: how deeply one compresses structure, how one balances exploration against exploitation, how one balances progress against perfectionism, how well one calibrates feelings as signals, and how strongly one insists on proof before banking a script as competence.
+This is needed because some of the most important determinants of intelligence in real environments are not single operators or single local tactics. They are slower, cross-cutting governance competences: how deeply one compresses structure, how one balances exploration against exploitation, how one balances progress against perfectionism, how well one calibrates feelings as signals, how well one controls scale, and how strongly one insists on proof before banking a script as competence.
 
-The current Trident-G architecture already supports this move. It distinguishes mission frames, control missions, meta-dials, and feedback signals, and says meta-dials are slow shapers of controllability, learnability, corridor width, ecological support, and noise rather than fast in-session missions.
+The current Trident-G architecture already supports this move. It distinguishes meta-missions, meta-dials, mission frames, control missions, feedback signals, the formal layer of reasoning and action, and the wider semantic, subjective, allostatic, and runtime layers. Within that architecture, meta-dials are best treated as slow shapers of controllability, learnability, corridor width, ecological support, proof discipline, compression quality, and noise rather than as fast in-session missions.
+
+A further clarification is important. These governance competences do not replace underlying bridge capacities such as working memory, relational binding capacity, attention control, or relational inference. They shape how well those capacities are recruited, stabilised, and coordinated across repeated loops and real environments.
 
 ## Z1. Design rule
 
@@ -21,7 +23,7 @@ A meta-dial should meet four conditions:
 
 So the meta-dial layer is best understood as the training-facing governance layer of the architecture.
 
-The kernel still runs by mapping, testing, committing, updating, compressing, and banking. The operators still supply the concrete moves. But the meta-dials shape how well, how often, how deeply, and how adaptively that system is run.
+The kernel still runs by mapping, testing, committing, updating, compressing, and banking. The mission framework still specifies what the loop is being run for. The formal layer still supplies the concrete structured moves. But the meta-dials shape how well, how often, how deeply, and how adaptively that whole system is run.
 
 ## Z2. Place in the wider architecture
 
@@ -42,6 +44,9 @@ Slow shapers of cognitive geometry and training quality.
 - Argue
 - Choose
 - Plan & Do
+
+### Cross-cutting acquisition frame
+
 - Learn
 
 ### Control missions
@@ -65,11 +70,14 @@ Slow shapers of cognitive geometry and training quality.
 - Complexity
 - Conflict
 
-### Language of thought and action
+### Formal layer of reasoning and action
 
-- Operator algebra + mission grammar
+- Language of thought and action = operator algebra + mission grammar
+- Tactics
+- Strategies
+- Reasoning calculus
 
-This preserves the architecture already specified in the current Trident-G documents.
+This preserves the updated Trident-G architecture.
 
 ## Z2A. Trainable meta-mission orientation
 
@@ -82,7 +90,7 @@ In practical terms:
 - **Meta-missions** define what the system is trying to become.
 - **Meta-dials** define the trainable governance qualities by which it gets there.
 
-This distinction matters because if Viability and Expansion are placed in the same list as compression depth, proof discipline, or exploration–exploitation governance, the architecture begins to blur purpose and means. The current Trident-G framework already places the two meta-missions above the mission families and treats them as the highest-level statement of what the Trident is for.
+This distinction matters because if Viability and Expansion are placed in the same list as compression depth, proof discipline, or exploration–exploitation governance, the architecture begins to blur purpose and means.
 
 ### Z2A.1 Viability orientation
 
@@ -158,7 +166,7 @@ Grounded confidence that one can engage, recover, update, and act effectively un
 
 **Why it matters**
 
-If this dial is too low, good operators are not run consistently enough to matter. Avoidance, hesitation, and failed re-entry degrade the whole loop before reasoning quality can even be expressed. The existing docs already define meta-efficacy this way.
+If this dial is too low, good operators are not run consistently enough to matter. Avoidance, hesitation, and failed re-entry degrade the whole loop before reasoning quality can even be expressed.
 
 **Subjective face**
 
@@ -187,7 +195,7 @@ The degree to which goals, definitions, success criteria, steps, and checks hang
 
 **Why it matters**
 
-Coherence lowers nuisance noise and improves monitoring quality. It determines whether the person is even running a clean enough loop for the signals and operators to make sense. The current docs already place coherence here.
+Coherence lowers nuisance noise and improves monitoring quality. It determines whether the person is even running a clean enough loop for the signals and operators to make sense.
 
 **Subjective face**
 
@@ -215,7 +223,7 @@ The ability to extract the deeper invariant, relation, or organising rule rather
 
 **Why it matters**
 
-The G-Loop is explicitly a selective compression loop, and the language-of-thought appendix makes clear that gist extraction and insight arise procedurally through mapping, chunking, abstraction, re-representation, meta-mapping, and later testing. Good H-AGI use therefore depends on whether the human is extracting real structure or merely borrowing polished phrasing.
+The G-Loop is explicitly a selective compression loop, and the formal-layer appendix makes clear that gist extraction and insight arise procedurally through mapping, chunking, abstraction, re-representation, meta-mapping, and later testing. Good H-AGI use therefore depends on whether the human is extracting real structure or merely borrowing polished phrasing. Good compression also depends on being able to build, revise, and stabilise temporary, arbitrary, novel bindings rather than merely repeat familiar associations.
 
 **Subjective face**
 
@@ -248,12 +256,12 @@ The ability to distinguish between:
 
 **Why it matters**
 
-The updated material makes this distinction explicit. Complexity in the signal board is the burden of the current map, while mismatch and unexpected mismatch drive the cost of revision. Good intelligence must know when to simplify and when to tolerate the harder work of restructuring.
+The updated material makes this distinction explicit. Complexity in the signal board is the burden of the current map, while mismatch and unexpected mismatch drive the cost of revision. Good intelligence must know when to simplify and when to tolerate the harder work of restructuring. Map cost is not only about having many parts. It is also about the burden of keeping bound relational structure coherent enough to manipulate online.
 
 **Subjective face**
 
-- **Map cost**: clutter, overload, too many moving parts, cognitive fatigue.
-- **Revision cost**: friction, disconfirmation, “something is off”, the unpleasantness of giving up a frame that no longer fits.
+- **Map cost**: clutter, overload, too many moving parts, cognitive fatigue
+- **Revision cost**: friction, disconfirmation, “something is off”, the unpleasantness of giving up a frame that no longer fits
 
 **Main operator anchors**
 
@@ -306,7 +314,7 @@ The strength of the system’s insistence on probes, boundary checks, wrapper va
 
 **Why it matters**
 
-The far-transfer protocol is explicit: portability is not assumed; validation must precede banking; local plausibility is insufficient; real or strongly mission-proximal success outranks local fluency. In the AI age this becomes even more central because plausible-looking outputs are abundant.
+The far-transfer protocol is explicit: portability is not assumed, validation must precede banking, local plausibility is insufficient, and real or strongly mission-proximal success outranks local fluency. In the AI age this becomes even more central because plausible-looking outputs are abundant.
 
 **Subjective face**
 
@@ -337,8 +345,8 @@ The kernel explicitly says the loop must stop hovering. Y15 is the discipline of
 
 **Subjective face**
 
-- **Over-perfectionism**: tension, hesitation, inability to close, local over-processing.
-- **Under-rigour**: impulsive relief, premature certainty, shallow progress.
+- **Over-perfectionism**: tension, hesitation, inability to close, local over-processing
+- **Under-rigour**: impulsive relief, premature certainty, shallow progress
 
 **Main operator anchors**
 
@@ -366,9 +374,9 @@ This is already latent in the Trident structure itself: the outer tines are expl
 
 **Subjective face**
 
-- **Over-exploitation**: closure, comfort, local confidence, hidden brittleness.
-- **Over-exploration**: restlessness, novelty pull, repeated reopening, difficulty consolidating.
-- **Good balance**: enough openness to revise, enough closure to exploit the current affordance surface.
+- **Over-exploitation**: closure, comfort, local confidence, hidden brittleness
+- **Over-exploration**: restlessness, novelty pull, repeated reopening, difficulty consolidating
+- **Good balance**: enough openness to revise, enough closure to exploit the current affordance surface
 
 **Main operator anchors**
 
@@ -429,7 +437,7 @@ The degree to which environment, workflow, tools, schedule, and broader niche ma
 
 **Why it matters**
 
-This is already present in the current meta-dials and should remain. Many failures of intelligent action are ecological before they are inferential. Good training should therefore include workspace synergies, routine design, and niche fit rather than treating cognition as detached from context.
+Many failures of intelligent action are ecological before they are inferential. Good training should therefore include workspace synergies, routine design, and niche fit rather than treating cognition as detached from context.
 
 **Subjective face**
 
@@ -447,7 +455,7 @@ Good reasoning in theory, low repeatability in life.
 
 These competences should not be added as extra Y-operators.
 
-The language-of-thought appendix is already clear that the operator set should remain compact, and that things like explore vs exploit belong elsewhere in the architecture rather than being added as extra primitives. The operator algebra is the concrete move-language of the kernel, not the full training logic.
+The formal-layer appendix is already clear that the operator set should remain compact, and that things such as explore versus exploit belong elsewhere in the architecture rather than being added as extra primitives. The operator algebra is the concrete move-language of the kernel, not the full training logic.
 
 These meta-dials are therefore best treated as:
 
@@ -463,8 +471,11 @@ That makes them ideal for programmes, coaching, and app design.
 The main practical implication is that Trident-G training should not only teach:
 
 - mission frames
+- Learn as an acquisition mode
 - control missions
 - operators
+- tactics
+- strategies
 - reasoning styles
 - portability checks
 
@@ -480,45 +491,39 @@ So a programme may foreground:
 - subjective calibration in resilience and H-AGI use
 - meta-efficacy and ecology support in adherence and consistency work
 
-This fits the scaling document’s principle that products can vary in foreground emphasis while preserving one shared kernel and one shared formal architecture.
+This fits the scaling principle that products can vary in foreground emphasis while preserving one shared kernel and one shared formal architecture.
 
 ## Z6. Telemetry implications
 
 Each meta-dial should also have associated telemetry.
 
 ### Compression depth
-
 - invariant restatement quality
 - cross-syntax restatement
 - wrapper-robust gist retention
 
 ### Complexity governance
-
 - correct identification of map cost versus revision cost
 - simplification timing
 - restructuring persistence when needed
 
 ### Subjective calibration
-
 - accuracy of signal interpretation
 - reduced confusion between relief and truth
 - better alignment between felt and actual loop state
 
 ### Proof discipline
-
 - probe frequency
 - boundary checking
 - wrapper-swap pass rate
 - real-world validation rate
 
 ### Progress–quality governance
-
 - hover time before commit
 - premature closure rate
 - completion quality under time constraints
 
 ### Exploration–exploitation governance
-
 - premature pivot rate
 - stale persistence rate
 - affordance extraction before reconfiguration
@@ -528,4 +533,4 @@ This makes the meta-dial layer especially suitable for training apps.
 
 ## Z7. Canonical summary
 
-Trident-G should include a clearer user-facing meta-level architecture in which two meta-missions sit above the meta-dial layer: **Viability**, the maintenance of stable, recoverable, in-band functioning, and **Expansion**, the enlargement of viable dynamic range and banked portable competence. These meta-missions should be treated as trainable global orientations, not as peer meta-dials. Beneath them sits a clearer meta-dial layer that serves as the main organising layer for training, coaching, and telemetry. This layer does not replace the G-Loop kernel. It shapes how well the kernel is run across time and across contexts. The canonical meta-dials are: meta-efficacy, coherence, compression depth, complexity governance, subjective calibration, proof discipline, progress–quality governance, exploration–exploitation governance, multi-scale governance, and ecology support. These are slower shapers of cognitive geometry rather than fast in-session moves. They recruit multiple operators, appear in distinctive subjective and behavioural patterns, and can therefore be trained directly as organising principles for H-AGI and Trident-G development.
+Trident-G should include a clearer user-facing meta-level architecture in which two meta-missions sit above the meta-dial layer: **Viability**, the maintenance of stable, recoverable, in-band functioning, and **Expansion**, the enlargement of viable dynamic range and banked portable competence. These meta-missions should be treated as trainable global orientations, not as peer meta-dials. Beneath them sits a clearer meta-dial layer that serves as the main organising layer for training, coaching, and telemetry. This layer does not replace the G-Loop kernel, the mission framework, or the formal layer. It shapes how well those layers are run across time and across contexts. The canonical meta-dials are: meta-efficacy, coherence, compression depth, complexity governance, subjective calibration, proof discipline, progress–quality governance, exploration–exploitation governance, multi-scale governance, and ecology support. These are slower shapers of cognitive geometry rather than fast in-session moves. They recruit multiple operators, appear in distinctive subjective and behavioural patterns, and can therefore be trained directly as organising principles for H-AGI and Trident-G development.

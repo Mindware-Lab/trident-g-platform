@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hidden Network</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #020509; display: flex; justify-content: center; padding: 1rem 0.5rem 3rem; min-height: 100vh; font-family: system-ui, sans-serif; }
+#root { width: 100%; max-width: 540px; }
+@keyframes phit  { 0%{background:#ff4444!important;transform:scale(1.16)} 100%{transform:none} }
+@keyframes pref  { 0%{background:#cbd5e1!important;transform:scale(1.1)}  100%{transform:none} }
+@keyframes pnum  { 0%{background:#ffffff!important;transform:scale(1.1)}  100%{transform:none} }
+@keyframes fpop  { 0%{transform:scale(0);opacity:0} 60%{transform:scale(1.25)} 100%{transform:scale(1);opacity:1} }
+@keyframes fadein{ from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:none} }
+@keyframes wglow { 0%,100%{box-shadow:0 0 22px 8px #22c55e} 50%{box-shadow:0 0 44px 20px #4ade80} }
+.fx-hit  { animation: phit  0.36s ease-out }
+.fx-ref  { animation: pref  0.36s ease-out }
+.fx-num  { animation: pnum  0.36s ease-out }
+.fpop    { animation: fpop  0.28s cubic-bezier(.36,.07,.19,.97) both }
+.result-in { animation: fadein 0.35s ease-out }
+.win-glow  { animation: wglow  1.6s ease-in-out infinite }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const {useState,useMemo}=React;
+const el=React.createElement;
+const W=8,H=8;
+
+/* ─────────────────────────────────────────────────────────────────
+   AUDIO  (same lightsaber engine, information-ranked pitches)
+───────────────────────────────────────────────────────────────── */
+let _ac=null;
+function ac(){if(!_ac)try{_ac=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}return _ac;}
+function lsCore(type,f1,fp,f2,dur,vol,tOff,lfoHz,lfoD){
+  const c=ac();if(!c)return;c.resume();
+  const t=c.currentTime+(tOff||0);
+  const o=c.createOscillator(),g=c.createGain(),lfo=c.createOscillator(),lg=c.createGain();
+  lfo.frequency.value=lfoHz||9;lg.gain.value=lfoD||8;lfo.connect(lg);lg.connect(o.frequency);
+  o.type=type||'sawtooth';
+  o.frequency.setValueAtTime(f1,t);o.frequency.linearRampToValueAtTime(fp,t+dur*.28);
+  o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  g.gain.setValueAtTime(.001,t);g.gain.linearRampToValueAtTime(vol,t+.032);
+  g.gain.setValueAtTime(vol*.87,t+dur*.32);g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  o.connect(g);g.connect(c.destination);lfo.start(t);lfo.stop(t+dur+.08);o.start(t);o.stop(t+dur+.08);
+}
+function lsSwing(b,p,d,v,tOff,lf,ld){
+  lsCore('sawtooth',b,p,b*.76,d,v,tOff||0,lf||9,ld||8);
+  lsCore('sine',b*2.65,p*2.65,b*2.1,d,v*.3,tOff||0,lf||9,(ld||8)*2.2);
+}
+function lsWavy(b,p,d,v){lsCore('sawtooth',b,p,b*.8,d,v,0,4,28);lsCore('sine',b*2.65,p*2.65,b*2.1,d,v*.28,0,4,58);}
+function lsNoise(d,v,tOff){
+  const c=ac();if(!c)return;c.resume();const t=c.currentTime+(tOff||0);
+  const buf=c.createBuffer(1,c.sampleRate*d,c.sampleRate),data=buf.getChannelData(0);
+  for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*(1-i/data.length)*.95;
+  const s=c.createBufferSource(),bp=c.createBiquadFilter(),g=c.createGain();
+  bp.type='bandpass';bp.frequency.value=1600;bp.Q.value=.8;g.gain.value=v;s.buffer=buf;
+  s.connect(bp);bp.connect(g);g.connect(c.destination);s.start(t);
+}
+const SND={
+  fire:()=>lsCore('sawtooth',92,115,85,.12,.07,0,12,5),
+  hit:()=>{lsNoise(.038,.46);lsCore('sawtooth',68,85,50,.085,.2,0,13,9);lsNoise(.03,.34,.135);lsCore('sawtooth',60,74,44,.07,.17,.135,13,9);},
+  reflect:()=>lsWavy(115,192,.48,.14),
+  deflected:()=>lsSwing(165,298,.44,.14),
+  straight:()=>{lsSwing(248,450,.4,.14);lsSwing(288,502,.23,.06,.18);},
+  place:()=>lsCore('sawtooth',220,310,175,.15,.13),
+  remove:()=>lsCore('sawtooth',175,155,115,.12,.1),
+  fault:()=>lsCore('sawtooth',128,155,108,.14,.11),
+  proceed:()=>{lsSwing(185,340,.3,.15);lsSwing(240,430,.22,.09,.28);},
+  win:()=>[[0,112,215],[220,138,268],[460,168,320]].forEach(([ms,b,p])=>setTimeout(()=>lsSwing(b,p,.38,.18),ms)),
+  sound:()=>{lsSwing(165,298,.44,.18);setTimeout(()=>lsSwing(220,380,.32,.12),280);},
+  lose:()=>{lsCore('sawtooth',165,168,52,.75,.15);lsCore('sine',330,335,104,.7,.06);},
+  newgame:()=>{lsNoise(.09,.18);lsCore('sawtooth',58,82,138,.38,.14,.06);lsCore('sine',116,165,276,.32,.06,.12);}
+};
+
+/* ─────────────────────────────────────────────────────────────────
+   LASER PHYSICS  (unchanged from Black Box)
+───────────────────────────────────────────────────────────────── */
+const OFF=[{x:0,y:-1},{x:1,y:0},{x:0,y:1},{x:-1,y:0}];
+function r2g(w,h,rn){if(rn<w)return{x:rn+1,y:0,d:2};let r=rn-w;if(r<h)return{x:w+1,y:r+1,d:3};r-=h;if(r<w)return{x:w-r,y:h+1,d:0};r-=w;return{x:0,y:h-r,d:1};}
+function g2r(w,h,x,y){const x1=w+1,y1=h+1;if(x>0&&x<x1&&y>0&&y<y1)return -1;if(x<0||x>x1||y<0||y>y1)return -1;if((x===0||x===x1)&&(y===0||y===y1))return -1;if(y===0)return x-1;if(x===x1)return y-1+w;if(y===y1)return(w-x)+w+h;return(h-y)+2*w+h;}
+function hbf(fs,w,h,gx,gy,dir,look){
+  let nx=gx+OFF[dir].x,ny=gy+OFF[dir].y;
+  if(look==='L'){const d=(dir+3)%4;nx+=OFF[d].x;ny+=OFF[d].y;}
+  else if(look==='R'){const d=(dir+1)%4;nx+=OFF[d].x;ny+=OFF[d].y;}
+  if(nx<1||ny<1||nx>w||ny>h)return false;
+  return fs.has(nx+','+ny);
+}
+function traceLaser(fs,w,h,en){
+  const{x:sx,y:sy,d:sd}=r2g(w,h,en);
+  if(hbf(fs,w,h,sx,sy,sd,'F'))return'H';
+  if(hbf(fs,w,h,sx,sy,sd,'L')||hbf(fs,w,h,sx,sy,sd,'R'))return'R';
+  let x=sx+OFF[sd].x,y=sy+OFF[sd].y,d=sd;
+  for(let i=0;i<600;i++){
+    const rn=g2r(w,h,x,y);
+    if(rn>=0)return rn===en?'R':rn;
+    if(hbf(fs,w,h,x,y,d,'F'))return'H';
+    if(hbf(fs,w,h,x,y,d,'L')){d=(d+1)%4;continue;}
+    if(hbf(fs,w,h,x,y,d,'R')){d=(d+3)%4;continue;}
+    x+=OFF[d].x;y+=OFF[d].y;
+  }
+  return'H';
+}
+function isStraight(en,ex){
+  const s=r2g(W,H,en),e=r2g(W,H,ex);
+  if(!s||!e)return false;
+  if((s.d+2)%4!==e.d)return false;
+  return(s.d===2||s.d===0)?s.x===e.x:s.y===e.y;
+}
+const ARROWS=['\u25bc','\u25c4','\u25b2','\u25ba'];
+function arrowFor(w,h,rn){if(rn<w)return ARROWS[0];if(rn<w+h)return ARROWS[1];if(rn<2*w+h)return ARROWS[2];return ARROWS[3];}
+
+/* ─────────────────────────────────────────────────────────────────
+   PUZZLE GENERATOR
+───────────────────────────────────────────────────────────────── */
+function genPuzzle(retries){
+  retries=retries||0;
+  if(retries>50)retries=0; // reset rather than loop forever
+  const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+
+  /* 1. Place 6 nodes spread across 8×8 arena */
+  const zones=[[1,3,1,3],[5,7,1,3],[6,8,2,5],[1,3,5,8],[4,6,5,8],[6,8,6,8]];
+  const shZ=[...zones].sort(()=>Math.random()-.5);
+  const nodes=[],nXY=new Map();
+  for(const[x1,x2,y1,y2] of shZ){
+    if(nodes.length>=6)break;
+    let ok=false;
+    for(let t=0;t<30&&!ok;t++){
+      const x=rnd(x1,x2),y=rnd(y1,y2),k=x+','+y;
+      if(nXY.has(k))continue;
+      if(nodes.every(n=>Math.abs(n.x-x)+Math.abs(n.y-y)>=3)){
+        const id='n'+nodes.length;nodes.push({id,x,y,degree:0});nXY.set(k,id);ok=true;
+      }
+    }
+    if(!ok)return genPuzzle(retries+1);
+  }
+  if(nodes.length<6)return genPuzzle(retries+1);
+
+  /* 2. Find all candidate corridors (orthogonal pairs, ≥1 interior cell, no node blocking) */
+  function ecells(a,b){
+    const cells=[];
+    if(a.x===b.x){
+      const[y1,y2]=a.y<b.y?[a.y,b.y]:[b.y,a.y];
+      for(let y=y1+1;y<y2;y++){if(nXY.has(a.x+','+y))return null;cells.push(a.x+','+y);}
+    }else if(a.y===b.y){
+      const[x1,x2]=a.x<b.x?[a.x,b.x]:[b.x,a.x];
+      for(let x=x1+1;x<x2;x++){if(nXY.has(x+','+a.y))return null;cells.push(x+','+a.y);}
+    }else return null;
+    return cells.length>0?cells:null;
+  }
+  const allCands=[];
+  for(let i=0;i<nodes.length;i++)
+    for(let j=i+1;j<nodes.length;j++){
+      const cells=ecells(nodes[i],nodes[j]);
+      if(cells){const key=[nodes[i].id,nodes[j].id].sort().join('-');allCands.push({key,a:nodes[i],b:nodes[j],cells});}
+    }
+  if(allCands.length<5)return genPuzzle(retries+1);
+
+  /* 3. Spanning tree (Kruskal) */
+  const shuf=[...allCands].sort(()=>Math.random()-.5);
+  const par={};nodes.forEach(n=>par[n.id]=n.id);
+  function find(x){return par[x]===x?x:(par[x]=find(par[x]));}
+  const tree=[];
+  for(const e of shuf)if(find(e.a.id)!==find(e.b.id)){par[find(e.a.id)]=find(e.b.id);tree.push(e);}
+  if(tree.length<5)return genPuzzle(retries+1);
+
+  /* 4. Add up to 1 non-crossing extra solution edge */
+  function xcross(c1,c2){const s=new Set(c1);return c2.some(c=>s.has(c));}
+  const sol=[...tree];const tK=new Set(tree.map(e=>e.key));
+  for(const e of shuf.filter(e=>!tK.has(e.key)).sort(()=>Math.random()-.5)){
+    if(!sol.some(se=>xcross(e.cells,se.cells))){sol.push(e);break;}
+  }
+
+  /* 5. Degrees */
+  const dm={};nodes.forEach(n=>dm[n.id]=0);
+  sol.forEach(e=>{dm[e.a.id]++;dm[e.b.id]++;});
+  nodes.forEach(n=>n.degree=dm[n.id]);
+  if(nodes.some(n=>n.degree===0))return genPuzzle(retries+1);
+
+  /* 6. Build maps */
+  const solSet=new Set(sol.map(e=>e.key));
+  const candSet=new Set(allCands.map(e=>e.key));
+  const b2c=new Map(),c2b=new Map(); // b2c: bridgeKey→cells, c2b: cellKey→bridgeKey
+  allCands.forEach(e=>{b2c.set(e.key,e.cells);e.cells.forEach(c=>{if(!c2b.has(c))c2b.set(c,e.key);});});
+  sol.forEach(e=>e.cells.forEach(c=>c2b.set(c,e.key))); // solution takes priority for click target
+
+  /* 7. Classify cells for fault placement */
+  const pathSet=new Set();sol.forEach(e=>e.cells.forEach(c=>pathSet.add(c)));
+  const pathArr=[],nearArr=[],offArr=[];
+  for(let x=1;x<=W;x++)for(let y=1;y<=H;y++){
+    const k=x+','+y;
+    if(nXY.has(k))continue;
+    if(pathSet.has(k)){pathArr.push({x,y,cls:'path'});}
+    else{
+      const adj=[[0,1],[0,-1],[1,0],[-1,0]].some(([dx,dy])=>pathSet.has((x+dx)+','+(y+dy)));
+      (adj?nearArr:offArr).push({x,y,cls:adj?'near_path':'off_network'});
+    }
+  }
+  if(pathArr.length<2||nearArr.length<1||offArr.length<1)return genPuzzle(retries+1);
+
+  /* 8. Sample faults: 2 path, 1 near-path, 1 off-network */
+  function pickF(pool,existing){
+    for(const f of [...pool].sort(()=>Math.random()-.5))
+      if(!existing.some(e=>Math.abs(e.x-f.x)+Math.abs(e.y-f.y)<2))return f;
+    return null;
+  }
+  const faults=[];
+  const f1=pickF(pathArr,faults);if(!f1)return genPuzzle(retries+1);faults.push(f1);
+  const f2=pickF(pathArr,faults);if(!f2)return genPuzzle(retries+1);faults.push(f2);
+  const f3=pickF(nearArr,faults);if(!f3)return genPuzzle(retries+1);faults.push(f3);
+  const f4=pickF(offArr,faults);if(!f4)return genPuzzle(retries+1);faults.push(f4);
+  const faultSet=new Set(faults.map(f=>f.x+','+f.y));
+
+  /* 9. Probe sanity: need ≥1 hit and ≥2 non-hits on the 32-port ring */
+  let hits=0,nonH=0;
+  for(let rn=0;rn<2*(W+H);rn++){const r=traceLaser(faultSet,W,H,rn);r==='H'?hits++:nonH++;}
+  if(hits<1||nonH<3)return genPuzzle(retries+1);
+
+  return{nodes,nXY,allCands,candSet,sol,solSet,b2c,c2b,faults,faultSet,pathSet};
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BRIDGE HELPERS
+───────────────────────────────────────────────────────────────── */
+function bKey(a,b){return[a,b].sort().join('-');}
+function xcross(c1,c2){if(!c1.length||!c2.length)return false;const s=new Set(c1);return c2.some(c=>s.has(c));}
+
+function bfsCon(nodes,bridges){
+  if(!nodes.length)return true;
+  const adj=new Map(nodes.map(n=>[n.id,[]]));
+  for(const k of bridges){const[a,b]=k.split('-');adj.get(a)&&adj.get(a).push(b);adj.get(b)&&adj.get(b).push(a);}
+  const vis=new Set([nodes[0].id]),q=[nodes[0].id];
+  while(q.length){const c=q.shift();for(const nb of adj.get(c)||[])if(!vis.has(nb)){vis.add(nb);q.push(nb);}}
+  return vis.size===nodes.length;
+}
+
+function calcStatus(puzzle,placed){
+  const nodeDeg=new Map(puzzle.nodes.map(n=>[n.id,0]));
+  for(const k of placed){const[a,b]=k.split('-');nodeDeg.set(a,(nodeDeg.get(a)||0)+1);nodeDeg.set(b,(nodeDeg.get(b)||0)+1);}
+  const degSt={};
+  puzzle.nodes.forEach(n=>{const d=nodeDeg.get(n.id)||0;degSt[n.id]=d<n.degree?'under':d===n.degree?'met':'over';});
+  const allMet=puzzle.nodes.every(n=>degSt[n.id]==='met');
+  const conn=bfsCon(puzzle.nodes,placed);
+  const danger=new Set();
+  for(const k of placed)if((puzzle.b2c.get(k)||[]).some(c=>puzzle.faultSet.has(c)))danger.add(k);
+  return{nodeDeg,degSt,allMet,conn,danger};
+}
+
+function calcScore(puzzle,gf,probes,placed,revisions,st){
+  let score=0;const bd={};
+  let cor=0,wr=0;
+  for(const k of gf){if(puzzle.faultSet.has(k))cor++;else wr++;}
+  const mis=puzzle.faults.length-cor;
+  const fs=cor*10-wr*4-mis*6;score+=fs;bd.fault=fs;
+  const pb=probes<=8?10:probes<=10?8:probes<=12?5:probes<=14?2:0;score+=pb;bd.probe=pb;
+  if(st.allMet){score+=15;bd.degrees=15;}
+  if(st.conn){score+=15;bd.connected=15;}
+  score+=5;bd.crossings=5;
+  if(st.danger.size===0){score+=10;bd.safe=10;}
+  for(const k of placed){
+    const cells=puzzle.b2c.get(k)||[];
+    const f=puzzle.faults.find(f=>cells.includes(f.x+','+f.y));
+    if(f){const p=f.cls==='path'?5:f.cls==='near_path'?3:0;score-=p;if(p>0)bd['dp_'+k]=-p;}
+  }
+  const xr=Math.max(0,revisions-2);
+  const cp=xr<=0?0:xr<=3?xr:3+(xr-3)*2;if(cp>0){score-=cp;bd.churn=-cp;}
+  if(cor>=3&&st.conn&&st.danger.size===0&&xr<=5){score+=10;bd.coherence=10;}
+  return{total:Math.max(0,score),bd,cor,wr,mis};
+}
+
+function calcTier(st,cor,probes){
+  const{allMet,conn,danger}=st;
+  const built=allMet&&conn;
+  const sound=built&&danger.size===0;
+  const perfect=sound&&cor>=4&&probes<=10;
+  return perfect?'PERFECT':sound?'SOUND':built?'BUILT':'INCOMPLETE';
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   COLOURS
+───────────────────────────────────────────────────────────────── */
+const NEON=['#00e5ff','#76ff03','#ffd600','#ff6d00','#e040fb','#ff4081','#40c4ff','#b2ff59'];
+function nc(n){return NEON[(n-1)%NEON.length];}
+function hr(h){return parseInt(h.slice(1,3),16)+','+parseInt(h.slice(3,5),16)+','+parseInt(h.slice(5,7),16);}
+
+/* ─────────────────────────────────────────────────────────────────
+   REACT APP
+───────────────────────────────────────────────────────────────── */
+function App(){
+  const C=44; // cell size px; total board = 10×44 = 440px
+
+  const[puzzle,setPuzzle]=useState(()=>genPuzzle(0));
+  const[phase,setPhase]=useState('survey');  // 'survey' | 'build' | 'reveal'
+  const[lasers,setLasers]=useState({});      // rangeno -> {res, num}
+  const[lnxt,setLnxt]=useState(1);
+  const[probes,setProbes]=useState(0);
+  const[gf,setGf]=useState(new Set());       // guessed faults Set<"x,y">
+  const[pb,setPb]=useState(new Set());       // placed bridges Set<bridgeKey>
+  const[revs,setRevs]=useState(0);
+  const[selN,setSelN]=useState(null);        // selected node id in build mode
+  const[hovB,setHovB]=useState(null);        // hovered bridge key
+  const[hovRn,setHovRn]=useState(null);      // hovered probe rangeno
+  const[flash,setFlash]=useState({});        // rn -> 'hit'|'ref'|'num'  (animation triggers)
+  const[fpop,setFpop]=useState(new Set());   // cells with fault-pop animation
+
+  const st=useMemo(()=>calcStatus(puzzle,pb),[puzzle,pb]);
+
+  // Probe-pair hover highlight (from Black Box)
+  const hovRnEntry=hovRn!=null?lasers[hovRn]:null;
+  const hovPN=hovRnEntry&&typeof hovRnEntry.res==='number'?hovRnEntry.num:null;
+
+  /* ── handlers ─────────────────────────────────────── */
+  function newGame(){
+    SND.newgame();
+    const p=genPuzzle(0);
+    setPuzzle(p);setPhase('survey');
+    setLasers({});setLnxt(1);setProbes(0);
+    setGf(new Set());setPb(new Set());setRevs(0);
+    setSelN(null);setHovB(null);setHovRn(null);
+    setFlash({});setFpop(new Set());
+  }
+
+  function fire(rn){
+    if(phase!=='survey'||lasers[rn]!==undefined)return;
+    SND.fire();
+    const res=traceLaser(puzzle.faultSet,W,H,rn);
+    const num=typeof res==='number'?lnxt:null;
+    const ft=res==='H'?'hit':res==='R'?'ref':'num';
+    const tgts=[rn];if(typeof res==='number')tgts.push(res);
+    setTimeout(()=>{
+      setFlash(p=>{const n={...p};tgts.forEach(r=>n[r]=ft);return n;});
+      setTimeout(()=>setFlash(p=>{const n={...p};tgts.forEach(r=>delete n[r]);return n;}),380);
+    },60);
+    if(res==='H')setTimeout(()=>SND.hit(),170);
+    else if(res==='R')setTimeout(()=>SND.reflect(),100);
+    else if(isStraight(rn,res))setTimeout(()=>SND.straight(),120);
+    else setTimeout(()=>SND.deflected(),120);
+    setLasers(p=>{const n={...p,[rn]:{res,num}};if(typeof res==='number')n[res]={res:rn,num};return n;});
+    if(typeof res==='number')setLnxt(x=>x+1);
+    setProbes(x=>x+1);
+  }
+
+  function toggleFault(x,y){
+    if(phase!=='survey')return;
+    const k=x+','+y;
+    if(puzzle.nXY.has(k))return;
+    setGf(p=>{const n=new Set(p);if(n.has(k)){n.delete(k);SND.remove();}else{n.add(k);SND.fault();}return n;});
+    setFpop(p=>{const n=new Set(p);n.add(k);return n;});
+    setTimeout(()=>setFpop(p=>{const n=new Set(p);n.delete(k);return n;}),320);
+  }
+
+  function proceed(){SND.proceed();setPhase('build');setSelN(null);}
+
+  function doToggleBridge(key){
+    if(phase!=='build')return;
+    if(!pb.has(key)){
+      const cells=puzzle.b2c.get(key)||[];
+      for(const ex of pb)if(xcross(cells,puzzle.b2c.get(ex)||[])){lsNoise(.04,.25);return;}
+      SND.place();
+    }else{SND.remove();}
+    setPb(p=>{const n=new Set(p);n.has(key)?n.delete(key):n.add(key);return n;});
+    setRevs(r=>r+1);setSelN(null);
+  }
+
+  function nodeClick(id){
+    if(phase!=='build')return;
+    if(selN===null){setSelN(id);return;}
+    if(selN===id){setSelN(null);return;}
+    const key=bKey(selN,id);
+    if(puzzle.candSet.has(key))doToggleBridge(key);
+    else setSelN(id);
+  }
+
+  function submit(){
+    const sd=calcScore(puzzle,gf,probes,pb,revs,st);
+    const tier=calcTier(st,sd.cor,probes);
+    setPhase('reveal');
+    setTimeout(()=>tier==='PERFECT'?SND.win():tier==='SOUND'?SND.sound():SND.lose(),300);
+  }
+
+  /* ── CELL RENDERING ──────────────────────────────── */
+
+  function cellProbe(gx,gy,rn){
+    const inactive=phase!=='survey';
+    const isHov=hovRn===rn,entry=lasers[rn],ft=flash[rn];
+    const fCls=ft==='hit'?'fx-hit':ft==='ref'?'fx-ref':ft==='num'?'fx-num':'';
+    const isPH=hovPN!==null&&entry?.num===hovPN;
+    let bg='#06101c',bdr='1px solid #0f2040',cont=null,cur=(!inactive&&!entry)?'pointer':'default';
+
+    if(entry){
+      const{res,num}=entry;
+      if(res==='H'){
+        bg='#1a0404';bdr='2.5px solid #ef4444';
+        cont=el('div',{style:{fontSize:18,filter:'drop-shadow(0 0 8px #ff4444)'}},'\u26a1');
+      }else if(res==='R'){
+        bg='#0c1a2a';bdr='2.5px solid #475569';
+        cont=el('div',{style:{fontSize:15,fontWeight:900,color:'#94a3b8',textShadow:'0 0 8px #94a3b8'}},'\u21a9');
+      }else{
+        const col=nc(num);
+        bg=isPH?'rgba('+hr(col)+',.2)':'#060e1a';bdr='2.5px solid '+col;
+        cont=el('div',{style:{fontSize:13,fontWeight:900,color:col,fontFamily:'monospace',textShadow:`0 0 10px ${col}`}},num);
+      }
+    }else if(!inactive&&isHov){
+      bg='#0d2040';bdr='1.5px solid #38bdf8';
+      cont=el('div',{style:{fontSize:10,color:'#38bdf8',fontWeight:900}},arrowFor(W,H,rn));
+    }else{
+      cont=el('div',{style:{fontSize:9,color:'#1a3558',fontWeight:900}},arrowFor(W,H,rn));
+    }
+    if(isPH&&entry&&typeof entry.res==='number'){const c=nc(entry.num);bg='rgba('+hr(c)+',.18)';bdr='2.5px solid '+c;}
+
+    return el('div',{key:gx+':'+gy,className:fCls,
+      style:{width:C,height:C,background:bg,border:bdr,boxSizing:'border-box',
+             display:'flex',alignItems:'center',justifyContent:'center',
+             cursor:cur,opacity:inactive?.4:1,transition:'background .12s,opacity .3s'},
+      onClick:()=>!inactive&&fire(rn),
+      onMouseEnter:()=>setHovRn(rn),onMouseLeave:()=>setHovRn(null)},cont);
+  }
+
+  function cellArena(gx,gy){
+    const k=gx+','+gy;
+    const isNode=puzzle.nXY.has(k);
+    const isCorr=!isNode&&puzzle.c2b.has(k);
+    const isGF=gf.has(k);
+    const isTF=phase==='reveal'&&puzzle.faultSet.has(k)&&!isNode;
+    const hasPop=fpop.has(k);
+    let bg='#0d1626',bdr='1px solid #1a2f4a',cont=null,cur='default';
+
+    if(phase==='survey'){
+      if(!isNode){
+        cur='pointer';
+        if(isCorr)bg='#0e1b2c';
+        if(isGF){
+          cont=el('div',{className:hasPop?'fpop':'',
+            style:{width:26,height:26,borderRadius:4,background:'rgba(239,68,68,.12)',
+                   border:'2px solid #ef4444',display:'flex',alignItems:'center',
+                   justifyContent:'center',color:'#ef4444',fontSize:14,fontWeight:900}},'\u2715');
+        }
+      }
+    }else if(phase==='build'){
+      if(isNode){
+        cur='pointer';
+        if(selN===puzzle.nXY.get(k)){bg='#0c1f3a';bdr='1px solid #2a4a6a';}
+      }else if(isCorr){
+        cur='pointer';
+        const bk=puzzle.c2b.get(k);
+        if(hovB===bk)bg='#101e34';
+        if(isGF){
+          cont=el('div',{style:{width:20,height:20,borderRadius:3,background:'rgba(239,68,68,.07)',
+                                border:'1.5px solid rgba(239,68,68,.35)',display:'flex',alignItems:'center',
+                                justifyContent:'center',color:'rgba(239,68,68,.45)',fontSize:11,fontWeight:900}},'\u2715');
+        }
+      }
+    }else{
+      /* reveal */
+      if(isTF){
+        bg='rgba(220,38,38,.06)';
+        const wasG=gf.has(k);
+        cont=el('div',{style:{width:28,height:28,borderRadius:4,
+          background:wasG?'rgba(34,197,94,.15)':'rgba(239,68,68,.15)',
+          border:`2px solid ${wasG?'#22c55e':'#ef4444'}`,display:'flex',alignItems:'center',
+          justifyContent:'center',color:wasG?'#4ade80':'#f87171',fontSize:15,fontWeight:900}},
+          wasG?'\u2713':'\u26a0');
+      }else if(isGF&&!puzzle.faultSet.has(k)&&!isNode){
+        cont=el('div',{style:{width:24,height:24,borderRadius:3,background:'rgba(239,68,68,.07)',
+          border:'2px solid rgba(239,68,68,.38)',display:'flex',alignItems:'center',
+          justifyContent:'center',color:'rgba(239,68,68,.5)',fontSize:12,fontWeight:900}},'\u2715');
+      }
+    }
+
+    return el('div',{key:k,
+      style:{width:C,height:C,background:bg,border:bdr,boxSizing:'border-box',
+             display:'flex',alignItems:'center',justifyContent:'center',
+             cursor:cur,transition:'background .12s'},
+      onClick:()=>{
+        if(phase==='survey'&&!isNode)toggleFault(gx,gy);
+        else if(phase==='build'){
+          if(isNode)nodeClick(puzzle.nXY.get(k));
+          else if(isCorr)doToggleBridge(puzzle.c2b.get(k));
+        }
+      },
+      onMouseEnter:()=>{if(phase==='build'&&isCorr)setHovB(puzzle.c2b.get(k));},
+      onMouseLeave:()=>{if(phase==='build')setHovB(null);}
+    },cont);
+  }
+
+  function renderCell(gx,gy){
+    const isCorner=(gx===0||gx===W+1)&&(gy===0||gy===H+1);
+    if(isCorner)return el('div',{key:gx+':'+gy,style:{width:C,height:C,background:'#04070f',border:'1px solid #0a1526',boxSizing:'border-box'}});
+    const rn=g2r(W,H,gx,gy);
+    if(rn>=0)return cellProbe(gx,gy,rn);
+    return cellArena(gx,gy);
+  }
+
+  /* ── SVG OVERLAY (nodes, corridors, bridges) ─────── */
+  function renderSvg(){
+    const S=(W+2)*C;
+    const px=gx=>gx*C+C/2,py=gy=>gy*C+C/2;
+    const items=[];
+
+    /* Candidate corridor dashed guides — only shown in build/reveal */
+    if(phase!=='survey'){
+      puzzle.allCands.forEach(e=>{
+        const isHov=hovB===e.key;
+        const isSA=selN&&(selN===e.a.id||selN===e.b.id);
+        const op=isHov||isSA?.65:puzzle.solSet.has(e.key)?.2:.1;
+        items.push(el('line',{key:'cd-'+e.key,
+          x1:px(e.a.x),y1:py(e.a.y),x2:px(e.b.x),y2:py(e.b.y),
+          stroke:'#334e6e',strokeWidth:isHov?2:1,strokeDasharray:'4 3',opacity:op}));
+      });
+    }
+
+    /* Placed bridges */
+    for(const k of pb){
+      const e=puzzle.allCands.find(c=>c.key===k);if(!e)continue;
+      const isDng=st.danger.has(k);
+      let col;
+      if(phase==='reveal'){
+        const inSol=puzzle.solSet.has(k);
+        col=!inSol?'#f97316':isDng?'#ef4444':'#38bdf8';
+      }else col=isDng?'#ef4444':'#38bdf8';
+      items.push(el('line',{key:'br-'+k,
+        x1:px(e.a.x),y1:py(e.a.y),x2:px(e.b.x),y2:py(e.b.y),
+        stroke:col,strokeWidth:5,strokeLinecap:'round',
+        style:{filter:`drop-shadow(0 0 5px ${col})`}}));
+    }
+
+    /* Reveal: missed solution bridges as dashed green */
+    if(phase==='reveal'){
+      puzzle.sol.forEach(e=>{
+        if(pb.has(e.key))return;
+        items.push(el('line',{key:'ms-'+e.key,
+          x1:px(e.a.x),y1:py(e.a.y),x2:px(e.b.x),y2:py(e.b.y),
+          stroke:'#22c55e',strokeWidth:3,strokeLinecap:'round',strokeDasharray:'6 4',opacity:.5}));
+      });
+    }
+
+    /* Nodes */
+    puzzle.nodes.forEach(n=>{
+      const x=px(n.x),y=py(n.y),ds=st.degSt[n.id],isSel=selN===n.id;
+      let fill='#091524',stroke='#334e6e',glow=null,tCol='#475569';
+
+      if(phase==='reveal'){
+        if(ds==='met'){fill='#052e16';stroke='#4ade80';glow='#22c55e';tCol='#4ade80';}
+        else{fill='#1c0505';stroke='#f87171';glow='#ef4444';tCol='#f87171';}
+      }else if(phase==='build'){
+        if(ds==='met'){fill='#052e16';stroke='#4ade80';glow='#22c55e';tCol='#4ade80';}
+        else if(ds==='over'){fill='#1c0505';stroke='#f87171';glow='#ef4444';tCol='#f87171';}
+        else{stroke='#475569';tCol='#94a3b8';}
+      }
+      if(isSel){stroke='#38bdf8';glow='#38bdf8';fill='#0a1e38';}
+
+      const r=C*.34;
+      if(glow)items.push(el('circle',{key:'ng-'+n.id,cx:x,cy:y,r:r+5,fill:'none',stroke:glow,strokeWidth:2,opacity:.22}));
+      items.push(el('circle',{key:'nc-'+n.id,cx:x,cy:y,r,fill,stroke,strokeWidth:2.5}));
+      items.push(el('text',{key:'nt-'+n.id,x,y,textAnchor:'middle',dominantBaseline:'central',
+        fontSize:13,fontWeight:700,fontFamily:'monospace',fill:tCol},''+n.degree));
+    });
+
+    return el('svg',{style:{position:'absolute',top:0,left:0,pointerEvents:'none'},width:S,height:S},...items);
+  }
+
+  /* ── GRID ────────────────────────────────────────── */
+  const rows=[];
+  for(let gy=0;gy<=H+1;gy++){
+    const cells=[];
+    for(let gx=0;gx<=W+1;gx++)cells.push(renderCell(gx,gy));
+    rows.push(el('div',{key:gy,style:{display:'flex'}},cells));
+  }
+
+  /* ── SCORE / TIER ───────────────────────────────── */
+  const sd=phase==='reveal'?calcScore(puzzle,gf,probes,pb,revs,st):null;
+  const tier=phase==='reveal'?calcTier(st,sd.cor,probes):null;
+
+  /* ── STATUS CHIPS ───────────────────────────────── */
+  function chip(icon,label,val,ok){
+    const col=ok===true?'#4ade80':ok===false?'#f87171':'#94c8ff';
+    return el('div',{key:label,style:{background:'#0a1528',border:'1.5px solid #1a3050',borderRadius:8,padding:'5px 8px',textAlign:'center',minWidth:50}},
+      el('div',{style:{fontSize:9,color:'#334e6e',letterSpacing:1.5,textTransform:'uppercase',marginBottom:1}},icon),
+      el('div',{style:{fontSize:14,fontWeight:800,color:col,lineHeight:1,fontFamily:'monospace'}},val));
+  }
+  const chips=phase==='survey'
+    ?[chip('\u26a1','probes',probes,null),chip('\uD83D\uDD0D','marked',gf.size+'/4',null)]
+    :[chip('\uD83D\uDD17','deg',puzzle.nodes.filter(n=>st.degSt[n.id]==='met').length+'/'+puzzle.nodes.length,st.allMet),
+      chip('\uD83C\uDF10','conn',st.conn?'\u2713':'\u2717',st.conn),
+      chip('\uD83D\uDEE1','safe',st.danger.size===0?'\u2713':'\u2717',st.danger.size===0)];
+
+  /* ── RESULT PANEL ────────────────────────────────── */
+  function resultPanel(){
+    if(!tier)return null;
+    const cols={PERFECT:'#ffd700',SOUND:'#4ade80',BUILT:'#38bdf8',INCOMPLETE:'#f87171'};
+    const icons={PERFECT:'\uD83C\uDFC6',SOUND:'\u2705',BUILT:'\uD83D\uDD28',INCOMPLETE:'\u274C'};
+    const c=cols[tier];const{bd,cor,wr,mis}=sd;
+    const bkRows=[
+      {l:'Fault accuracy',v:(bd.fault>=0?'+':'')+bd.fault,sub:cor+'/4 correct'+(mis?', '+mis+' missed':'')+(wr?', '+wr+' wrong':'')},
+      {l:'Probe economy', v:'+'+bd.probe,sub:probes+' probes used'},
+      bd.degrees&&{l:'All degrees',v:'+15'},
+      bd.connected&&{l:'Connected',v:'+15'},
+      {l:'No crossings',v:'+5'},
+      bd.safe&&{l:'Safe routing',v:'+10'},
+      bd.coherence&&{l:'Coherence bonus',v:'+10'},
+      bd.churn&&{l:'Churn penalty',v:String(bd.churn)},
+    ].filter(Boolean);
+
+    return el('div',{className:'result-in',style:{marginTop:12,padding:'13px 14px',background:`rgba(${hr(c)},.07)`,border:`2px solid ${c}`,borderRadius:10}},
+      el('div',{style:{display:'flex',alignItems:'baseline',gap:10,marginBottom:8}},
+        el('div',{style:{fontSize:16,fontWeight:900,color:c,letterSpacing:2,textTransform:'uppercase',textShadow:`0 0 10px ${c}`}},icons[tier]+' '+tier),
+        el('div',{style:{fontSize:12,color:'#475569'}}, 'Score: '+sd.total+' pts')
+      ),
+      el('div',{style:{display:'flex',flexWrap:'wrap',gap:'2px 14px'}},
+        ...bkRows.map(({l,v,sub})=>el('span',{key:l,style:{fontSize:11,color:'#475569'}},
+          l+': ',el('span',{style:{color:String(v).startsWith('-')?'#f87171':'#94c8ff',fontFamily:'monospace'}},v),
+          sub?el('span',{style:{color:'#334e6e'}},' ('+sub+')'):''))
+      ),
+      el('div',{style:{fontSize:11,color:'#334e6e',marginTop:8}},
+        phase==='reveal'&&puzzle.sol.length>0&&
+          'Dashed green = solution bridges you missed  \u00b7  Orange = bridge outside solution')
+    );
+  }
+
+  /* ── CONTROLS ────────────────────────────────────── */
+  function bStyle(col,bg){return{background:bg||'#0a1525',color:col,border:`2px solid ${col}`,borderRadius:8,padding:'9px 15px',fontSize:12,fontWeight:800,cursor:'pointer',letterSpacing:1.5,textTransform:'uppercase',textShadow:`0 0 8px ${col}`,transition:'all .15s'};}
+  const ctls=[];
+  if(phase==='survey')ctls.push(el('button',{key:'p',onClick:proceed,disabled:probes===0,
+    style:{...bStyle('#38bdf8','#0f2a50'),opacity:probes===0?.38:1}},'\u2192 Proceed to Build'));
+  if(phase==='build')ctls.push(el('button',{key:'s',onClick:submit,style:bStyle('#fbbf24','#1a1200')},'\u2713 Submit'));
+  ctls.push(el('button',{key:'n',onClick:newGame,style:{...bStyle('#475569'),opacity:.8}},'\u21ba New'));
+
+  /* ── LEGEND ──────────────────────────────────────── */
+  const leg=phase==='survey'
+    ?el('div',{style:{fontSize:11,color:'#334e6e',marginTop:8,lineHeight:1.9}},
+        '\u26a1 absorbed  \u21a9 reflected  ',el('span',{style:{color:'#38bdf8'}},'numbers = entry/exit pair'),el('br'),
+        'Click arena cells to mark suspected fault locations')
+    :el('div',{style:{fontSize:11,color:'#334e6e',marginTop:8,lineHeight:1.9}},
+        el('span',null,el('span',{style:{color:'#38bdf8',fontWeight:900}},'\u2500'),' safe  '),
+        el('span',null,el('span',{style:{color:'#ef4444',fontWeight:900}},'\u2500'),' fault route  '),
+        el('span',null,el('span',{style:{color:'#4ade80',fontWeight:900}},'\u25cb'),' degree met  '),
+        el('span',null,el('span',{style:{color:'#f97316',fontWeight:900}},'\u2500'),' wrong bridge'),el('br'),
+        phase==='build'?'Click corridor line or select a node then click another node to place a bridge':
+        'Dashed green = intended solution bridges you didn\'t place');
+
+  /* ── ROOT ────────────────────────────────────────── */
+  const phaseCol=phase==='survey'?'#38bdf8':phase==='build'?'#fbbf24':'#4ade80';
+  const phaseLbl=phase==='survey'?'Phase 1 \u2014 Survey':phase==='build'?'Phase 2 \u2014 Rebuild':'Results';
+
+  return el('div',{style:{fontFamily:'system-ui,sans-serif',userSelect:'none'}},
+    el('div',{style:{background:'#070c1a',borderRadius:14,border:'3px solid #1a3560',padding:'14px 14px 12px',boxShadow:'0 0 40px rgba(0,150,255,.06)'}},
+
+      /* header */
+      el('div',{style:{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:10}},
+        el('div',null,
+          el('div',{style:{fontSize:20,fontWeight:900,color:'#e2e8f0',letterSpacing:4,textTransform:'uppercase',
+                           textShadow:'0 0 18px rgba(56,189,248,.45)'}},'Hidden Network'),
+          el('div',{style:{display:'flex',alignItems:'center',gap:8,marginTop:4}},
+            el('div',{style:{padding:'2px 9px',borderRadius:20,fontSize:10,fontWeight:800,letterSpacing:2,textTransform:'uppercase',
+                             background:`rgba(${hr(phaseCol)},.12)`,color:phaseCol,border:`1px solid ${phaseCol}`}},phaseLbl),
+            el('div',{style:{fontSize:10,color:'#334e6e'}},
+              phase==='survey'?'Fire probes \u00b7 mark faults':
+              phase==='build'?'Place bridges to restore the network':
+              'Review \u00b7 score breakdown')
+          )
+        ),
+        el('div',{style:{display:'flex',gap:6}},...chips)
+      ),
+
+      /* board */
+      el('div',{style:{position:'relative',display:'inline-block',border:'3px solid #1a3560',borderRadius:6,overflow:'hidden',marginBottom:10}},
+        el('div',null,rows),
+        renderSvg()
+      ),
+
+      el('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},...ctls),
+      resultPanel(),
+      leg
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(el(App));
+</script>
+</body>
+</html>
