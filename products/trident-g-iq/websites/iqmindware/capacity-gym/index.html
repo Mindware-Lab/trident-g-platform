@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Capacity Gym v2</title>
+  <link rel="stylesheet" href="/apps/capacity-gym/brandingUI/Trident-G-brand.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="capacity-v2-shell">
+    <header class="capacity-v2-brand" aria-label="Capacity Gym branding">
+      <div class="capacity-v2-brand-left">
+        <span class="capacity-v2-logo"><img src="/apps/capacity-gym/brandingUI/Trident-G-Icon.svg" alt=""></span>
+        <div>
+          <div class="capacity-v2-eyebrow">Trident G - IQ</div>
+          <h1>Capacity Gym</h1>
+        </div>
+      </div>
+      <div class="capacity-v2-brand-actions">
+        <button class="capacity-sfx-toggle" type="button" data-action="toggle-sound" data-sound-toggle aria-pressed="true" aria-label="Turn Capacity Gym audio off">Audio on</button>
+        <a id="suiteBackLink" class="capacity-suite-back" href="/apps/iq-suite/index.html">Back to IQ Core</a>
+        <a class="capacity-v2-site" href="https://iqmindware.com/" target="_blank" rel="noopener noreferrer">IQMindware.com</a>
+      </div>
+    </header>
+    <main id="app" class="capacity-v2-app" aria-live="polite"></main>
+  </div>
+
+  <script src="/apps/shared-ui/entitlements-client.js"></script>
+  <script src="/apps/shared-ui/activation-gate.js"></script>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var link = document.getElementById("suiteBackLink");
+      var launchedFromSuite = params.get("from") === "iq-core" || Boolean(params.get("bundle"));
+      if (link && launchedFromSuite) {
+        var suiteUrl = new URL("/apps/iq-suite/index.html", window.location.origin);
+        suiteUrl.search = window.location.search || "";
+        suiteUrl.hash = window.location.hash || "";
+        link.href = suiteUrl.toString();
+        link.classList.add("is-visible");
+      } else if (link) {
+        link.setAttribute("aria-hidden", "true");
+      }
+
+      var launchBundleId = params.get("bundle") || "";
+      var hostname = window.location.hostname || "";
+      var isLocalhostDev = hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+      if (window.IQActivationGate && !isLocalhostDev) {
+        window.IQActivationGate.enforceAppAccess({
+          appId: "capacity_gym",
+          appLabel: "Capacity Gym",
+          manifestUrl: "/apps/iq-suite/bundle-manifests.json",
+          returnTo: "/apps/iq-suite/index.html",
+          bundleIdHint: launchBundleId,
+          requiredBundleId: launchBundleId || ""
+        });
+      }
+    })();
+  </script>
+  <script type="module">
+    import("./app.js").catch(function (error) {
+      var root = document.getElementById("app");
+      if (!root) return;
+      root.innerHTML = [
+        '<section class="play-card">',
+        '<h2>Capacity Gym could not start</h2>',
+        '<p class="status-copy">The local route loaded, but a JavaScript module failed to import.</p>',
+        '<pre class="small muted" style="white-space:pre-wrap;">',
+        String(error && (error.stack || error.message) || error).replace(/[&<>"']/g, function (ch) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+        }),
+        '</pre>',
+        '</section>'
+      ].join("");
+    });
+  </script>
+</body>
+</html>

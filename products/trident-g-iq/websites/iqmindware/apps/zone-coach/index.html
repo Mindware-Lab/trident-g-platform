@@ -833,6 +833,8 @@
     };
     const LS_HISTORY = 'iqmw.zone.router.history.v1';
     const LS_PREFS = 'iqmw.zone.router.prefs.v1';
+    const LS_CAPACITY_HANDOFF = 'iqmw.capacity.handoffFromZone';
+    const LS_CAPACITY_FALLBACK = 'lastCapacitySession';
     const DEFAULT_PREFS = Object.freeze({
       timeBudget: 10,
       prefersExercise: true,
@@ -1325,6 +1327,60 @@
       });
       localStorage.setItem(LS_HISTORY, JSON.stringify(trimmed));
     };
+    const writeCapacityHandoff = (summary) => {
+      if (!summary || !summary.valid) return;
+      const routerState = normState(summary.router?.state);
+      const gate = summary.trainingGate || computeTrainingGate(routerState, summary.router?.confidence, (summary.baselines?.priorValidCount || 0) >= 3, summary.valid);
+      const zone = routerState === 'in_zone'
+        ? 'in_band'
+        : routerState === 'flat'
+          ? 'too_cold'
+          : routerState === 'invalid'
+            ? 'unknown'
+            : 'too_hot';
+      const routeClass = zone === 'too_hot'
+        ? 'recovery'
+        : gate.trainingGate === 'GO_DEEP'
+        ? 'core'
+        : gate.trainingGate === 'TRY_AGAIN_INVALID'
+          ? 'recovery'
+          : 'support';
+      const defaultBlocks = routeClass === 'core' ? 6 : routeClass === 'support' ? 4 : 0;
+      const recommendation = routeClass === 'core' ? 'proceed' : 'light';
+      const handoff = {
+        schemaVersion: 'iqmw_capacity_handoff_v2',
+        sessionId: summary.sessionId || new Date().toISOString(),
+        timestamp: Date.now(),
+        sourceApp: 'zone_coach',
+        state: zone,
+        uiState: routerState === 'in_zone' ? 'In the Zone' : routerState === 'flat' ? 'Below band' : routerState === 'invalid' ? 'Invalid' : 'Over band',
+        recommendation,
+        gate: { zone, recommendation },
+        capacityPlan: {
+          routeClass,
+          defaultBlocks,
+          blocksMin: Math.max(0, defaultBlocks - 1),
+          blocksMax: defaultBlocks,
+          progressionMode: routeClass === 'core' ? 'build' : routeClass === 'support' ? 'stabilise' : 'none',
+          swapPolicy: routeClass === 'core' ? 'normal' : 'none',
+          focusBias: routeClass === 'core' ? 'portable_control' : 'stability',
+          preferredFamilies: routeClass === 'core' ? ['flex', 'bind', 'resist', 'relate'] : ['flex'],
+          blockedFamilies: routeClass === 'recovery' ? ['bind', 'resist', 'relate', 'emotion'] : [],
+          blockedModes: routeClass === 'recovery' ? ['dual'] : [],
+          rewardMode: routeClass === 'core' ? 'core' : routeClass === 'support' ? 'support' : 'reset_only',
+          eligibleForEncoding20: routeClass === 'core'
+        }
+      };
+      localStorage.setItem(LS_CAPACITY_HANDOFF, JSON.stringify(handoff));
+      localStorage.setItem(LS_CAPACITY_FALLBACK, JSON.stringify({
+        schemaVersion: 'mw_handoff_v1',
+        timestamp: handoff.timestamp,
+        zone,
+        recommendation,
+        capacityFocus: handoff.capacityPlan.focusBias,
+        routeClass
+      }));
+    };
     const loadPrefs = () => {
       try {
         const raw = JSON.parse(localStorage.getItem(LS_PREFS) || '{}');
@@ -1809,6 +1865,7 @@
       const rec = summary.recommendation || pickRecommendation(state, gate.trainingGate, summary.router.confidence, prefs);
       summary.trainingGate = gate;
       summary.recommendation = rec;
+      writeCapacityHandoff(summary);
       if (showMetricRow) {
         dom.mBps.textContent = fmt(summary.bps.combined, 2);
         dom.mState.textContent = ui.label;

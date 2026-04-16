@@ -1,0 +1,1772 @@
+import {
+  HUB_BASE_TRIALS,
+  HUB_CUE_MS,
+  HUB_N_MAX,
+  createHubBlockPlan,
+  createHubBlockTrials,
+  displayHubTargetLabel,
+  isHubMatchAtIndex,
+  summarizeHubBlock
+} from "./runtime/hub-engine.js";
+import {
+  initAudio,
+  playSfx,
+  setAudioEnabled,
+  unlockAudioContextFromUserGesture
+} from "./runtime/audio.js";
+import { hash32 } from "./runtime/rng.js";
+
+const STORAGE_KEY = "tg_iq_live_capacity_v2";
+const ECONOMY_KEY = "tg_iq_live_economy_v1";
+const ZONE_HANDOFF_KEY = "iqmw.capacity.handoffFromZone";
+const ZONE_FALLBACK_KEY = "lastCapacitySession";
+const HISTORY_LIMIT = 160;
+const ECONOMY_EVENT_LIMIT = 240;
+const COACH_CORE_BLOCKS = 6;
+const SUPPORT_BLOCKS = 4;
+const COACH_FAMILY_CYCLE = ["flex", "bind", "relate", "resist", "flex", "relate", "bind", "resist", "relate"];
+const RELATE_LADDER = ["relate_vectors", "relate_numbers", "relate_vectors_dual", "relate_numbers_dual"];
+const TRANSFER_SPRINT_BLOCKS = 3;
+const MANUAL_RECOMMENDATION_FAMILIES = ["flex", "bind", "relate", "resist"];
+
+const FAMILY_META = {
+  flex: { label: "Flex", wrappers: ["hub_cat", "hub_noncat", "hub_concept"] },
+  bind: { label: "Bind", wrappers: ["and_cat", "and_noncat"] },
+  resist: { label: "Resist", wrappers: ["resist_vectors", "resist_words", "resist_concept"] },
+  emotion: { label: "Emotion", wrappers: ["emotion_faces", "emotion_words"] },
+  relate: { label: "Relate", wrappers: RELATE_LADDER }
+};
+
+const WRAPPER_META = {
+  hub_cat: { family: "flex", label: "Flex known", target: ["loc", "col", "sym"], complexity: 2 },
+  hub_noncat: { family: "flex", label: "Flex unknown", target: ["loc", "col", "sym"], complexity: 3 },
+  hub_concept: { family: "flex", label: "Flex concept", target: ["loc", "col", "sym"], complexity: 4 },
+  and_cat: { family: "bind", label: "Bind known", target: ["conj"], complexity: 5 },
+  and_noncat: { family: "bind", label: "Bind unknown", target: ["conj"], complexity: 6 },
+  resist_vectors: { family: "resist", label: "Resist vectors", target: ["loc", "sym"], complexity: 5 },
+  resist_words: { family: "resist", label: "Resist words", target: ["col", "sym"], complexity: 5 },
+  resist_concept: { family: "resist", label: "Resist concept", target: ["loc", "sym"], complexity: 6 },
+  emotion_faces: { family: "emotion", label: "Emotion faces", target: ["loc", "sym"], complexity: 5 },
+  emotion_words: { family: "emotion", label: "Emotion words", target: ["col", "sym"], complexity: 5 },
+  relate_vectors: { family: "relate", label: "Relate vectors mono", target: ["rel", "sym"], complexity: 6 },
+  relate_numbers: { family: "relate", label: "Relate numbers mono", target: ["rel", "sym"], complexity: 7 },
+  relate_vectors_dual: { family: "relate", label: "Relate vectors dual", target: ["dual"], complexity: 8 },
+  relate_numbers_dual: { family: "relate", label: "Relate numbers dual", target: ["dual"], complexity: 9 }
+};
+
+const PREVIEW_MARKERS = [
+  { xPct: 50, yPct: 8 },
+  { xPct: 92, yPct: 50 },
+  { xPct: 50, yPct: 92 },
+  { xPct: 8, yPct: 50 }
+];
+
+const appRoot = document.querySelector("#app");
+let state = loadState();
+let economy = loadEconomy();
+let activeBlock = null;
+let viewState = {
+  leftOpen: false,
+  rightOpen: false,
+  message: "Choose coached progression or manual play, then start a block."
+};
+const timers = { cue: null, display: null, sequence: null, trial: null };
+let touchStart = null;
+
+initAudio({ enabled: state.settings.soundOn, preloadTier: "p0" });
+
+function isSoundOn() {
+  return state.settings.soundOn !== false;
+}
+
+function syncSoundToggle() {
+  const button = document.querySelector("[data-sound-toggle]");
+  if (!button) return;
+  const enabled = isSoundOn();
+  button.textContent = enabled ? "Audio on" : "Audio off";
+  button.setAttribute("aria-pressed", enabled ? "true" : "false");
+  button.setAttribute("aria-label", enabled ? "Turn Capacity Gym audio off" : "Turn Capacity Gym audio on");
+  button.classList.toggle("is-muted", !enabled);
+}
+
+function unlockAudioGesture() {
+  if (!isSoundOn()) return false;
+  return unlockAudioContextFromUserGesture();
+}
+
+function triggerSfx(eventId) {
+  if (!isSoundOn()) return false;
+  return playSfx(eventId);
+}
+
+function scheduleSfx(eventId, delayMs = 0) {
+  if (!isSoundOn()) return;
+  window.setTimeout(() => {
+    triggerSfx(eventId);
+  }, Math.max(0, Math.round(delayMs)));
+}
+
+function setSoundOn(enabled) {
+  state.settings.soundOn = Boolean(enabled);
+  saveState();
+  setAudioEnabled(state.settings.soundOn);
+  if (state.settings.soundOn) {
+    unlockAudioContextFromUserGesture();
+    playSfx("ui_tap_soft");
+  }
+  syncSoundToggle();
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function parseJson(raw) {
+  if (typeof raw !== "string" || !raw.trim()) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function percent(value) {
+  return Number.isFinite(value) ? `${Math.round(value * 100)}%` : "--";
+}
+
+function clampN(value) {
+  return clamp(Number.isFinite(Number(value)) ? Math.round(Number(value)) : 1, 1, HUB_N_MAX);
+}
+
+function wrapperFamily(wrapper) {
+  return WRAPPER_META[wrapper]?.family || "flex";
+}
+
+function familyLabel(familyId) {
+  return FAMILY_META[familyId]?.label || "Flex";
+}
+
+function wrapperLabel(wrapper) {
+  return WRAPPER_META[wrapper]?.label || "Flex known";
+}
+
+function targetOptions(wrapper) {
+  return WRAPPER_META[wrapper]?.target || ["loc", "col", "sym"];
+}
+
+function normalizeWrapper(value) {
+  return WRAPPER_META[value] ? value : "hub_cat";
+}
+
+function normalizeTarget(wrapper, value) {
+  const options = targetOptions(wrapper);
+  return options.includes(value) ? value : options[0];
+}
+
+function targetLabel(target, wrapper) {
+  return displayHubTargetLabel(target, wrapper).toLowerCase();
+}
+
+function dateKey(ts = Date.now()) {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function createDefaultState() {
+  return {
+    version: 2,
+    settings: { mode: "coach", wrapper: "hub_cat", targetModality: "loc", n: 1, speed: "slow", soundOn: true },
+    currentSession: null,
+    programme: { coreSessionNumber: 0, programmeBonusAwarded: false, programmeCompletedAt: null },
+    history: []
+  };
+}
+
+function normalizeState(raw) {
+  const defaults = createDefaultState();
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return defaults;
+  const settings = raw.settings && typeof raw.settings === "object" ? raw.settings : {};
+  const wrapper = normalizeWrapper(settings.wrapper);
+  const history = Array.isArray(raw.history) ? raw.history.filter((entry) => entry && typeof entry === "object").slice(0, HISTORY_LIMIT) : [];
+  const programme = raw.programme && typeof raw.programme === "object" ? raw.programme : {};
+  return {
+    version: 2,
+    settings: {
+      mode: settings.mode === "manual" ? "manual" : "coach",
+      wrapper,
+      targetModality: normalizeTarget(wrapper, settings.targetModality),
+      n: clampN(settings.n),
+      speed: settings.speed === "fast" ? "fast" : "slow",
+      soundOn: settings.soundOn !== false
+    },
+    currentSession: raw.currentSession && typeof raw.currentSession === "object" ? raw.currentSession : null,
+    programme: {
+      coreSessionNumber: Math.max(0, Math.round(Number(programme.coreSessionNumber || 0))),
+      programmeBonusAwarded: programme.programmeBonusAwarded === true,
+      programmeCompletedAt: Number.isFinite(programme.programmeCompletedAt) ? Math.round(programme.programmeCompletedAt) : null
+    },
+    history
+  };
+}
+
+function loadState() {
+  if (typeof localStorage === "undefined") return createDefaultState();
+  const loaded = normalizeState(parseJson(localStorage.getItem(STORAGE_KEY)));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(loaded));
+  return loaded;
+}
+
+function saveState(nextState = state) {
+  state = normalizeState(nextState);
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+  return state;
+}
+
+function createDefaultEconomy() {
+  return { version: 1, walletG: 0, events: [] };
+}
+
+function normalizeEconomy(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return createDefaultEconomy();
+  return {
+    version: 1,
+    walletG: Math.max(0, Math.round(Number(raw.walletG || 0))),
+    events: Array.isArray(raw.events) ? raw.events.filter((entry) => entry && typeof entry === "object").slice(0, ECONOMY_EVENT_LIMIT) : []
+  };
+}
+
+function loadEconomy() {
+  if (typeof localStorage === "undefined") return createDefaultEconomy();
+  const loaded = normalizeEconomy(parseJson(localStorage.getItem(ECONOMY_KEY)));
+  localStorage.setItem(ECONOMY_KEY, JSON.stringify(loaded));
+  return loaded;
+}
+
+function saveEconomy(nextEconomy = economy) {
+  economy = normalizeEconomy(nextEconomy);
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(ECONOMY_KEY, JSON.stringify(economy));
+  }
+  return economy;
+}
+
+function addGEvent(event) {
+  const g = Math.max(0, Math.round(Number(event?.g || 0)));
+  return saveEconomy({
+    version: 1,
+    walletG: economy.walletG + g,
+    events: [
+      {
+        id: event.id || `g_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+        ts: Number.isFinite(event.ts) ? Math.round(event.ts) : Date.now(),
+        source: event.source || "capacity_block",
+        label: event.label || "Capacity reward",
+        g,
+        meta: event.meta && typeof event.meta === "object" ? event.meta : {}
+      },
+      ...economy.events
+    ].slice(0, ECONOMY_EVENT_LIMIT)
+  });
+}
+
+function normalizeZoneValue(zoneValue, recommendationValue) {
+  const zone = String(zoneValue || "").trim().toLowerCase();
+  const recommendation = String(recommendationValue || "").trim().toLowerCase();
+  if (zone === "too_hot" || zone === "overloaded_explore" || zone === "overloaded_exploit") return "too_hot";
+  if (zone === "too_cold" || zone === "flat") return "too_cold";
+  if (zone === "in_band" || zone === "in_zone" || zone === "psi") return "in_band";
+  if (recommendation === "light") return "too_cold";
+  if (recommendation === "proceed" || recommendation === "full") return "in_band";
+  return "unknown";
+}
+
+function normalizeZoneCandidate(candidate, sourceKey) {
+  if (!candidate || typeof candidate !== "object") return null;
+  const gate = candidate.gate && typeof candidate.gate === "object" ? candidate.gate : {};
+  const timestamp = Number.isFinite(candidate.timestamp)
+    ? Math.round(candidate.timestamp)
+    : (Number.isFinite(Date.parse(candidate.timestamp)) ? Date.parse(candidate.timestamp) : null);
+  const zone = normalizeZoneValue(gate.zone || candidate.zone || candidate.state || candidate.router?.state, gate.recommendation || candidate.recommendation);
+  const routeClass = candidate.capacityPlan?.routeClass
+    || (zone === "in_band" ? "core" : zone === "too_cold" ? "support" : zone === "too_hot" ? "recovery" : "support");
+  const defaultBlocks = routeClass === "core" ? COACH_CORE_BLOCKS : routeClass === "support" ? SUPPORT_BLOCKS : 0;
+  return {
+    sessionId: candidate.sessionId || `zone_${timestamp || Date.now()}`,
+    sourceKey,
+    timestamp,
+    freshSameDay: Number.isFinite(timestamp) ? dateKey(timestamp) === dateKey() : false,
+    state: zone,
+    uiState: zone === "in_band" ? "In the Zone" : zone === "too_cold" ? "Below band" : zone === "too_hot" ? "Over band" : "Unknown",
+    recommendation: gate.recommendation || candidate.recommendation || (routeClass === "core" ? "proceed" : "light"),
+    capacityPlan: {
+      routeClass,
+      defaultBlocks: Number.isFinite(candidate.capacityPlan?.defaultBlocks) ? Math.round(candidate.capacityPlan.defaultBlocks) : defaultBlocks,
+      blocksMin: Number.isFinite(candidate.capacityPlan?.blocksMin) ? Math.round(candidate.capacityPlan.blocksMin) : Math.max(0, defaultBlocks - 1),
+      blocksMax: Number.isFinite(candidate.capacityPlan?.blocksMax) ? Math.round(candidate.capacityPlan.blocksMax) : defaultBlocks,
+      progressionMode: candidate.capacityPlan?.progressionMode || (routeClass === "core" ? "build" : "stabilise"),
+      swapPolicy: candidate.capacityPlan?.swapPolicy || (routeClass === "core" ? "normal" : "none"),
+      focusBias: candidate.capacityPlan?.focusBias || (routeClass === "core" ? "portable_control" : "stability"),
+      preferredFamilies: Array.isArray(candidate.capacityPlan?.preferredFamilies) ? candidate.capacityPlan.preferredFamilies : [],
+      blockedFamilies: Array.isArray(candidate.capacityPlan?.blockedFamilies) ? candidate.capacityPlan.blockedFamilies : [],
+      blockedModes: Array.isArray(candidate.capacityPlan?.blockedModes) ? candidate.capacityPlan.blockedModes : [],
+      rewardMode: candidate.capacityPlan?.rewardMode || (routeClass === "core" ? "core" : routeClass === "support" ? "support" : "reset_only"),
+      eligibleForEncoding20: candidate.capacityPlan?.eligibleForEncoding20 === true || routeClass === "core"
+    }
+  };
+}
+
+function readZoneHandoff() {
+  if (typeof localStorage === "undefined") return null;
+  const primary = normalizeZoneCandidate(parseJson(localStorage.getItem(ZONE_HANDOFF_KEY)), ZONE_HANDOFF_KEY);
+  const fallback = normalizeZoneCandidate(parseJson(localStorage.getItem(ZONE_FALLBACK_KEY)), ZONE_FALLBACK_KEY);
+  if (!primary) return fallback;
+  if (!fallback) return primary;
+  if (!Number.isFinite(primary.timestamp)) return fallback;
+  if (!Number.isFinite(fallback.timestamp)) return primary;
+  return primary.timestamp >= fallback.timestamp ? primary : fallback;
+}
+
+function currentCoachFamilyNumber() {
+  return state.programme.coreSessionNumber + 1;
+}
+
+function familyForCoreSession(sessionNumber) {
+  return COACH_FAMILY_CYCLE[(Math.max(1, sessionNumber) - 1) % COACH_FAMILY_CYCLE.length];
+}
+
+function historyFor(predicate) {
+  return state.history.filter(predicate);
+}
+
+function latest(predicate) {
+  return state.history.find(predicate) || null;
+}
+
+function blockAccuracy(entry) {
+  return Number(entry?.block?.accuracy || 0);
+}
+
+function blockEndN(entry) {
+  return clampN(entry?.block?.nEnd || entry?.recommendedN || entry?.block?.nStart || 1);
+}
+
+function stableWrapper(wrapper, target = null) {
+  const entries = state.history
+    .filter((entry) => entry.wrapper === wrapper && (!target || entry.targetModality === target))
+    .slice(0, 3);
+  return entries.length >= 3 && entries.every((entry) => blockAccuracy(entry) >= 0.75 && blockEndN(entry) >= 2);
+}
+
+function pickRelateWrapper() {
+  if (!stableWrapper("relate_vectors", "rel") || !stableWrapper("relate_vectors", "sym")) return "relate_vectors";
+  if (!stableWrapper("relate_numbers", "rel") || !stableWrapper("relate_numbers", "sym")) return "relate_numbers";
+  if (!stableWrapper("relate_vectors_dual")) return "relate_vectors_dual";
+  return "relate_numbers_dual";
+}
+
+function pickRelateTarget(wrapper) {
+  if (wrapper === "relate_vectors_dual" || wrapper === "relate_numbers_dual") return "dual";
+  if (!stableWrapper(wrapper, "rel")) return "rel";
+  if (!stableWrapper(wrapper, "sym")) return "sym";
+  const last = latest((entry) => entry.wrapper === wrapper);
+  return last?.targetModality === "rel" ? "sym" : "rel";
+}
+
+function pickFamilyWrapper(familyId) {
+  if (familyId === "relate") return pickRelateWrapper();
+  const wrappers = FAMILY_META[familyId]?.wrappers || FAMILY_META.flex.wrappers;
+  const completed = historyFor((entry) => wrapperFamily(entry.wrapper) === familyId && entry.rewardMode === "core").length;
+  return wrappers[completed % wrappers.length];
+}
+
+function pickFamilyTarget(wrapper) {
+  if (wrapper.startsWith("relate_")) return pickRelateTarget(wrapper);
+  const options = targetOptions(wrapper);
+  if (options.length === 1) return options[0];
+  const last = latest((entry) => entry.wrapper === wrapper);
+  const index = Math.max(-1, options.indexOf(last?.targetModality));
+  return options[(index + 1) % options.length];
+}
+
+function recommendedNForWrapper(wrapper, routeClass) {
+  if (routeClass === "support") return 1;
+  const last = latest((entry) => entry.wrapper === wrapper);
+  if (!last) return 1;
+  return clampN(last.recommendedN || last.block?.nEnd || 1);
+}
+
+function recommendedSpeedForWrapper(wrapper, routeClass) {
+  if (routeClass !== "core") return "slow";
+  const recent = state.history.filter((entry) => entry.wrapper === wrapper).slice(0, 3);
+  return recent.length >= 2 && recent.every((entry) => blockAccuracy(entry) >= 0.9 && blockEndN(entry) >= 2) ? "fast" : "slow";
+}
+
+function resolveNextBlockSettings() {
+  const session = state.currentSession;
+  if (session && session.mode === "coach") {
+    const familyId = session.routeClass === "core" ? session.familyId : "flex";
+    const wrapper = pickFamilyWrapper(familyId);
+    return {
+      wrapper,
+      targetModality: pickFamilyTarget(wrapper),
+      n: recommendedNForWrapper(wrapper, session.routeClass),
+      speed: recommendedSpeedForWrapper(wrapper, session.routeClass),
+      rewardMode: session.routeClass === "core" ? "core" : "support"
+    };
+  }
+  return {
+    wrapper: state.settings.wrapper,
+    targetModality: normalizeTarget(state.settings.wrapper, state.settings.targetModality),
+    n: clampN(state.settings.n),
+    speed: state.settings.speed,
+    rewardMode: "manual"
+  };
+}
+
+function resolveCoachBlockSettings() {
+  const session = state.currentSession;
+  const routeClass = session?.routeClass || "core";
+  const familyId = routeClass === "core"
+    ? (session?.familyId || familyForCoreSession(currentCoachFamilyNumber()))
+    : "flex";
+  const wrapper = pickFamilyWrapper(familyId);
+  return {
+    wrapper,
+    targetModality: pickFamilyTarget(wrapper),
+    n: recommendedNForWrapper(wrapper, routeClass),
+    speed: recommendedSpeedForWrapper(wrapper, routeClass),
+    rewardMode: routeClass === "core" ? "core" : "support"
+  };
+}
+
+function displayPlanForHud() {
+  if (activeBlock?.plan) return activeBlock.plan;
+  return state.settings.mode === "coach" ? resolveCoachBlockSettings() : resolveNextBlockSettings();
+}
+
+function projectedNextN(plan) {
+  if (activeBlock?.plan && plan === activeBlock.plan && activeBlock.trialOutcomes.length) {
+    try {
+      const summary = summarizeHubBlock({
+        plan: activeBlock.plan,
+        trials: activeBlock.trials,
+        trialOutcomes: activeBlock.trialOutcomes,
+        nMax: HUB_N_MAX
+      });
+      return clampN(summary.nEnd);
+    } catch {
+      return clampN(plan.n);
+    }
+  }
+  const last = state.history[0];
+  if (!activeBlock && last?.wrapper === plan.wrapper && last?.targetModality === plan.targetModality) {
+    return clampN(last.recommendedN || last.block?.nEnd || plan.n);
+  }
+  return clampN(plan.n);
+}
+
+function recommendedManualFamilyId() {
+  const recentFamilies = state.history
+    .slice(0, TRANSFER_SPRINT_BLOCKS)
+    .map((entry) => wrapperFamily(entry.wrapper))
+    .filter(Boolean);
+  const cycleFamily = familyForCoreSession(currentCoachFamilyNumber());
+  if (!recentFamilies.includes(cycleFamily)) return cycleFamily;
+  return MANUAL_RECOMMENDATION_FAMILIES.find((familyId) => !recentFamilies.includes(familyId)) || cycleFamily;
+}
+
+function beginCoachSession() {
+  if (activeBlock || state.currentSession) return;
+  const handoff = readZoneHandoff();
+  const routeClass = handoff?.freshSameDay ? handoff.capacityPlan.routeClass : "core";
+  if (routeClass === "recovery") {
+    viewState.message = "Zone Coach marked this as a recovery route. Use manual light play only after recovery, or re-check first.";
+    triggerSfx("invalid_action");
+    render();
+    return;
+  }
+  const sessionNumber = currentCoachFamilyNumber();
+  const familyId = routeClass === "core" ? familyForCoreSession(sessionNumber) : "flex";
+  const plannedBlocks = routeClass === "core"
+    ? COACH_CORE_BLOCKS
+    : Math.max(1, Math.min(SUPPORT_BLOCKS, handoff?.capacityPlan?.defaultBlocks || SUPPORT_BLOCKS));
+  state.currentSession = {
+    id: `capv2_${Date.now()}`,
+    mode: "coach",
+    routeClass,
+    rewardMode: routeClass === "core" ? "core" : "support",
+    eligibleForEncoding20: routeClass === "core",
+    familyId,
+    coreSessionNumber: routeClass === "core" ? sessionNumber : null,
+    plannedBlocks,
+    blocksCompleted: 0,
+    zoneState: handoff?.state || "not_checked",
+    zoneFresh: handoff?.freshSameDay === true,
+    zoneSource: handoff?.sourceKey || null,
+    startedAt: Date.now()
+  };
+  saveState();
+  viewState.message = routeClass === "core"
+    ? `Coach session ${sessionNumber} is set to ${familyLabel(familyId)}.`
+    : "Support route started with safer Flex blocks.";
+  triggerSfx("session_start");
+  render();
+}
+
+function clearTimers() {
+  Object.keys(timers).forEach((key) => {
+    if (timers[key]) {
+      clearTimeout(timers[key]);
+      timers[key] = null;
+    }
+  });
+}
+
+function startBlock() {
+  if (activeBlock) {
+    triggerSfx("invalid_action");
+    return;
+  }
+  const settings = resolveNextBlockSettings();
+  const tsStart = Date.now();
+  const blockIndex = state.history.length + 1;
+  const mappingSeed = hash32(`${tsStart}:${settings.wrapper}:${settings.targetModality}:${blockIndex}`);
+  const plan = createHubBlockPlan({
+    wrapper: settings.wrapper,
+    blockIndex,
+    n: settings.n,
+    speed: settings.speed,
+    targetModality: settings.targetModality,
+    mappingSeed
+  });
+  const build = createHubBlockTrials({
+    wrapper: plan.wrapper,
+    n: plan.n,
+    targetModality: plan.targetModality,
+    speed: plan.speed,
+    mappingSeed: plan.mappingSeed,
+    baseTrials: HUB_BASE_TRIALS,
+    seed: tsStart
+  });
+  activeBlock = {
+    tsStart,
+    plan,
+    trials: build.trials,
+    renderMapping: build.renderMapping,
+    soaMs: build.soaMs,
+    displayMs: build.displayMs,
+    trialIndex: -1,
+    status: "briefing",
+    stimulusVisible: false,
+    trialVisualStage: 0,
+    responseCaptured: false,
+    responseRtMs: null,
+    responseRelCaptured: false,
+    responseSymCaptured: false,
+    responseRelRtMs: null,
+    responseSymRtMs: null,
+    trialStartedAtMs: 0,
+    trialOutcomes: [],
+    sessionId: state.currentSession?.id || null,
+    rewardMode: settings.rewardMode
+  };
+  viewState.message = `Get ready: ${wrapperLabel(plan.wrapper)}, match the ${targetLabel(plan.targetModality, plan.wrapper)} from ${plan.n} turns ago.`;
+  triggerSfx("block_start");
+  render();
+  timers.cue = setTimeout(() => startTrial(0), HUB_CUE_MS);
+}
+
+function trialSequenceGapMs(trial) {
+  return Number.isFinite(trial?.display?.sequenceGapMs) ? Math.max(0, Math.round(trial.display.sequenceGapMs)) : 0;
+}
+
+function startTrial(index) {
+  if (!activeBlock) return;
+  clearTimers();
+  activeBlock.trialIndex = index;
+  activeBlock.status = "trial";
+  activeBlock.pausedFromStatus = null;
+  activeBlock.stimulusVisible = true;
+  activeBlock.trialVisualStage = trialSequenceGapMs(activeBlock.trials[index]) > 0 ? 1 : 2;
+  activeBlock.responseCaptured = false;
+  activeBlock.responseRtMs = null;
+  activeBlock.responseRelCaptured = false;
+  activeBlock.responseSymCaptured = false;
+  activeBlock.responseRelRtMs = null;
+  activeBlock.responseSymRtMs = null;
+  activeBlock.trialStartedAtMs = performance.now();
+  viewState.leftOpen = false;
+  viewState.rightOpen = false;
+  render();
+  scheduleTrialTimers(index);
+}
+
+function scheduleTrialTimers(index) {
+  const trial = activeBlock?.trials[index];
+  const sequenceGap = trialSequenceGapMs(trial);
+  if (sequenceGap > 0) {
+    timers.sequence = setTimeout(() => {
+      if (!activeBlock || activeBlock.trialIndex !== index) return;
+      activeBlock.trialVisualStage = 2;
+      render();
+    }, sequenceGap);
+  }
+  timers.display = setTimeout(() => {
+    if (!activeBlock || activeBlock.trialIndex !== index) return;
+    activeBlock.stimulusVisible = false;
+    render();
+  }, activeBlock.displayMs);
+  timers.trial = setTimeout(() => {
+    if (!activeBlock || activeBlock.trialIndex !== index) return;
+    finishTrial();
+  }, activeBlock.soaMs);
+}
+
+function pauseActiveBlock() {
+  if (!activeBlock || activeBlock.status === "paused") return;
+  const pausedFromStatus = activeBlock.status;
+  clearTimers();
+  activeBlock.status = "paused";
+  activeBlock.pausedFromStatus = pausedFromStatus;
+  activeBlock.stimulusVisible = false;
+  viewState.message = "Paused. Resume restarts the current trial window; Stop cancels this block with no credit.";
+  triggerSfx("pause_on");
+  render();
+}
+
+function resumeActiveBlock() {
+  if (!activeBlock || activeBlock.status !== "paused") return;
+  const resumeIndex = Math.max(0, activeBlock.trialIndex);
+  const pausedFromStatus = activeBlock.pausedFromStatus || "trial";
+  viewState.message = "Resuming block.";
+  triggerSfx("resume_on");
+  if (pausedFromStatus === "briefing" || activeBlock.trialIndex < 0) {
+    activeBlock.status = "briefing";
+    activeBlock.pausedFromStatus = null;
+    render();
+    timers.cue = setTimeout(() => startTrial(0), HUB_CUE_MS);
+    return;
+  }
+  startTrial(resumeIndex);
+}
+
+function stopActiveBlock() {
+  if (!activeBlock) return;
+  clearTimers();
+  activeBlock = null;
+  viewState.message = "Block stopped. No credit was awarded and session progress was not advanced.";
+  triggerSfx("session_stop_discard");
+  render();
+}
+
+function isMatchWindowOpen() {
+  if (!activeBlock || activeBlock.status !== "trial") return false;
+  if (activeBlock.plan.targetModality === "dual") {
+    if (activeBlock.responseRelCaptured && activeBlock.responseSymCaptured) return false;
+  } else if (activeBlock.responseCaptured) {
+    return false;
+  }
+  const trial = activeBlock.trials[activeBlock.trialIndex];
+  return trialSequenceGapMs(trial) === 0 || activeBlock.trialVisualStage >= 2;
+}
+
+function sfxForResponsePress(responseKey = "primary") {
+  if (!activeBlock) return "match_primary_press";
+  if (activeBlock.plan.targetModality === "dual") {
+    const dimension = responseKey === "rel" ? "rel" : "sym";
+    const isCurrentMatch = isHubMatchAtIndex(activeBlock.trials, activeBlock.trialIndex, activeBlock.plan.n, dimension);
+    if (isCurrentMatch) return "trial_hit";
+    return dimension === "rel" ? "match_object_press" : "match_spatial_press";
+  }
+  const isCurrentMatch = isHubMatchAtIndex(activeBlock.trials, activeBlock.trialIndex, activeBlock.plan.n, activeBlock.plan.targetModality);
+  return isCurrentMatch ? "trial_hit" : "match_primary_press";
+}
+
+function captureResponse(kind = "primary") {
+  if (!isMatchWindowOpen()) return false;
+  if (activeBlock.plan.targetModality === "dual") {
+    const responseKey = kind === "rel" ? "rel" : "sym";
+    const capturedKey = responseKey === "rel" ? "responseRelCaptured" : "responseSymCaptured";
+    const rtKey = responseKey === "rel" ? "responseRelRtMs" : "responseSymRtMs";
+    if (activeBlock[capturedKey]) return false;
+    activeBlock[capturedKey] = true;
+    activeBlock[rtKey] = Math.max(0, Math.round(performance.now() - activeBlock.trialStartedAtMs));
+    triggerSfx(sfxForResponsePress(responseKey));
+    render();
+    return true;
+  }
+  activeBlock.responseCaptured = true;
+  activeBlock.responseRtMs = Math.max(0, Math.round(performance.now() - activeBlock.trialStartedAtMs));
+  triggerSfx(sfxForResponsePress(kind));
+  render();
+  return true;
+}
+
+function classifyResponse(responded, isMatch) {
+  if (responded && isMatch) return "hit";
+  if (responded && !isMatch) return "false_alarm";
+  if (!responded && isMatch) return "miss";
+  return "correct_rejection";
+}
+
+function sfxForTrialOutcome(outcome) {
+  if (!outcome || typeof outcome !== "object") return null;
+  if ("classificationRel" in outcome || "classificationSym" in outcome) {
+    if (outcome.classificationRel === "false_alarm" || outcome.classificationSym === "false_alarm") return "trial_false_alarm";
+    if (outcome.classificationRel === "miss" || outcome.classificationSym === "miss") return "trial_miss";
+    return null;
+  }
+  if (outcome.classification === "false_alarm") return "trial_false_alarm";
+  if (outcome.classification === "miss") return "trial_miss";
+  return null;
+}
+
+function finishTrial() {
+  if (!activeBlock) return;
+  const trial = activeBlock.trials[activeBlock.trialIndex];
+  let outcome = null;
+  if (activeBlock.plan.targetModality === "dual") {
+    const isMatchRel = isHubMatchAtIndex(activeBlock.trials, activeBlock.trialIndex, activeBlock.plan.n, "rel");
+    const isMatchSym = isHubMatchAtIndex(activeBlock.trials, activeBlock.trialIndex, activeBlock.plan.n, "sym");
+    const respondedRel = Boolean(activeBlock.responseRelCaptured);
+    const respondedSym = Boolean(activeBlock.responseSymCaptured);
+    const classificationRel = classifyResponse(respondedRel, isMatchRel);
+    const classificationSym = classifyResponse(respondedSym, isMatchSym);
+    const isError = classificationRel === "miss" || classificationRel === "false_alarm" || classificationSym === "miss" || classificationSym === "false_alarm";
+    outcome = {
+      trialIndex: activeBlock.trialIndex,
+      canonRelKey: trial.canonRelKey,
+      canonSymKey: trial.canonSymKey,
+      isMatchRel,
+      isMatchSym,
+      respondedRel,
+      respondedSym,
+      responseRelRtMs: respondedRel ? activeBlock.responseRelRtMs : null,
+      responseSymRtMs: respondedSym ? activeBlock.responseSymRtMs : null,
+      classificationRel,
+      classificationSym,
+      classification: isError ? "error" : "ok",
+      isError,
+      isLapse: (!respondedRel && isMatchRel) || (!respondedSym && isMatchSym),
+      isLure: false
+    };
+    activeBlock.trialOutcomes.push(outcome);
+  } else {
+    const isMatch = isHubMatchAtIndex(activeBlock.trials, activeBlock.trialIndex, activeBlock.plan.n, activeBlock.plan.targetModality);
+    const responded = Boolean(activeBlock.responseCaptured);
+    const classification = classifyResponse(responded, isMatch);
+    outcome = {
+      trialIndex: activeBlock.trialIndex,
+      canonKey: trial.canonKey,
+      isMatch,
+      isLure: Boolean(trial.isLure),
+      responded,
+      rtMs: responded ? activeBlock.responseRtMs : null,
+      isError: classification === "miss" || classification === "false_alarm",
+      isLapse: !responded && isMatch,
+      classification
+    };
+    activeBlock.trialOutcomes.push(outcome);
+  }
+  const outcomeSfx = sfxForTrialOutcome(outcome);
+  if (outcomeSfx) triggerSfx(outcomeSfx);
+  const nextIndex = activeBlock.trialIndex + 1;
+  if (nextIndex < activeBlock.trials.length) {
+    startTrial(nextIndex);
+    return;
+  }
+  finishBlock();
+}
+
+function liveAccuracy() {
+  if (!activeBlock || !activeBlock.trialOutcomes.length) return null;
+  const total = activeBlock.trialOutcomes.length;
+  if (activeBlock.plan.targetModality === "dual") {
+    let relOk = 0;
+    let symOk = 0;
+    activeBlock.trialOutcomes.forEach((outcome) => {
+      if (outcome.classificationRel === "hit" || outcome.classificationRel === "correct_rejection") relOk += 1;
+      if (outcome.classificationSym === "hit" || outcome.classificationSym === "correct_rejection") symOk += 1;
+    });
+    return ((relOk / total) + (symOk / total)) / 2;
+  }
+  let ok = 0;
+  activeBlock.trialOutcomes.forEach((outcome) => {
+    if (outcome.classification === "hit" || outcome.classification === "correct_rejection") ok += 1;
+  });
+  return ok / total;
+}
+
+function scoreCoreCorrectness(accuracy) {
+  const acc = clamp(Number(accuracy || 0), 0, 1);
+  if (acc >= 0.9) return Math.round(36 + ((acc - 0.9) / 0.1) * 4);
+  if (acc >= 0.8) return Math.round(30 + ((acc - 0.8) / 0.1) * 5);
+  if (acc >= 0.7) return Math.round(22 + ((acc - 0.7) / 0.1) * 7);
+  if (acc >= 0.6) return Math.round(12 + ((acc - 0.6) / 0.1) * 9);
+  return Math.round((acc / 0.6) * 11);
+}
+
+function scoreComplexityHold(block, plan, outcomeBand) {
+  const accuracy = Number(block.accuracy || 0);
+  if (accuracy < 0.7 || outcomeBand === "DOWN") return 0;
+  const nPoints = clamp((Number(block.nEnd || plan.n || 1) / 4) * 9, 2, 9);
+  const speedPoints = plan.speed === "fast" ? 4 : 1.5;
+  const familyPoints = clamp((WRAPPER_META[plan.wrapper]?.complexity || 2) * 0.9, 2, 7);
+  const cleanFactor = accuracy >= 0.9 ? 1 : accuracy >= 0.85 ? 0.86 : accuracy >= 0.8 ? 0.72 : 0.52;
+  return Math.round(clamp((nPoints + speedPoints + familyPoints) * cleanFactor, 0, 20));
+}
+
+function lateCollapsePenalty(trialOutcomes) {
+  if (!Array.isArray(trialOutcomes) || trialOutcomes.length < 8) return 0;
+  const midpoint = Math.floor(trialOutcomes.length / 2);
+  const first = trialOutcomes.slice(0, midpoint);
+  const last = trialOutcomes.slice(midpoint);
+  const errorRate = (rows) => rows.filter((row) => row.isError).length / Math.max(1, rows.length);
+  return errorRate(last) - errorRate(first) > 0.18 ? 4 : 0;
+}
+
+function scoreStabilityEfficiency(block, trialOutcomes) {
+  const trials = Math.max(1, Number(block.trials || trialOutcomes?.length || 1));
+  const lapseRate = Number(block.lapseCount || 0) / trials;
+  const faRate = Number(block.falseAlarms || 0) / Math.max(1, Number(block.falseAlarms || 0) + Number(block.correctRejections || 0));
+  let score = 20;
+  score -= clamp(lapseRate * 38, 0, 7);
+  score -= clamp(faRate * 16, 0, 5);
+  score -= clamp(Number(block.errorBursts || 0) * 3, 0, 6);
+  score -= lateCollapsePenalty(trialOutcomes);
+  return Math.round(clamp(score, 0, 20));
+}
+
+function scorePortability(entry, priorHistory) {
+  const prior = priorHistory[0] || null;
+  let score = 0;
+  if (prior && wrapperFamily(prior.wrapper) === wrapperFamily(entry.wrapper) && prior.wrapper !== entry.wrapper && blockAccuracy(entry) >= 0.8 && blockEndN(entry) >= Math.max(1, blockEndN(prior) - 1)) score += 6;
+  if (entry.speed === "fast" && blockAccuracy(entry) >= 0.85) score += 4;
+  if (prior && wrapperFamily(prior.wrapper) !== wrapperFamily(entry.wrapper) && blockAccuracy(entry) >= 0.8) score += 5;
+  if (entry.outcomeBand !== "DOWN" && blockAccuracy(entry) >= 0.85 && Number(entry.block?.errorBursts || 0) <= 1) score += 5;
+  return Math.round(clamp(score, 0, 20));
+}
+
+function transferLabel(total) {
+  if (total >= 90) return "Strong";
+  if (total >= 75) return "Broadening";
+  if (total >= 50) return "Developing";
+  if (total >= 25) return "Emerging";
+  return "Early";
+}
+
+function computeTransferScore(entry, trialOutcomes, priorHistory = state.history) {
+  const coreCorrectness = scoreCoreCorrectness(entry.block.accuracy);
+  const complexityHold = scoreComplexityHold(entry.block, entry, entry.outcomeBand);
+  const stabilityEfficiency = scoreStabilityEfficiency(entry.block, trialOutcomes);
+  const portability = scorePortability(entry, priorHistory);
+  const total = clamp(coreCorrectness + complexityHold + stabilityEfficiency + portability, 0, 100);
+  return { total, coreCorrectness, complexityHold, stabilityEfficiency, portability, label: transferLabel(total) };
+}
+
+function estimateLiveTransferScore() {
+  if (!activeBlock) return latestTransferScore();
+  const accuracy = liveAccuracy();
+  if (!Number.isFinite(accuracy)) return null;
+  const block = {
+    accuracy,
+    trials: activeBlock.trialOutcomes.length,
+    nStart: activeBlock.plan.n,
+    nEnd: activeBlock.plan.n,
+    lapseCount: activeBlock.trialOutcomes.filter((entry) => entry.isLapse).length,
+    falseAlarms: activeBlock.trialOutcomes.filter((entry) => entry.classification === "false_alarm" || entry.classificationRel === "false_alarm" || entry.classificationSym === "false_alarm").length,
+    correctRejections: activeBlock.trialOutcomes.filter((entry) => entry.classification === "correct_rejection" || entry.classificationRel === "correct_rejection" || entry.classificationSym === "correct_rejection").length,
+    errorBursts: 0
+  };
+  return computeTransferScore({
+    wrapper: activeBlock.plan.wrapper,
+    targetModality: activeBlock.plan.targetModality,
+    speed: activeBlock.plan.speed,
+    outcomeBand: "HOLD",
+    block
+  }, activeBlock.trialOutcomes, state.history);
+}
+
+function rollingAccuracyBaseline(wrapper) {
+  const rows = state.history.filter((entry) => entry.wrapper === wrapper).slice(0, 5);
+  if (!rows.length) return null;
+  return rows.reduce((sum, entry) => sum + blockAccuracy(entry), 0) / rows.length;
+}
+
+function computeBonuses(entry, transferScore) {
+  const baseline = rollingAccuracyBaseline(entry.wrapper);
+  let improvementBonus = 0;
+  if (Number.isFinite(baseline)) {
+    const lift = blockAccuracy(entry) - baseline;
+    improvementBonus = lift >= 0.1 ? 2 : lift >= 0.05 ? 1 : 0;
+  } else if (blockAccuracy(entry) >= 0.9) {
+    improvementBonus = 1;
+  }
+
+  const prior = state.history[0] || null;
+  let stretchSignals = 0;
+  if (prior && prior.wrapper !== entry.wrapper && blockAccuracy(entry) >= 0.8) stretchSignals += 1;
+  if (prior && prior.speed !== entry.speed && entry.speed === "fast" && blockAccuracy(entry) >= 0.85) stretchSignals += 1;
+  if (prior && Number(entry.block?.nStart || 1) > Number(prior.block?.nStart || 1) && blockAccuracy(entry) >= 0.8) stretchSignals += 1;
+
+  let cleanHoldBonus = 0;
+  if (entry.outcomeBand !== "DOWN") cleanHoldBonus += 1;
+  if (Number(entry.block?.errorBursts || 0) === 0) cleanHoldBonus += 1;
+  if (Number(entry.block?.lapseCount || 0) <= 1 && transferScore.stabilityEfficiency >= 16) cleanHoldBonus += 1;
+
+  return {
+    improvementBonus,
+    stretchBonus: clamp(stretchSignals, 0, 2),
+    cleanHoldBonus: clamp(cleanHoldBonus, 0, 3)
+  };
+}
+
+function computeGAward(transferScore, bonuses) {
+  return Math.round(2 + 0.06 * transferScore.total + bonuses.improvementBonus + bonuses.stretchBonus + bonuses.cleanHoldBonus);
+}
+
+function sessionEarnedG(sessionId, extra = 0) {
+  if (!sessionId) return extra;
+  return state.history
+    .filter((entry) => entry.sessionId === sessionId)
+    .reduce((sum, entry) => sum + Number(entry.rewardState?.blockG || 0), extra);
+}
+
+function computeProgrammeCompletionScore() {
+  const coreHistory = state.history.filter((entry) => entry.rewardMode === "core");
+  const familiesCovered = ["flex", "bind", "resist", "relate"].filter((familyId) => coreHistory.some((entry) => wrapperFamily(entry.wrapper) === familyId)).length;
+  const familyCoverage = Math.round((familiesCovered / 4) * 40);
+  const chronological = coreHistory.slice().reverse();
+  const early = chronological.slice(0, 6);
+  const late = chronological.slice(-6);
+  const avg = (rows, pick) => rows.length ? rows.reduce((sum, row) => sum + pick(row), 0) / rows.length : 0;
+  const earlyRt = avg(early, (entry) => Number(entry.block?.meanRtMs || 1200));
+  const lateRt = avg(late, (entry) => Number(entry.block?.meanRtMs || 1200));
+  const earlyAcc = avg(early, blockAccuracy);
+  const lateAcc = avg(late, blockAccuracy);
+  const speedGain = earlyRt > 0 ? clamp((earlyRt - lateRt) / earlyRt, 0, 0.25) / 0.25 : 0;
+  const accGain = clamp(lateAcc - earlyAcc, 0, 0.15) / 0.15;
+  const efficiencyGain = Math.round(((speedGain * 0.55) + (accGain * 0.45)) * 30);
+  const recentRows = coreHistory.slice(0, 8);
+  const recentPortability = recentRows.reduce((sum, entry) => sum + Number(entry.transferScore?.portability || 0), 0) / Math.max(1, recentRows.length);
+  const farTransferEvidence = Math.round(clamp(recentPortability / 20, 0, 1) * 30);
+  return {
+    total: clamp(familyCoverage + efficiencyGain + farTransferEvidence, 0, 100),
+    familyCoverage,
+    efficiencyGain,
+    farTransferEvidence
+  };
+}
+
+function maybeAwardProgrammeBonus(completedSession) {
+  if (!completedSession || completedSession.routeClass !== "core") return null;
+  if (state.programme.programmeBonusAwarded || state.programme.coreSessionNumber < 20) return null;
+  const programmeScore = computeProgrammeCompletionScore();
+  const bonusG = 20 + Math.round(0.6 * programmeScore.total);
+  const wallet = addGEvent({
+    source: "capacity_programme_bonus",
+    label: "20-session programme completion",
+    g: bonusG,
+    meta: { programmeScore }
+  });
+  state.programme.programmeBonusAwarded = true;
+  state.programme.programmeCompletedAt = Date.now();
+  saveState();
+  return { bonusG, programmeScore, walletG: wallet.walletG, iqCredits: wallet.walletG / 100 };
+}
+
+function playBlockRewardSfx(startN, endN, blockG, programmeBonus) {
+  const levelEvent = endN > startN
+    ? "n_level_up"
+    : endN < startN
+      ? "n_level_down"
+      : "block_complete_neutral";
+  triggerSfx(levelEvent);
+  scheduleSfx(blockG >= 9 ? "credit_award_large" : "credit_award_small", 150);
+  if (programmeBonus) {
+    scheduleSfx("programme_bonus", 360);
+  }
+}
+
+function finishBlock() {
+  if (!activeBlock) return;
+  clearTimers();
+  const summary = summarizeHubBlock({
+    plan: activeBlock.plan,
+    trials: activeBlock.trials,
+    trialOutcomes: activeBlock.trialOutcomes,
+    nMax: HUB_N_MAX
+  });
+  const session = state.currentSession;
+  const baseEntry = {
+    id: `capv2_${activeBlock.tsStart}`,
+    tsStart: activeBlock.tsStart,
+    tsEnd: Date.now(),
+    sessionId: activeBlock.sessionId,
+    zoneState: session?.zoneState || null,
+    routeClass: session?.routeClass || "manual",
+    rewardMode: activeBlock.rewardMode,
+    wrapper: activeBlock.plan.wrapper,
+    targetModality: activeBlock.plan.targetModality,
+    speed: activeBlock.plan.speed,
+    outcomeBand: summary.outcomeBand,
+    recommendedN: summary.nEnd,
+    block: summary.blockResult
+  };
+  const transferScore = computeTransferScore(baseEntry, activeBlock.trialOutcomes, state.history);
+  const bonuses = computeBonuses(baseEntry, transferScore);
+  const blockG = computeGAward(transferScore, bonuses);
+  const wallet = addGEvent({
+    source: "capacity_block",
+    label: `${familyLabel(wrapperFamily(baseEntry.wrapper))} block`,
+    g: blockG,
+    meta: { wrapper: baseEntry.wrapper, transferScore: transferScore.total, bonuses }
+  });
+  const entry = {
+    ...baseEntry,
+    transferScore,
+    bonuses,
+    rewardState: {
+      blockG,
+      sessionG: sessionEarnedG(activeBlock.sessionId, blockG),
+      walletG: wallet.walletG,
+      iqCredits: wallet.walletG / 100
+    }
+  };
+
+  state.history = [entry, ...state.history].slice(0, HISTORY_LIMIT);
+  state.settings.n = summary.nEnd;
+  state.settings.wrapper = baseEntry.wrapper;
+  state.settings.targetModality = baseEntry.targetModality;
+  state.settings.speed = baseEntry.speed;
+
+  let programmeBonus = null;
+  if (state.currentSession && state.currentSession.id === activeBlock.sessionId) {
+    state.currentSession.blocksCompleted += 1;
+    if (state.currentSession.blocksCompleted >= state.currentSession.plannedBlocks) {
+      const completedSession = state.currentSession;
+      state.currentSession = null;
+      if (completedSession.routeClass === "core") {
+        state.programme.coreSessionNumber = Math.max(state.programme.coreSessionNumber, completedSession.coreSessionNumber || state.programme.coreSessionNumber + 1);
+      }
+      saveState();
+      programmeBonus = maybeAwardProgrammeBonus(completedSession);
+    }
+  }
+  saveState();
+  activeBlock = null;
+  viewState.message = `${wrapperLabel(entry.wrapper)} saved: ${percent(entry.block.accuracy)} accuracy, Transfer Score ${transferScore.total}, +${blockG} g plasticity cells.`;
+  if (programmeBonus) viewState.message += ` Programme complete bonus: +${programmeBonus.bonusG} g.`;
+  playBlockRewardSfx(baseEntry.block.nStart, summary.nEnd, blockG, programmeBonus);
+  render();
+}
+
+function assetUrl(url) {
+  if (!url) return "";
+  if (url.startsWith("./assets/")) {
+    return `https://mindware-lab.github.io/trident-g-platform/products/trident-g-iq-basic/${url.slice(2)}`;
+  }
+  return url;
+}
+
+function renderRelateVectorTokenMarkup(token, visible) {
+  const point = token?.pointPct || { xPct: 50, yPct: 50 };
+  const rotationDeg = Number.isFinite(token?.angleDeg) ? token.angleDeg : 0;
+  return `
+    <div class="capacity-hub-token capacity-hub-token--relate${visible ? "" : " is-hidden"}" style="left:${point.xPct}%;top:${point.yPct}%;">
+      <svg class="capacity-relate-arrow" viewBox="0 0 48 48" aria-hidden="true" style="transform:rotate(${rotationDeg}deg);">
+        <path d="M24 6 39 23H30V42H18V23H9L24 6Z"></path>
+      </svg>
+    </div>
+  `;
+}
+
+function renderRelateNumberTokenMarkup(token, visible, isVisibleNow) {
+  const point = token?.pointPct || { xPct: 50, yPct: 50 };
+  return `
+    <div class="capacity-hub-token capacity-hub-token--relate-number${visible && isVisibleNow ? "" : " is-hidden"}" style="left:${point.xPct}%;top:${point.yPct}%;">
+      <span class="capacity-relate-number-value">${escapeHtml(token?.value ?? "")}</span>
+    </div>
+  `;
+}
+
+function arenaMarkup() {
+  const trial = activeBlock && activeBlock.trialIndex >= 0 ? activeBlock.trials[activeBlock.trialIndex] : null;
+  const wrapper = activeBlock?.plan?.wrapper || state.settings.wrapper;
+  const points = activeBlock?.renderMapping?.markerPositions?.length ? activeBlock.renderMapping.markerPositions : PREVIEW_MARKERS;
+  const hideMarkers = wrapper === "hub_noncat" || wrapper === "hub_concept" || wrapper === "and_noncat" || wrapper === "resist_words" || wrapper === "emotion_words" || wrapper === "resist_concept";
+  const markers = hideMarkers ? "" : points.map((point) => `<span class="capacity-hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`).join("");
+  const visible = Boolean(trial && activeBlock?.status === "trial" && activeBlock.stimulusVisible);
+  const isRelateVectorWrapper = wrapper === "relate_vectors" || wrapper === "relate_vectors_dual";
+  const isRelateNumbersWrapper = wrapper === "relate_numbers" || wrapper === "relate_numbers_dual";
+
+  if (isRelateVectorWrapper) {
+    const relationTokens = Array.isArray(trial?.display?.pairTokens)
+      ? trial.display.pairTokens.map((token) => renderRelateVectorTokenMarkup(token, visible)).join("")
+      : "";
+    return `<div class="capacity-hub-arena is-relate"><div class="capacity-hub-ring"></div>${markers}${relationTokens}</div>`;
+  }
+
+  if (isRelateNumbersWrapper) {
+    const showFirst = Boolean(visible && activeBlock?.trialVisualStage >= 1);
+    const showSecond = Boolean(visible && activeBlock?.trialVisualStage >= 2);
+    return `
+      <div class="capacity-hub-arena is-relate">
+        <div class="capacity-hub-ring"></div>
+        ${markers}
+        ${trial ? renderRelateNumberTokenMarkup(trial.display.firstToken, visible, showFirst) : ""}
+        ${trial ? renderRelateNumberTokenMarkup(trial.display.secondToken, visible, showSecond) : ""}
+      </div>
+    `;
+  }
+
+  const point = trial?.display?.pointPct || (trial && points[trial.locIdx] ? points[trial.locIdx] : { xPct: 50, yPct: 50 });
+  const background = visible ? String(trial?.display?.colourHex || "#ffffff") : "transparent";
+  const fallbackTextColor = String(trial?.display?.colourHex || "").toLowerCase() === "#ffffff" ? "#102033" : "#ffffff";
+  const textColor = trial?.display?.textHex || fallbackTextColor;
+  const isWordWrapper = wrapper === "resist_words" || wrapper === "emotion_words";
+  const isShape = Boolean(trial?.display?.symbolSvgPath);
+  let token = "";
+  if (visible) {
+    if (trial?.display?.symbolImageUrl) {
+      token = `<img src="${escapeHtml(assetUrl(trial.display.symbolImageUrl))}" alt="">`;
+    } else if (trial?.display?.symbolSvgPath) {
+      const rounded = trial.display.symbolSvgRounded ? " is-rounded" : "";
+      token = `<svg class="capacity-hub-symbol${rounded}" viewBox="-1 -1 2 2" aria-hidden="true"><path d="${escapeHtml(trial.display.symbolSvgPath)}"></path></svg>`;
+    } else {
+      token = escapeHtml(trial?.display?.symbolLabel || "");
+    }
+  }
+  const fontFamily = trial?.display?.symbolFontFamily ? `font-family:${trial.display.symbolFontFamily};` : "";
+  const fontWeight = trial?.display?.symbolFontWeight ? `font-weight:${trial.display.symbolFontWeight};` : "";
+  const fontStyle = trial?.display?.symbolFontStyle ? `font-style:${trial.display.symbolFontStyle};` : "";
+  const shapeColor = trial?.display?.colourHex || "#ffffff";
+  const tokenChrome = isWordWrapper ? "background:transparent;border:0;border-radius:0;box-shadow:none;" : "";
+
+  return `
+    <div class="capacity-hub-arena">
+      <div class="capacity-hub-ring"></div>
+      ${markers}
+      <div class="capacity-hub-token${visible ? "" : " is-hidden"}${isShape ? " is-shape" : ""}${isWordWrapper ? " is-word" : ""}" style="left:${point.xPct}%;top:${point.yPct}%;background:${isShape || isWordWrapper ? "transparent" : background};color:${visible ? (isShape || isWordWrapper ? shapeColor : textColor) : "transparent"};${tokenChrome}${fontFamily}${fontWeight}${fontStyle}">${token}</div>
+    </div>
+  `;
+}
+
+function latestTransferScore() {
+  return state.history[0]?.transferScore || null;
+}
+
+function blocksLeft() {
+  if (activeBlock?.sessionId && state.currentSession?.id === activeBlock.sessionId) {
+    return Math.max(0, state.currentSession.plannedBlocks - state.currentSession.blocksCompleted);
+  }
+  if (state.currentSession) return Math.max(0, state.currentSession.plannedBlocks - state.currentSession.blocksCompleted);
+  return activeBlock ? 1 : 0;
+}
+
+function transferSprintModel() {
+  const sessionId = activeBlock?.sessionId || state.currentSession?.id || state.history[0]?.sessionId || null;
+  const recentEntries = state.history
+    .filter((entry) => !sessionId || entry.sessionId === sessionId)
+    .slice(0, activeBlock ? TRANSFER_SPRINT_BLOCKS - 1 : TRANSFER_SPRINT_BLOCKS)
+    .reverse();
+  const samples = recentEntries.map((entry) => {
+    const total = Number(entry?.transferScore?.total);
+    return Number.isFinite(total) ? clamp(total, 0, 100) : null;
+  });
+  if (activeBlock) {
+    const liveScore = estimateLiveTransferScore();
+    const total = Number(liveScore?.total);
+    samples.push(Number.isFinite(total) ? clamp(total, 0, 100) : null);
+  }
+  const visibleSamples = samples.slice(-TRANSFER_SPRINT_BLOCKS);
+  while (visibleSamples.length < TRANSFER_SPRINT_BLOCKS) visibleSamples.unshift(null);
+  const scored = visibleSamples.filter((score) => Number.isFinite(score));
+  const average = scored.length
+    ? Math.round(scored.reduce((sum, score) => sum + score, 0) / scored.length)
+    : null;
+  return { samples: visibleSamples, count: scored.length, average };
+}
+
+function hudModel() {
+  const plan = displayPlanForHud();
+  const family = wrapperFamily(plan.wrapper);
+  return {
+    items: [
+      ["Block Type", familyLabel(family)],
+      ["Match Type", displayHubTargetLabel(plan.targetModality, plan.wrapper)],
+      ["N-back", `N-${plan.n}`],
+      ["Next N-back", `N-${projectedNextN(plan)}`]
+    ],
+    sprint: transferSprintModel()
+  };
+}
+
+function renderHud() {
+  const model = hudModel();
+  return `
+    <div class="hud" aria-label="Capacity block status">
+      <div class="hud-status">
+        ${model.items.map(([label, value]) => `
+          <div class="hud-item">
+            <span class="hud-label">${escapeHtml(label)}</span>
+            <strong class="hud-value">${escapeHtml(value)}</strong>
+          </div>
+        `).join("")}
+      </div>
+      <div class="hud-sprint" aria-label="Three block transfer sprint">
+        <div class="hud-sprint-head">
+          <span>3-block transfer sprint</span>
+          <strong>${model.sprint.average === null ? `${model.sprint.count}/3` : `${model.sprint.average}`}</strong>
+        </div>
+        <div class="transfer-sprint-bars">
+          ${model.sprint.samples.map((score, index) => {
+            const hasScore = Number.isFinite(score);
+            const width = hasScore ? clamp(score, 0, 100) : 0;
+            return `<span class="sprint-segment${hasScore ? "" : " is-empty"}" style="--score:${width};" aria-label="Sprint block ${index + 1}${hasScore ? ` transfer score ${Math.round(width)}` : " not scored yet"}"><i></i></span>`;
+          }).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function coachCalloutModel() {
+  if (state.settings.mode === "coach") {
+    const plan = activeBlock?.plan || resolveCoachBlockSettings();
+    return {
+      kicker: "Coach signal",
+      text: `Next block is ${familyLabel(wrapperFamily(plan.wrapper))}`
+    };
+  }
+  return {
+    kicker: "Manual signal",
+    text: `Next recommended block is ${familyLabel(recommendedManualFamilyId())}`
+  };
+}
+
+function renderCoachCallout() {
+  const callout = coachCalloutModel();
+  return `
+    <div class="coach-callout" role="status" aria-live="polite">
+      <span>${escapeHtml(callout.kicker)}</span>
+      <strong>${escapeHtml(callout.text)}</strong>
+    </div>
+  `;
+}
+
+function renderModePanel() {
+  const handoff = readZoneHandoff();
+  const currentFamily = familyForCoreSession(currentCoachFamilyNumber());
+  const routeLabel = handoff?.freshSameDay
+    ? `${handoff.uiState} / ${handoff.capacityPlan.routeClass}`
+    : "No fresh Zone handoff";
+  return `
+    <section class="panel">
+      <div class="mode-toggle" role="group" aria-label="Mode">
+        <button class="chip-btn${state.settings.mode === "coach" ? " is-active" : ""}" type="button" data-action="set-mode" data-mode="coach">Coach</button>
+        <button class="chip-btn${state.settings.mode === "manual" ? " is-active" : ""}" type="button" data-action="set-mode" data-mode="manual">Manual</button>
+      </div>
+      <p class="small muted">Coach mode follows the 9-session cycle and gives Relate exactly one third of core sessions.</p>
+    </section>
+    <section class="panel">
+      <h3>Zone route</h3>
+      <div class="notice">${escapeHtml(routeLabel)}</div>
+      <p class="small muted">${handoff?.freshSameDay ? `Source: ${handoff.sourceKey}` : "Coach can run standalone; run Zone Coach first for state-gated routing."}</p>
+    </section>
+    <section class="panel">
+      <h3>Next coached core</h3>
+      <div class="stat-grid">
+        <div class="stat"><span class="mini-label">Session</span><strong>${currentCoachFamilyNumber()}/20</strong></div>
+        <div class="stat"><span class="mini-label">Family</span><strong>${escapeHtml(familyLabel(currentFamily))}</strong></div>
+      </div>
+      <div class="button-row" style="margin-top:10px;">
+        <button class="btn btn-primary" type="button" data-action="start-coach-session" ${activeBlock || state.currentSession ? "disabled" : ""}>Start coach session</button>
+        <button class="btn btn-ghost" type="button" data-action="clear-session" ${state.currentSession ? "" : "disabled"}>Clear session</button>
+      </div>
+    </section>
+  `;
+}
+
+function renderManualPanel() {
+  const wrapper = state.settings.wrapper;
+  const targets = targetOptions(wrapper);
+  return `
+    <section class="panel">
+      <h3>Manual suite</h3>
+      <div class="control-grid">
+        <div class="field">
+          <label for="wrapperSelect">Game type</label>
+          <select id="wrapperSelect" data-field="wrapper" ${activeBlock ? "disabled" : ""}>
+            ${Object.keys(WRAPPER_META).map((key) => `<option value="${key}" ${key === wrapper ? "selected" : ""}>${escapeHtml(wrapperLabel(key))}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field">
+          <label for="targetSelect">Block target</label>
+          <select id="targetSelect" data-field="targetModality" ${activeBlock ? "disabled" : ""}>
+            ${targets.map((target) => `<option value="${target}" ${target === state.settings.targetModality ? "selected" : ""}>${escapeHtml(displayHubTargetLabel(target, wrapper))}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field">
+          <label for="nSelect">N-back</label>
+          <select id="nSelect" data-field="n" ${activeBlock ? "disabled" : ""}>
+            ${Array.from({ length: HUB_N_MAX }, (_, index) => index + 1).map((n) => `<option value="${n}" ${n === state.settings.n ? "selected" : ""}>N-${n}</option>`).join("")}
+          </select>
+        </div>
+        <div class="field">
+          <label for="speedSelect">Speed</label>
+          <select id="speedSelect" data-field="speed" ${activeBlock ? "disabled" : ""}>
+            <option value="slow" ${state.settings.speed === "slow" ? "selected" : ""}>Slow</option>
+            <option value="fast" ${state.settings.speed === "fast" ? "selected" : ""}>Fast</option>
+          </select>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderCoachCycle() {
+  const next = currentCoachFamilyNumber();
+  return `
+    <section class="panel">
+      <h3>Coach cycle</h3>
+      <div class="cycle-list">
+        ${COACH_FAMILY_CYCLE.map((familyId, index) => {
+          const sessionNo = state.programme.coreSessionNumber + index + 1;
+          return `
+            <div class="cycle-item${index === 0 ? " is-current" : ""}">
+              <span>${sessionNo}. ${escapeHtml(familyLabel(familyId))}</span>
+              <strong>${familyId === "relate" ? "Relation" : "Core"}</strong>
+            </div>
+          `;
+        }).join("")}
+      </div>
+      <p class="small muted">Cycle starts at session ${next}; Relate appears in slots 3, 6, and 9.</p>
+    </section>
+  `;
+}
+
+function renderLeftStrip() {
+  return `
+    <aside class="strip strip-left" aria-label="Coach and setup strip">
+      <div class="strip-inner">
+        <div class="strip-head">
+          <div>
+            <div class="strip-kicker">Capacity Gym</div>
+            <h2 class="strip-title">Coach</h2>
+          </div>
+          <button class="sheet-close" type="button" data-action="close-sheets" aria-label="Close sheet">x</button>
+        </div>
+        ${renderModePanel()}
+        ${state.settings.mode === "manual" ? renderManualPanel() : ""}
+        ${renderCoachCycle()}
+      </div>
+    </aside>
+  `;
+}
+
+function renderFamilyProgress() {
+  return `
+    <section class="panel">
+      <h3>Family progress</h3>
+      <div class="family-list">
+        ${Object.keys(FAMILY_META).map((familyId) => {
+          const count = state.history.filter((entry) => wrapperFamily(entry.wrapper) === familyId).length;
+          const isCurrent = state.currentSession?.familyId === familyId;
+          return `
+            <div class="family-item${isCurrent ? " is-current" : ""}">
+              <span>${escapeHtml(familyLabel(familyId))}</span>
+              <strong>${count}</strong>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </section>
+    <section class="panel">
+      <h3>Relate ladder</h3>
+      <div class="family-list">
+        ${RELATE_LADDER.map((wrapper) => {
+          const done = stableWrapper(wrapper) || (wrapper === "relate_vectors" && stableWrapper(wrapper, "rel") && stableWrapper(wrapper, "sym")) || (wrapper === "relate_numbers" && stableWrapper(wrapper, "rel") && stableWrapper(wrapper, "sym"));
+          return `
+            <div class="family-item${pickRelateWrapper() === wrapper ? " is-current" : ""}">
+              <span>${escapeHtml(wrapperLabel(wrapper))}</span>
+              <strong>${done ? "Stable" : "Open"}</strong>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderRightStrip() {
+  const score = latestTransferScore();
+  const last = state.history[0] || null;
+  const sessionId = activeBlock?.sessionId || state.currentSession?.id || last?.sessionId || null;
+  const sessionG = sessionEarnedG(sessionId);
+  const lastAward = Number(last?.rewardState?.blockG || 0);
+  const nextPlan = resolveNextBlockSettings();
+  const familyId = state.currentSession?.familyId || wrapperFamily(nextPlan.wrapper);
+  const activeAccuracy = activeBlock ? liveAccuracy() : null;
+  const lastAccuracy = last ? blockAccuracy(last) : null;
+  const showDualSplit = !activeBlock && last?.targetModality === "dual";
+  const accuracyLabel = Number.isFinite(activeAccuracy)
+    ? percent(activeAccuracy)
+    : Number.isFinite(lastAccuracy)
+      ? percent(lastAccuracy)
+      : "--";
+  return `
+    <aside class="strip strip-right" aria-label="Stats and wallet strip">
+      <div class="strip-inner">
+        <div class="strip-head">
+          <div>
+            <div class="strip-kicker">Stats</div>
+            <h2 class="strip-title">Feedback</h2>
+          </div>
+          <button class="sheet-close" type="button" data-action="close-sheets" aria-label="Close sheet">x</button>
+        </div>
+        <section class="panel">
+          <div class="coin-stack">
+            <div class="coin">
+              <img class="coin-icon" src="./assets/coins/g-plasticity-cell.png" alt="" loading="lazy">
+              <div><span>Total g plasticity cells</span><strong>${economy.walletG}</strong></div>
+            </div>
+            <div class="coin iq">
+              <img class="coin-icon" src="./assets/coins/iq-credit.png" alt="" loading="lazy">
+              <div><span>IQ credits</span><strong>${(economy.walletG / 100).toFixed(2)}</strong></div>
+            </div>
+          </div>
+          <p class="small muted">100 g plasticity cells = 1 IQ credit.</p>
+        </section>
+        <section class="panel">
+          <h3>This session</h3>
+          <div class="stat-grid">
+            <div class="stat"><span class="mini-label">Session g</span><strong>${sessionG}</strong></div>
+            <div class="stat"><span class="mini-label">Last award</span><strong>${last ? `+${lastAward} g` : "--"}</strong></div>
+            <div class="stat"><span class="mini-label">Blocks left</span><strong>${blocksLeft()}</strong></div>
+            <div class="stat"><span class="mini-label">Next N-back</span><strong>N-${nextPlan.n}</strong></div>
+          </div>
+        </section>
+        <section class="panel">
+          <h3>Accuracy</h3>
+          <div class="stat-grid">
+            <div class="stat"><span class="mini-label">${activeBlock ? "Live" : "Last block"}</span><strong>${accuracyLabel}</strong></div>
+            ${showDualSplit ? `
+              <div class="stat"><span class="mini-label">Relation</span><strong>${percent(last.block?.accuracyRel)}</strong></div>
+              <div class="stat"><span class="mini-label">Surface</span><strong>${percent(last.block?.accuracySym)}</strong></div>
+            ` : `
+              <div class="stat"><span class="mini-label">Target</span><strong>${escapeHtml(displayHubTargetLabel(nextPlan.targetModality, nextPlan.wrapper))}</strong></div>
+            `}
+          </div>
+          ${last ? `<p class="small muted">Last block: ${escapeHtml(wrapperLabel(last.wrapper))}.</p>` : `<p class="small muted">Accuracy appears after the first response.</p>`}
+        </section>
+        <section class="panel">
+          <h3>Transfer Score</h3>
+          <div class="stat-grid">
+            <div class="stat"><span class="mini-label">Score</span><strong>${score ? score.total : "--"}</strong></div>
+            <div class="stat"><span class="mini-label">Label</span><strong>${score ? score.label : "--"}</strong></div>
+          </div>
+          <p class="small muted">One summary score for how well performance carries across the current game demands.</p>
+        </section>
+        <section class="panel">
+          <h3>Programme</h3>
+          <div class="stat-grid">
+            <div class="stat"><span class="mini-label">Session</span><strong>${currentCoachFamilyNumber()}/20</strong></div>
+            <div class="stat"><span class="mini-label">Family</span><strong>${escapeHtml(familyLabel(familyId))}</strong></div>
+            <div class="stat"><span class="mini-label">Relate step</span><strong>${escapeHtml(wrapperLabel(pickRelateWrapper()).replace("Relate ", ""))}</strong></div>
+            <div class="stat"><span class="mini-label">Mode</span><strong>${state.settings.mode === "manual" ? "Manual" : "Coach"}</strong></div>
+          </div>
+        </section>
+      </div>
+    </aside>
+  `;
+}
+
+function renderPlayControls() {
+  if (activeBlock?.status === "paused") {
+    return `
+      <div class="response-row">
+        <button class="response-btn is-control" type="button" data-action="resume-block">Resume</button>
+        <button class="response-btn is-stop" type="button" data-action="stop-block">Stop</button>
+      </div>
+    `;
+  }
+  if (activeBlock?.status === "trial") {
+    if (activeBlock.plan.targetModality === "dual") {
+      return `
+        <div class="response-row">
+          <button class="response-btn is-control" type="button" data-action="pause-block">Pause</button>
+          <button class="response-btn secondary" type="button" data-action="respond-sym"><span class="keycap">F</span> Spatial / surface match</button>
+          <button class="response-btn" type="button" data-action="respond-rel"><span class="keycap">L</span> Object / relation match</button>
+          <button class="response-btn is-stop" type="button" data-action="stop-block">Stop</button>
+        </div>
+      `;
+    }
+    return `
+      <div class="response-row">
+        <button class="response-btn is-control" type="button" data-action="pause-block">Pause</button>
+        <button class="response-btn" type="button" data-action="respond">MATCH</button>
+        <button class="response-btn is-stop" type="button" data-action="stop-block">Stop</button>
+      </div>
+    `;
+  }
+  if (activeBlock?.status === "briefing") {
+    return `
+      <div class="response-row">
+        <button class="response-btn is-control" type="button" data-action="pause-block">Pause</button>
+        <button class="response-btn is-stop" type="button" data-action="stop-block">Stop</button>
+      </div>
+    `;
+  }
+  return `
+    <div class="response-row">
+      ${state.currentSession ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start next block</button>` : ""}
+      ${state.settings.mode === "manual" ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start manual block</button>` : ""}
+      ${state.settings.mode === "coach" && !state.currentSession ? `<button class="btn btn-dark" type="button" data-action="start-coach-session" ${activeBlock ? "disabled" : ""}>Start coach session</button>` : ""}
+      <button class="btn btn-ghost" type="button" data-action="open-right" ${activeBlock?.status === "briefing" ? "disabled" : ""}>Stats</button>
+    </div>
+  `;
+}
+
+function renderPlayCard() {
+  return `
+    <section class="play-card" aria-label="Capacity play surface">
+      <div class="mobile-topbar">
+        <button class="btn btn-ghost" type="button" data-action="open-left">Coach</button>
+        <button class="btn btn-ghost" type="button" data-action="open-right">Stats</button>
+      </div>
+      ${renderHud()}
+      <div class="arena-shell">
+        ${arenaMarkup()}
+        ${renderCoachCallout()}
+      </div>
+      <div class="play-controls">${renderPlayControls()}</div>
+    </section>
+  `;
+}
+
+function render() {
+  const classes = ["gym-layout", viewState.leftOpen ? "is-left-open" : "", viewState.rightOpen ? "is-right-open" : ""].filter(Boolean).join(" ");
+  appRoot.innerHTML = `
+    <div class="${classes}">
+      <button class="sheet-backdrop" type="button" data-action="close-sheets" aria-label="Close sheet"></button>
+      ${renderLeftStrip()}
+      ${renderPlayCard()}
+      ${renderRightStrip()}
+    </div>
+  `;
+}
+
+function updateSettingsField(field, value) {
+  const settings = { ...state.settings };
+  if (field === "wrapper") {
+    settings.wrapper = normalizeWrapper(value);
+    settings.targetModality = normalizeTarget(settings.wrapper, settings.targetModality);
+  } else if (field === "targetModality") {
+    settings.targetModality = normalizeTarget(settings.wrapper, value);
+  } else if (field === "n") {
+    settings.n = clampN(value);
+  } else if (field === "speed") {
+    settings.speed = value === "fast" ? "fast" : "slow";
+  }
+  state.settings = settings;
+  saveState();
+  render();
+}
+
+function resetLocalData() {
+  if (!window.confirm("Reset Capacity Gym v2 local progress and g plasticity cells on this device?")) return;
+  clearTimers();
+  activeBlock = null;
+  state = createDefaultState();
+  economy = createDefaultEconomy();
+  saveState(state);
+  saveEconomy(economy);
+  setAudioEnabled(state.settings.soundOn);
+  syncSoundToggle();
+  viewState.message = "Local Capacity Gym v2 data reset.";
+  triggerSfx("ui_tap_soft");
+  render();
+}
+
+document.addEventListener("pointerdown", () => {
+  unlockAudioGesture();
+}, { passive: true });
+
+document.addEventListener("click", (event) => {
+  const target = event.target.closest("[data-action]");
+  if (!target) return;
+  unlockAudioGesture();
+  const action = target.getAttribute("data-action");
+  if (action === "toggle-sound") {
+    setSoundOn(!isSoundOn());
+    return;
+  }
+  if (action === "open-left") {
+    if (activeBlock?.status === "trial") return;
+    triggerSfx("ui_tap_soft");
+    viewState.leftOpen = true;
+    viewState.rightOpen = false;
+    render();
+    return;
+  }
+  if (action === "open-right") {
+    if (activeBlock?.status === "trial") return;
+    triggerSfx("ui_tap_soft");
+    viewState.rightOpen = true;
+    viewState.leftOpen = false;
+    render();
+    return;
+  }
+  if (action === "close-sheets") {
+    triggerSfx("ui_tap_soft");
+    viewState.leftOpen = false;
+    viewState.rightOpen = false;
+    render();
+    return;
+  }
+  if (action === "set-mode") {
+    triggerSfx("ui_tap_soft");
+    state.settings.mode = target.getAttribute("data-mode") === "manual" ? "manual" : "coach";
+    saveState();
+    render();
+    return;
+  }
+  if (action === "start-coach-session") {
+    beginCoachSession();
+    return;
+  }
+  if (action === "clear-session") {
+    triggerSfx("ui_tap_soft");
+    state.currentSession = null;
+    saveState();
+    viewState.message = "Current coach session cleared. Completed history and wallet are unchanged.";
+    render();
+    return;
+  }
+  if (action === "start-block") {
+    startBlock();
+    return;
+  }
+  if (action === "pause-block") {
+    pauseActiveBlock();
+    return;
+  }
+  if (action === "resume-block") {
+    resumeActiveBlock();
+    return;
+  }
+  if (action === "stop-block") {
+    stopActiveBlock();
+    return;
+  }
+  if (action === "respond") {
+    captureResponse("primary");
+    return;
+  }
+  if (action === "respond-rel") {
+    captureResponse("rel");
+    return;
+  }
+  if (action === "respond-sym") {
+    captureResponse("sym");
+    return;
+  }
+  if (action === "reset-local") {
+    resetLocalData();
+  }
+});
+
+document.addEventListener("change", (event) => {
+  const target = event.target;
+  if (!(target instanceof HTMLSelectElement || target instanceof HTMLInputElement)) return;
+  const field = target.getAttribute("data-field");
+  if (!field || activeBlock) return;
+  unlockAudioGesture();
+  triggerSfx("ui_tap_soft");
+  updateSettingsField(field, target.value);
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.repeat) return;
+  unlockAudioGesture();
+  if (event.code === "KeyP") {
+    if (activeBlock?.status === "paused") resumeActiveBlock();
+    else if (activeBlock) pauseActiveBlock();
+    event.preventDefault();
+    return;
+  }
+  if (activeBlock?.plan?.targetModality === "dual") {
+    if (event.code === "KeyF") {
+      unlockAudioGesture();
+      if (captureResponse("sym")) event.preventDefault();
+      return;
+    }
+    if (event.code === "KeyL" || event.code === "KeyJ") {
+      unlockAudioGesture();
+      if (captureResponse("rel")) event.preventDefault();
+      return;
+    }
+    return;
+  }
+  if (event.code === "Space" || event.code === "Enter") {
+    unlockAudioGesture();
+    if (captureResponse("primary")) event.preventDefault();
+    return;
+  }
+  if (event.code === "ArrowLeft" || event.code === "KeyF") {
+    unlockAudioGesture();
+    if (captureResponse("sym")) event.preventDefault();
+    return;
+  }
+  if (event.code === "ArrowRight" || event.code === "KeyJ") {
+    unlockAudioGesture();
+    if (captureResponse("rel")) event.preventDefault();
+  }
+});
+
+document.addEventListener("touchstart", (event) => {
+  if (!event.touches || event.touches.length !== 1) return;
+  unlockAudioGesture();
+  const touch = event.touches[0];
+  touchStart = { x: touch.clientX, y: touch.clientY };
+}, { passive: true });
+
+document.addEventListener("touchend", (event) => {
+  if (!touchStart || activeBlock?.status === "trial") {
+    touchStart = null;
+    return;
+  }
+  const touch = event.changedTouches && event.changedTouches[0];
+  if (!touch) {
+    touchStart = null;
+    return;
+  }
+  const dx = touch.clientX - touchStart.x;
+  const dy = touch.clientY - touchStart.y;
+  touchStart = null;
+  if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+  if (dx > 0) {
+    viewState.leftOpen = true;
+    viewState.rightOpen = false;
+  } else {
+    viewState.rightOpen = true;
+    viewState.leftOpen = false;
+  }
+  triggerSfx("ui_tap_soft");
+  render();
+}, { passive: true });
+
+render();
+syncSoundToggle();
