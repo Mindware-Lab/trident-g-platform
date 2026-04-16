@@ -291,6 +291,139 @@ a {
   background: rgba(88, 101, 242, 0.09);
 }
 
+/* Neural wallpaper shared by dark headers and the global footer. */
+:root {
+  --iqm-neural-wallpaper-image: url("/assets/img/neural%20network%202.png");
+  --iqm-neural-wallpaper-opacity: .30;
+}
+
+:where(
+  .home-hero,
+  .ab-hero,
+  .bl-hero,
+  .co-hero,
+  .ct-hero,
+  .faq-hero,
+  .gtv-hero,
+  .how-hero,
+  .lh-hero,
+  .pricing-hero,
+  .proof-hero,
+  .pv-hero,
+  .rf-hero,
+  .sp-hero,
+  .start-hero,
+  .tm-hero,
+  .tool-hero,
+  .tools-hero,
+  .wk-hero,
+  .site-footer.site-footer-rich
+) {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+:where(
+  .home-hero,
+  .ab-hero,
+  .bl-hero,
+  .co-hero,
+  .ct-hero,
+  .faq-hero,
+  .gtv-hero,
+  .how-hero,
+  .lh-hero,
+  .pricing-hero,
+  .proof-hero,
+  .pv-hero,
+  .rf-hero,
+  .sp-hero,
+  .start-hero,
+  .tm-hero,
+  .tool-hero,
+  .tools-hero,
+  .wk-hero,
+  .site-footer.site-footer-rich
+)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--iqm-neural-wallpaper-image);
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: var(--iqm-neural-wallpaper-opacity);
+  pointer-events: none;
+  z-index: 0;
+}
+
+:where(
+  .home-hero,
+  .ab-hero,
+  .bl-hero,
+  .co-hero,
+  .ct-hero,
+  .faq-hero,
+  .gtv-hero,
+  .how-hero,
+  .lh-hero,
+  .pricing-hero,
+  .proof-hero,
+  .pv-hero,
+  .rf-hero,
+  .sp-hero,
+  .start-hero,
+  .tm-hero,
+  .tool-hero,
+  .tools-hero,
+  .wk-hero,
+  .site-footer.site-footer-rich
+) > * {
+  position: relative;
+  z-index: 2;
+}
+
+.site-footer.site-footer-rich::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(8, 12, 22, .56), rgba(8, 12, 22, .70)),
+    radial-gradient(ellipse 900px 360px at 18% 8%, rgba(34, 170, 255, .10), transparent 58%),
+    radial-gradient(ellipse 800px 340px at 82% 0%, rgba(204, 255, 102, .08), transparent 58%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.site-footer.site-footer-rich .footer-top {
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 12px;
+  background: rgba(8, 13, 24, .72);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .18);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+.site-footer.site-footer-rich .footer-bottom,
+.site-footer.site-footer-rich .footer-reg {
+  padding: 16px 20px;
+  border: 1px solid rgba(255, 255, 255, .10);
+  border-radius: 10px;
+  background: rgba(8, 13, 24, .62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.site-footer.site-footer-rich .footer-bottom {
+  margin-top: 14px;
+}
+
+.site-footer.site-footer-rich .footer-reg {
+  margin-top: 10px;
+}
+
 .iqm-signup-section {
   padding: 0 max(1rem, 5vw) 56px;
 }
