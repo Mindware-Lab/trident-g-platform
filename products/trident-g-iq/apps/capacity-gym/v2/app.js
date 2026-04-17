@@ -1433,30 +1433,6 @@ function renderHud() {
   `;
 }
 
-function coachCalloutModel() {
-  if (state.settings.mode === "coach") {
-    const plan = activeBlock?.plan || resolveCoachBlockSettings();
-    return {
-      kicker: "Coach tip",
-      text: `Next block is ${familyLabel(wrapperFamily(plan.wrapper))}`
-    };
-  }
-  return {
-    kicker: "Manual signal",
-    text: `Next recommended block is ${familyLabel(recommendedManualFamilyId())}`
-  };
-}
-
-function renderCoachCallout() {
-  const callout = coachCalloutModel();
-  return `
-    <div class="coach-callout" role="status" aria-live="polite">
-      <span>${escapeHtml(callout.kicker)}</span>
-      <strong>${escapeHtml(callout.text)}</strong>
-    </div>
-  `;
-}
-
 function formatGraphValue(value, digits = 0) {
   if (!Number.isFinite(value)) return "--";
   return digits > 0 ? value.toFixed(digits) : `${Math.round(value)}`;
@@ -1837,7 +1813,7 @@ function renderPlayCard() {
       </div>
       ${renderHud()}
       <div class="arena-shell${showingStats ? " is-stats" : ""}">
-        ${showingStats ? renderCenterStatsDashboard() : `${arenaMarkup()}${renderCoachCallout()}`}
+        ${showingStats ? renderCenterStatsDashboard() : arenaMarkup()}
       </div>
       <div class="play-controls">${renderPlayControls()}</div>
     </section>

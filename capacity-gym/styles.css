@@ -835,61 +835,12 @@ button {
 .arena-shell {
   min-height: 0;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr);
   align-items: center;
   justify-items: center;
   gap: 8px;
   padding: 10px 12px 6px;
   background: linear-gradient(180deg, rgba(17, 29, 48, 0.16), rgba(7, 13, 24, 0));
-}
-
-.coach-callout {
-  position: relative;
-  isolation: isolate;
-  min-width: min(420px, 92%);
-  max-width: 560px;
-  display: grid;
-  gap: 3px;
-  padding: 9px 16px 10px;
-  border: 1px solid rgba(196, 99, 255, 0.48);
-  background:
-    linear-gradient(135deg, rgba(92, 36, 176, 0.38), rgba(22, 14, 49, 0.9)),
-    rgba(15, 12, 34, 0.94);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 0 26px rgba(164, 85, 255, 0.22),
-    0 0 56px rgba(84, 162, 255, 0.08);
-  text-align: center;
-}
-
-.coach-callout::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  z-index: -1;
-  background: linear-gradient(90deg, transparent, rgba(244, 114, 255, 0.34), transparent);
-  opacity: 0.7;
-  clip-path: polygon(0 0, 100% 0, 96% 100%, 4% 100%);
-}
-
-.coach-callout span {
-  color: #f1c7ff;
-  font-family: "Chakra Petch", sans-serif;
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: 0.24em;
-  line-height: 1;
-  text-transform: uppercase;
-}
-
-.coach-callout strong {
-  color: var(--text);
-  font-family: "Orbitron", monospace;
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  line-height: 1.2;
-  text-transform: uppercase;
 }
 
 .arena-shell.is-stats {
@@ -1517,11 +1468,6 @@ button {
 
   .hud-status {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .coach-callout {
-    min-width: 0;
-    width: 100%;
   }
 
   .center-stats-summary {
