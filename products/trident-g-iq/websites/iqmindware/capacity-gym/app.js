@@ -1881,10 +1881,12 @@ function renderPlayCard() {
         <button class="btn btn-ghost" type="button" data-action="open-right">Stats</button>
       </div>
       ${renderHud()}
-      <div class="arena-shell${showingStats ? " is-stats" : ""}">
-        ${showingStats ? renderCenterStatsDashboard() : `${arenaMarkup()}${renderCoachCallout()}`}
+      <div class="play-body${showingStats ? " is-stats" : ""}">
+        <div class="arena-shell${showingStats ? " is-stats" : ""}">
+          ${showingStats ? renderCenterStatsDashboard() : `${arenaMarkup()}${renderCoachCallout()}`}
+        </div>
+        <div class="play-controls">${renderPlayControls()}</div>
       </div>
-      <div class="play-controls">${renderPlayControls()}</div>
     </section>
   `;
 }
