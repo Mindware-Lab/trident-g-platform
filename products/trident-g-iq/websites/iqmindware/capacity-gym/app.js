@@ -22,8 +22,10 @@ const ZONE_HANDOFF_KEY = "iqmw.capacity.handoffFromZone";
 const ZONE_FALLBACK_KEY = "lastCapacitySession";
 const HISTORY_LIMIT = 160;
 const ECONOMY_EVENT_LIMIT = 240;
+const ZONE_HANDOFF_FRESH_MS = 39 * 60 * 1000;
 const COACH_CORE_BLOCKS = 6;
 const SUPPORT_BLOCKS = 4;
+const PROGRAMME_SESSION_TARGET = 20;
 const COACH_FAMILY_CYCLE = ["flex", "bind", "relate", "resist", "flex", "relate", "bind", "resist", "relate"];
 const RELATE_LADDER = ["relate_vectors", "relate_numbers", "relate_vectors_dual", "relate_numbers_dual"];
 const TRANSFER_SPRINT_BLOCKS = 3;
@@ -68,6 +70,7 @@ let activeBlock = null;
 let viewState = {
   leftOpen: false,
   rightOpen: false,
+  centerMode: "play",
   message: "Choose coached progression or manual play, then start a block."
 };
 const timers = { cue: null, display: null, sequence: null, trial: null };
@@ -147,6 +150,12 @@ function clampN(value) {
   return clamp(Number.isFinite(Number(value)) ? Math.round(Number(value)) : 1, 1, HUB_N_MAX);
 }
 
+function normalizeNSetting(value, sourceVersion = 3) {
+  if (String(value || "").trim().toLowerCase() === "auto") return "auto";
+  if (sourceVersion < 3) return "auto";
+  return clampN(value);
+}
+
 function wrapperFamily(wrapper) {
   return WRAPPER_META[wrapper]?.family || "flex";
 }
@@ -181,10 +190,16 @@ function dateKey(ts = Date.now()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function isFreshZoneTimestamp(timestamp) {
+  if (!Number.isFinite(timestamp)) return false;
+  const ageMs = Date.now() - timestamp;
+  return ageMs >= 0 && ageMs <= ZONE_HANDOFF_FRESH_MS;
+}
+
 function createDefaultState() {
   return {
-    version: 2,
-    settings: { mode: "coach", wrapper: "hub_cat", targetModality: "loc", n: 1, speed: "slow", soundOn: true },
+    version: 4,
+    settings: { mode: "coach", wrapper: "hub_cat", targetModality: "loc", n: "auto", speed: "slow", soundOn: true },
     currentSession: null,
     programme: { coreSessionNumber: 0, programmeBonusAwarded: false, programmeCompletedAt: null },
     history: []
@@ -195,16 +210,17 @@ function normalizeState(raw) {
   const defaults = createDefaultState();
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return defaults;
   const settings = raw.settings && typeof raw.settings === "object" ? raw.settings : {};
+  const sourceVersion = Number.isFinite(Number(raw.version)) ? Math.round(Number(raw.version)) : 0;
   const wrapper = normalizeWrapper(settings.wrapper);
   const history = Array.isArray(raw.history) ? raw.history.filter((entry) => entry && typeof entry === "object").slice(0, HISTORY_LIMIT) : [];
   const programme = raw.programme && typeof raw.programme === "object" ? raw.programme : {};
   return {
-    version: 2,
+    version: 4,
     settings: {
-      mode: settings.mode === "manual" ? "manual" : "coach",
+      mode: sourceVersion < 4 ? "coach" : (settings.mode === "manual" ? "manual" : "coach"),
       wrapper,
       targetModality: normalizeTarget(wrapper, settings.targetModality),
-      n: clampN(settings.n),
+      n: normalizeNSetting(settings.n, sourceVersion),
       speed: settings.speed === "fast" ? "fast" : "slow",
       soundOn: settings.soundOn !== false
     },
@@ -283,10 +299,11 @@ function addGEvent(event) {
 function normalizeZoneValue(zoneValue, recommendationValue) {
   const zone = String(zoneValue || "").trim().toLowerCase();
   const recommendation = String(recommendationValue || "").trim().toLowerCase();
-  if (zone === "too_hot" || zone === "overloaded_explore" || zone === "overloaded_exploit") return "too_hot";
-  if (zone === "too_cold" || zone === "flat") return "too_cold";
+  if (zone === "subcritical" || zone === "too_cold" || zone === "below_band" || zone === "flat") return "subcritical";
+  if (zone === "locked_in" || zone === "locked-in" || zone === "locked in" || zone === "overloaded_exploit") return "locked_in";
+  if (zone === "spun_out" || zone === "spun-out" || zone === "spun out" || zone === "too_hot" || zone === "overloaded_explore") return "spun_out";
   if (zone === "in_band" || zone === "in_zone" || zone === "psi") return "in_band";
-  if (recommendation === "light") return "too_cold";
+  if (recommendation === "light") return "subcritical";
   if (recommendation === "proceed" || recommendation === "full") return "in_band";
   return "unknown";
 }
@@ -299,15 +316,16 @@ function normalizeZoneCandidate(candidate, sourceKey) {
     : (Number.isFinite(Date.parse(candidate.timestamp)) ? Date.parse(candidate.timestamp) : null);
   const zone = normalizeZoneValue(gate.zone || candidate.zone || candidate.state || candidate.router?.state, gate.recommendation || candidate.recommendation);
   const routeClass = candidate.capacityPlan?.routeClass
-    || (zone === "in_band" ? "core" : zone === "too_cold" ? "support" : zone === "too_hot" ? "recovery" : "support");
+    || (zone === "in_band" ? "core" : zone === "subcritical" ? "support" : (zone === "locked_in" || zone === "spun_out") ? "recovery" : "support");
   const defaultBlocks = routeClass === "core" ? COACH_CORE_BLOCKS : routeClass === "support" ? SUPPORT_BLOCKS : 0;
   return {
     sessionId: candidate.sessionId || `zone_${timestamp || Date.now()}`,
     sourceKey,
     timestamp,
     freshSameDay: Number.isFinite(timestamp) ? dateKey(timestamp) === dateKey() : false,
+    freshForTraining: isFreshZoneTimestamp(timestamp),
     state: zone,
-    uiState: zone === "in_band" ? "In the Zone" : zone === "too_cold" ? "Below band" : zone === "too_hot" ? "Over band" : "Unknown",
+    uiState: zone === "in_band" ? "In the Zone" : zone === "subcritical" ? "Subcritical" : zone === "locked_in" ? "Locked in" : zone === "spun_out" ? "Spun out" : "Unknown",
     recommendation: gate.recommendation || candidate.recommendation || (routeClass === "core" ? "proceed" : "light"),
     capacityPlan: {
       routeClass,
@@ -339,6 +357,25 @@ function readZoneHandoff() {
 
 function currentCoachFamilyNumber() {
   return state.programme.coreSessionNumber + 1;
+}
+
+function completedProgrammeSessions() {
+  return Math.max(0, Math.round(Number(state.programme.coreSessionNumber || 0)));
+}
+
+function programmeSessionsToGo() {
+  return Math.max(0, PROGRAMME_SESSION_TARGET - Math.min(PROGRAMME_SESSION_TARGET, completedProgrammeSessions()));
+}
+
+function programmeSessionDisplay() {
+  const completed = completedProgrammeSessions();
+  return `${Math.min(PROGRAMME_SESSION_TARGET, completed)}/${PROGRAMME_SESSION_TARGET}`;
+}
+
+function nextCoachSessionDisplay() {
+  const completed = completedProgrammeSessions();
+  if (completed >= PROGRAMME_SESSION_TARGET) return programmeSessionDisplay();
+  return `${currentCoachFamilyNumber()}/${PROGRAMME_SESSION_TARGET}`;
 }
 
 function familyForCoreSession(sessionNumber) {
@@ -406,15 +443,28 @@ function recommendedNForWrapper(wrapper, routeClass) {
   return clampN(last.recommendedN || last.block?.nEnd || 1);
 }
 
+function recommendedManualN(wrapper, targetModality) {
+  const lastForTarget = latest((entry) => entry.wrapper === wrapper && entry.targetModality === targetModality);
+  const lastForWrapper = latest((entry) => entry.wrapper === wrapper);
+  const last = lastForTarget || lastForWrapper;
+  return clampN(last?.recommendedN || last?.block?.nEnd || 1);
+}
+
 function recommendedSpeedForWrapper(wrapper, routeClass) {
   if (routeClass !== "core") return "slow";
   const recent = state.history.filter((entry) => entry.wrapper === wrapper).slice(0, 3);
   return recent.length >= 2 && recent.every((entry) => blockAccuracy(entry) >= 0.9 && blockEndN(entry) >= 2) ? "fast" : "slow";
 }
 
+function activeCoachSession() {
+  return state.settings.mode === "coach" && state.currentSession?.mode === "coach"
+    ? state.currentSession
+    : null;
+}
+
 function resolveNextBlockSettings() {
-  const session = state.currentSession;
-  if (session && session.mode === "coach") {
+  const session = activeCoachSession();
+  if (session) {
     const familyId = session.routeClass === "core" ? session.familyId : "flex";
     const wrapper = pickFamilyWrapper(familyId);
     return {
@@ -425,10 +475,12 @@ function resolveNextBlockSettings() {
       rewardMode: session.routeClass === "core" ? "core" : "support"
     };
   }
+  const wrapper = state.settings.wrapper;
+  const targetModality = pickFamilyTarget(wrapper);
   return {
-    wrapper: state.settings.wrapper,
-    targetModality: normalizeTarget(state.settings.wrapper, state.settings.targetModality),
-    n: clampN(state.settings.n),
+    wrapper,
+    targetModality,
+    n: state.settings.n === "auto" ? recommendedManualN(wrapper, targetModality) : clampN(state.settings.n),
     speed: state.settings.speed,
     rewardMode: "manual"
   };
@@ -488,8 +540,9 @@ function recommendedManualFamilyId() {
 
 function beginCoachSession() {
   if (activeBlock || state.currentSession) return;
+  viewState.centerMode = "play";
   const handoff = readZoneHandoff();
-  const routeClass = handoff?.freshSameDay ? handoff.capacityPlan.routeClass : "core";
+  const routeClass = handoff?.freshForTraining ? handoff.capacityPlan.routeClass : "core";
   if (routeClass === "recovery") {
     viewState.message = "Zone Coach marked this as a recovery route. Use manual light play only after recovery, or re-check first.";
     triggerSfx("invalid_action");
@@ -512,7 +565,7 @@ function beginCoachSession() {
     plannedBlocks,
     blocksCompleted: 0,
     zoneState: handoff?.state || "not_checked",
-    zoneFresh: handoff?.freshSameDay === true,
+    zoneFresh: handoff?.freshForTraining === true,
     zoneSource: handoff?.sourceKey || null,
     startedAt: Date.now()
   };
@@ -538,6 +591,7 @@ function startBlock() {
     triggerSfx("invalid_action");
     return;
   }
+  viewState.centerMode = "play";
   const settings = resolveNextBlockSettings();
   const tsStart = Date.now();
   const blockIndex = state.history.length + 1;
@@ -578,7 +632,7 @@ function startBlock() {
     responseSymRtMs: null,
     trialStartedAtMs: 0,
     trialOutcomes: [],
-    sessionId: state.currentSession?.id || null,
+    sessionId: settings.rewardMode === "manual" ? null : state.currentSession?.id || null,
     rewardMode: settings.rewardMode
   };
   viewState.message = `Get ready: ${wrapperLabel(plan.wrapper)}, match the ${targetLabel(plan.targetModality, plan.wrapper)} from ${plan.n} turns ago.`;
@@ -665,6 +719,7 @@ function stopActiveBlock() {
   if (!activeBlock) return;
   clearTimers();
   activeBlock = null;
+  viewState.centerMode = "play";
   viewState.message = "Block stopped. No credit was awarded and session progress was not advanced.";
   triggerSfx("session_stop_discard");
   render();
@@ -971,7 +1026,7 @@ function computeProgrammeCompletionScore() {
 
 function maybeAwardProgrammeBonus(completedSession) {
   if (!completedSession || completedSession.routeClass !== "core") return null;
-  if (state.programme.programmeBonusAwarded || state.programme.coreSessionNumber < 20) return null;
+  if (state.programme.programmeBonusAwarded || state.programme.coreSessionNumber < PROGRAMME_SESSION_TARGET) return null;
   const programmeScore = computeProgrammeCompletionScore();
   const bonusG = 20 + Math.round(0.6 * programmeScore.total);
   const wallet = addGEvent({
@@ -1008,7 +1063,7 @@ function finishBlock() {
     trialOutcomes: activeBlock.trialOutcomes,
     nMax: HUB_N_MAX
   });
-  const session = state.currentSession;
+  const session = state.currentSession?.id === activeBlock.sessionId ? state.currentSession : null;
   const baseEntry = {
     id: `capv2_${activeBlock.tsStart}`,
     tsStart: activeBlock.tsStart,
@@ -1016,6 +1071,7 @@ function finishBlock() {
     sessionId: activeBlock.sessionId,
     zoneState: session?.zoneState || null,
     routeClass: session?.routeClass || "manual",
+    coreSessionNumber: session?.coreSessionNumber || null,
     rewardMode: activeBlock.rewardMode,
     wrapper: activeBlock.plan.wrapper,
     targetModality: activeBlock.plan.targetModality,
@@ -1046,7 +1102,6 @@ function finishBlock() {
   };
 
   state.history = [entry, ...state.history].slice(0, HISTORY_LIMIT);
-  state.settings.n = summary.nEnd;
   state.settings.wrapper = baseEntry.wrapper;
   state.settings.targetModality = baseEntry.targetModality;
   state.settings.speed = baseEntry.speed;
@@ -1082,7 +1137,7 @@ function assetUrl(url) {
 
 function renderRelateVectorTokenMarkup(token, visible) {
   const point = token?.pointPct || { xPct: 50, yPct: 50 };
-  const rotationDeg = Number.isFinite(token?.angleDeg) ? token.angleDeg : 0;
+  const rotationDeg = Number(token?.angleDeg || 0) + 90;
   return `
     <div class="capacity-hub-token capacity-hub-token--relate${visible ? "" : " is-hidden"}" style="left:${point.xPct}%;top:${point.yPct}%;">
       <svg class="capacity-relate-arrow" viewBox="0 0 48 48" aria-hidden="true" style="transform:rotate(${rotationDeg}deg);">
@@ -1101,13 +1156,27 @@ function renderRelateNumberTokenMarkup(token, visible, isVisibleNow) {
   `;
 }
 
+function arenaWrapperClass(wrapper) {
+  const activeWrapper = String(wrapper || "");
+  if (activeWrapper === "hub_noncat") return "is-noncat";
+  if (activeWrapper === "hub_concept") return "is-concept";
+  if (activeWrapper === "resist_vectors") return "is-resist";
+  if (activeWrapper === "resist_words" || activeWrapper === "emotion_words") return "is-resist is-resist-words";
+  if (activeWrapper === "resist_concept") return "is-resist is-resist-concept";
+  if (activeWrapper === "relate_vectors" || activeWrapper === "relate_vectors_dual" || activeWrapper === "relate_numbers" || activeWrapper === "relate_numbers_dual") return "is-relate";
+  if (activeWrapper.startsWith("and_")) return activeWrapper === "and_noncat" ? "is-and is-and-remap" : "is-and";
+  return "is-cat";
+}
+
 function arenaMarkup() {
   const trial = activeBlock && activeBlock.trialIndex >= 0 ? activeBlock.trials[activeBlock.trialIndex] : null;
   const wrapper = activeBlock?.plan?.wrapper || state.settings.wrapper;
+  const wrapperClass = arenaWrapperClass(wrapper);
+  const pausedClass = activeBlock?.status === "paused" ? " is-paused" : "";
   const points = activeBlock?.renderMapping?.markerPositions?.length ? activeBlock.renderMapping.markerPositions : PREVIEW_MARKERS;
   const hideMarkers = wrapper === "hub_noncat" || wrapper === "hub_concept" || wrapper === "and_noncat" || wrapper === "resist_words" || wrapper === "emotion_words" || wrapper === "resist_concept";
   const markers = hideMarkers ? "" : points.map((point) => `<span class="capacity-hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`).join("");
-  const visible = Boolean(trial && activeBlock?.status === "trial" && activeBlock.stimulusVisible);
+  const visible = Boolean(trial && (activeBlock?.status === "trial" || activeBlock?.status === "paused") && activeBlock.stimulusVisible);
   const isRelateVectorWrapper = wrapper === "relate_vectors" || wrapper === "relate_vectors_dual";
   const isRelateNumbersWrapper = wrapper === "relate_numbers" || wrapper === "relate_numbers_dual";
 
@@ -1115,14 +1184,14 @@ function arenaMarkup() {
     const relationTokens = Array.isArray(trial?.display?.pairTokens)
       ? trial.display.pairTokens.map((token) => renderRelateVectorTokenMarkup(token, visible)).join("")
       : "";
-    return `<div class="capacity-hub-arena is-relate"><div class="capacity-hub-ring"></div>${markers}${relationTokens}</div>`;
+    return `<div class="capacity-hub-arena ${wrapperClass}${pausedClass}"><div class="capacity-hub-ring"></div>${markers}${relationTokens}</div>`;
   }
 
   if (isRelateNumbersWrapper) {
     const showFirst = Boolean(visible && activeBlock?.trialVisualStage >= 1);
     const showSecond = Boolean(visible && activeBlock?.trialVisualStage >= 2);
     return `
-      <div class="capacity-hub-arena is-relate">
+      <div class="capacity-hub-arena ${wrapperClass}${pausedClass}">
         <div class="capacity-hub-ring"></div>
         ${markers}
         ${trial ? renderRelateNumberTokenMarkup(trial.display.firstToken, visible, showFirst) : ""}
@@ -1155,7 +1224,7 @@ function arenaMarkup() {
   const tokenChrome = isWordWrapper ? "background:transparent;border:0;border-radius:0;box-shadow:none;" : "";
 
   return `
-    <div class="capacity-hub-arena">
+    <div class="capacity-hub-arena ${wrapperClass}${pausedClass}">
       <div class="capacity-hub-ring"></div>
       ${markers}
       <div class="capacity-hub-token${visible ? "" : " is-hidden"}${isShape ? " is-shape" : ""}${isWordWrapper ? " is-word" : ""}" style="left:${point.xPct}%;top:${point.yPct}%;background:${isShape || isWordWrapper ? "transparent" : background};color:${visible ? (isShape || isWordWrapper ? shapeColor : textColor) : "transparent"};${tokenChrome}${fontFamily}${fontWeight}${fontStyle}">${token}</div>
@@ -1168,15 +1237,18 @@ function latestTransferScore() {
 }
 
 function blocksLeft() {
-  if (activeBlock?.sessionId && state.currentSession?.id === activeBlock.sessionId) {
-    return Math.max(0, state.currentSession.plannedBlocks - state.currentSession.blocksCompleted);
+  const session = activeBlock?.sessionId && state.currentSession?.id === activeBlock.sessionId
+    ? state.currentSession
+    : activeCoachSession();
+  if (activeBlock?.sessionId && session?.id === activeBlock.sessionId) {
+    return Math.max(0, session.plannedBlocks - session.blocksCompleted);
   }
-  if (state.currentSession) return Math.max(0, state.currentSession.plannedBlocks - state.currentSession.blocksCompleted);
+  if (session) return Math.max(0, session.plannedBlocks - session.blocksCompleted);
   return activeBlock ? 1 : 0;
 }
 
 function transferSprintModel() {
-  const sessionId = activeBlock?.sessionId || state.currentSession?.id || state.history[0]?.sessionId || null;
+  const sessionId = activeBlock?.sessionId || activeCoachSession()?.id || null;
   const recentEntries = state.history
     .filter((entry) => !sessionId || entry.sessionId === sessionId)
     .slice(0, activeBlock ? TRANSFER_SPRINT_BLOCKS - 1 : TRANSFER_SPRINT_BLOCKS)
@@ -1199,17 +1271,91 @@ function transferSprintModel() {
   return { samples: visibleSamples, count: scored.length, average };
 }
 
+function average(values) {
+  const clean = values.filter((value) => Number.isFinite(value));
+  if (!clean.length) return null;
+  return clean.reduce((sum, value) => sum + value, 0) / clean.length;
+}
+
+function programmeSessionGroups() {
+  const groups = [];
+  const byKey = new Map();
+  const chronological = state.history
+    .slice()
+    .reverse()
+    .filter((entry) => entry && (entry.routeClass === "core" || entry.rewardMode === "core"));
+
+  chronological.forEach((entry) => {
+    const key = entry.sessionId || entry.id || `block_${entry.tsStart || groups.length}`;
+    let group = byKey.get(key);
+    if (!group) {
+      group = {
+        key,
+        sessionNumber: Number.isFinite(entry.coreSessionNumber) ? Math.round(entry.coreSessionNumber) : null,
+        tsStart: Number.isFinite(entry.tsStart) ? entry.tsStart : 0,
+        tsEnd: Number.isFinite(entry.tsEnd) ? entry.tsEnd : 0,
+        entries: []
+      };
+      byKey.set(key, group);
+      groups.push(group);
+    }
+    if (!Number.isFinite(group.sessionNumber) && Number.isFinite(entry.coreSessionNumber)) {
+      group.sessionNumber = Math.round(entry.coreSessionNumber);
+    }
+    if (Number.isFinite(entry.tsStart) && (!group.tsStart || entry.tsStart < group.tsStart)) group.tsStart = entry.tsStart;
+    if (Number.isFinite(entry.tsEnd) && entry.tsEnd > group.tsEnd) group.tsEnd = entry.tsEnd;
+    group.entries.push(entry);
+  });
+
+  return groups.map((group, index) => {
+    const avgN = average(group.entries.map((entry) => blockEndN(entry)));
+    const avgTransfer = average(group.entries.map((entry) => Number(entry?.transferScore?.total)));
+    const sessionNumber = Number.isFinite(group.sessionNumber) ? group.sessionNumber : index + 1;
+    return {
+      sessionNumber,
+      label: `${sessionNumber}`,
+      avgN,
+      avgTransfer,
+      blockCount: group.entries.length,
+      isCurrent: state.currentSession?.id === group.key
+    };
+  });
+}
+
+function sessionStatsModel() {
+  const groups = programmeSessionGroups();
+  const rolling = groups.length > PROGRAMME_SESSION_TARGET;
+  const visibleGroups = rolling ? groups.slice(-PROGRAMME_SESSION_TARGET) : groups;
+  const slots = Array.from({ length: PROGRAMME_SESSION_TARGET }, (_, index) => {
+    const group = visibleGroups[index] || null;
+    return group ? { ...group, slot: index + 1 } : { slot: index + 1, label: `${index + 1}`, empty: true };
+  });
+  const populated = slots.filter((slot) => !slot.empty);
+  return {
+    slots,
+    rolling,
+    completed: completedProgrammeSessions(),
+    sessionsToGo: programmeSessionsToGo(),
+    avgN: average(populated.map((slot) => slot.avgN)),
+    avgTransfer: average(populated.map((slot) => slot.avgTransfer))
+  };
+}
+
 function hudModel() {
   const plan = displayPlanForHud();
   const family = wrapperFamily(plan.wrapper);
+  const coachSession = activeCoachSession();
+  const sessionId = activeBlock?.sessionId || coachSession?.id || null;
   return {
     items: [
       ["Block Type", familyLabel(family)],
       ["Match Type", displayHubTargetLabel(plan.targetModality, plan.wrapper)],
       ["N-back", `N-${plan.n}`],
-      ["Next N-back", `N-${projectedNextN(plan)}`]
-    ],
-    sprint: transferSprintModel()
+      ["Next N-back", `N-${projectedNextN(plan)}`],
+      ["Session g", sessionEarnedG(sessionId)],
+      ["Blocks left", blocksLeft()],
+      ["Sessions to go", programmeSessionsToGo()]
+    ]
   };
 }
 
@@ -1225,19 +1371,6 @@ function renderHud() {
           </div>
         `).join("")}
       </div>
-      <div class="hud-sprint" aria-label="Three block transfer sprint">
-        <div class="hud-sprint-head">
-          <span>3-block transfer sprint</span>
-          <strong>${model.sprint.average === null ? `${model.sprint.count}/3` : `${model.sprint.average}`}</strong>
-        </div>
-        <div class="transfer-sprint-bars">
-          ${model.sprint.samples.map((score, index) => {
-            const hasScore = Number.isFinite(score);
-            const width = hasScore ? clamp(score, 0, 100) : 0;
-            return `<span class="sprint-segment${hasScore ? "" : " is-empty"}" style="--score:${width};" aria-label="Sprint block ${index + 1}${hasScore ? ` transfer score ${Math.round(width)}` : " not scored yet"}"><i></i></span>`;
-          }).join("")}
-        </div>
-      </div>
     </div>
   `;
 }
@@ -1246,7 +1379,7 @@ function coachCalloutModel() {
   if (state.settings.mode === "coach") {
     const plan = activeBlock?.plan || resolveCoachBlockSettings();
     return {
-      kicker: "Coach signal",
+      kicker: "Coach tip",
       text: `Next block is ${familyLabel(wrapperFamily(plan.wrapper))}`
     };
   }
@@ -1266,34 +1399,134 @@ function renderCoachCallout() {
   `;
 }
 
-function renderModePanel() {
+function formatGraphValue(value, digits = 0) {
+  if (!Number.isFinite(value)) return "--";
+  return digits > 0 ? value.toFixed(digits) : `${Math.round(value)}`;
+}
+
+function renderSessionBarChart({ title, subtitle, valueKey, maxValue, unit = "", digits = 0, model }) {
+  return `
+    <section class="stats-graph" aria-label="${escapeHtml(title)}">
+      <div class="stats-graph-head">
+        <div>
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(subtitle)}</p>
+        </div>
+      </div>
+      <div class="stats-bars">
+        ${model.slots.map((slot) => {
+          const value = Number(slot[valueKey]);
+          const hasValue = !slot.empty && Number.isFinite(value);
+          const pct = hasValue ? clamp((value / maxValue) * 100, 2, 100) : 0;
+          const displayValue = hasValue ? `${formatGraphValue(value, digits)}${unit}` : "No data";
+          const sessionLabel = slot.empty ? `Session ${slot.slot}` : `Session ${slot.label}`;
+          return `
+            <div class="stats-bar${hasValue ? "" : " is-empty"}${slot.isCurrent ? " is-current" : ""}" title="${escapeHtml(`${sessionLabel}: ${displayValue}`)}">
+              <i style="--bar:${pct}%;"></i>
+              <span>${escapeHtml(slot.label)}</span>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderCenterStatsDashboard() {
+  const model = sessionStatsModel();
+  const rangeLabel = model.rolling ? "Last 20 sessions" : "20-session programme";
+  return `
+    <div class="center-stats-dashboard">
+      <div class="center-stats-head">
+        <div>
+          <span class="stats-kicker">${escapeHtml(rangeLabel)}</span>
+          <h2>Capacity Progress</h2>
+        </div>
+        <button class="btn btn-ghost" type="button" data-action="show-play">Return to gameplay</button>
+      </div>
+      <div class="center-stats-summary">
+        <div class="stat"><span class="mini-label">Completed</span><strong>${programmeSessionDisplay()}</strong></div>
+        <div class="stat"><span class="mini-label">Sessions to go</span><strong>${model.sessionsToGo}</strong></div>
+        <div class="stat"><span class="mini-label">Avg N-back</span><strong>${formatGraphValue(model.avgN, 1)}</strong></div>
+        <div class="stat"><span class="mini-label">Avg Transfer</span><strong>${formatGraphValue(model.avgTransfer)}</strong></div>
+      </div>
+      ${renderSessionBarChart({
+        title: "N-back average per session",
+        subtitle: "Mean held N across each coached core session.",
+        valueKey: "avgN",
+        maxValue: HUB_N_MAX,
+        digits: 1,
+        model
+      })}
+      ${renderSessionBarChart({
+        title: "Transfer Score per session",
+        subtitle: "Mean Transfer Score across blocks in each session.",
+        valueKey: "avgTransfer",
+        maxValue: 100,
+        model
+      })}
+    </div>
+  `;
+}
+
+function renderZoneCoachPanel() {
   const handoff = readZoneHandoff();
-  const currentFamily = familyForCoreSession(currentCoachFamilyNumber());
-  const routeLabel = handoff?.freshSameDay
+  const routeLabel = handoff?.freshForTraining
     ? `${handoff.uiState} / ${handoff.capacityPlan.routeClass}`
     : "No fresh Zone handoff";
   return `
     <section class="panel">
-      <div class="mode-toggle" role="group" aria-label="Mode">
-        <button class="chip-btn${state.settings.mode === "coach" ? " is-active" : ""}" type="button" data-action="set-mode" data-mode="coach">Coach</button>
-        <button class="chip-btn${state.settings.mode === "manual" ? " is-active" : ""}" type="button" data-action="set-mode" data-mode="manual">Manual</button>
-      </div>
-      <p class="small muted">Coach mode follows the 9-session cycle and gives Relate exactly one third of core sessions.</p>
-    </section>
-    <section class="panel">
-      <h3>Zone route</h3>
       <div class="notice">${escapeHtml(routeLabel)}</div>
-      <p class="small muted">${handoff?.freshSameDay ? `Source: ${handoff.sourceKey}` : "Coach can run standalone; run Zone Coach first for state-gated routing."}</p>
+      ${renderZoneCoachGraphic(handoff)}
+      ${handoff?.freshForTraining ? `<p class="small muted">Source: ${escapeHtml(handoff.sourceKey)}</p>` : ""}
     </section>
-    <section class="panel">
-      <h3>Next coached core</h3>
-      <div class="stat-grid">
-        <div class="stat"><span class="mini-label">Session</span><strong>${currentCoachFamilyNumber()}/20</strong></div>
-        <div class="stat"><span class="mini-label">Family</span><strong>${escapeHtml(familyLabel(currentFamily))}</strong></div>
-      </div>
-      <div class="button-row" style="margin-top:10px;">
-        <button class="btn btn-primary" type="button" data-action="start-coach-session" ${activeBlock || state.currentSession ? "disabled" : ""}>Start coach session</button>
-        <button class="btn btn-ghost" type="button" data-action="clear-session" ${state.currentSession ? "" : "disabled"}>Clear session</button>
+  `;
+}
+
+function renderZoneCoachGraphic(handoff) {
+  const activeZone = handoff?.freshForTraining ? handoff.state : null;
+  const label = activeZone ? `${handoff.uiState} highlighted` : "No recent Zone Coach designation highlighted";
+  const activeClass = (zone) => activeZone === zone ? " is-active" : "";
+  return `
+    <div class="zone-flow-graphic" role="img" aria-label="${escapeHtml(label)}">
+      <svg viewBox="0 0 360 210" focusable="false" aria-hidden="true">
+        <path class="zone-flow-line" d="M12 105H78" />
+        <path class="zone-flow-line" d="M122 105H154" />
+        <path class="zone-flow-line" d="M198 105H306" />
+        <polygon class="zone-flow-arrow" points="306,82 354,105 306,128" />
+        <path class="zone-flow-line" d="M188 88L214 46H274" />
+        <polygon class="zone-flow-arrow" points="274,23 322,46 274,69" />
+        <path class="zone-flow-line" d="M188 122L214 164H274" />
+        <polygon class="zone-flow-arrow" points="274,141 322,164 274,187" />
+        <g class="zone-node-group${activeClass("subcritical")}">
+          <circle class="zone-node" cx="100" cy="105" r="23" />
+          <circle class="zone-node-hole" cx="100" cy="105" r="9" />
+        </g>
+        <g class="zone-node-group${activeClass("in_band")}">
+          <circle class="zone-node" cx="176" cy="105" r="23" />
+          <circle class="zone-node-hole" cx="176" cy="105" r="9" />
+        </g>
+        <g class="zone-node-group${activeClass("locked_in")}">
+          <circle class="zone-node" cx="216" cy="46" r="23" />
+          <circle class="zone-node-hole" cx="216" cy="46" r="9" />
+        </g>
+        <g class="zone-node-group${activeClass("spun_out")}">
+          <circle class="zone-node" cx="216" cy="164" r="23" />
+          <circle class="zone-node-hole" cx="216" cy="164" r="9" />
+        </g>
+      </svg>
+    </div>
+  `;
+}
+
+function renderModePanel() {
+  return `
+    <section class="panel training-panel">
+      <h2 class="strip-title training-title">Capacity Training</h2>
+      <p class="small muted training-prompt">SELECT COACH LED OR MANUAL</p>
+      <div class="mode-toggle" role="group" aria-label="Training mode">
+        <button class="chip-btn${state.settings.mode === "coach" ? " is-active" : ""}" type="button" data-action="set-mode" data-mode="coach">Coach-led</button>
+        <button class="chip-btn${state.settings.mode === "manual" ? " is-active" : ""}" type="button" data-action="set-mode" data-mode="manual">Manual</button>
       </div>
     </section>
   `;
@@ -1301,7 +1534,6 @@ function renderModePanel() {
 
 function renderManualPanel() {
   const wrapper = state.settings.wrapper;
-  const targets = targetOptions(wrapper);
   return `
     <section class="panel">
       <h3>Manual suite</h3>
@@ -1313,15 +1545,10 @@ function renderManualPanel() {
           </select>
         </div>
         <div class="field">
-          <label for="targetSelect">Block target</label>
-          <select id="targetSelect" data-field="targetModality" ${activeBlock ? "disabled" : ""}>
-            ${targets.map((target) => `<option value="${target}" ${target === state.settings.targetModality ? "selected" : ""}>${escapeHtml(displayHubTargetLabel(target, wrapper))}</option>`).join("")}
-          </select>
-        </div>
-        <div class="field">
           <label for="nSelect">N-back</label>
           <select id="nSelect" data-field="n" ${activeBlock ? "disabled" : ""}>
-            ${Array.from({ length: HUB_N_MAX }, (_, index) => index + 1).map((n) => `<option value="${n}" ${n === state.settings.n ? "selected" : ""}>N-${n}</option>`).join("")}
+            <option value="auto" ${state.settings.n === "auto" ? "selected" : ""}>Auto</option>
+            ${Array.from({ length: HUB_N_MAX }, (_, index) => index + 1).map((n) => `<option value="${n}" ${n === state.settings.n ? "selected" : ""}>${n}</option>`).join("")}
           </select>
         </div>
         <div class="field">
@@ -1341,6 +1568,7 @@ function renderCoachCycle() {
   return `
     <section class="panel">
       <h3>Coach cycle</h3>
+      <p class="small muted coach-cycle-subtitle">20 sessions total</p>
       <div class="cycle-list">
         ${COACH_FAMILY_CYCLE.map((familyId, index) => {
           const sessionNo = state.programme.coreSessionNumber + index + 1;
@@ -1352,7 +1580,6 @@ function renderCoachCycle() {
           `;
         }).join("")}
       </div>
-      <p class="small muted">Cycle starts at session ${next}; Relate appears in slots 3, 6, and 9.</p>
     </section>
   `;
 }
@@ -1363,27 +1590,28 @@ function renderLeftStrip() {
       <div class="strip-inner">
         <div class="strip-head">
           <div>
-            <div class="strip-kicker">Capacity Gym</div>
-            <h2 class="strip-title">Coach</h2>
+            <h2 class="strip-title">Zone Coach</h2>
           </div>
           <button class="sheet-close" type="button" data-action="close-sheets" aria-label="Close sheet">x</button>
         </div>
+        ${renderZoneCoachPanel()}
         ${renderModePanel()}
         ${state.settings.mode === "manual" ? renderManualPanel() : ""}
-        ${renderCoachCycle()}
+        ${state.settings.mode === "manual" ? "" : renderCoachCycle()}
       </div>
     </aside>
   `;
 }
 
 function renderFamilyProgress() {
+  const coachSession = activeCoachSession();
   return `
     <section class="panel">
       <h3>Family progress</h3>
       <div class="family-list">
         ${Object.keys(FAMILY_META).map((familyId) => {
           const count = state.history.filter((entry) => wrapperFamily(entry.wrapper) === familyId).length;
-          const isCurrent = state.currentSession?.familyId === familyId;
+          const isCurrent = coachSession?.familyId === familyId;
           return `
             <div class="family-item${isCurrent ? " is-current" : ""}">
               <span>${escapeHtml(familyLabel(familyId))}</span>
@@ -1413,11 +1641,7 @@ function renderFamilyProgress() {
 function renderRightStrip() {
   const score = latestTransferScore();
   const last = state.history[0] || null;
-  const sessionId = activeBlock?.sessionId || state.currentSession?.id || last?.sessionId || null;
-  const sessionG = sessionEarnedG(sessionId);
-  const lastAward = Number(last?.rewardState?.blockG || 0);
   const nextPlan = resolveNextBlockSettings();
-  const familyId = state.currentSession?.familyId || wrapperFamily(nextPlan.wrapper);
   const activeAccuracy = activeBlock ? liveAccuracy() : null;
   const lastAccuracy = last ? blockAccuracy(last) : null;
   const showDualSplit = !activeBlock && last?.targetModality === "dual";
@@ -1431,31 +1655,22 @@ function renderRightStrip() {
       <div class="strip-inner">
         <div class="strip-head">
           <div>
-            <div class="strip-kicker">Stats</div>
-            <h2 class="strip-title">Feedback</h2>
+            <h2 class="strip-title">Scores</h2>
           </div>
           <button class="sheet-close" type="button" data-action="close-sheets" aria-label="Close sheet">x</button>
         </div>
         <section class="panel">
           <div class="coin-stack">
             <div class="coin">
-              <img class="coin-icon" src="./assets/coins/g-plasticity-cell.png" alt="" loading="lazy">
-              <div><span>Total g plasticity cells</span><strong>${economy.walletG}</strong></div>
+              <img class="coin-icon" src="./assets/coins/g-plasticity-cell.png?v=20260417-coin2" alt="" loading="lazy">
+              <strong>${economy.walletG} g</strong>
+              <span class="coin-label">brain cell credit</span>
             </div>
             <div class="coin iq">
-              <img class="coin-icon" src="./assets/coins/iq-credit.png" alt="" loading="lazy">
-              <div><span>IQ credits</span><strong>${(economy.walletG / 100).toFixed(2)}</strong></div>
+              <img class="coin-icon" src="./assets/coins/iq-credit.png?v=20260417-coin2" alt="" loading="lazy">
+              <strong>${(economy.walletG / 100).toFixed(2)} IQ</strong>
+              <span class="coin-label">IQ point credit</span>
             </div>
-          </div>
-          <p class="small muted">100 g plasticity cells = 1 IQ credit.</p>
-        </section>
-        <section class="panel">
-          <h3>This session</h3>
-          <div class="stat-grid">
-            <div class="stat"><span class="mini-label">Session g</span><strong>${sessionG}</strong></div>
-            <div class="stat"><span class="mini-label">Last award</span><strong>${last ? `+${lastAward} g` : "--"}</strong></div>
-            <div class="stat"><span class="mini-label">Blocks left</span><strong>${blocksLeft()}</strong></div>
-            <div class="stat"><span class="mini-label">Next N-back</span><strong>N-${nextPlan.n}</strong></div>
           </div>
         </section>
         <section class="panel">
@@ -1469,23 +1684,13 @@ function renderRightStrip() {
               <div class="stat"><span class="mini-label">Target</span><strong>${escapeHtml(displayHubTargetLabel(nextPlan.targetModality, nextPlan.wrapper))}</strong></div>
             `}
           </div>
-          ${last ? `<p class="small muted">Last block: ${escapeHtml(wrapperLabel(last.wrapper))}.</p>` : `<p class="small muted">Accuracy appears after the first response.</p>`}
+          ${last ? `<p class="small muted">Last block: ${escapeHtml(wrapperLabel(last.wrapper))}.</p>` : ""}
         </section>
         <section class="panel">
           <h3>Transfer Score</h3>
           <div class="stat-grid">
             <div class="stat"><span class="mini-label">Score</span><strong>${score ? score.total : "--"}</strong></div>
             <div class="stat"><span class="mini-label">Label</span><strong>${score ? score.label : "--"}</strong></div>
-          </div>
-          <p class="small muted">One summary score for how well performance carries across the current game demands.</p>
-        </section>
-        <section class="panel">
-          <h3>Programme</h3>
-          <div class="stat-grid">
-            <div class="stat"><span class="mini-label">Session</span><strong>${currentCoachFamilyNumber()}/20</strong></div>
-            <div class="stat"><span class="mini-label">Family</span><strong>${escapeHtml(familyLabel(familyId))}</strong></div>
-            <div class="stat"><span class="mini-label">Relate step</span><strong>${escapeHtml(wrapperLabel(pickRelateWrapper()).replace("Relate ", ""))}</strong></div>
-            <div class="stat"><span class="mini-label">Mode</span><strong>${state.settings.mode === "manual" ? "Manual" : "Coach"}</strong></div>
           </div>
         </section>
       </div>
@@ -1494,6 +1699,7 @@ function renderRightStrip() {
 }
 
 function renderPlayControls() {
+  const coachSession = activeCoachSession();
   if (activeBlock?.status === "paused") {
     return `
       <div class="response-row">
@@ -1529,17 +1735,25 @@ function renderPlayControls() {
       </div>
     `;
   }
+  if (viewState.centerMode === "stats") {
+    return `
+      <div class="response-row">
+        <button class="btn btn-primary" type="button" data-action="show-play">Return to gameplay</button>
+      </div>
+    `;
+  }
   return `
     <div class="response-row">
-      ${state.currentSession ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start next block</button>` : ""}
+      ${coachSession ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start next block</button>` : ""}
       ${state.settings.mode === "manual" ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start manual block</button>` : ""}
       ${state.settings.mode === "coach" && !state.currentSession ? `<button class="btn btn-dark" type="button" data-action="start-coach-session" ${activeBlock ? "disabled" : ""}>Start coach session</button>` : ""}
-      <button class="btn btn-ghost" type="button" data-action="open-right" ${activeBlock?.status === "briefing" ? "disabled" : ""}>Stats</button>
+      <button class="btn btn-ghost" type="button" data-action="show-stats" ${activeBlock?.status === "briefing" ? "disabled" : ""}>Stats</button>
     </div>
   `;
 }
 
 function renderPlayCard() {
+  const showingStats = viewState.centerMode === "stats" && !activeBlock;
   return `
     <section class="play-card" aria-label="Capacity play surface">
       <div class="mobile-topbar">
@@ -1547,9 +1761,8 @@ function renderPlayCard() {
         <button class="btn btn-ghost" type="button" data-action="open-right">Stats</button>
       </div>
       ${renderHud()}
-      <div class="arena-shell">
-        ${arenaMarkup()}
-        ${renderCoachCallout()}
+      <div class="arena-shell${showingStats ? " is-stats" : ""}">
+        ${showingStats ? renderCenterStatsDashboard() : `${arenaMarkup()}${renderCoachCallout()}`}
       </div>
       <div class="play-controls">${renderPlayControls()}</div>
     </section>
@@ -1572,11 +1785,11 @@ function updateSettingsField(field, value) {
   const settings = { ...state.settings };
   if (field === "wrapper") {
     settings.wrapper = normalizeWrapper(value);
-    settings.targetModality = normalizeTarget(settings.wrapper, settings.targetModality);
+    settings.targetModality = pickFamilyTarget(settings.wrapper);
   } else if (field === "targetModality") {
     settings.targetModality = normalizeTarget(settings.wrapper, value);
   } else if (field === "n") {
-    settings.n = clampN(value);
+    settings.n = normalizeNSetting(value);
   } else if (field === "speed") {
     settings.speed = value === "fast" ? "fast" : "slow";
   }
@@ -1595,6 +1808,7 @@ function resetLocalData() {
   saveEconomy(economy);
   setAudioEnabled(state.settings.soundOn);
   syncSoundToggle();
+  viewState.centerMode = "play";
   viewState.message = "Local Capacity Gym v2 data reset.";
   triggerSfx("ui_tap_soft");
   render();
@@ -1626,6 +1840,21 @@ document.addEventListener("click", (event) => {
     triggerSfx("ui_tap_soft");
     viewState.rightOpen = true;
     viewState.leftOpen = false;
+    render();
+    return;
+  }
+  if (action === "show-stats") {
+    if (activeBlock) return;
+    triggerSfx("ui_tap_soft");
+    viewState.centerMode = "stats";
+    viewState.leftOpen = false;
+    viewState.rightOpen = false;
+    render();
+    return;
+  }
+  if (action === "show-play") {
+    triggerSfx("ui_tap_soft");
+    viewState.centerMode = "play";
     render();
     return;
   }
