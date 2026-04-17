@@ -189,7 +189,7 @@ button {
   position: relative;
   z-index: 1;
   height: calc(100% - var(--brand-height));
-  padding: var(--stage-pad) 16px 12px;
+  padding: var(--stage-pad) 16px calc(var(--stage-pad) + 8px);
 }
 
 .gym-layout {
