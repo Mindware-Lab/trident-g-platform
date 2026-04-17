@@ -1433,6 +1433,42 @@ function renderHud() {
   `;
 }
 
+function shouldShowCoachCallout() {
+  return !activeBlock || activeBlock.status === "briefing";
+}
+
+function coachCalloutModel() {
+  if (activeBlock?.status === "briefing") {
+    const plan = activeBlock.plan;
+    return {
+      kicker: "Get ready",
+      text: `${familyLabel(wrapperFamily(plan.wrapper))} / ${displayHubTargetLabel(plan.targetModality, plan.wrapper)} / N-${plan.n}`
+    };
+  }
+  if (state.settings.mode === "coach") {
+    const plan = resolveCoachBlockSettings();
+    return {
+      kicker: "Coach tip",
+      text: `Next block is ${familyLabel(wrapperFamily(plan.wrapper))}`
+    };
+  }
+  return {
+    kicker: "Manual signal",
+    text: `Next recommended block is ${familyLabel(recommendedManualFamilyId())}`
+  };
+}
+
+function renderCoachCallout() {
+  if (!shouldShowCoachCallout()) return "";
+  const callout = coachCalloutModel();
+  return `
+    <div class="coach-callout" role="status" aria-live="polite">
+      <span>${escapeHtml(callout.kicker)}</span>
+      <strong>${escapeHtml(callout.text)}</strong>
+    </div>
+  `;
+}
+
 function formatGraphValue(value, digits = 0) {
   if (!Number.isFinite(value)) return "--";
   return digits > 0 ? value.toFixed(digits) : `${Math.round(value)}`;
@@ -1813,7 +1849,7 @@ function renderPlayCard() {
       </div>
       ${renderHud()}
       <div class="arena-shell${showingStats ? " is-stats" : ""}">
-        ${showingStats ? renderCenterStatsDashboard() : arenaMarkup()}
+        ${showingStats ? renderCenterStatsDashboard() : `${arenaMarkup()}${renderCoachCallout()}`}
       </div>
       <div class="play-controls">${renderPlayControls()}</div>
     </section>
