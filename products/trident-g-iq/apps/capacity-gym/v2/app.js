@@ -1701,7 +1701,7 @@ function renderRightStrip() {
               <div class="stat"><span class="mini-label">Score</span><strong>${score ? formatScorePercent(score.total) : "--"}</strong></div>
               <div class="stat"><span class="mini-label">Label</span><strong>${score ? score.label : "--"}</strong></div>
             </div>
-            <button class="btn btn-ghost right-stats-btn" type="button" data-action="show-stats" ${activeBlock ? "disabled" : ""}>Stats</button>
+            <button class="btn btn-ghost right-stats-btn${viewState.centerMode === "stats" ? " is-selected" : ""}" type="button" data-action="show-stats" aria-pressed="${viewState.centerMode === "stats" ? "true" : "false"}" ${activeBlock ? "disabled" : ""}>Stats</button>
           </div>
         </section>
         <section class="panel gameplay-panel">
