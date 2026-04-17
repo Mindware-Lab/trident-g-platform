@@ -1434,6 +1434,7 @@ function renderHud() {
 }
 
 function shouldShowCoachCallout() {
+  if (state.settings.mode === "manual") return false;
   return !activeBlock || activeBlock.status === "briefing";
 }
 
