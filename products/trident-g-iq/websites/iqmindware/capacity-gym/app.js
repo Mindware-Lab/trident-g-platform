@@ -1,6 +1,5 @@
 import {
   HUB_BASE_TRIALS,
-  HUB_CUE_MS,
   HUB_N_MAX,
   createHubBlockPlan,
   createHubBlockTrials,
@@ -30,6 +29,8 @@ const COACH_FAMILY_CYCLE = ["flex", "bind", "relate", "resist", "flex", "relate"
 const RELATE_LADDER = ["relate_vectors", "relate_numbers", "relate_vectors_dual", "relate_numbers_dual"];
 const TRANSFER_SPRINT_BLOCKS = 3;
 const MANUAL_RECOMMENDATION_FAMILIES = ["flex", "bind", "relate", "resist"];
+const COUNTDOWN_STEPS = ["3", "2", "1"];
+const COUNTDOWN_STEP_MS = 700;
 
 const FAMILY_META = {
   flex: { label: "Flex", wrappers: ["hub_cat", "hub_noncat", "hub_concept"] },
@@ -73,7 +74,7 @@ let viewState = {
   centerMode: "play",
   message: "Choose coached progression or manual play, then start a block."
 };
-const timers = { cue: null, display: null, sequence: null, trial: null };
+const timers = { countdown: null, display: null, sequence: null, trial: null };
 let touchStart = null;
 
 initAudio({ enabled: state.settings.soundOn, preloadTier: "p0" });
@@ -586,6 +587,31 @@ function clearTimers() {
   });
 }
 
+function beginCountdown(stepIndex = 0) {
+  if (!activeBlock) return;
+  clearTimers();
+  activeBlock.status = "countdown";
+  activeBlock.pausedFromStatus = null;
+  activeBlock.trialIndex = -1;
+  activeBlock.stimulusVisible = false;
+  activeBlock.trialVisualStage = 0;
+  activeBlock.countdownStep = Math.max(0, Math.min(COUNTDOWN_STEPS.length - 1, stepIndex));
+  viewState.leftOpen = false;
+  viewState.rightOpen = false;
+  viewState.message = `Starting block: ${wrapperLabel(activeBlock.plan.wrapper)}, match the ${targetLabel(activeBlock.plan.targetModality, activeBlock.plan.wrapper)}.`;
+  render();
+  timers.countdown = setTimeout(() => advanceCountdown(activeBlock.countdownStep), COUNTDOWN_STEP_MS);
+}
+
+function advanceCountdown(expectedStep) {
+  if (!activeBlock || activeBlock.status !== "countdown" || activeBlock.countdownStep !== expectedStep) return;
+  if (expectedStep < COUNTDOWN_STEPS.length - 1) {
+    beginCountdown(expectedStep + 1);
+    return;
+  }
+  startTrial(0);
+}
+
 function startBlock() {
   if (activeBlock) {
     triggerSfx("invalid_action");
@@ -624,6 +650,7 @@ function startBlock() {
     status: "briefing",
     stimulusVisible: false,
     trialVisualStage: 0,
+    countdownStep: 0,
     responseCaptured: false,
     responseRtMs: null,
     responseRelCaptured: false,
@@ -637,8 +664,7 @@ function startBlock() {
   };
   viewState.message = `Get ready: ${wrapperLabel(plan.wrapper)}, match the ${targetLabel(plan.targetModality, plan.wrapper)} from ${plan.n} turns ago.`;
   triggerSfx("block_start");
-  render();
-  timers.cue = setTimeout(() => startTrial(0), HUB_CUE_MS);
+  beginCountdown();
 }
 
 function trialSequenceGapMs(trial) {
@@ -705,11 +731,8 @@ function resumeActiveBlock() {
   const pausedFromStatus = activeBlock.pausedFromStatus || "trial";
   viewState.message = "Resuming block.";
   triggerSfx("resume_on");
-  if (pausedFromStatus === "briefing" || activeBlock.trialIndex < 0) {
-    activeBlock.status = "briefing";
-    activeBlock.pausedFromStatus = null;
-    render();
-    timers.cue = setTimeout(() => startTrial(0), HUB_CUE_MS);
+  if (pausedFromStatus === "countdown" || pausedFromStatus === "briefing" || activeBlock.trialIndex < 0) {
+    beginCountdown();
     return;
   }
   startTrial(resumeIndex);
@@ -1232,6 +1255,12 @@ function arenaWrapperClass(wrapper) {
   return "is-cat";
 }
 
+function renderCountdownMarkup() {
+  if (activeBlock?.status !== "countdown") return "";
+  const value = COUNTDOWN_STEPS[activeBlock.countdownStep] || COUNTDOWN_STEPS[0];
+  return `<div class="capacity-countdown" aria-live="assertive">${escapeHtml(value)}</div>`;
+}
+
 function arenaMarkup() {
   const trial = activeBlock && activeBlock.trialIndex >= 0 ? activeBlock.trials[activeBlock.trialIndex] : null;
   const wrapper = activeBlock?.plan?.wrapper || state.settings.wrapper;
@@ -1241,6 +1270,7 @@ function arenaMarkup() {
   const hideMarkers = wrapper === "hub_noncat" || wrapper === "hub_concept" || wrapper === "and_noncat" || wrapper === "resist_words" || wrapper === "emotion_words" || wrapper === "resist_concept";
   const markers = hideMarkers ? "" : points.map((point) => `<span class="capacity-hub-marker" style="left:${point.xPct}%;top:${point.yPct}%;"></span>`).join("");
   const visible = Boolean(trial && (activeBlock?.status === "trial" || activeBlock?.status === "paused") && activeBlock.stimulusVisible);
+  const countdown = renderCountdownMarkup();
   const isRelateVectorWrapper = wrapper === "relate_vectors" || wrapper === "relate_vectors_dual";
   const isRelateNumbersWrapper = wrapper === "relate_numbers" || wrapper === "relate_numbers_dual";
 
@@ -1248,7 +1278,7 @@ function arenaMarkup() {
     const relationTokens = Array.isArray(trial?.display?.pairTokens)
       ? trial.display.pairTokens.map((token) => renderRelateVectorTokenMarkup(token, visible)).join("")
       : "";
-    return `<div class="capacity-hub-arena ${wrapperClass}${pausedClass}"><div class="capacity-hub-ring"></div>${markers}${relationTokens}</div>`;
+    return `<div class="capacity-hub-arena ${wrapperClass}${pausedClass}"><div class="capacity-hub-ring"></div>${markers}${countdown}${relationTokens}</div>`;
   }
 
   if (isRelateNumbersWrapper) {
@@ -1258,6 +1288,7 @@ function arenaMarkup() {
       <div class="capacity-hub-arena ${wrapperClass}${pausedClass}">
         <div class="capacity-hub-ring"></div>
         ${markers}
+        ${countdown}
         ${trial ? renderRelateNumberTokenMarkup(trial.display.firstToken, visible, showFirst) : ""}
         ${trial ? renderRelateNumberTokenMarkup(trial.display.secondToken, visible, showSecond) : ""}
       </div>
@@ -1291,6 +1322,7 @@ function arenaMarkup() {
     <div class="capacity-hub-arena ${wrapperClass}${pausedClass}">
       <div class="capacity-hub-ring"></div>
       ${markers}
+      ${countdown}
       <div class="capacity-hub-token${visible ? "" : " is-hidden"}${isShape ? " is-shape" : ""}${isWordWrapper ? " is-word" : ""}" style="left:${point.xPct}%;top:${point.yPct}%;background:${isShape || isWordWrapper ? "transparent" : background};color:${visible ? (isShape || isWordWrapper ? shapeColor : textColor) : "transparent"};${tokenChrome}${fontFamily}${fontWeight}${fontStyle}">${token}</div>
     </div>
   `;
@@ -1797,7 +1829,7 @@ function renderPlayControls() {
       </div>
     `;
   }
-  if (activeBlock?.status === "trial") {
+  if (activeBlock?.status === "trial" || activeBlock?.status === "countdown") {
     if (activeBlock.plan.targetModality === "dual") {
       return `
         <div class="response-row">
@@ -1916,7 +1948,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "open-left") {
-    if (activeBlock?.status === "trial") return;
+    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown") return;
     triggerSfx("ui_tap_soft");
     viewState.leftOpen = true;
     viewState.rightOpen = false;
@@ -1924,7 +1956,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "open-right") {
-    if (activeBlock?.status === "trial") return;
+    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown") return;
     triggerSfx("ui_tap_soft");
     viewState.rightOpen = true;
     viewState.leftOpen = false;
@@ -2061,7 +2093,7 @@ document.addEventListener("touchstart", (event) => {
 }, { passive: true });
 
 document.addEventListener("touchend", (event) => {
-  if (!touchStart || activeBlock?.status === "trial") {
+  if (!touchStart || activeBlock?.status === "trial" || activeBlock?.status === "countdown") {
     touchStart = null;
     return;
   }

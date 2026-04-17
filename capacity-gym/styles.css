@@ -1097,6 +1097,43 @@ button {
   border-radius: 50%;
 }
 
+.capacity-countdown {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  font-family: "Orbitron", monospace;
+  font-size: clamp(58px, 13vh, 112px);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+  pointer-events: none;
+  text-shadow:
+    0 0 12px rgba(255, 255, 255, 0.72),
+    0 0 28px rgba(84, 162, 255, 0.68),
+    0 0 44px rgba(244, 114, 255, 0.34);
+  animation: countdown-pulse 700ms ease-out both;
+}
+
+@keyframes countdown-pulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.78);
+  }
+
+  22% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .capacity-hub-marker {
   position: absolute;
   width: 13px;
