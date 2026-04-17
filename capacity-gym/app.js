@@ -1344,17 +1344,11 @@ function sessionStatsModel() {
 function hudModel() {
   const plan = displayPlanForHud();
   const family = wrapperFamily(plan.wrapper);
-  const coachSession = activeCoachSession();
-  const sessionId = activeBlock?.sessionId || coachSession?.id || null;
   return {
     items: [
       ["Block Type", familyLabel(family)],
       ["Match Type", displayHubTargetLabel(plan.targetModality, plan.wrapper)],
-      ["N-back", `N-${plan.n}`],
-      ["Next N-back", `N-${projectedNextN(plan)}`],
-      ["Session g", sessionEarnedG(sessionId)],
-      ["Blocks left", blocksLeft()],
-      ["Sessions to go", programmeSessionsToGo()]
+      ["N-back", `N-${plan.n}`]
     ]
   };
 }
@@ -1638,10 +1632,22 @@ function renderFamilyProgress() {
   `;
 }
 
+function gameplayStatsModel() {
+  const last = state.history[0] || null;
+  const plan = displayPlanForHud();
+  return {
+    lastNBack: last ? `N-${blockEndN(last)}` : "--",
+    nextNBack: `N-${projectedNextN(plan)}`,
+    currentSession: nextCoachSessionDisplay(),
+    sessionsToGo: programmeSessionsToGo()
+  };
+}
+
 function renderRightStrip() {
   const score = latestTransferScore();
   const last = state.history[0] || null;
   const nextPlan = resolveNextBlockSettings();
+  const gameplayStats = gameplayStatsModel();
   const activeAccuracy = activeBlock ? liveAccuracy() : null;
   const lastAccuracy = last ? blockAccuracy(last) : null;
   const showDualSplit = !activeBlock && last?.targetModality === "dual";
@@ -1671,6 +1677,15 @@ function renderRightStrip() {
               <strong>${(economy.walletG / 100).toFixed(2)} IQ</strong>
               <span class="coin-label">IQ point credit</span>
             </div>
+          </div>
+        </section>
+        <section class="panel gameplay-panel">
+          <h2 class="strip-title panel-strip-title">GAME PLAY</h2>
+          <div class="stat-grid">
+            <div class="stat"><span class="mini-label">Last N-Back</span><strong>${gameplayStats.lastNBack}</strong></div>
+            <div class="stat"><span class="mini-label">Next N-back</span><strong>${gameplayStats.nextNBack}</strong></div>
+            <div class="stat"><span class="mini-label">Current Session</span><strong>${gameplayStats.currentSession}</strong></div>
+            <div class="stat"><span class="mini-label">Sessions To Go</span><strong>${gameplayStats.sessionsToGo}</strong></div>
           </div>
         </section>
         <section class="panel">

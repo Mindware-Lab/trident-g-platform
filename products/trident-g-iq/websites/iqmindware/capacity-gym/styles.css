@@ -300,6 +300,11 @@ button {
   font-size: 14px;
 }
 
+.panel-strip-title {
+  margin: 0 0 7px;
+  font-size: 13px;
+}
+
 .training-prompt {
   margin: 0 0 11px;
 }
@@ -708,10 +713,10 @@ button {
 
 .hud-status {
   min-width: 0;
-  width: 100%;
+  width: min(100%, 620px);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   justify-content: center;
   justify-self: center;
 }
@@ -1400,7 +1405,7 @@ button {
   }
 
   .hud-status {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .hud-item {
@@ -1435,7 +1440,7 @@ button {
   }
 
   .hud-status {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .coach-callout {
