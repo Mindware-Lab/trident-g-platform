@@ -562,6 +562,44 @@ button {
   margin-top: 8px;
 }
 
+.accuracy-mode-card {
+  display: grid;
+  min-height: 70px;
+  gap: 4px;
+  align-content: start;
+}
+
+.accuracy-mode-card.is-empty {
+  opacity: 0.68;
+}
+
+.accuracy-mode-target {
+  display: block;
+  min-height: 20px;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.92);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.accuracy-mode-card.is-empty .accuracy-mode-target {
+  color: rgba(255, 255, 255, 0.58);
+}
+
+.accuracy-mode-card .accuracy-mode-score {
+  margin-top: 0;
+  font-size: 18px;
+  line-height: 1.05;
+}
+
+.accuracy-mode-card.is-empty .accuracy-mode-score {
+  color: rgba(255, 255, 255, 0.48);
+}
+
 .right-stats-btn {
   width: 100%;
   margin-top: 2px;

@@ -863,6 +863,70 @@ function liveAccuracy() {
   return ok / total;
 }
 
+function liveAccuracyForMode(targetModality) {
+  if (!activeBlock || !activeBlock.trialOutcomes.length) return null;
+  if (activeBlock.plan.targetModality !== "dual") {
+    return targetModality === activeBlock.plan.targetModality ? liveAccuracy() : null;
+  }
+  const key = targetModality === "rel" ? "classificationRel" : "classificationSym";
+  let ok = 0;
+  activeBlock.trialOutcomes.forEach((outcome) => {
+    if (outcome[key] === "hit" || outcome[key] === "correct_rejection") ok += 1;
+  });
+  return ok / activeBlock.trialOutcomes.length;
+}
+
+function numericScore(value) {
+  return Number.isFinite(value) ? value : null;
+}
+
+function dualSecondaryTargetLabel(wrapper) {
+  if (wrapper === "relate_numbers_dual") return "DIRECTION";
+  if (wrapper === "relate_vectors_dual") return "ORIENTATION";
+  return "SURFACE";
+}
+
+function accuracyModeModel() {
+  const last = state.history[0] || null;
+  const source = activeBlock
+    ? { wrapper: activeBlock.plan.wrapper, targetModality: activeBlock.plan.targetModality, entry: null }
+    : last
+      ? { wrapper: last.wrapper, targetModality: last.targetModality, entry: last }
+      : { ...resolveNextBlockSettings(), entry: null };
+
+  if (source.targetModality === "dual") {
+    return [
+      {
+        label: "MODE 1",
+        target: "RELATION",
+        score: activeBlock ? liveAccuracyForMode("rel") : numericScore(source.entry?.block?.accuracyRel),
+        tracked: true
+      },
+      {
+        label: "MODE 2",
+        target: dualSecondaryTargetLabel(source.wrapper),
+        score: activeBlock ? liveAccuracyForMode("sym") : numericScore(source.entry?.block?.accuracySym),
+        tracked: true
+      }
+    ];
+  }
+
+  return [
+    {
+      label: "MODE 1",
+      target: displayHubTargetLabel(source.targetModality, source.wrapper),
+      score: activeBlock ? liveAccuracyForMode(source.targetModality) : source.entry ? blockAccuracy(source.entry) : null,
+      tracked: true
+    },
+    {
+      label: "MODE 2",
+      target: "Not tracked",
+      score: null,
+      tracked: false
+    }
+  ];
+}
+
 function scoreCoreCorrectness(accuracy) {
   const acc = clamp(Number(accuracy || 0), 0, 1);
   if (acc >= 0.9) return Math.round(36 + ((acc - 0.9) / 0.1) * 4);
@@ -1652,16 +1716,8 @@ function gameplayStatsModel() {
 function renderRightStrip() {
   const score = latestTransferScore();
   const last = state.history[0] || null;
-  const nextPlan = resolveNextBlockSettings();
   const gameplayStats = gameplayStatsModel();
-  const activeAccuracy = activeBlock ? liveAccuracy() : null;
-  const lastAccuracy = last ? blockAccuracy(last) : null;
-  const showDualSplit = !activeBlock && last?.targetModality === "dual";
-  const accuracyLabel = Number.isFinite(activeAccuracy)
-    ? percent(activeAccuracy)
-    : Number.isFinite(lastAccuracy)
-      ? percent(lastAccuracy)
-      : "--";
+  const accuracyModes = accuracyModeModel();
   return `
     <aside class="strip strip-right" aria-label="Stats and wallet strip">
       <div class="strip-inner">
@@ -1684,14 +1740,14 @@ function renderRightStrip() {
           </div>
           <div class="right-subsection">
             <h3>Accuracy</h3>
-            <div class="stat-grid">
-              <div class="stat"><span class="mini-label">${activeBlock ? "Live" : "Last block"}</span><strong>${accuracyLabel}</strong></div>
-              ${showDualSplit ? `
-                <div class="stat"><span class="mini-label">Relation</span><strong>${percent(last.block?.accuracyRel)}</strong></div>
-                <div class="stat"><span class="mini-label">Surface</span><strong>${percent(last.block?.accuracySym)}</strong></div>
-              ` : `
-                <div class="stat"><span class="mini-label">Target</span><strong>${escapeHtml(displayHubTargetLabel(nextPlan.targetModality, nextPlan.wrapper))}</strong></div>
-              `}
+            <div class="stat-grid accuracy-mode-grid">
+              ${accuracyModes.map((mode) => `
+                <div class="stat accuracy-mode-card${mode.tracked ? "" : " is-empty"}">
+                  <span class="mini-label">${escapeHtml(mode.label)}</span>
+                  <span class="accuracy-mode-target">${escapeHtml(mode.target)}</span>
+                  <strong class="accuracy-mode-score">${percent(mode.score)}</strong>
+                </div>
+              `).join("")}
             </div>
             ${last ? `<p class="small muted">Last block: ${escapeHtml(wrapperLabel(last.wrapper))}.</p>` : ""}
           </div>
