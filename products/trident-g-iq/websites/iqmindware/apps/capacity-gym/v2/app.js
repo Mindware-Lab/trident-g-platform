@@ -1121,7 +1121,7 @@ function finishBlock() {
   }
   saveState();
   activeBlock = null;
-  viewState.message = `${wrapperLabel(entry.wrapper)} saved: ${percent(entry.block.accuracy)} accuracy, Transfer Score ${transferScore.total}, +${blockG} g plasticity cells.`;
+  viewState.message = `${wrapperLabel(entry.wrapper)} saved: ${percent(entry.block.accuracy)} accuracy, Far Transfer Score ${formatScorePercent(transferScore.total)}, +${blockG} g plasticity cells.`;
   if (programmeBonus) viewState.message += ` Programme complete bonus: +${programmeBonus.bonusG} g.`;
   playBlockRewardSfx(baseEntry.block.nStart, summary.nEnd, blockG, programmeBonus);
   render();
@@ -1398,6 +1398,11 @@ function formatGraphValue(value, digits = 0) {
   return digits > 0 ? value.toFixed(digits) : `${Math.round(value)}`;
 }
 
+function formatScorePercent(value) {
+  if (!Number.isFinite(value)) return "--";
+  return `${Math.round(value)}%`;
+}
+
 function renderSessionBarChart({ title, subtitle, valueKey, maxValue, unit = "", digits = 0, model }) {
   return `
     <section class="stats-graph" aria-label="${escapeHtml(title)}">
@@ -1442,7 +1447,7 @@ function renderCenterStatsDashboard() {
         <div class="stat"><span class="mini-label">Completed</span><strong>${programmeSessionDisplay()}</strong></div>
         <div class="stat"><span class="mini-label">Sessions to go</span><strong>${model.sessionsToGo}</strong></div>
         <div class="stat"><span class="mini-label">Avg N-back</span><strong>${formatGraphValue(model.avgN, 1)}</strong></div>
-        <div class="stat"><span class="mini-label">Avg Transfer</span><strong>${formatGraphValue(model.avgTransfer)}</strong></div>
+        <div class="stat"><span class="mini-label">Avg Far Transfer</span><strong>${formatScorePercent(model.avgTransfer)}</strong></div>
       </div>
       ${renderSessionBarChart({
         title: "N-back average per session",
@@ -1453,10 +1458,11 @@ function renderCenterStatsDashboard() {
         model
       })}
       ${renderSessionBarChart({
-        title: "Transfer Score per session",
-        subtitle: "Mean Transfer Score across blocks in each session.",
+        title: "Far Transfer Score per session",
+        subtitle: "Mean far transfer score across blocks in each session.",
         valueKey: "avgTransfer",
         maxValue: 100,
+        unit: "%",
         model
       })}
     </div>
@@ -1690,16 +1696,10 @@ function renderRightStrip() {
             ${last ? `<p class="small muted">Last block: ${escapeHtml(wrapperLabel(last.wrapper))}.</p>` : ""}
           </div>
           <div class="right-subsection">
-            <h3>Transfer Score</h3>
+            <h3>Far Transfer Score</h3>
             <div class="stat-grid">
-              <div class="stat"><span class="mini-label">Score</span><strong>${score ? score.total : "--"}</strong></div>
+              <div class="stat"><span class="mini-label">Score</span><strong>${score ? formatScorePercent(score.total) : "--"}</strong></div>
               <div class="stat"><span class="mini-label">Label</span><strong>${score ? score.label : "--"}</strong></div>
-            </div>
-            <div class="stat-grid score-component-grid">
-              <div class="stat"><span class="mini-label">Core</span><strong>${score ? score.coreCorrectness : "--"}</strong></div>
-              <div class="stat"><span class="mini-label">Complexity</span><strong>${score ? score.complexityHold : "--"}</strong></div>
-              <div class="stat"><span class="mini-label">Stability</span><strong>${score ? score.stabilityEfficiency : "--"}</strong></div>
-              <div class="stat"><span class="mini-label">Portability</span><strong>${score ? score.portability : "--"}</strong></div>
             </div>
             <button class="btn btn-ghost right-stats-btn" type="button" data-action="show-stats" ${activeBlock ? "disabled" : ""}>Stats</button>
           </div>

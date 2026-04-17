@@ -562,19 +562,6 @@ button {
   margin-top: 8px;
 }
 
-.score-component-grid {
-  margin-top: 1px;
-}
-
-.score-component-grid .mini-label {
-  font-size: 7px;
-  letter-spacing: 1px;
-}
-
-.score-component-grid .stat strong {
-  font-size: 12px;
-}
-
 .right-stats-btn {
   width: 100%;
   margin-top: 2px;
