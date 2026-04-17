@@ -32,6 +32,8 @@
   --zone: #f5b544;
   --flat: #86a0be;
   --danger: #ff5959;
+  --capacity-neural-wallpaper-image: url("/assets/img/neural%20network%202.png");
+  --capacity-neural-wallpaper-opacity: 0.2;
   font-family: "Exo 2", sans-serif;
 }
 
@@ -66,6 +68,7 @@ button {
 
 .capacity-v2-shell {
   position: relative;
+  isolation: isolate;
   width: min(var(--layout-width), 100%);
   height: calc(100vh - 60px);
   min-height: 650px;
@@ -85,6 +88,21 @@ button {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  z-index: 0;
+  background-image: var(--capacity-neural-wallpaper-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  mix-blend-mode: screen;
+  opacity: var(--capacity-neural-wallpaper-opacity);
+}
+
+.capacity-v2-shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
   background:
     radial-gradient(circle at top right, var(--module-glow), transparent 30%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent 24%);
