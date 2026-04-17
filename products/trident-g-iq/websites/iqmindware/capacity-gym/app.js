@@ -1410,9 +1410,9 @@ function hudModel() {
   const family = wrapperFamily(plan.wrapper);
   return {
     items: [
-      ["Block Type", familyLabel(family)],
-      ["Match Type", displayHubTargetLabel(plan.targetModality, plan.wrapper)],
-      ["N-back", `N-${plan.n}`]
+      ["Game", familyLabel(family)],
+      ["Target", displayHubTargetLabel(plan.targetModality, plan.wrapper)],
+      ["Memory", `N-${plan.n}`]
     ]
   };
 }

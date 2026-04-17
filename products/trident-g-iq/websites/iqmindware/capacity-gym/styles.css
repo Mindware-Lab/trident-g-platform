@@ -779,39 +779,69 @@ button {
 }
 
 .hud {
-  min-height: 50px;
-  height: 50px;
+  min-height: 58px;
+  height: 58px;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  padding: 0 12px;
+  padding: 5px 12px 6px;
   align-items: stretch;
   justify-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(13, 21, 37, 0.95);
+  border-top: 2px solid rgba(84, 162, 255, 0.9);
+  border-bottom: 1px solid rgba(204, 255, 102, 0.16);
+  background:
+    linear-gradient(90deg, rgba(84, 162, 255, 0.16), transparent 18%, transparent 82%, rgba(244, 114, 255, 0.12)),
+    rgba(9, 16, 30, 0.98);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 24px rgba(84, 162, 255, 0.13);
 }
 
 .hud-status {
   min-width: 0;
-  width: min(100%, 620px);
+  width: min(100%, 760px);
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
   justify-content: center;
   justify-self: center;
 }
 
 .hud-item {
+  --hud-accent: var(--module-accent);
+  position: relative;
   min-width: 0;
   display: grid;
   align-content: center;
-  gap: 1px;
-  padding: 3px 5px;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 2px;
+  padding: 6px 10px 7px;
+  border: 1px solid rgba(84, 162, 255, 0.16);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent),
+    rgba(17, 29, 48, 0.72);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    0 0 12px color-mix(in srgb, var(--hud-accent) 18%, transparent);
   text-align: center;
 }
 
-.hud-status .hud-item:last-child {
-  border-right: 0;
+.hud-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--hud-accent), transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--hud-accent) 64%, transparent);
+}
+
+.hud-item:nth-child(2) {
+  --hud-accent: #f472ff;
+}
+
+.hud-item:nth-child(3) {
+  --hud-accent: var(--credit);
 }
 
 .hud-value {
@@ -819,20 +849,27 @@ button {
   overflow: hidden;
   color: var(--text);
   font-family: "Orbitron", monospace;
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 900;
   line-height: 1;
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0 12px color-mix(in srgb, var(--hud-accent) 42%, transparent),
+    0 1px 0 rgba(0, 0, 0, 0.55);
   text-overflow: ellipsis;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
 .hud-label {
   display: block;
   overflow: hidden;
-  color: #f1c7ff;
-  font-size: 7px;
-  letter-spacing: 1.1px;
-  text-shadow: 0 0 12px rgba(244, 114, 255, 0.38);
+  color: var(--hud-accent);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  line-height: 1;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--hud-accent) 46%, transparent);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
