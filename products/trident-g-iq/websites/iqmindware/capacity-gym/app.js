@@ -1659,13 +1659,11 @@ function renderRightStrip() {
   return `
     <aside class="strip strip-right" aria-label="Stats and wallet strip">
       <div class="strip-inner">
-        <div class="strip-head">
-          <div>
-            <h2 class="strip-title">Scores</h2>
-          </div>
+        <div class="strip-head strip-head-close">
           <button class="sheet-close" type="button" data-action="close-sheets" aria-label="Close sheet">x</button>
         </div>
-        <section class="panel">
+        <section class="panel score-panel">
+          <h2 class="strip-title panel-strip-title">SCORES</h2>
           <div class="coin-stack">
             <div class="coin">
               <img class="coin-icon" src="./assets/coins/g-plasticity-cell.png?v=20260417-coin2" alt="" loading="lazy">
@@ -1678,6 +1676,33 @@ function renderRightStrip() {
               <span class="coin-label">IQ point credit</span>
             </div>
           </div>
+          <div class="right-subsection">
+            <h3>Accuracy</h3>
+            <div class="stat-grid">
+              <div class="stat"><span class="mini-label">${activeBlock ? "Live" : "Last block"}</span><strong>${accuracyLabel}</strong></div>
+              ${showDualSplit ? `
+                <div class="stat"><span class="mini-label">Relation</span><strong>${percent(last.block?.accuracyRel)}</strong></div>
+                <div class="stat"><span class="mini-label">Surface</span><strong>${percent(last.block?.accuracySym)}</strong></div>
+              ` : `
+                <div class="stat"><span class="mini-label">Target</span><strong>${escapeHtml(displayHubTargetLabel(nextPlan.targetModality, nextPlan.wrapper))}</strong></div>
+              `}
+            </div>
+            ${last ? `<p class="small muted">Last block: ${escapeHtml(wrapperLabel(last.wrapper))}.</p>` : ""}
+          </div>
+          <div class="right-subsection">
+            <h3>Transfer Score</h3>
+            <div class="stat-grid">
+              <div class="stat"><span class="mini-label">Score</span><strong>${score ? score.total : "--"}</strong></div>
+              <div class="stat"><span class="mini-label">Label</span><strong>${score ? score.label : "--"}</strong></div>
+            </div>
+            <div class="stat-grid score-component-grid">
+              <div class="stat"><span class="mini-label">Core</span><strong>${score ? score.coreCorrectness : "--"}</strong></div>
+              <div class="stat"><span class="mini-label">Complexity</span><strong>${score ? score.complexityHold : "--"}</strong></div>
+              <div class="stat"><span class="mini-label">Stability</span><strong>${score ? score.stabilityEfficiency : "--"}</strong></div>
+              <div class="stat"><span class="mini-label">Portability</span><strong>${score ? score.portability : "--"}</strong></div>
+            </div>
+            <button class="btn btn-ghost right-stats-btn" type="button" data-action="show-stats" ${activeBlock ? "disabled" : ""}>Stats</button>
+          </div>
         </section>
         <section class="panel gameplay-panel">
           <h2 class="strip-title panel-strip-title">GAME PLAY</h2>
@@ -1686,26 +1711,6 @@ function renderRightStrip() {
             <div class="stat"><span class="mini-label">Next N-back</span><strong>${gameplayStats.nextNBack}</strong></div>
             <div class="stat"><span class="mini-label">Current Session</span><strong>${gameplayStats.currentSession}</strong></div>
             <div class="stat"><span class="mini-label">Sessions To Go</span><strong>${gameplayStats.sessionsToGo}</strong></div>
-          </div>
-        </section>
-        <section class="panel">
-          <h3>Accuracy</h3>
-          <div class="stat-grid">
-            <div class="stat"><span class="mini-label">${activeBlock ? "Live" : "Last block"}</span><strong>${accuracyLabel}</strong></div>
-            ${showDualSplit ? `
-              <div class="stat"><span class="mini-label">Relation</span><strong>${percent(last.block?.accuracyRel)}</strong></div>
-              <div class="stat"><span class="mini-label">Surface</span><strong>${percent(last.block?.accuracySym)}</strong></div>
-            ` : `
-              <div class="stat"><span class="mini-label">Target</span><strong>${escapeHtml(displayHubTargetLabel(nextPlan.targetModality, nextPlan.wrapper))}</strong></div>
-            `}
-          </div>
-          ${last ? `<p class="small muted">Last block: ${escapeHtml(wrapperLabel(last.wrapper))}.</p>` : ""}
-        </section>
-        <section class="panel">
-          <h3>Transfer Score</h3>
-          <div class="stat-grid">
-            <div class="stat"><span class="mini-label">Score</span><strong>${score ? score.total : "--"}</strong></div>
-            <div class="stat"><span class="mini-label">Label</span><strong>${score ? score.label : "--"}</strong></div>
           </div>
         </section>
       </div>
@@ -1762,7 +1767,6 @@ function renderPlayControls() {
       ${coachSession ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start next block</button>` : ""}
       ${state.settings.mode === "manual" ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start manual block</button>` : ""}
       ${state.settings.mode === "coach" && !state.currentSession ? `<button class="btn btn-dark" type="button" data-action="start-coach-session" ${activeBlock ? "disabled" : ""}>Start coach session</button>` : ""}
-      <button class="btn btn-ghost" type="button" data-action="show-stats" ${activeBlock?.status === "briefing" ? "disabled" : ""}>Stats</button>
     </div>
   `;
 }

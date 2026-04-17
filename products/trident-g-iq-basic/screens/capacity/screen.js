@@ -151,8 +151,8 @@ const capacityBannerHtml = `
       <span class="capacity-banner-chip"><span class="capacity-banner-chip-dot" aria-hidden="true"></span>Blk 5/10</span>
       <span class="capacity-banner-chip capacity-banner-chip--speed"><span class="capacity-banner-chip-dot" aria-hidden="true"></span>Fast pace</span>
     </div>
-    <div class="capacity-banner-credit" aria-label="Tridents earned this session">
-      <span class="capacity-banner-credit-label">Tridents</span>
+    <div class="capacity-banner-credit" aria-label="g plasticity cells earned this session">
+      <span class="capacity-banner-credit-label">g cells</span>
       <span class="capacity-banner-credit-badge">30</span>
     </div>
   </div>

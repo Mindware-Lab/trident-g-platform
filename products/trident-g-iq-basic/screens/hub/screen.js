@@ -155,11 +155,11 @@ export const hubScreen = {
                   </div>
                   <div class="hub-wallet-stat hub-wallet-stat--trident">
                     <span class="hub-wallet-value">3,800</span>
-                    <span class="hub-wallet-label">Tridents</span>
+                    <span class="hub-wallet-label">g plasticity cells</span>
                   </div>
                   <div class="hub-wallet-stat hub-wallet-stat--flash">
-                    <span class="hub-wallet-value">GBP 38</span>
-                    <span class="hub-wallet-label">Trident Credit</span>
+                    <span class="hub-wallet-value">38.00</span>
+                    <span class="hub-wallet-label">IQ credits</span>
                   </div>
                 </div>
               </div>

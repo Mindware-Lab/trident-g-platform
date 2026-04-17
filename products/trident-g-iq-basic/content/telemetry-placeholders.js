@@ -27,7 +27,7 @@ export const basicHubTelemetry = [
         </div>
         <div class="hub-telemetry-currency hub-telemetry-currency--trident">
           <span class="hub-telemetry-value">12</span>
-          <span class="hub-telemetry-unit">Tridents</span>
+          <span class="hub-telemetry-unit">g plasticity cells</span>
           <span class="hub-telemetry-copy">milestone rewards</span>
         </div>
         <div class="hub-telemetry-credit">

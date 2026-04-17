@@ -272,6 +272,10 @@ button {
   flex: 0 0 auto;
 }
 
+.strip-head-close {
+  justify-content: flex-end;
+}
+
 .strip-kicker,
 .mini-label,
 .hud-label,
@@ -302,7 +306,7 @@ button {
 
 .panel-strip-title {
   margin: 0 0 7px;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .training-prompt {
@@ -550,6 +554,30 @@ button {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 5px;
+}
+
+.right-subsection {
+  display: grid;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.score-component-grid {
+  margin-top: 1px;
+}
+
+.score-component-grid .mini-label {
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+
+.score-component-grid .stat strong {
+  font-size: 12px;
+}
+
+.right-stats-btn {
+  width: 100%;
+  margin-top: 2px;
 }
 
 .stat {

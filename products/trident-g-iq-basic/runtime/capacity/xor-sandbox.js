@@ -1385,7 +1385,7 @@ export const capacityLabTelemetrySeed = [
           <div class="capacity-sandbox-reward">
             <div class="capacity-sandbox-reward-coin" aria-hidden="true"></div>
             <div>
-              <div class="capacity-sandbox-reward-label">Tridents</div>
+              <div class="capacity-sandbox-reward-label">g plasticity cells</div>
               <div class="capacity-sandbox-reward-value">--</div>
               <div class="capacity-sandbox-reward-sub">Session reward</div>
             </div>

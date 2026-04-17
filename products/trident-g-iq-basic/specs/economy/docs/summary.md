@@ -1,20 +1,53 @@
-**Credit assignment rules (current implementation, based on spec language):**
-1. **Consistency gate:** Any award requires last‑3‑block consistency (average accuracy ≥ 85%). This is the “stability gate” from the telemetry spec.  
-2. **Session quality bucket (max 2,000 Tridents):**
-   - **Good session:** +40 Tridents when block accuracy ≥ 90% and consistency gate passes.  
-   - **Fast finish:** +20 Tridents when speed = fast and accuracy ≥ 85% and consistency gate passes.  
-   - **New best average:** +40 Tridents when a 10‑block session average beats prior best by >1% and consistency gate passes at that point.  
-   - **New best stable level:** +40 Tridents when stable level (last‑3 average n) exceeds prior best.
-3. **Portability & mastery bucket (max 4,500 Tridents):**
-   - **Swap hold:** +100 Tridents when wrapper changes and performance holds (accuracy ≥ 85% and n does not drop more than 1) with consistency gate.  
-   - **Variant fast 3 mastered:** +200 Tridents the first time a wrapper+target variant hits stable 3‑back at fast speed with accuracy ≥ 90% and consistency gate.  
-   - **Family fast 3 mastered:** +600 Tridents once all 3 wrappers have fast‑3 mastery with consistency gate.
-4. **Transfer readiness bucket (max 1,500 Tridents):**
-   - **Emerging:** +150 Tridents the first time a swap hold happens.  
-   - **Developing:** +300 Tridents the first time a fast finish happens.  
-   - **Broadening:** +450 Tridents the first time a variant fast‑3 mastery happens.  
-   - **Strong:** +600 Tridents the first time a family fast‑3 mastery happens.
-5. **Challenge bonus (max 2,000 Tridents):**
-   - **20‑session challenge completion:** +2,000 Tridents if all 9 variants reach fast stable 3‑back within 20 sessions; also triggers a coaching voucher event (0 Tridents).
+# Economy Summary
 
-  
+The current user-facing economy uses two units:
+
+- **g plasticity cells** are the whole-number micro reward earned from blocks, modules, and sessions.
+- **IQ credits** are the derived macro unit shown in wallets and progress surfaces.
+- **100 g plasticity cells = 1 IQ credit**.
+
+All learning surfaces should compute a `Transfer Score` first, then convert that score into g plasticity cells.
+
+## Shared Transfer Score
+
+`Transfer Score = Core Correctness + Complexity Hold + Stability / Efficiency + Portability`
+
+- **Core Correctness:** 0-40
+- **Complexity Hold:** 0-20
+- **Stability / Efficiency:** 0-20
+- **Portability:** 0-20
+- Total is clamped to 0-100.
+
+## Capacity Gym
+
+Per block:
+
+`gAward = round(2 + 0.06 * TransferScore + improvementBonus + stretchBonus + cleanHoldBonus)`
+
+- **Improvement bonus:** 0-2 g for beating the rolling recent baseline.
+- **Stretch bonus:** 0-2 g for holding after wrapper swap, speed increase, or complexity increase.
+- **Clean-hold bonus:** 0-3 g for low lapse/timeout burden, no late collapse, and good re-entry.
+
+## Reasoning Lab
+
+Per module:
+
+`gAward = round(3 + 0.08 * TransferScore + bonuses)`
+
+Reasoning Lab should use the same four Transfer Score buckets but fill them with reasoning-specific measures.
+
+## Puzzle Lab
+
+Per full session:
+
+`gAward = round(10 + 0.20 * TransferScore + bonuses)`
+
+Puzzle Lab should use the same four Transfer Score buckets but fill them with puzzle-specific measures, including survey-to-build coupling and efficient completion.
+
+## Programme Completion
+
+The old visible credit/voucher challenge language is retired. Capacity Gym uses a final coin bonus:
+
+`Programme Completion Score = family coverage 0-40 + efficiency gain 0-30 + far-transfer evidence 0-30`
+
+`programmeBonusG = 20 + round(0.6 * ProgrammeCompletionScore)`
