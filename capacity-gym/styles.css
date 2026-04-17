@@ -1272,9 +1272,11 @@ button {
   font-family: "Orbitron", monospace;
   font-size: 16px;
   font-weight: 900;
-  line-height: 1;
+  line-height: 1.12;
+  padding-bottom: 1px;
   text-align: center;
   text-overflow: ellipsis;
+  transform: translateY(-1px);
   white-space: nowrap;
 }
 
