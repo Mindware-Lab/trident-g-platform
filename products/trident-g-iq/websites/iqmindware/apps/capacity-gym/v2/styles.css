@@ -68,7 +68,6 @@ button {
 
 .capacity-v2-shell {
   position: relative;
-  isolation: isolate;
   width: min(var(--layout-width), 100%);
   height: calc(100vh - 60px);
   min-height: 650px;
@@ -88,21 +87,6 @@ button {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
-  background-image: var(--capacity-neural-wallpaper-image);
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  mix-blend-mode: screen;
-  opacity: var(--capacity-neural-wallpaper-opacity);
-}
-
-.capacity-v2-shell::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
   background:
     radial-gradient(circle at top right, var(--module-glow), transparent 30%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent 24%);
@@ -893,6 +877,8 @@ button {
 }
 
 .arena-shell {
+  position: relative;
+  isolation: isolate;
   min-height: 0;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
@@ -901,6 +887,26 @@ button {
   gap: 8px;
   padding: 10px 12px 6px;
   background: linear-gradient(180deg, rgba(17, 29, 48, 0.16), rgba(7, 13, 24, 0));
+  overflow: hidden;
+}
+
+.arena-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: var(--capacity-neural-wallpaper-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  mix-blend-mode: screen;
+  opacity: var(--capacity-neural-wallpaper-opacity);
+  pointer-events: none;
+}
+
+.arena-shell > * {
+  position: relative;
+  z-index: 1;
 }
 
 .coach-callout {
@@ -956,6 +962,10 @@ button {
   align-items: stretch;
   justify-items: stretch;
   padding: 10px;
+}
+
+.arena-shell.is-stats::before {
+  display: none;
 }
 
 .center-stats-dashboard {
