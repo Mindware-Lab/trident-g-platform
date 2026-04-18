@@ -562,7 +562,9 @@ function latestCoachTrainingTimestamp() {
 }
 
 function coachZonePreflightStatus() {
-  if (state.settings.mode !== "coach" || state.currentSession || activeBlock || zonePulseIsRunning()) {
+  const session = activeCoachSession();
+  const beforeFirstSessionBlock = !session || Math.max(0, Number(session.blocksCompleted || 0)) === 0;
+  if (state.settings.mode !== "coach" || !beforeFirstSessionBlock || activeBlock || zonePulseIsRunning()) {
     return { recommended: false, reason: "not_applicable", snapshot: zoneDisplaySnapshot() };
   }
   const snapshot = zoneDisplaySnapshot();
@@ -2447,6 +2449,7 @@ function renderRightStrip() {
 
 function renderPlayControls() {
   const coachSession = activeCoachSession();
+  const recommendZonePreflight = shouldRecommendCoachZonePreflight();
   if (viewState.centerMode === "zone") {
     if (zonePulseIsRunning()) {
       return `
@@ -2500,10 +2503,11 @@ function renderPlayControls() {
   }
   return `
     <div class="response-row">
-      ${coachSession ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start next block</button>` : ""}
+      ${coachSession && recommendZonePreflight ? `<button class="btn btn-primary" type="button" data-action="show-zone-pulse" ${activeBlock ? "disabled" : ""}>Test your zone</button>` : ""}
+      ${coachSession ? `<button class="btn ${recommendZonePreflight ? "btn-dark" : "btn-primary"}" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>${recommendZonePreflight ? "Start anyway" : "Start next block"}</button>` : ""}
       ${state.settings.mode === "manual" ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start manual block</button>` : ""}
-      ${state.settings.mode === "coach" && !state.currentSession && shouldRecommendCoachZonePreflight() ? `<button class="btn btn-primary zone-pulse-launch" type="button" data-action="show-zone-pulse" ${activeBlock ? "disabled" : ""}>Test your zone</button>` : ""}
-      ${state.settings.mode === "coach" && !state.currentSession ? `<button class="btn btn-dark" type="button" data-action="start-coach-session" ${activeBlock ? "disabled" : ""}>${shouldRecommendCoachZonePreflight() ? "Start anyway" : "Start coach session"}</button>` : ""}
+      ${state.settings.mode === "coach" && !state.currentSession && recommendZonePreflight ? `<button class="btn btn-primary" type="button" data-action="show-zone-pulse" ${activeBlock ? "disabled" : ""}>Test your zone</button>` : ""}
+      ${state.settings.mode === "coach" && !state.currentSession ? `<button class="btn btn-dark" type="button" data-action="start-coach-session" ${activeBlock ? "disabled" : ""}>${recommendZonePreflight ? "Start anyway" : "Start coach session"}</button>` : ""}
     </div>
   `;
 }
