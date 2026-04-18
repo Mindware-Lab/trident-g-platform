@@ -6,7 +6,7 @@ import {
   displayHubTargetLabel,
   isHubMatchAtIndex,
   summarizeHubBlock
-} from "./runtime/hub-engine.js?v=20260418-bindtargets";
+} from "./runtime/hub-engine.js?v=20260418-modehelp";
 import {
   initAudio,
   playSfx,
@@ -27,7 +27,8 @@ const SUPPORT_BLOCKS = 4;
 const PROGRAMME_SESSION_TARGET = 20;
 const MAX_SESSION_COUNTER = 999;
 const TRAINING_HELP_VIDEO_URL = "https://youtu.be/uOncXapT-j4?si=uJBBaXw7M1vtL2jL";
-const TRAINING_HELP_ICON_URL = "./assets/help/help-hex-purple.svg";
+const TRAINING_HELP_ICON_URL = "./assets/help/help-hex-blue.svg";
+const MODE_HELP_ICON_URL = "./assets/help/help-hex-purple.svg";
 const COACH_FAMILY_CYCLE = ["flex", "bind", "relate", "resist", "flex", "relate", "bind", "resist", "relate"];
 const RELATE_LADDER = ["relate_vectors", "relate_numbers", "relate_vectors_dual", "relate_numbers_dual"];
 const TRANSFER_SPRINT_BLOCKS = 3;
@@ -74,6 +75,7 @@ let activeBlock = null;
 let viewState = {
   leftOpen: false,
   rightOpen: false,
+  modeHelpOpen: false,
   centerMode: "play",
   message: "Choose coached progression or manual play, then start a block."
 };
@@ -1754,11 +1756,37 @@ function renderModePanel() {
         </a>
       </div>
       <p class="small muted training-prompt">SELECT COACH LED OR MANUAL</p>
-      <div class="mode-toggle" role="group" aria-label="Training mode">
-        <button class="chip-btn${state.settings.mode === "coach" ? " is-active" : ""}" type="button" data-action="set-mode" data-mode="coach">Coach-led</button>
-        <button class="chip-btn${state.settings.mode === "manual" ? " is-active" : ""}" type="button" data-action="set-mode" data-mode="manual">Manual</button>
+      <div class="mode-select-row">
+        <div class="mode-toggle" role="group" aria-label="Training mode">
+          <button class="chip-btn${state.settings.mode === "coach" ? " is-active" : ""}" type="button" data-action="set-mode" data-mode="coach">Coach-led</button>
+          <button class="chip-btn${state.settings.mode === "manual" ? " is-active" : ""}" type="button" data-action="set-mode" data-mode="manual">Manual</button>
+        </div>
+        <button class="mode-help-btn" type="button" data-action="toggle-mode-help" aria-label="Open training mode help" title="Open training mode help">
+          <img src="${MODE_HELP_ICON_URL}" alt="" aria-hidden="true">
+        </button>
       </div>
     </section>
+  `;
+}
+
+function renderModeHelpModal() {
+  if (!viewState.modeHelpOpen) return "";
+  return `
+    <div class="mode-help-backdrop" data-action="close-mode-help">
+      <section class="mode-help-dialog" role="dialog" aria-modal="true" aria-labelledby="modeHelpTitle" data-dialog-panel>
+        <button class="mode-help-close" type="button" data-action="close-mode-help" aria-label="Close training mode help">x</button>
+        <span class="mode-help-kicker">Training mode help</span>
+        <h2 id="modeHelpTitle">Coach-led or manual</h2>
+        <div class="mode-help-section">
+          <h3>Coach-led</h3>
+          <p>Enter the guided mission route. The Trident G Far Transfer (H) Protocol chooses your next arena, target, pace, and N-back level from your recent accuracy, stability, and transfer score, keeping each block calibrated for progression.</p>
+        </div>
+        <div class="mode-help-section">
+          <h3>Manual</h3>
+          <p>Free-play mode. Choose your game from the menu, set your pace, and pick your N-back loadout. Auto N-back levels up or down from performance, or you can lock a fixed N-back for focused practice.</p>
+        </div>
+      </section>
+    </div>
   `;
 }
 
@@ -2014,6 +2042,7 @@ function render() {
       ${renderPlayCard()}
       ${renderRightStrip()}
     </div>
+    ${renderModeHelpModal()}
   `;
 }
 
@@ -2122,9 +2151,23 @@ document.addEventListener("click", (event) => {
     render();
     return;
   }
+  if (action === "toggle-mode-help") {
+    triggerSfx("ui_tap_soft");
+    viewState.modeHelpOpen = !viewState.modeHelpOpen;
+    render();
+    return;
+  }
+  if (action === "close-mode-help") {
+    if (event.target.closest("[data-dialog-panel]") && !event.target.closest(".mode-help-close")) return;
+    triggerSfx("ui_tap_soft");
+    viewState.modeHelpOpen = false;
+    render();
+    return;
+  }
   if (action === "set-mode") {
     triggerSfx("ui_tap_soft");
     state.settings.mode = target.getAttribute("data-mode") === "manual" ? "manual" : "coach";
+    viewState.modeHelpOpen = false;
     saveState();
     render();
     return;

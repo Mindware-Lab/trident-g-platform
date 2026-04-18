@@ -333,6 +333,38 @@ button {
 
 .training-help-link:hover,
 .training-help-link:focus-visible {
+  filter: drop-shadow(0 0 10px rgba(53, 190, 255, 0.72));
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.mode-select-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.mode-help-btn {
+  flex: 0 0 auto;
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  place-items: center;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+.mode-help-btn img {
+  display: block;
+  width: 32px;
+  height: 32px;
+}
+
+.mode-help-btn:hover,
+.mode-help-btn:focus-visible {
   filter: drop-shadow(0 0 10px rgba(173, 92, 255, 0.72));
   transform: translateY(-1px);
   outline: none;
@@ -411,6 +443,83 @@ button {
 
 .training-panel .mode-toggle {
   margin-top: 4px;
+}
+
+.mode-help-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  padding: 18px;
+  background: rgba(4, 9, 20, 0.72);
+  place-items: center;
+}
+
+.mode-help-dialog {
+  position: relative;
+  width: min(420px, calc(100vw - 36px));
+  padding: 18px;
+  border: 1px solid rgba(173, 92, 255, 0.62);
+  background:
+    linear-gradient(135deg, rgba(89, 41, 132, 0.74), rgba(11, 17, 32, 0.98)),
+    rgba(11, 17, 32, 0.98);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 34px rgba(173, 92, 255, 0.25);
+  color: var(--white);
+}
+
+.mode-help-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(17, 29, 48, 0.78);
+  color: var(--white);
+  cursor: pointer;
+  font-family: "Orbitron", monospace;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.mode-help-kicker,
+.mode-help-section h3 {
+  color: var(--module-accent);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.8px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.mode-help-dialog h2 {
+  margin: 7px 28px 12px 0;
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 17px;
+  letter-spacing: 1.6px;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.mode-help-section {
+  margin-top: 12px;
+}
+
+.mode-help-section h3 {
+  margin: 0 0 6px;
+}
+
+.mode-help-section p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
 }
 
 .coach-cycle-subtitle {
