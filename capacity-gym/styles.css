@@ -1575,11 +1575,14 @@ button {
   .capacity-v2-app {
     height: auto;
     padding: 10px;
+    overflow-x: hidden;
   }
 
   .gym-layout {
     display: block;
+    width: 100%;
     height: auto;
+    margin-inline: auto;
   }
 
   .mobile-topbar {
@@ -1587,6 +1590,8 @@ button {
   }
 
   .play-card {
+    width: 100%;
+    margin-inline: auto;
     min-height: calc(100vh - 92px);
   }
 
@@ -1655,11 +1660,19 @@ button {
 
   .coach-callout {
     min-width: 0;
-    width: 100%;
+    width: min(100%, 560px);
+    margin-inline: auto;
   }
 
   .capacity-hub-arena {
-    width: min(92vw, 520px);
+    width: min(100%, 520px);
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  .play-controls {
+    width: 100%;
+    margin-inline: auto;
   }
 
   .center-stats-dashboard {
@@ -1706,6 +1719,8 @@ button {
 
   .arena-shell {
     padding: 8px;
+    width: 100%;
+    justify-items: center;
   }
 
   .response-btn,
