@@ -6,7 +6,7 @@ import {
   displayHubTargetLabel,
   isHubMatchAtIndex,
   summarizeHubBlock
-} from "./runtime/hub-engine.js?v=20260418-prestarttips";
+} from "./runtime/hub-engine.js?v=20260418-noncatshapes";
 import {
   initAudio,
   playSfx,
@@ -252,13 +252,15 @@ function blockTipRule(plan) {
   }
 
   if (target === "loc") {
-    return "Press MATCH when the position repeats; ignore color and symbol.";
+    const ignoredItem = wrapper === "hub_noncat" ? "shape" : "symbol";
+    return `Press MATCH when the position repeats; ignore color and ${ignoredItem}.`;
   }
   if (target === "col") {
-    return "Press MATCH when the color repeats; ignore position and symbol.";
+    const ignoredItem = wrapper === "hub_noncat" ? "shape" : "symbol";
+    return `Press MATCH when the color repeats; ignore position and ${ignoredItem}.`;
   }
 
-  const symbolName = wrapper === "hub_noncat" ? "symbol" : "letter";
+  const symbolName = wrapper === "hub_noncat" ? "shape" : "letter";
   return `Press MATCH when the ${symbolName} repeats; ignore position and color.`;
 }
 

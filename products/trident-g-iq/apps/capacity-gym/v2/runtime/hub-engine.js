@@ -236,6 +236,8 @@ const SYMBOL_POOL = [
 
 const AND_SHAPE_POOL = ["▲", "■", "●", "◆", "✚", "✖", "✶", "✷", "✹", "✳"];
 
+const HUB_NONCAT_SHAPE_POOL = ["Shape A", "Shape B", "Shape C", "Shape D"];
+
 const LURE_RATE = 0.1;
 
 function hslColor(hue, saturation, lightness) {
@@ -556,7 +558,19 @@ function buildRenderMapping({ wrapper, mappingSeed }) {
     const rng = createSeededRng(resolvedSeed);
     const locRotationDeg = rng() * 360;
     const palette = buildNoncatPalette(resolvedSeed);
-    const symbolSet = sampleWithoutReplacement(SYMBOL_POOL, 4, createSeededRng(hash32(`symbols:${resolvedSeed}`)));
+    const shapeSeed = hash32(`hub-shapes:${resolvedSeed}`);
+    const symbolSet = Array.from({ length: 4 }, (_, index) => ({
+      label: HUB_NONCAT_SHAPE_POOL[index],
+      variants: makeShapeBank(8, shapeSeed + (index * 100), {
+        minPoints: 5,
+        maxPoints: 8,
+        mode: "spiky",
+        radialJitter: 0.38,
+        angleJitter: 0.24,
+        concaveChance: 0.7,
+        concaveDepth: [0.16, 0.42]
+      })
+    }));
     return {
       locRotationDeg,
       radiusPct: HUB_ARENA_RADIUS_PCT,
@@ -745,6 +759,9 @@ export function displayHubTargetLabel(targetModality, wrapper) {
     return "INK COLOR";
   }
   const base = modalityLabel(targetModality);
+  if (wrapper === "hub_noncat" && targetModality === "sym") {
+    return "SHAPE";
+  }
   if (wrapper !== "hub_noncat" && targetModality === "sym") {
     return "LTR";
   }
@@ -907,7 +924,7 @@ function resolveDisplaySymbol({ wrapper, symIdx, renderMapping, rng }) {
     };
   }
 
-  if (wrapper === "and_noncat") {
+  if (wrapper === "and_noncat" || wrapper === "hub_noncat") {
     const category = renderMapping.symbolSet[symIdx];
     const variant = category.variants[randomInt(rng, 0, category.variants.length - 1)];
     return {
