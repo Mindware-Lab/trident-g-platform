@@ -1381,6 +1381,37 @@ button {
   text-transform: uppercase;
 }
 
+.reasoning-rule-card {
+  display: grid;
+  gap: 7px;
+  padding: 13px 14px;
+  border: 1px solid rgba(84, 162, 255, 0.24);
+  background:
+    linear-gradient(90deg, rgba(84, 162, 255, 0.11), rgba(179, 91, 255, 0.08)),
+    rgba(7, 13, 24, 0.76);
+}
+
+.reasoning-rule-card span {
+  color: var(--module-accent);
+  font-family: "Orbitron", monospace;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.reasoning-rule-card strong {
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.25;
+  text-transform: none;
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.24),
+    0 0 18px rgba(84, 162, 255, 0.28);
+}
+
 .reasoning-premises {
   display: grid;
   gap: 8px;
@@ -1408,6 +1439,14 @@ button {
   text-shadow:
     0 0 10px rgba(255, 255, 255, 0.28),
     0 0 18px rgba(84, 162, 255, 0.36);
+}
+
+.reasoning-hint {
+  color: var(--module-accent);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.3;
 }
 
 .reasoning-timer-strip {

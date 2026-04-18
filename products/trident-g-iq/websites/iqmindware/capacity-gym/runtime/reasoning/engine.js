@@ -64,6 +64,96 @@ export const REASONING_FAMILIES = {
 const ANSWER_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const bankCache = new Map();
 
+const RELATION_UI_TEXT = {
+  older_younger: {
+    ruleLabel: "the first person is older than the second",
+    helper: "Focus on who is older, and who is named first.",
+    feedbackTitle: "Check who is older",
+    feedback: "The first named person must still be the older one."
+  },
+  taller_shorter: {
+    ruleLabel: "the first person is taller than the second",
+    helper: "Focus on who is taller, and who is named first.",
+    feedbackTitle: "Check who is taller",
+    feedback: "The first named person must still be the taller one."
+  },
+  earlier_later: {
+    ruleLabel: "the first event happens before the second",
+    helper: "Focus on which event comes earlier, and which one is named first.",
+    feedbackTitle: "Check what comes first",
+    feedback: "The first named event must still come earlier."
+  },
+  north_south: {
+    ruleLabel: "the first place is north of the second",
+    helper: "Focus on which place is north, and which one is named first.",
+    feedbackTitle: "Check the map direction",
+    feedback: "The first named place must still be north of the second."
+  },
+  left_right: {
+    ruleLabel: "the first item is left of the second",
+    helper: "Focus on which item is on the left, and which one is named first.",
+    feedbackTitle: "Check left and right",
+    feedback: "The first named item must still be left of the second."
+  },
+  heavier_lighter: {
+    ruleLabel: "the first item is heavier than the second",
+    helper: "Focus on which item is heavier, and which one is named first.",
+    feedbackTitle: "Check the heavier item",
+    feedback: "The first named item must still be the heavier one."
+  },
+  inside_contains: {
+    ruleLabel: "the first object contains the second",
+    helper: "Focus on what contains what, and which object is named first.",
+    feedbackTitle: "Check what contains what",
+    feedback: "The first named object must still contain the second."
+  },
+  same_route: {
+    ruleLabel: "both places use the same route",
+    helper: "Focus on whether the route is the same, not the order of the names.",
+    feedbackTitle: "Check the route match",
+    feedback: "The correct statements keep the route the same."
+  },
+  all_different: {
+    ruleLabel: "all three items must be different",
+    helper: "Check all three items. No repeats are allowed.",
+    feedbackTitle: "Check for repeats",
+    feedback: "Every item in the correct answer must be different."
+  },
+  comparative: {
+    ruleLabel: "the first item has more of the made-up quality than the second",
+    helper: "Focus on which made-up item has more, and which one is named first.",
+    feedbackTitle: "Check the made-up comparison",
+    feedback: "The first named item must still have more of the made-up quality."
+  },
+  directional: {
+    ruleLabel: "the first item is in the target direction from the second",
+    helper: "Focus on the direction word, and which item is named first.",
+    feedbackTitle: "Check the direction",
+    feedback: "The first named item must still point the same way from the second."
+  },
+  containment: {
+    ruleLabel: "the first object holds the second",
+    helper: "Focus on what holds what, and which object is named first.",
+    feedbackTitle: "Check what holds what",
+    feedback: "The first named object must still hold the second."
+  }
+};
+
+const LOGICAL_RELATION_ALIASES = {
+  older_than: "older_younger",
+  taller_than: "taller_shorter",
+  earlier_than: "earlier_later",
+  before: "earlier_later",
+  north_of: "north_south",
+  left_of: "left_right",
+  heavier_than: "heavier_lighter",
+  contains: "inside_contains",
+  same_route: "same_route",
+  all_different: "all_different",
+  rel_greater: "comparative",
+  rel_dir_A: "directional"
+};
+
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
@@ -92,6 +182,182 @@ function normalizeSpeed(value) {
 function normalizeItemsPerBlock(value) {
   const parsed = Math.round(numeric(value, 5));
   return REASONING_MANUAL_ITEM_OPTIONS.includes(parsed) ? parsed : 5;
+}
+
+function relationUiKey(item) {
+  const direct = item?.target_relation_type;
+  if (direct && RELATION_UI_TEXT[direct]) return direct;
+  const logical = String(item?.logical_form || "");
+  const match = logical.match(/^([a-zA-Z_]+)/);
+  return LOGICAL_RELATION_ALIASES[match?.[1]] || direct || "relation";
+}
+
+function relationOptionMatchesExactRule(item, option) {
+  const key = relationUiKey(item);
+  const text = String(option?.text || "").toLowerCase();
+  if (key === "same_route") return text.includes("same route");
+  if (key === "older_younger") return text.includes(" is older than ");
+  if (key === "taller_shorter") return text.includes(" is taller than ");
+  if (key === "earlier_later") return text.includes(" happens earlier than ") || text.includes(" happens before ");
+  if (key === "north_south") return text.includes(" is north of ");
+  if (key === "left_right") return text.includes(" is to the left of ");
+  if (key === "heavier_lighter") return text.includes(" is heavier than ");
+  if (key === "inside_contains") return text.includes(" contains ");
+  if (key === "comparative") return text.includes("er than ") && !text.includes("less ");
+  if (key === "containment") return !text.includes(" inside ") && !text.includes(" is inside ");
+  return false;
+}
+
+function normalizeRelationFitCorrectAnswers(item) {
+  if (item?.family !== "relation_fit" || item?.subtype !== "select_all_valid") return item;
+  if (!Array.isArray(item.options)) return item;
+  const key = relationUiKey(item);
+  const exactIds = item.options
+    .filter((option) => relationOptionMatchesExactRule(item, option))
+    .map((option) => option.id);
+  if (!exactIds.length && key === "directional") return { ...item, correct_answer: ["D"] };
+  if (!exactIds.length) return item;
+  return { ...item, correct_answer: exactIds };
+}
+
+function publicReasoningFields(item) {
+  if (item?.family === "relation_fit") {
+    const key = relationUiKey(item);
+    const relation = RELATION_UI_TEXT[key] || {
+      ruleLabel: "the same relationship pattern",
+      helper: "Focus on the relationship, not just matching words.",
+      feedbackTitle: "Check the relationship",
+      feedback: "The correct answer keeps the same relationship pattern."
+    };
+    if (item.subtype === "select_all_valid") {
+      return {
+        title_text: "Rule to match",
+        rule_text: relation.ruleLabel,
+        display_label: "Rule to match",
+        display_rule: relation.ruleLabel,
+        display_premises: [],
+        prompt_text: "Select all statements that match this exact rule.",
+        hint_text: relation.helper,
+        helper_text: relation.helper,
+        feedback_title: relation.feedbackTitle,
+        feedback_text: relation.feedback,
+        feedback_correct: "That matches the same rule.",
+        feedback_incorrect: "The relation sounds similar, but the pattern has changed.",
+        feedback_timeout: relation.feedback
+      };
+    }
+    if (item.subtype === "same_relation_mcq") {
+      return {
+        title_text: "Statement to match",
+        display_label: "Statement to match",
+        display_premises: item.premises || [],
+        prompt_text: "Which option matches this exact rule?",
+        hint_text: "Look for the same relation, not just similar words.",
+        helper_text: "Look for the same relation, not just similar words.",
+        feedback_title: "Check the same meaning",
+        feedback_text: "The correct answer keeps the same relationship after the wording changes.",
+        feedback_correct: "That matches the same rule.",
+        feedback_incorrect: "This changes who does what in the rule.",
+        feedback_timeout: "Check who does what. The same words are not enough."
+      };
+    }
+    if (item.subtype === "multi_relation_validation") {
+      return {
+        title_text: "Facts",
+        display_label: "Facts",
+        display_premises: item.premises || [],
+        prompt_text: "Which statement must be true?",
+        hint_text: "Follow the facts from first to last.",
+        helper_text: "Follow the chain from the first fact to the last.",
+        feedback_title: "Check the chain",
+        feedback_text: "The correct answer follows from the full chain of facts.",
+        feedback_correct: "That definitely follows from the facts.",
+        feedback_incorrect: "The facts do not force this answer.",
+        feedback_timeout: "Focus on what must be true, not what seems likely."
+      };
+    }
+    if (item.subtype === "relation_satisfaction") {
+      return {
+        title_text: "Rule to match",
+        rule_text: relation.ruleLabel,
+        display_label: "Rule to match",
+        display_rule: relation.ruleLabel,
+        display_premises: [],
+        prompt_text: "Choose the option that fits this rule.",
+        hint_text: relation.helper,
+        helper_text: relation.helper,
+        feedback_title: relation.feedbackTitle,
+        feedback_text: relation.feedback,
+        feedback_correct: "That matches the same rule.",
+        feedback_incorrect: "This option breaks the rule.",
+        feedback_timeout: relation.feedback
+      };
+    }
+    return {
+      title_text: "Rule to match",
+      rule_text: relation.ruleLabel,
+      display_label: "Rule to match",
+      display_rule: relation.ruleLabel,
+      display_premises: item.premises || [],
+      prompt_text: "Choose the answer that fits the rule.",
+      hint_text: relation.helper,
+      helper_text: relation.helper,
+      feedback_title: relation.feedbackTitle,
+      feedback_text: relation.feedback,
+      feedback_correct: "That matches the same rule.",
+      feedback_incorrect: "This option breaks the rule.",
+      feedback_timeout: relation.feedback
+    };
+  }
+  if (item?.family === "must_follow") {
+    return {
+      title_text: "Facts",
+      display_label: "Facts",
+      display_premises: item.premises || [],
+      prompt_text: item.answer_type === "true_false"
+        ? "Must this be true?"
+        : item.answer_type === "multi_select"
+          ? "Select all statements that must be true."
+          : "Which statement must be true?",
+      hint_text: "Use only the facts shown. Do not choose what is merely possible.",
+      helper_text: "Use only the facts shown. Do not choose what is merely possible.",
+      feedback_title: "Check what must be true",
+      feedback_text: "This follows only if the facts force it to be true.",
+      feedback_correct: "That definitely follows from the facts.",
+      feedback_incorrect: "This may be true, but it does not have to be true.",
+      feedback_timeout: "Focus on what must be true, not what seems likely."
+    };
+  }
+  if (item?.family === "best_rule_so_far") {
+    return {
+      title_text: "Pattern so far",
+      display_label: "Pattern so far",
+      display_premises: item.premises || [],
+      prompt_text: item.answer_type === "multi_select"
+        ? "Select all rules that still fit the pattern so far."
+        : item.answer_type === "true_false"
+          ? "Should confidence in this rule go up?"
+          : "Which rule best fits the examples so far?",
+      hint_text: "Look for the rule that fits all the examples, not just one.",
+      helper_text: "Look for the rule that fits all the examples, not just one.",
+      feedback_title: "Check the pattern",
+      feedback_text: "The best rule fits the examples better than the other choices.",
+      feedback_correct: "This is the best fit so far.",
+      feedback_incorrect: "This rule fits some examples, but not all of them.",
+      feedback_timeout: "Choose the rule that fits the whole pattern so far."
+    };
+  }
+  return {
+    title_text: "Reasoning signal",
+    display_premises: item?.premises || [],
+    prompt_text: item?.query || "Choose the best answer.",
+    hint_text: "Use the rule shown here.",
+    feedback_title: "Check the rule",
+    feedback_text: "Review the rule and try the next one cleanly.",
+    feedback_correct: "Correct.",
+    feedback_incorrect: "Not quite.",
+    feedback_timeout: "Time ran out. Review the rule before the next signal."
+  };
 }
 
 export function reasoningFamilyLabel(familyId) {
@@ -318,7 +584,9 @@ function normalizeAnswerIds(item, rng) {
 }
 
 function prepareItem(item, rng, index, blockId) {
-  const normalized = normalizeAnswerIds(item, rng);
+  const publicFields = publicReasoningFields(item);
+  const corrected = normalizeRelationFitCorrectAnswers(item);
+  const normalized = normalizeAnswerIds({ ...corrected, ...publicFields }, rng);
   return {
     ...normalized,
     runtime_id: `${blockId}_item_${index + 1}`,

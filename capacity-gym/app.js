@@ -2970,6 +2970,18 @@ function renderReasoningItemCard() {
   const outcome = activeReasoningBlock.lastOutcome;
   const feedback = activeReasoningBlock.status === "feedback";
   const limit = Math.round(itemTimeLimitMs(item, activeReasoningBlock.plan.speed) / 1000);
+  const title = item.title_text || item.display_label || reasoningFamilyLabel(item.family);
+  const ruleText = item.rule_text || item.display_rule || "";
+  const premises = Array.isArray(item.display_premises) ? item.display_premises : (item.premises || []);
+  const prompt = item.prompt_text || item.query || "Choose the best answer.";
+  const hint = item.hint_text || item.helper_text || "";
+  const feedbackKicker = outcome?.isCorrect ? "Correct" : outcome?.timedOut ? "Time ran out" : "Not quite";
+  const feedbackTitle = outcome?.isCorrect ? "Signal locked" : (item.feedback_title || "Check the rule");
+  const feedbackText = outcome?.isCorrect
+    ? (item.feedback_correct || "That matches.")
+    : outcome?.timedOut
+      ? (item.feedback_timeout || item.feedback_text || "Review the rule before the next signal.")
+      : (item.feedback_incorrect || item.feedback_text || "Review the rule before the next signal.");
   return `
     <div class="reasoning-item-card">
       <div class="reasoning-item-topline">
@@ -2977,10 +2989,15 @@ function renderReasoningItemCard() {
         <span>${escapeHtml(reasoningSubtypeLabel(item.family, item.subtype))}</span>
         <span>${escapeHtml(`${activeReasoningBlock.itemIndex + 1}/${activeReasoningBlock.items.length}`)}</span>
       </div>
-      <div class="reasoning-premises">
-        ${(item.premises || []).map((premise) => `<p>${escapeHtml(premise)}</p>`).join("")}
+      <div class="reasoning-rule-card">
+        <span>${escapeHtml(title)}</span>
+        ${ruleText ? `<strong>${escapeHtml(ruleText)}</strong>` : ""}
       </div>
-      <div class="reasoning-query">${escapeHtml(item.query || "Choose the best answer.")}</div>
+      ${premises.length ? `<div class="reasoning-premises">
+        ${premises.map((premise) => `<p>${escapeHtml(premise)}</p>`).join("")}
+      </div>` : ""}
+      <div class="reasoning-query">${escapeHtml(prompt)}</div>
+      ${hint ? `<div class="reasoning-hint">${escapeHtml(hint)}</div>` : ""}
       <div class="reasoning-timer-strip">
         <span>${escapeHtml(activeReasoningBlock.plan.wrapper.replace("_", " "))}</span>
         <i style="--reasoning-time:${feedback ? 100 : 0}%;"></i>
@@ -2994,9 +3011,9 @@ function renderReasoningItemCard() {
       ` : ""}
       ${feedback ? `
         <div class="reasoning-feedback${outcome?.isCorrect ? " is-correct" : " is-wrong"}">
-          <span>${outcome?.isCorrect ? "Signal locked" : outcome?.timedOut ? "Signal timed out" : "Signal missed"}</span>
-          <strong>${outcome?.isCorrect ? "Correct" : "Check the rule"}</strong>
-          <p>${escapeHtml(item.explanation || "Review the relation and try the next one cleanly.")}</p>
+          <span>${escapeHtml(feedbackKicker)}</span>
+          <strong>${escapeHtml(feedbackTitle)}</strong>
+          <p>${escapeHtml(feedbackText)}</p>
           <button class="btn btn-primary" type="button" data-action="reasoning-next">${activeReasoningBlock.itemIndex < activeReasoningBlock.items.length - 1 ? "Next signal" : "Finish block"}</button>
         </div>
       ` : ""}
