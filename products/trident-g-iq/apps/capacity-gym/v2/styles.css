@@ -680,6 +680,12 @@ button {
   white-space: nowrap;
 }
 
+.stat strong.transfer-label-value {
+  font-size: 11px;
+  line-height: 1.08;
+  text-overflow: clip;
+}
+
 .gameplay-panel .mini-label {
   display: block;
   line-height: 0.88;

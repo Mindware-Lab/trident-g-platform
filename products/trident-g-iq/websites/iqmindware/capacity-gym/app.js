@@ -1921,7 +1921,7 @@ function renderRightStrip() {
             <h3>Far Transfer Score</h3>
             <div class="stat-grid">
               <div class="stat"><span class="mini-label">Score</span><strong>${score ? formatScorePercent(score.total) : "--"}</strong></div>
-              <div class="stat"><span class="mini-label">Label</span><strong>${score ? score.label : "--"}</strong></div>
+              <div class="stat"><span class="mini-label">Label</span><strong class="transfer-label-value">${score ? score.label : "--"}</strong></div>
             </div>
             <button class="btn btn-ghost right-stats-btn${viewState.centerMode === "stats" ? " is-selected" : ""}" type="button" data-action="show-stats" aria-pressed="${viewState.centerMode === "stats" ? "true" : "false"}" ${activeBlock ? "disabled" : ""}>Stats</button>
           </div>
