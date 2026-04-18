@@ -1316,6 +1316,12 @@ button {
   padding: 0 12px 12px;
 }
 
+.play-controls .btn {
+  font-family: "Orbitron", monospace;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
 .response-row {
   justify-content: center;
   align-items: stretch;
@@ -1325,7 +1331,11 @@ button {
   min-width: min(210px, 100%);
   min-height: 40px;
   padding: 9px 14px;
+  font-family: "Orbitron", monospace;
   font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--module-accent) 32%, transparent);
 }
 
 .response-btn.is-control,
