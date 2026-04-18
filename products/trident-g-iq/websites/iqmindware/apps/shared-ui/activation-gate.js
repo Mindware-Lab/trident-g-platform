@@ -400,7 +400,9 @@
 
     button.addEventListener("click", attemptActivate);
     input.addEventListener("keydown", function (event) {
+      event.stopPropagation();
       if (event.key === "Enter") {
+        event.preventDefault();
         attemptActivate();
       }
     });

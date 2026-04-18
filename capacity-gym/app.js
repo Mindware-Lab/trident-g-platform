@@ -2049,7 +2049,13 @@ document.addEventListener("change", (event) => {
   updateSettingsField(field, target.value);
 });
 
+function isInteractiveKeyTarget(target) {
+  if (!(target instanceof Element)) return false;
+  return Boolean(target.closest("input, textarea, select, button, a[href], [contenteditable], [role='button'], [role='link']"));
+}
+
 document.addEventListener("keydown", (event) => {
+  if (isInteractiveKeyTarget(event.target)) return;
   if (event.repeat) return;
   unlockAudioGesture();
   if (event.code === "KeyP") {
