@@ -871,4 +871,521 @@ The current three-family set is already coherent and broad enough for an initial
 
 **Build Reasoning Gym as one adaptive block-based game shell with three initial families — Relation Fit, Must Follow, and Best Rule So Far — using shared item schemas, real-world and nonsense wrappers, a three-axis difficulty model, and an n-back-style UP/HOLD/DOWN progression rule where wrapper robustness is trained before raw complexity.**
 
+ ---
+  The key carryovers should be:
+
+* **optional Zone gate / router**
+* **core vs support vs recovery routing**
+* **20-session coach-led core programme**
+* **one engine, one UI shell, different block profiles**
+* **UP / HOLD / DOWN after each block**
+* **progression order = stability first, wrapper swap second, fast speed third, raw complexity later**
+
+## 1. Overall product structure
+
+Reasoning Gym should have **two entry modes**.
+
+### Manual
+
+This is simple, user-directed play.
+
+The user picks:
+
+* family: `Relation Fit`, `Must Follow`, `Best Rule So Far`
+* subtype, if relevant
+* wrapper: `real-world`, `nonsense`, or `mixed`
+* speed: `normal` or `fast`
+* difficulty start tier
+* session length
+
+This should feel like free practice and should **not** count toward the 20-session coach programme.
+
+### Coach-led
+
+This is the Trident-G style guided path.
+
+It should:
+
+* recommend a Zone check if none is fresh
+* route into `core`, `support`, or `recovery`
+* count only **core** sessions toward the 20-session programme
+* use a fixed coach plan with adaptive block-by-block shaping
+* end with a lightweight **mission handoff** and **script capture**, because the transfer docs explicitly place reasoning inside the larger vertical stack of **Zone → Capacity → Reasoning → Puzzle → Mission handoff → Script / Bank**. 
+
+---
+
+## 2. Coach-led should parallel the far-transfer protocol
+
+The best way to mirror Capacity Gym is **not** to copy its exact family list, but to copy its **governing logic**.
+
+Capacity Gym’s deep rule is:
+
+* keep the kernel fixed
+* vary wrapper first
+* then speed
+* then load / relation complexity 
+
+Reasoning Gym should do the same, but with reasoning items:
+
+### Reasoning coach progression rule
+
+For a given family and subtype:
+
+1. **stabilise on the current logical form in real-world wrapper**
+2. **swap wrapper while preserving logical form**
+3. **tighten timing / efficiency**
+4. **increase complexity**
+5. **end with one lightweight transfer prompt**
+
+That fits the transfer documents very closely, because they explicitly say the reasoning layer should keep the logic constant, vary scenario descriptions, use real and nonsense semantics, and scale difficulty by **binding load**, **uncertainty**, and **control burden**.
+
+---
+
+## 3. Session routing
+
+Use the same broad route logic as Capacity Gym.
+
+### Zone handling
+
+Keep Zone **recommended, not compulsory**. The transfer doc also supports Zone as an **adaptive router**, not a compulsory front gate for every session. 
+
+Recommended routes:
+
+* `in_zone` → `core`
+* `flat` → `support`
+* `locked_in` → `support`
+* `spun_out` → `support`
+* `invalid` → `recovery` and block coach-led start
+
+### Core route
+
+* counts toward the 20-session programme
+* standard session length
+* all 3 families available
+* wrapper swaps and fast mode allowed
+* mission handoff shown at end
+
+### Support route
+
+* does **not** count toward 20
+* reduced block count
+* easier tiers
+* normal speed only
+* real-world wrapper only, or at most very light mixed
+* mostly `Relation Fit` and simpler `Must Follow`
+* no heavy `Best Rule So Far` ambiguity unless performance is clearly clean
+
+### Recovery route
+
+* no normal coach-led reasoning session
+* either:
+
+  * Zone only
+  * one very light remedial reasoning block
+  * or “come back later” plus suggested easier task type
+
+That is closely aligned with the broader routing logic in the far-transfer document, which recommends different doses and different training modes by Zone state. 
+
+---
+
+## 4. Coach-led programme shape
+
+I would make this a **20-core-session programme**, just like Capacity Gym.
+
+### What counts
+
+* only completed `core` coach sessions count
+* `support` and `recovery` never increment the 20-session ladder
+* manual never increments it
+
+### Core session size
+
+For simplicity and parity with Capacity Gym:
+
+* **6 blocks per core session**
+* **4 blocks max for support**
+* **1–2 blocks max for recovery**
+
+That keeps the overall feel parallel.
+
+---
+
+## 5. Coach-led family cycle
+
+You have 3 reasoning families, so I’d use a fixed repeating coach cycle rather than pure random assignment.
+
+Recommended **9-session cycle**:
+
+1. `Relation Fit`
+2. `Must Follow`
+3. `Best Rule So Far`
+4. `Relation Fit`
+5. `Must Follow`
+6. `Best Rule So Far`
+7. `Relation Fit`
+8. `Must Follow`
+9. `Best Rule So Far`
+
+Then repeat.
+
+That is simple, predictable, and easy to implement. If you later want to overweight foundational relation processing, you can bias the first 6 sessions slightly toward `Relation Fit`, but I would keep MVP simpler.
+
+### Why this works
+
+* `Relation Fit` = relation validation / structural consistency
+* `Must Follow` = deduction / constraint propagation
+* `Best Rule So Far` = induction / updating
+
+So across 20 sessions the user repeatedly revisits:
+
+* **relation validation**
+* **deduction**
+* **rule updating**
+
+which is a good compact fluid-reasoning spine.
+
+---
+
+## 6. Within-session block plan
+
+This is the part that should most clearly mirror the Trident far-transfer protocol.
+
+For a **core 6-block coach-led session**, I would use:
+
+### Block 1 — settle / baseline
+
+* current family
+* easiest stable subtype for that user
+* real-world wrapper
+* normal speed
+* current recommended tier
+
+### Block 2 — same logical form, same wrapper, slightly harder
+
+* same family
+* same wrapper
+* same subtype or adjacent subtype
+* same speed
+* confirm stability
+
+### Block 3 — wrapper swap
+
+* same family
+* same logical form class
+* `mixed` or `nonsense`
+* same speed
+* same tier unless user is struggling
+
+### Block 4 — second portability block
+
+* same family
+* wrapper remains swapped
+* same tier or one notch up if Block 3 was strong
+
+### Block 5 — efficiency block
+
+* same family
+* same logical form class
+* fast timing unlocked if recent performance is strong
+* otherwise remain normal and use a slightly cleaner item set
+
+### Block 6 — stretch / bridge block
+
+* same family, or occasionally a closely related subtype bridge
+* one notch harder **only if** earlier blocks were clean
+* then end session with handoff
+
+That directly expresses:
+
+* stabilise
+* swap wrapper
+* speed up
+* then raise complexity
+
+which is the same progression order the Capacity system uses. 
+
+---
+
+## 7. Adaptive rules inside a session
+
+Use the same simple adjudication:
+
+* `UP`
+* `HOLD`
+* `DOWN` 
+
+### Suggested reasoning thresholds
+
+For MVP:
+
+* `UP` if accuracy ≥ `85%` and no late collapse
+* `DOWN` if accuracy < `70%`
+* otherwise `HOLD`
+
+For multi-select items:
+
+* require both decent precision and decent recall, not just total score
+
+For timed blocks:
+
+* also penalise excessive timeouts
+
+### If UP
+
+Apply next in this order:
+
+1. wrapper swap if not yet done
+2. fast mode if wrapper hold is already good
+3. tier increase
+4. subtype complexity increase
+
+### If HOLD
+
+* keep same family and same broad difficulty
+* optionally rotate subtype
+* keep current wrapper / speed
+
+### If DOWN
+
+* revert to real-world wrapper
+* revert to normal speed
+* drop one tier
+* simplify subtype
+
+---
+
+## 8. Complexity progression by family
+
+This is where the reasoning families need their own ladders.
+
+### Relation Fit
+
+Progression should mainly be:
+
+1. binary relation equivalence
+2. role-reversal traps
+3. multi-option validity
+4. select-all-valid
+5. two simultaneous relations
+6. chained / ternary relations later
+
+Main complexity signals:
+
+* `binding_load`
+* `role assignment pressure`
+* `multi-select overreach`
+
+### Must Follow
+
+Progression should mainly be:
+
+1. short transitive chains
+2. simple set inclusion/exclusion
+3. conditional chains
+4. mixed-polarity premises
+5. best-conclusion MCQ
+6. select-all-must-follow
+
+Main complexity signals:
+
+* number of premises
+* chain length
+* quantifier / negation interference
+* answer overreach
+
+### Best Rule So Far
+
+Progression should mainly be:
+
+1. simple alternation
+2. simple ladder
+3. cycle-of-3
+4. pair-repeat
+5. two-feature rules
+6. confidence update under live rivals
+7. select-all-consistent
+
+Main complexity signals:
+
+* rival rule count
+* feature interaction
+* ambiguity among candidate rules
+* uncertainty level
+
+This matches the shared reasoning-layer complexity model already defined in your documents: **binding load, uncertainty, control burden**.
+
+---
+
+## 9. Timers and efficiency
+
+Yes — I do think timers should be built in, but in a controlled way.
+
+The Capacity design already uses **normal / fast** as a meaningful progression step rather than just raw time pressure, and the scoring docs explicitly treat **stability / efficiency** and **portability** as part of the Transfer Score.
+
+### Recommended timer model
+
+Use two speed modes only:
+
+* `normal`
+* `fast`
+
+Support route:
+
+* always `normal`
+
+Core route:
+
+* starts `normal`
+* unlocks `fast` only after strong recent performance on the same family/subtype class
+
+### Suggested item timers
+
+For `normal`:
+
+* True/False: `10–12s`
+* Single choice: `14–16s`
+* Multi-select: `18–22s`
+
+For `fast`:
+
+* True/False: `7–8s`
+* Single choice: `10–12s`
+* Multi-select: `13–16s`
+
+Then adjust by tier:
+
+* higher `binding_load` or `uncertainty` can add `+1–2s`
+* higher `control_burden` does **not** get much extra time, because that is part of the challenge
+
+### Efficiency scoring
+
+Timers should feed:
+
+* timeouts
+* mean RT
+* late-block slowing
+* collapse under time pressure
+
+but should not dominate raw correctness.
+
+---
+
+## 10. Manual mode spec
+
+Manual should stay very lightweight.
+
+### UI controls
+
+* family dropdown
+* subtype dropdown, only shown if the family has meaningful subtypes
+* wrapper dropdown
+* speed dropdown
+* starting tier dropdown
+* session length dropdown
+
+### Good defaults
+
+* family = last used
+* subtype = `auto`
+* wrapper = `real-world`
+* speed = `normal`
+* tier = recommended tier
+* session length = `2 blocks`
+
+### Manual should still save
+
+* block telemetry
+* best tier
+* wrapper exposure
+* subtype weakness signals
+
+But it should not advance the formal 20-session coach path.
+
+---
+
+## 11. Coach-led should include a transfer close
+
+This is the biggest difference between “just an adaptive reasoning game” and “a Trident-G reasoning layer”.
+
+The transfer document is very clear that the vertical stack should not end with in-app performance. It should end with:
+
+* lightweight **mission handoff**
+* and **script / bank** capture 
+
+So every coach-led core session should end with:
+
+### Handoff prompt
+
+One short prompt linked to the family:
+
+* `Relation Fit` → “Where today will you need to check whether two options are really the same relation rather than just surface lookalikes?”
+* `Must Follow` → “What real task today requires identifying what actually follows, rather than what merely feels plausible?”
+* `Best Rule So Far` → “Where today will you need to keep two live explanations in play rather than locking onto one too early?”
+
+### Script capture
+
+Three fields:
+
+* `tactic used`
+* `where this might apply today`
+* `quick trap to avoid`
+
+That keeps the app aligned with the broader mission-handoff and bank logic. 
+
+---
+
+## 12. Scoring and rewards
+
+Use the same shared transfer frame already defined across Capacity, Reasoning, and Puzzle:
+
+* `Core Correctness` 0–40
+* `Complexity Hold` 0–20
+* `Stability / Efficiency` 0–20
+* `Portability` 0–20 
+
+### In Reasoning Gym
+
+* correctness = right answers
+* complexity hold = binding load / uncertainty / control burden held cleanly
+* stability / efficiency = low collapse, low impulsive misses, good timing control
+* portability = wrapper-swap hold across real-world and nonsense
+
+And if you want to keep currency aligned:
+
+* `g = 3 + 0.08 × Transfer Score + bonuses` per reasoning module is still the cleanest shared rule. 
+
+---
+
+## 13. My strongest recommendation
+
+Build Reasoning Gym like this:
+
+### Manual
+
+A simple free-play mode with:
+
+* family dropdown
+* optional subtype dropdown
+* wrapper, speed, and difficulty choices
+* no formal programme progression
+
+### Coach-led
+
+A **20-core-session programme** with:
+
+* optional Zone check
+* `core / support / recovery` routing
+* **6-block core sessions**
+* a fixed 3-family repeating cycle
+* within-session progression that mirrors Capacity Gym:
+
+  * stabilise
+  * wrapper swap
+  * fast mode
+  * then complexity
+* end-of-session mission handoff and script capture
+
+That gives you a reasoning app that is not just adaptive, but adaptive in a way that **actually parallels the Trident far-transfer protocol**, rather than merely copying n-back mechanics.
+
  
+
