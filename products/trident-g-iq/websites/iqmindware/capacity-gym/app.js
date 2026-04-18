@@ -17,9 +17,35 @@ import { hash32 } from "./runtime/rng.js";
 import { createZoneProbeController } from "./runtime/zone/probe.js";
 import { buildZoneHandoff } from "./runtime/zone/handoff.js";
 import { loadZoneRuntimeState, saveZoneRun } from "./runtime/zone/storage.js";
+import {
+  REASONING_FAMILIES,
+  REASONING_MANUAL_ITEM_OPTIONS,
+  REASONING_SESSION_TARGET,
+  REASONING_STORAGE_KEY,
+  buildReasoningBlock,
+  completedReasoningSessions,
+  createDefaultReasoningState,
+  createTacticCapture,
+  isFreshReasoningSession,
+  itemTimeLimitMs,
+  nextReasoningSessionNumber,
+  normalizeReasoningState,
+  parseReasoningJson,
+  planReasoningSession,
+  reasoningFamilyForCoreSession,
+  reasoningFamilyLabel,
+  reasoningGAward,
+  reasoningSessionsToGo,
+  reasoningSessionStats,
+  reasoningSubtypeLabel,
+  scoreReasoningResponse,
+  summarizeReasoningBlock,
+  updateReasoningFamilyState
+} from "./runtime/reasoning/engine.js";
 
 const STORAGE_KEY = "tg_iq_live_capacity_v2";
 const ECONOMY_KEY = "tg_iq_live_economy_v1";
+const ACTIVE_MODULE_KEY = "tg_iq_live_active_module_v1";
 const ZONE_HANDOFF_KEY = "iqmw.capacity.handoffFromZone";
 const ZONE_FALLBACK_KEY = "lastCapacitySession";
 const HISTORY_LIMIT = 160;
@@ -75,17 +101,22 @@ const PREVIEW_MARKERS = [
 const appRoot = document.querySelector("#app");
 let state = loadState();
 let economy = loadEconomy();
+let reasoningState = loadReasoningState();
 let zonePulseState = createZonePulseState();
 let activeBlock = null;
+let activeReasoningBlock = null;
 let viewState = {
   leftOpen: false,
   rightOpen: false,
   modeHelpOpen: false,
   zoneHelpOpen: false,
   centerMode: "play",
-  message: "Choose coached progression or manual play, then start a block."
+  message: "Choose coached progression or manual play, then start a block.",
+  activeModule: loadActiveModule(),
+  reasoningBusy: false,
+  reasoningCloseSession: null
 };
-const timers = { countdown: null, display: null, sequence: null, trial: null, zoneCountdown: null };
+const timers = { countdown: null, display: null, sequence: null, trial: null, zoneCountdown: null, reasoning: null };
 let touchStart = null;
 
 initAudio({ enabled: state.settings.soundOn, preloadTier: "p0" });
@@ -102,6 +133,24 @@ function syncSoundToggle() {
   button.setAttribute("aria-pressed", enabled ? "true" : "false");
   button.setAttribute("aria-label", enabled ? "Turn Capacity Gym audio off" : "Turn Capacity Gym audio on");
   button.classList.toggle("is-muted", !enabled);
+}
+
+function ensureModuleSwitch() {
+  const brand = document.querySelector(".capacity-v2-brand");
+  const actions = document.querySelector(".capacity-v2-brand-actions");
+  if (!brand || !actions) return;
+  let switcher = document.querySelector("[data-module-switch]");
+  if (!switcher) {
+    switcher = document.createElement("div");
+    switcher.className = "capacity-module-switch";
+    switcher.setAttribute("data-module-switch", "");
+    brand.insertBefore(switcher, actions);
+  }
+  const active = viewState.activeModule === "reasoning" ? "reasoning" : "capacity";
+  switcher.innerHTML = `
+    <button class="module-switch-btn${active === "capacity" ? " is-active" : ""}" type="button" data-action="set-module" data-module="capacity" aria-pressed="${active === "capacity" ? "true" : "false"}">Capacity Gym</button>
+    <button class="module-switch-btn${active === "reasoning" ? " is-active" : ""}" type="button" data-action="set-module" data-module="reasoning" aria-pressed="${active === "reasoning" ? "true" : "false"}">Reasoning Gym</button>
+  `;
 }
 
 function unlockAudioGesture() {
@@ -354,6 +403,34 @@ function saveState(nextState = state) {
   return state;
 }
 
+function loadActiveModule() {
+  if (typeof localStorage === "undefined") return "capacity";
+  return localStorage.getItem(ACTIVE_MODULE_KEY) === "reasoning" ? "reasoning" : "capacity";
+}
+
+function saveActiveModule(moduleId) {
+  viewState.activeModule = moduleId === "reasoning" ? "reasoning" : "capacity";
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(ACTIVE_MODULE_KEY, viewState.activeModule);
+  }
+  return viewState.activeModule;
+}
+
+function loadReasoningState() {
+  if (typeof localStorage === "undefined") return createDefaultReasoningState();
+  const loaded = normalizeReasoningState(parseReasoningJson(localStorage.getItem(REASONING_STORAGE_KEY)));
+  localStorage.setItem(REASONING_STORAGE_KEY, JSON.stringify(loaded));
+  return loaded;
+}
+
+function saveReasoningState(nextState = reasoningState) {
+  reasoningState = normalizeReasoningState(nextState);
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(REASONING_STORAGE_KEY, JSON.stringify(reasoningState));
+  }
+  return reasoningState;
+}
+
 function createDefaultEconomy() {
   return { version: 1, walletG: 0, events: [] };
 }
@@ -593,6 +670,14 @@ function zonePulseIsRunning() {
 
 function zonePulseIsLive() {
   return zonePulseState.phase === "running";
+}
+
+function reasoningBlockIsActive() {
+  return Boolean(activeReasoningBlock && activeReasoningBlock.status !== "summary" && activeReasoningBlock.status !== "complete");
+}
+
+function anyGameplayActive() {
+  return Boolean(activeBlock || zonePulseIsRunning() || reasoningBlockIsActive() || viewState.reasoningBusy);
 }
 
 function formatBitsPerSecond(value) {
@@ -1105,7 +1190,7 @@ function ensureZonePulseController() {
 }
 
 function showZonePulse() {
-  if (activeBlock || zonePulseIsRunning()) {
+  if (activeBlock || activeReasoningBlock || zonePulseIsRunning()) {
     triggerSfx("invalid_action");
     return;
   }
@@ -1120,7 +1205,7 @@ function showZonePulse() {
 }
 
 function startZonePulse() {
-  if (activeBlock || zonePulseIsRunning() || zonePulseState.cancelled) {
+  if (activeBlock || activeReasoningBlock || zonePulseIsRunning() || zonePulseState.cancelled) {
     triggerSfx("invalid_action");
     if (zonePulseState.cancelled) {
       viewState.message = "Zone pulse is finishing its stop. Try again in a moment.";
@@ -1250,6 +1335,267 @@ function submitZonePulse(direction) {
   zonePulseState.controller.submit(direction === "left" ? "ArrowLeft" : "ArrowRight");
   triggerSfx("match_primary_press");
   return true;
+}
+
+function clearReasoningTimer() {
+  if (timers.reasoning) {
+    clearTimeout(timers.reasoning);
+    timers.reasoning = null;
+  }
+}
+
+function currentReasoningSessionDisplay() {
+  return reasoningState.settings.mode === "coach"
+    ? `${Math.min(REASONING_SESSION_TARGET, completedReasoningSessions(reasoningState))}/${REASONING_SESSION_TARGET}`
+    : `${Math.max(1, Number(reasoningState.programme.manualSessionNumber || 0) + 1)}`;
+}
+
+function reasoningSessionToGoDisplay() {
+  return reasoningState.settings.mode === "coach" ? `${reasoningSessionsToGo(reasoningState)}` : "-";
+}
+
+function reasoningZoneRecommendation() {
+  if (reasoningState.settings.mode !== "coach" || activeReasoningBlock || activeBlock || zonePulseIsRunning()) {
+    return { recommended: false, copy: "" };
+  }
+  const snapshot = zoneDisplaySnapshot();
+  if (!snapshot.fresh) {
+    return {
+      recommended: true,
+      copy: "Recommended before Reasoning Gym: test your zone so the coach can tune today's logic route. You can still start anyway."
+    };
+  }
+  if (snapshot.routeState === "invalid") {
+    return {
+      recommended: true,
+      copy: "Your last Zone Check did not validate. Recommended: run a clean pulse before Coach-led reasoning. You can still start anyway."
+    };
+  }
+  return { recommended: false, copy: "" };
+}
+
+function markStaleReasoningPartial() {
+  const session = reasoningState.currentSession;
+  if (!session || session.status !== "partial" || isFreshReasoningSession(session)) return false;
+  reasoningState.history = [
+    {
+      id: `reason_abandoned_${Date.now()}`,
+      type: "session_abandoned",
+      sessionId: session.id,
+      family: session.family,
+      routeClass: session.routeClass,
+      blocksCompleted: session.blocksCompleted || 0,
+      plannedBlocks: session.plannedBlocks || 0,
+      tsEnd: Date.now()
+    },
+    ...reasoningState.history
+  ].slice(0, 180);
+  reasoningState.currentSession = null;
+  saveReasoningState();
+  return true;
+}
+
+function beginReasoningCoachSession() {
+  if (anyGameplayActive()) {
+    triggerSfx("invalid_action");
+    return;
+  }
+  if (reasoningState.currentSession?.status === "partial" && isFreshReasoningSession(reasoningState.currentSession)) {
+    reasoningState.currentSession.status = "active";
+    reasoningState.currentSession.updatedAt = Date.now();
+    saveReasoningState();
+    viewState.message = "Reasoning session resumed. Completed blocks are already banked.";
+    triggerSfx("session_start");
+    render();
+    return;
+  }
+  markStaleReasoningPartial();
+  const planned = planReasoningSession(reasoningState, zoneDisplaySnapshot());
+  if (planned.blocked) {
+    viewState.message = planned.message;
+    triggerSfx("invalid_action");
+    render();
+    return;
+  }
+  reasoningState.currentSession = planned;
+  saveReasoningState();
+  viewState.message = `${reasoningFamilyLabel(planned.family)} reasoning route ready: ${planned.plannedBlocks} block${planned.plannedBlocks === 1 ? "" : "s"}.`;
+  triggerSfx("session_start");
+  render();
+}
+
+async function startReasoningBlock({ manual = false } = {}) {
+  if (activeBlock || zonePulseIsRunning() || activeReasoningBlock || viewState.reasoningBusy) {
+    triggerSfx("invalid_action");
+    return;
+  }
+  viewState.reasoningBusy = true;
+  viewState.message = "Loading reasoning items...";
+  render();
+  try {
+    const session = manual ? null : reasoningState.currentSession;
+    const manualSettings = manual ? reasoningState.settings : null;
+    const block = await buildReasoningBlock({
+      state: reasoningState,
+      session,
+      mode: manual ? "manual" : "coach",
+      manualSettings,
+      blockIndex: manual ? reasoningState.history.filter((entry) => entry.mode === "manual").length : Number(session?.blocksCompleted || 0)
+    });
+    activeReasoningBlock = {
+      ...block,
+      status: "question",
+      itemIndex: 0,
+      selectedIds: [],
+      outcomes: [],
+      itemStartedAt: Date.now()
+    };
+    viewState.reasoningBusy = false;
+    viewState.reasoningCloseSession = null;
+    viewState.message = "Reasoning block live. Read the signal, choose cleanly.";
+    triggerSfx("session_start");
+    render();
+    scheduleReasoningTimeout();
+  } catch (error) {
+    viewState.reasoningBusy = false;
+    viewState.message = `Reasoning Gym could not load: ${error instanceof Error ? error.message : "unknown error"}`;
+    triggerSfx("invalid_action");
+    render();
+  }
+}
+
+function currentReasoningItem() {
+  if (!activeReasoningBlock) return null;
+  return activeReasoningBlock.items[activeReasoningBlock.itemIndex] || null;
+}
+
+function scheduleReasoningTimeout() {
+  clearReasoningTimer();
+  const item = currentReasoningItem();
+  if (!item || activeReasoningBlock?.status !== "question") return;
+  const limitMs = itemTimeLimitMs(item, activeReasoningBlock.plan.speed);
+  timers.reasoning = setTimeout(() => submitReasoningAnswer({ timedOut: true }), limitMs);
+}
+
+function toggleReasoningOption(optionId) {
+  const item = currentReasoningItem();
+  if (!item || activeReasoningBlock?.status !== "question") return;
+  if (item.answer_type !== "multi_select") {
+    submitReasoningAnswer({ selectedIds: [optionId] });
+    return;
+  }
+  const selected = new Set(activeReasoningBlock.selectedIds || []);
+  if (selected.has(optionId)) selected.delete(optionId);
+  else selected.add(optionId);
+  activeReasoningBlock.selectedIds = [...selected];
+  render();
+}
+
+function submitReasoningAnswer({ selectedIds = null, timedOut = false } = {}) {
+  const item = currentReasoningItem();
+  if (!item || activeReasoningBlock?.status !== "question") return;
+  clearReasoningTimer();
+  const selected = selectedIds || activeReasoningBlock.selectedIds || [];
+  const elapsedMs = Date.now() - activeReasoningBlock.itemStartedAt;
+  const outcome = scoreReasoningResponse(item, selected, elapsedMs, timedOut);
+  activeReasoningBlock.outcomes.push(outcome);
+  activeReasoningBlock.lastOutcome = outcome;
+  activeReasoningBlock.status = "feedback";
+  activeReasoningBlock.selectedIds = [];
+  triggerSfx(outcome.isCorrect ? "trial_hit" : "match_primary_press");
+  render();
+}
+
+function advanceReasoningItem() {
+  if (!activeReasoningBlock || activeReasoningBlock.status !== "feedback") return;
+  if (activeReasoningBlock.itemIndex < activeReasoningBlock.items.length - 1) {
+    activeReasoningBlock.itemIndex += 1;
+    activeReasoningBlock.status = "question";
+    activeReasoningBlock.selectedIds = [];
+    activeReasoningBlock.lastOutcome = null;
+    activeReasoningBlock.itemStartedAt = Date.now();
+    render();
+    scheduleReasoningTimeout();
+    return;
+  }
+  finishReasoningBlock();
+}
+
+function finishReasoningBlock() {
+  if (!activeReasoningBlock) return;
+  clearReasoningTimer();
+  const summary = summarizeReasoningBlock(activeReasoningBlock, activeReasoningBlock.outcomes);
+  const blockG = reasoningGAward(summary.transferScore, summary);
+  const wallet = addGEvent({
+    source: "reasoning_block",
+    label: `${reasoningFamilyLabel(summary.family)} reasoning block`,
+    g: blockG,
+    meta: { family: summary.family, transferScore: summary.transferScore.total, decision: summary.decision }
+  });
+  const entry = {
+    ...summary,
+    rewardState: {
+      blockG,
+      walletG: wallet.walletG,
+      iqCredits: wallet.walletG / 100
+    }
+  };
+  let nextState = updateReasoningFamilyState(reasoningState, summary);
+  nextState.history = [entry, ...nextState.history].slice(0, 180);
+  let completedSession = null;
+  if (summary.mode === "manual") {
+    nextState.programme.manualSessionNumber = Math.max(Number(nextState.programme.manualSessionNumber || 0), Number(nextState.programme.manualSessionNumber || 0) + 1);
+  } else if (nextState.currentSession?.id === activeReasoningBlock.sessionId) {
+    nextState.currentSession.blocksCompleted = Number(nextState.currentSession.blocksCompleted || 0) + 1;
+    nextState.currentSession.updatedAt = Date.now();
+    if (nextState.currentSession.blocksCompleted >= nextState.currentSession.plannedBlocks) {
+      completedSession = { ...nextState.currentSession, status: "complete", completedAt: Date.now() };
+      if (completedSession.routeClass === "core") {
+        nextState.programme.coreSessionNumber = Math.max(Number(nextState.programme.coreSessionNumber || 0), Number(completedSession.coreSessionNumber || 0));
+      }
+      nextState.currentSession = null;
+    }
+  }
+  saveReasoningState(nextState);
+  activeReasoningBlock.status = "summary";
+  activeReasoningBlock.summary = entry;
+  viewState.reasoningCloseSession = completedSession?.routeClass === "core" ? completedSession : null;
+  viewState.message = `${reasoningFamilyLabel(summary.family)} block saved: ${percent(summary.accuracy)} accuracy, Reasoning Transfer ${formatScorePercent(summary.transferScore.total)}, +${blockG} g.`;
+  playBlockRewardSfx(summary.tier, summary.decision === "UP" ? summary.tier + 1 : summary.decision === "DOWN" ? summary.tier - 1 : summary.tier, blockG, null);
+  render();
+}
+
+function stopReasoningBlock() {
+  clearReasoningTimer();
+  if (activeReasoningBlock) {
+    const session = reasoningState.currentSession;
+    if (session && session.id === activeReasoningBlock.sessionId && Number(session.blocksCompleted || 0) > 0) {
+      session.status = "partial";
+      session.updatedAt = Date.now();
+      saveReasoningState();
+    }
+  }
+  activeReasoningBlock = null;
+  viewState.message = "Reasoning block stopped. Completed blocks stay saved; this session has not advanced.";
+  triggerSfx("session_stop_discard");
+  render();
+}
+
+function saveReasoningTacticCapture() {
+  const session = viewState.reasoningCloseSession;
+  if (!session) return;
+  const capture = createTacticCapture(session, {
+    tacticUsed: document.querySelector("[data-reasoning-capture='tacticUsed']")?.value,
+    trapToAvoid: document.querySelector("[data-reasoning-capture='trapToAvoid']")?.value,
+    takeaway: document.querySelector("[data-reasoning-capture='takeaway']")?.value,
+    reusable: document.querySelector("[data-reasoning-capture='reusable']")?.checked === true
+  });
+  reasoningState.tacticCaptures = [capture, ...reasoningState.tacticCaptures].slice(0, 80);
+  saveReasoningState();
+  viewState.reasoningCloseSession = null;
+  viewState.message = "Reasoning tactic captured.";
+  triggerSfx("credit_award_small");
+  render();
 }
 
 function isMatchWindowOpen() {
@@ -2001,10 +2347,35 @@ function zoneHudModel() {
   };
 }
 
+function reasoningHudModel() {
+  const latest = reasoningState.history.find((entry) => entry && entry.type !== "session_abandoned") || null;
+  const family = activeReasoningBlock?.plan?.family
+    || reasoningState.currentSession?.family
+    || reasoningState.settings.family;
+  const accuracy = activeReasoningBlock?.outcomes?.length
+    ? percent(activeReasoningBlock.outcomes.filter((outcome) => outcome.isCorrect).length / activeReasoningBlock.outcomes.length)
+    : latest ? percent(latest.accuracy) : "--";
+  const transfer = latest?.transferScore ? formatScorePercent(latest.transferScore.total) : "--";
+  const session = reasoningState.currentSession;
+  const blocksLeftValue = activeReasoningBlock
+    ? Math.max(0, Number(session?.plannedBlocks || 1) - Number(session?.blocksCompleted || 0))
+    : session ? Math.max(0, Number(session.plannedBlocks || 0) - Number(session.blocksCompleted || 0)) : 0;
+  return {
+    items: [
+      ["Family", reasoningFamilyLabel(family)],
+      ["Accuracy", accuracy],
+      ["Transfer", transfer],
+      ["Blocks", `${blocksLeftValue}`]
+    ]
+  };
+}
+
 function renderHud() {
-  const model = viewState.centerMode === "zone" ? zoneHudModel() : hudModel();
+  const model = viewState.centerMode === "zone"
+    ? zoneHudModel()
+    : viewState.activeModule === "reasoning" ? reasoningHudModel() : hudModel();
   return `
-    <div class="hud" aria-label="Capacity block status">
+    <div class="hud" aria-label="${viewState.activeModule === "reasoning" ? "Reasoning block status" : "Capacity block status"}">
       <div class="hud-status">
         ${model.items.map(([label, value]) => `
           <div class="hud-item">
@@ -2141,6 +2512,110 @@ function renderCenterStatsDashboard() {
   `;
 }
 
+function reasoningProgrammeGroups() {
+  const groups = [];
+  const byKey = new Map();
+  reasoningState.history
+    .filter((entry) => entry && entry.type !== "session_abandoned" && (reasoningState.settings.mode === "manual" ? entry.mode === "manual" : entry.routeClass === "core"))
+    .slice()
+    .reverse()
+    .forEach((entry) => {
+      const key = entry.sessionId || entry.id;
+      if (!byKey.has(key)) {
+        const group = {
+          key,
+          label: `${groups.length + 1}`,
+          slot: groups.length + 1,
+          entries: []
+        };
+        byKey.set(key, group);
+        groups.push(group);
+      }
+      byKey.get(key).entries.push(entry);
+    });
+  return groups.map((group, index) => {
+    const avgAccuracy = average(group.entries.map((entry) => Number(entry.accuracy)));
+    const avgTransfer = average(group.entries.map((entry) => Number(entry.transferScore?.total)));
+    const avgTier = average(group.entries.map((entry) => Number(entry.tier)));
+    return {
+      ...group,
+      slot: index + 1,
+      label: `${index + 1}`,
+      avgAccuracy: Number.isFinite(avgAccuracy) ? avgAccuracy * 100 : null,
+      avgTransfer,
+      avgTier,
+      isCurrent: reasoningState.currentSession?.id === group.key
+    };
+  });
+}
+
+function reasoningStatsModel() {
+  const manualMode = reasoningState.settings.mode === "manual";
+  const groups = reasoningProgrammeGroups();
+  const visibleGroups = groups.slice(-REASONING_SESSION_TARGET);
+  const slots = Array.from({ length: REASONING_SESSION_TARGET }, (_, index) => {
+    const group = visibleGroups[index] || null;
+    return group ? { ...group, slot: index + 1 } : { slot: index + 1, label: `${index + 1}`, empty: true };
+  });
+  const populated = slots.filter((slot) => !slot.empty);
+  return {
+    slots,
+    manualMode,
+    completed: manualMode ? Number(reasoningState.programme.manualSessionNumber || 0) : completedReasoningSessions(reasoningState),
+    completedDisplay: manualMode ? `${Number(reasoningState.programme.manualSessionNumber || 0)}` : `${Math.min(REASONING_SESSION_TARGET, completedReasoningSessions(reasoningState))}/${REASONING_SESSION_TARGET}`,
+    sessionsToGo: manualMode ? "-" : reasoningSessionsToGo(reasoningState),
+    avgAccuracy: average(populated.map((slot) => slot.avgAccuracy)),
+    avgTransfer: average(populated.map((slot) => slot.avgTransfer)),
+    avgTier: average(populated.map((slot) => slot.avgTier))
+  };
+}
+
+function renderReasoningStatsDashboard() {
+  const model = reasoningStatsModel();
+  const rangeLabel = model.manualMode ? "Reasoning practice history" : "Reasoning 20-session programme";
+  return `
+    <div class="center-stats-dashboard reasoning-stats-dashboard">
+      <div class="center-stats-head">
+        <div>
+          <span class="stats-kicker">${escapeHtml(rangeLabel)}</span>
+          <h2>Reasoning Progress</h2>
+        </div>
+        <button class="btn btn-ghost" type="button" data-action="show-play">Return to gameplay</button>
+      </div>
+      <div class="center-stats-summary">
+        <div class="stat"><span class="mini-label">Completed</span><strong>${escapeHtml(model.completedDisplay)}</strong></div>
+        <div class="stat"><span class="mini-label">Sessions to go</span><strong>${escapeHtml(String(model.sessionsToGo))}</strong></div>
+        <div class="stat"><span class="mini-label">Avg Tier</span><strong>${formatGraphValue(model.avgTier, 1)}</strong></div>
+        <div class="stat"><span class="mini-label">Avg Transfer</span><strong>${formatScorePercent(model.avgTransfer)}</strong></div>
+      </div>
+      ${renderSessionBarChart({
+        title: "Average tier per session",
+        subtitle: "Mean reasoning tier held across each reasoning session.",
+        valueKey: "avgTier",
+        maxValue: 5,
+        digits: 1,
+        model
+      })}
+      ${renderSessionBarChart({
+        title: "Reasoning transfer per session",
+        subtitle: "Mean reasoning transfer score across blocks.",
+        valueKey: "avgTransfer",
+        maxValue: 100,
+        unit: "%",
+        model
+      })}
+      ${renderSessionBarChart({
+        title: "Accuracy per session",
+        subtitle: "Mean reasoning accuracy across each session.",
+        valueKey: "avgAccuracy",
+        maxValue: 100,
+        unit: "%",
+        model
+      })}
+    </div>
+  `;
+}
+
 function renderZonePulseMetric(label, value) {
   return `<div class="stat"><span class="mini-label">${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
 }
@@ -2224,7 +2699,7 @@ function renderZoneCheckPanel() {
       <div class="notice">${escapeHtml(routeLabel)}</div>
       ${renderZoneCheckGraphic(snapshot)}
       <div class="zone-pulse-action-row">
-        <button class="btn btn-primary zone-pulse-launch" type="button" data-action="show-zone-pulse" ${activeBlock || zonePulseIsRunning() ? "disabled" : ""}>Test your zone</button>
+        <button class="btn btn-primary zone-pulse-launch" type="button" data-action="show-zone-pulse" ${activeBlock || activeReasoningBlock || zonePulseIsRunning() ? "disabled" : ""}>Test your zone</button>
         <button class="zone-pulse-help-btn" type="button" data-action="toggle-zone-help" aria-label="Open Zone Check help" title="Open Zone Check help">
           <img src="${ZONE_HELP_ICON_URL}" alt="" aria-hidden="true">
         </button>
@@ -2384,6 +2859,306 @@ function renderCoachCycle() {
             </div>
           `;
         }).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderReasoningTrainingPanel() {
+  const settings = reasoningState.settings;
+  const familyKeys = Object.keys(REASONING_FAMILIES);
+  const familyMeta = REASONING_FAMILIES[settings.family] || REASONING_FAMILIES.relation_fit;
+  const familyState = reasoningState.familyState[settings.family] || {};
+  const fastNote = settings.speed === "fast" ? "Efficiency mode" : "Normal reasoning pace";
+  return `
+    <section class="panel reasoning-training-panel">
+      <div class="training-title-row">
+        <h2 class="strip-title training-title">Reasoning Training</h2>
+      </div>
+      <p class="small muted training-prompt">SELECT COACH LED OR MANUAL</p>
+      <div class="mode-help-layout">
+        <div class="mode-buttons">
+          <button class="chip-btn${settings.mode === "coach" ? " is-active" : ""}" type="button" data-action="set-reasoning-mode" data-mode="coach">Coach-led</button>
+          <button class="chip-btn${settings.mode === "manual" ? " is-active" : ""}" type="button" data-action="set-reasoning-mode" data-mode="manual">Manual</button>
+        </div>
+      </div>
+      <div class="reasoning-focus-card">
+        <span class="mini-label">Current Focus</span>
+        <strong>${escapeHtml(reasoningFamilyLabel(settings.mode === "coach" ? reasoningFamilyForCoreSession(nextReasoningSessionNumber(reasoningState)) : settings.family))}</strong>
+        <p>Tier ${escapeHtml(String(familyState.current_tier || 1))} / ${escapeHtml(familyState.wrapper_mode || "real_world")} / ${escapeHtml(familyState.speed_mode || "normal")}</p>
+      </div>
+      ${settings.mode === "manual" ? `
+        <div class="manual-suite reasoning-suite">
+          <div class="field">
+            <label>Family</label>
+            <select data-reasoning-field="family">
+              ${familyKeys.map((familyId) => `<option value="${familyId}" ${settings.family === familyId ? "selected" : ""}>${escapeHtml(REASONING_FAMILIES[familyId].label)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>Subtype</label>
+            <select data-reasoning-field="subtype">
+              ${Object.entries(familyMeta.subtypes).map(([value, label]) => `<option value="${value}" ${settings.subtype === value ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>Wrapper</label>
+            <select data-reasoning-field="wrapper">
+              ${["real_world", "mixed", "nonsense"].map((value) => `<option value="${value}" ${settings.wrapper === value ? "selected" : ""}>${escapeHtml(value.replace("_", " "))}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>Speed</label>
+            <select data-reasoning-field="speed">
+              ${["normal", "fast"].map((value) => `<option value="${value}" ${settings.speed === value ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
+            </select>
+            <p class="small muted reasoning-speed-note">${escapeHtml(fastNote)}</p>
+          </div>
+          <div class="field">
+            <label>Tier</label>
+            <select data-reasoning-field="tier">
+              <option value="auto" ${settings.tier === "auto" ? "selected" : ""}>Auto</option>
+              ${[1, 2, 3, 4, 5].map((tier) => `<option value="${tier}" ${settings.tier === tier ? "selected" : ""}>${tier}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>Items</label>
+            <select data-reasoning-field="itemsPerBlock">
+              ${REASONING_MANUAL_ITEM_OPTIONS.map((count) => `<option value="${count}" ${settings.itemsPerBlock === count ? "selected" : ""}>${count}</option>`).join("")}
+            </select>
+          </div>
+        </div>
+      ` : ""}
+    </section>
+  `;
+}
+
+function renderReasoningLeftStrip() {
+  return `
+    <aside class="strip strip-left" aria-label="Reasoning coach and setup strip">
+      <div class="strip-inner">
+        <div class="strip-head">
+          <button class="sheet-close" type="button" data-action="close-sheets" aria-label="Close sheet">x</button>
+          <div>
+            <h2 class="strip-title">Zone Check</h2>
+          </div>
+        </div>
+        ${renderZoneCheckPanel()}
+        ${renderReasoningTrainingPanel()}
+      </div>
+    </aside>
+  `;
+}
+
+function renderReasoningOptionButton(item, option) {
+  const selected = activeReasoningBlock?.selectedIds?.includes(option.id);
+  const isFeedback = activeReasoningBlock?.status === "feedback";
+  const outcome = activeReasoningBlock?.lastOutcome;
+  const correct = isFeedback && outcome?.correct?.includes(option.id);
+  const wrong = isFeedback && outcome?.selected?.includes(option.id) && !correct;
+  return `
+    <button class="reasoning-option${selected ? " is-selected" : ""}${correct ? " is-correct" : ""}${wrong ? " is-wrong" : ""}" type="button" data-action="reasoning-option" data-option="${escapeHtml(option.id)}" ${isFeedback ? "disabled" : ""}>
+      <span>${escapeHtml(option.id)}</span>
+      <strong>${escapeHtml(option.text)}</strong>
+    </button>
+  `;
+}
+
+function renderReasoningItemCard() {
+  const item = currentReasoningItem();
+  if (!item || !activeReasoningBlock) return "";
+  const outcome = activeReasoningBlock.lastOutcome;
+  const feedback = activeReasoningBlock.status === "feedback";
+  const limit = Math.round(itemTimeLimitMs(item, activeReasoningBlock.plan.speed) / 1000);
+  return `
+    <div class="reasoning-item-card">
+      <div class="reasoning-item-topline">
+        <span>${escapeHtml(reasoningFamilyLabel(item.family))}</span>
+        <span>${escapeHtml(reasoningSubtypeLabel(item.family, item.subtype))}</span>
+        <span>${escapeHtml(`${activeReasoningBlock.itemIndex + 1}/${activeReasoningBlock.items.length}`)}</span>
+      </div>
+      <div class="reasoning-premises">
+        ${(item.premises || []).map((premise) => `<p>${escapeHtml(premise)}</p>`).join("")}
+      </div>
+      <div class="reasoning-query">${escapeHtml(item.query || "Choose the best answer.")}</div>
+      <div class="reasoning-timer-strip">
+        <span>${escapeHtml(activeReasoningBlock.plan.wrapper.replace("_", " "))}</span>
+        <i style="--reasoning-time:${feedback ? 100 : 0}%;"></i>
+        <span>${escapeHtml(`${limit}s`)}</span>
+      </div>
+      <div class="reasoning-options${item.answer_type === "true_false" ? " is-binary" : ""}">
+        ${(item.options || []).map((option) => renderReasoningOptionButton(item, option)).join("")}
+      </div>
+      ${item.answer_type === "multi_select" && activeReasoningBlock.status === "question" ? `
+        <button class="btn btn-primary reasoning-submit" type="button" data-action="reasoning-submit">Submit</button>
+      ` : ""}
+      ${feedback ? `
+        <div class="reasoning-feedback${outcome?.isCorrect ? " is-correct" : " is-wrong"}">
+          <span>${outcome?.isCorrect ? "Signal locked" : outcome?.timedOut ? "Signal timed out" : "Signal missed"}</span>
+          <strong>${outcome?.isCorrect ? "Correct" : "Check the rule"}</strong>
+          <p>${escapeHtml(item.explanation || "Review the relation and try the next one cleanly.")}</p>
+          <button class="btn btn-primary" type="button" data-action="reasoning-next">${activeReasoningBlock.itemIndex < activeReasoningBlock.items.length - 1 ? "Next signal" : "Finish block"}</button>
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
+function renderReasoningBlockSummary() {
+  const summary = activeReasoningBlock?.summary;
+  if (!summary) return "";
+  return `
+    <div class="reasoning-summary-card">
+      <span class="stats-kicker">Reasoning block result</span>
+      <h2>${escapeHtml(reasoningFamilyLabel(summary.family))}</h2>
+      <div class="zone-pulse-metrics">
+        ${renderZonePulseMetric("Accuracy", percent(summary.accuracy))}
+        ${renderZonePulseMetric("Decision", summary.decision)}
+        ${renderZonePulseMetric("Transfer", formatScorePercent(summary.transferScore.total))}
+        ${renderZonePulseMetric("Tier", String(summary.tier))}
+        ${renderZonePulseMetric("Wrapper", summary.wrapper.replace("_", " "))}
+        ${renderZonePulseMetric("Timeouts", String(summary.timeouts))}
+      </div>
+      <button class="btn btn-primary" type="button" data-action="clear-reasoning-summary">Continue</button>
+    </div>
+  `;
+}
+
+function renderReasoningTacticCapture() {
+  const session = viewState.reasoningCloseSession;
+  if (!session) return "";
+  return `
+    <div class="reasoning-summary-card reasoning-capture-card">
+      <span class="stats-kicker">Session close</span>
+      <h2>${escapeHtml(reasoningFamilyLabel(session.family))} tactic capture</h2>
+      <div class="reasoning-capture-grid">
+        <label>Tactic used<input data-reasoning-capture="tacticUsed" maxlength="90" placeholder="Name the move you used"></label>
+        <label>Quick trap to avoid<input data-reasoning-capture="trapToAvoid" maxlength="90" placeholder="What nearly fooled you?"></label>
+        <label>One-line takeaway<input data-reasoning-capture="takeaway" maxlength="110" placeholder="Keep it sharp and portable"></label>
+        <label class="reasoning-check"><input type="checkbox" data-reasoning-capture="reusable"> Save as reusable tactic</label>
+      </div>
+      <button class="btn btn-primary" type="button" data-action="save-reasoning-capture">Save close</button>
+    </div>
+  `;
+}
+
+function renderReasoningIntro() {
+  const session = reasoningState.currentSession;
+  const rec = reasoningZoneRecommendation();
+  const family = session?.family || (reasoningState.settings.mode === "coach" ? reasoningFamilyForCoreSession(nextReasoningSessionNumber(reasoningState)) : reasoningState.settings.family);
+  return `
+    <div class="reasoning-intro-card">
+      <span class="stats-kicker">Reasoning Gym</span>
+      <h2>${escapeHtml(reasoningFamilyLabel(family))}</h2>
+      <p>${escapeHtml(rec.recommended ? rec.copy : "Read the signal, lock the rule, and carry the tactic forward.")}</p>
+      <div class="reasoning-intro-grid">
+        <div><span class="mini-label">Dose</span><strong>${session ? `${session.plannedBlocks} x ${session.itemsPerBlock}` : reasoningState.settings.mode === "coach" ? "2 x 5" : `1 x ${reasoningState.settings.itemsPerBlock}`}</strong></div>
+        <div><span class="mini-label">Tier</span><strong>${escapeHtml(String(reasoningState.familyState[family]?.current_tier || 1))}</strong></div>
+        <div><span class="mini-label">Wrapper</span><strong>${escapeHtml(reasoningState.familyState[family]?.wrapper_mode || "real_world")}</strong></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderReasoningArena() {
+  if (viewState.reasoningCloseSession) return renderReasoningTacticCapture();
+  if (activeReasoningBlock?.status === "summary") return renderReasoningBlockSummary();
+  if (activeReasoningBlock) return renderReasoningItemCard();
+  return renderReasoningIntro();
+}
+
+function renderReasoningRightStrip() {
+  const stats = reasoningSessionStats(reasoningState.history.filter((entry) => entry.type !== "session_abandoned"));
+  const latest = stats.latest;
+  return `
+    <aside class="strip strip-right" aria-label="Reasoning stats and wallet strip">
+      <div class="strip-inner">
+        <div class="strip-head strip-head-close">
+          <button class="sheet-close" type="button" data-action="close-sheets" aria-label="Close sheet">x</button>
+        </div>
+        <section class="panel score-panel">
+          <h2 class="strip-title panel-strip-title">SCORES</h2>
+          <div class="coin-stack">
+            <div class="coin">
+              <img class="coin-icon" src="./assets/coins/g-plasticity-cell.png?v=20260417-coin2" alt="" loading="lazy">
+              <strong>${economy.walletG} g</strong>
+              <span class="coin-label">reasoning credit</span>
+            </div>
+            <div class="coin iq">
+              <img class="coin-icon" src="./assets/coins/iq-point-credit.png?v=20260417-coin2" alt="" loading="lazy">
+              <strong>${(economy.walletG / 100).toFixed(2)}</strong>
+              <span class="coin-label">IQ point credit</span>
+            </div>
+          </div>
+          <h3>Reasoning</h3>
+          <div class="stat-grid">
+            <div class="stat"><span class="mini-label">Family</span><strong>${escapeHtml(latest ? reasoningFamilyLabel(latest.family) : "--")}</strong></div>
+            <div class="stat"><span class="mini-label">Tier</span><strong>${escapeHtml(latest ? String(latest.tier) : "--")}</strong></div>
+            <div class="stat"><span class="mini-label">Accuracy</span><strong>${latest ? percent(latest.accuracy) : "--"}</strong></div>
+            <div class="stat"><span class="mini-label">Transfer</span><strong>${latest ? formatScorePercent(latest.transferScore?.total) : "--"}</strong></div>
+          </div>
+          <button class="btn btn-ghost right-stats-btn${viewState.centerMode === "stats" ? " is-selected" : ""}" type="button" data-action="show-stats" aria-pressed="${viewState.centerMode === "stats" ? "true" : "false"}" ${activeReasoningBlock ? "disabled" : ""}>Stats</button>
+        </section>
+        <section class="panel">
+          <h2 class="strip-title panel-strip-title">GAME PLAY</h2>
+          <div class="stat-grid">
+            <div class="stat"><span class="mini-label">Current Session</span><strong>${escapeHtml(currentReasoningSessionDisplay())}</strong></div>
+            <div class="stat"><span class="mini-label">Sessions To Go</span><strong>${escapeHtml(reasoningSessionToGoDisplay())}</strong></div>
+          </div>
+          <button class="btn btn-ghost right-stats-btn" type="button" data-action="reset-reasoning-sessions" ${activeReasoningBlock ? "disabled" : ""}>Reset reasoning</button>
+        </section>
+      </div>
+    </aside>
+  `;
+}
+
+function renderReasoningPlayControls() {
+  if (viewState.centerMode === "zone") return renderPlayControls();
+  if (viewState.centerMode === "stats") {
+    return `<div class="response-row"><button class="btn btn-primary" type="button" data-action="show-play">Return to gameplay</button></div>`;
+  }
+  if (viewState.reasoningBusy) {
+    return `<div class="response-row"><button class="btn btn-dark" type="button" disabled>Loading signals</button></div>`;
+  }
+  if (activeReasoningBlock?.status === "question") {
+    return `<div class="response-row"><button class="response-btn is-stop" type="button" data-action="stop-reasoning-block">Stop</button></div>`;
+  }
+  if (activeReasoningBlock?.status === "feedback") {
+    return `<div class="response-row"><button class="response-btn" type="button" data-action="reasoning-next">${activeReasoningBlock.itemIndex < activeReasoningBlock.items.length - 1 ? "Next signal" : "Finish block"}</button><button class="response-btn is-stop" type="button" data-action="stop-reasoning-block">Stop</button></div>`;
+  }
+  if (activeReasoningBlock?.status === "summary") {
+    return `<div class="response-row"><button class="btn btn-primary" type="button" data-action="clear-reasoning-summary">Continue</button></div>`;
+  }
+  if (viewState.reasoningCloseSession) {
+    return `<div class="response-row"><button class="btn btn-primary" type="button" data-action="save-reasoning-capture">Save close</button><button class="btn btn-ghost" type="button" data-action="skip-reasoning-capture">Skip</button></div>`;
+  }
+  const rec = reasoningZoneRecommendation();
+  const session = reasoningState.currentSession;
+  return `
+    <div class="response-row">
+      ${reasoningState.settings.mode === "coach" && rec.recommended ? `<button class="btn btn-primary" type="button" data-action="show-zone-pulse">Test your zone</button>` : ""}
+      ${reasoningState.settings.mode === "coach" && !session ? `<button class="btn ${rec.recommended ? "btn-dark" : "btn-primary"}" type="button" data-action="start-reasoning-session">${rec.recommended ? "Start anyway" : "Start reasoning session"}</button>` : ""}
+      ${reasoningState.settings.mode === "coach" && session ? `<button class="btn btn-primary" type="button" data-action="start-reasoning-block">Start reasoning block</button>` : ""}
+      ${reasoningState.settings.mode === "manual" ? `<button class="btn btn-primary" type="button" data-action="start-reasoning-manual">Start manual reasoning</button>` : ""}
+    </div>
+  `;
+}
+
+function renderReasoningPlayCard() {
+  const showingStats = viewState.centerMode === "stats";
+  const showingZone = viewState.centerMode === "zone";
+  return `
+    <section class="play-card reasoning-play-card${showingStats ? " is-stats-view" : ""}" aria-label="Reasoning play surface">
+      <div class="mobile-topbar">
+        <button class="btn btn-ghost" type="button" data-action="open-left">Coach</button>
+        <button class="btn btn-ghost" type="button" data-action="open-right">Stats</button>
+      </div>
+      ${showingStats ? "" : renderHud()}
+      <div class="play-body${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""} is-reasoning">
+        <div class="arena-shell${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""} is-reasoning">
+          ${showingStats ? renderReasoningStatsDashboard() : showingZone ? renderZonePulseTask() : renderReasoningArena()}
+        </div>
+        <div class="play-controls">${renderReasoningPlayControls()}</div>
       </div>
     </section>
   `;
@@ -2612,13 +3387,14 @@ function render() {
   appRoot.innerHTML = `
     <div class="${classes}">
       <button class="sheet-backdrop" type="button" data-action="close-sheets" aria-label="Close sheet"></button>
-      ${renderLeftStrip()}
-      ${renderPlayCard()}
-      ${renderRightStrip()}
+      ${viewState.activeModule === "reasoning" ? renderReasoningLeftStrip() : renderLeftStrip()}
+      ${viewState.activeModule === "reasoning" ? renderReasoningPlayCard() : renderPlayCard()}
+      ${viewState.activeModule === "reasoning" ? renderReasoningRightStrip() : renderRightStrip()}
     </div>
     ${renderModeHelpModal()}
     ${renderZoneHelpModal()}
   `;
+  ensureModuleSwitch();
 }
 
 function updateSettingsField(field, value) {
@@ -2688,8 +3464,24 @@ document.addEventListener("click", (event) => {
     setSoundOn(!isSoundOn());
     return;
   }
+  if (action === "set-module") {
+    const moduleId = target.getAttribute("data-module") === "reasoning" ? "reasoning" : "capacity";
+    if (moduleId === viewState.activeModule) return;
+    if (anyGameplayActive()) {
+      triggerSfx("invalid_action");
+      return;
+    }
+    saveActiveModule(moduleId);
+    viewState.centerMode = "play";
+    viewState.leftOpen = false;
+    viewState.rightOpen = false;
+    viewState.reasoningCloseSession = null;
+    triggerSfx("ui_tap_soft");
+    render();
+    return;
+  }
   if (action === "open-left") {
-    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning()) return;
+    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning() || activeReasoningBlock) return;
     triggerSfx("ui_tap_soft");
     viewState.leftOpen = true;
     viewState.rightOpen = false;
@@ -2697,7 +3489,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "open-right") {
-    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning()) return;
+    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning() || activeReasoningBlock) return;
     triggerSfx("ui_tap_soft");
     viewState.rightOpen = true;
     viewState.leftOpen = false;
@@ -2705,7 +3497,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "show-stats") {
-    if (activeBlock || zonePulseIsRunning()) return;
+    if (activeBlock || zonePulseIsRunning() || activeReasoningBlock) return;
     triggerSfx("ui_tap_soft");
     viewState.centerMode = "stats";
     viewState.leftOpen = false;
@@ -2718,6 +3510,71 @@ document.addEventListener("click", (event) => {
     destroyZonePulseController();
     triggerSfx("ui_tap_soft");
     viewState.centerMode = "play";
+    render();
+    return;
+  }
+  if (action === "set-reasoning-mode") {
+    if (anyGameplayActive()) return;
+    reasoningState.settings.mode = target.getAttribute("data-mode") === "manual" ? "manual" : "coach";
+    reasoningState.currentSession = null;
+    saveReasoningState();
+    viewState.reasoningCloseSession = null;
+    triggerSfx("ui_tap_soft");
+    render();
+    return;
+  }
+  if (action === "start-reasoning-session") {
+    beginReasoningCoachSession();
+    return;
+  }
+  if (action === "start-reasoning-block") {
+    startReasoningBlock({ manual: false });
+    return;
+  }
+  if (action === "start-reasoning-manual") {
+    startReasoningBlock({ manual: true });
+    return;
+  }
+  if (action === "reasoning-option") {
+    toggleReasoningOption(target.getAttribute("data-option"));
+    return;
+  }
+  if (action === "reasoning-submit") {
+    submitReasoningAnswer();
+    return;
+  }
+  if (action === "reasoning-next") {
+    advanceReasoningItem();
+    return;
+  }
+  if (action === "stop-reasoning-block") {
+    stopReasoningBlock();
+    return;
+  }
+  if (action === "clear-reasoning-summary") {
+    activeReasoningBlock = null;
+    triggerSfx("ui_tap_soft");
+    render();
+    return;
+  }
+  if (action === "save-reasoning-capture") {
+    saveReasoningTacticCapture();
+    return;
+  }
+  if (action === "skip-reasoning-capture") {
+    viewState.reasoningCloseSession = null;
+    triggerSfx("ui_tap_soft");
+    render();
+    return;
+  }
+  if (action === "reset-reasoning-sessions") {
+    if (activeReasoningBlock) return;
+    if (!window.confirm("Reset Reasoning Gym session count and reasoning history on this device? Wallet credits stay unchanged.")) return;
+    reasoningState = createDefaultReasoningState();
+    saveReasoningState(reasoningState);
+    viewState.centerMode = "play";
+    viewState.reasoningCloseSession = null;
+    triggerSfx("ui_tap_soft");
     render();
     return;
   }
@@ -2837,8 +3694,34 @@ document.addEventListener("click", (event) => {
 document.addEventListener("change", (event) => {
   const target = event.target;
   if (!(target instanceof HTMLSelectElement || target instanceof HTMLInputElement)) return;
+  const reasoningField = target.getAttribute("data-reasoning-field");
+  if (reasoningField) {
+    if (anyGameplayActive()) return;
+    const settings = { ...reasoningState.settings };
+    if (reasoningField === "family") {
+      settings.family = REASONING_FAMILIES[target.value] ? target.value : "relation_fit";
+      settings.subtype = "auto";
+    } else if (reasoningField === "subtype") {
+      settings.subtype = target.value || "auto";
+    } else if (reasoningField === "wrapper") {
+      settings.wrapper = target.value === "mixed" || target.value === "nonsense" ? target.value : "real_world";
+    } else if (reasoningField === "speed") {
+      settings.speed = target.value === "fast" ? "fast" : "normal";
+    } else if (reasoningField === "tier") {
+      settings.tier = target.value === "auto" ? "auto" : clamp(Math.round(Number(target.value || 1)), 1, 5);
+    } else if (reasoningField === "itemsPerBlock") {
+      const count = Math.round(Number(target.value || 5));
+      settings.itemsPerBlock = REASONING_MANUAL_ITEM_OPTIONS.includes(count) ? count : 5;
+    }
+    reasoningState.settings = settings;
+    saveReasoningState();
+    unlockAudioGesture();
+    triggerSfx("ui_tap_soft");
+    render();
+    return;
+  }
   const field = target.getAttribute("data-field");
-  if (!field || activeBlock || zonePulseIsRunning()) return;
+  if (!field || activeBlock || zonePulseIsRunning() || activeReasoningBlock) return;
   unlockAudioGesture();
   triggerSfx("ui_tap_soft");
   updateSettingsField(field, target.value);
@@ -2862,6 +3745,25 @@ document.addEventListener("keydown", (event) => {
       if (submitZonePulse("right")) event.preventDefault();
       return;
     }
+    return;
+  }
+  if (activeReasoningBlock?.status === "question") {
+    const item = currentReasoningItem();
+    const key = event.key.toUpperCase();
+    if (item?.answer_type === "multi_select" && key === "ENTER") {
+      submitReasoningAnswer();
+      event.preventDefault();
+      return;
+    }
+    const option = item?.options?.find((entry) => entry.id === key);
+    if (option) {
+      toggleReasoningOption(option.id);
+      event.preventDefault();
+      return;
+    }
+  } else if (activeReasoningBlock?.status === "feedback" && (event.code === "Space" || event.code === "Enter")) {
+    advanceReasoningItem();
+    event.preventDefault();
     return;
   }
   if (event.code === "KeyP") {
@@ -2907,7 +3809,7 @@ document.addEventListener("touchstart", (event) => {
 }, { passive: true });
 
 document.addEventListener("touchend", (event) => {
-  if (!touchStart || activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning()) {
+  if (!touchStart || activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning() || activeReasoningBlock) {
     touchStart = null;
     return;
   }
