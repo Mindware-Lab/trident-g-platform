@@ -14,6 +14,9 @@ import {
   unlockAudioContextFromUserGesture
 } from "./runtime/audio.js";
 import { hash32 } from "./runtime/rng.js";
+import { createZoneProbeController } from "./runtime/zone/probe.js";
+import { buildZoneHandoff } from "./runtime/zone/handoff.js";
+import { loadZoneRuntimeState, saveZoneRun } from "./runtime/zone/storage.js";
 
 const STORAGE_KEY = "tg_iq_live_capacity_v2";
 const ECONOMY_KEY = "tg_iq_live_economy_v1";
@@ -29,6 +32,7 @@ const MAX_SESSION_COUNTER = 999;
 const TRAINING_HELP_VIDEO_URL = "https://youtu.be/uOncXapT-j4?si=uJBBaXw7M1vtL2jL";
 const TRAINING_HELP_ICON_URL = "./assets/help/help-hex-blue.svg";
 const MODE_HELP_ICON_URL = "./assets/help/help-hex-purple.svg";
+const ZONE_HELP_ICON_URL = "./assets/help/help-hex-gold.svg";
 const COACH_FAMILY_CYCLE = ["flex", "bind", "relate", "resist", "flex", "relate", "bind", "resist", "relate"];
 const RELATE_LADDER = ["relate_vectors", "relate_numbers", "relate_vectors_dual", "relate_numbers_dual"];
 const TRANSFER_SPRINT_BLOCKS = 3;
@@ -71,11 +75,13 @@ const PREVIEW_MARKERS = [
 const appRoot = document.querySelector("#app");
 let state = loadState();
 let economy = loadEconomy();
+let zonePulseState = createZonePulseState();
 let activeBlock = null;
 let viewState = {
   leftOpen: false,
   rightOpen: false,
   modeHelpOpen: false,
+  zoneHelpOpen: false,
   centerMode: "play",
   message: "Choose coached progression or manual play, then start a block."
 };
@@ -402,6 +408,7 @@ function normalizeZoneValue(zoneValue, recommendationValue) {
   if (zone === "locked_in" || zone === "locked-in" || zone === "locked in" || zone === "overloaded_exploit") return "locked_in";
   if (zone === "spun_out" || zone === "spun-out" || zone === "spun out" || zone === "too_hot" || zone === "overloaded_explore") return "spun_out";
   if (zone === "in_band" || zone === "in_zone" || zone === "psi") return "in_band";
+  if (zone === "invalid" || zone === "check_invalid") return "invalid";
   if (recommendation === "light") return "subcritical";
   if (recommendation === "proceed" || recommendation === "full") return "in_band";
   return "unknown";
@@ -415,7 +422,7 @@ function normalizeZoneCandidate(candidate, sourceKey) {
     : (Number.isFinite(Date.parse(candidate.timestamp)) ? Date.parse(candidate.timestamp) : null);
   const zone = normalizeZoneValue(gate.zone || candidate.zone || candidate.state || candidate.router?.state, gate.recommendation || candidate.recommendation);
   const routeClass = candidate.capacityPlan?.routeClass
-    || (zone === "in_band" ? "core" : zone === "subcritical" ? "support" : (zone === "locked_in" || zone === "spun_out") ? "recovery" : "support");
+    || (zone === "in_band" ? "core" : zone === "subcritical" ? "support" : (zone === "locked_in" || zone === "spun_out" || zone === "invalid") ? "recovery" : "support");
   const defaultBlocks = routeClass === "core" ? COACH_CORE_BLOCKS : routeClass === "support" ? SUPPORT_BLOCKS : 0;
   return {
     sessionId: candidate.sessionId || `zone_${timestamp || Date.now()}`,
@@ -424,7 +431,7 @@ function normalizeZoneCandidate(candidate, sourceKey) {
     freshSameDay: Number.isFinite(timestamp) ? dateKey(timestamp) === dateKey() : false,
     freshForTraining: isFreshZoneTimestamp(timestamp),
     state: zone,
-    uiState: zone === "in_band" ? "In the Zone" : zone === "subcritical" ? "Subcritical" : zone === "locked_in" ? "Locked in" : zone === "spun_out" ? "Spun out" : "Unknown",
+    uiState: zone === "in_band" ? "In the Zone" : zone === "subcritical" ? "Subcritical" : zone === "locked_in" ? "Locked in" : zone === "spun_out" ? "Spun out" : zone === "invalid" ? "Invalid" : "Unknown",
     recommendation: gate.recommendation || candidate.recommendation || (routeClass === "core" ? "proceed" : "light"),
     capacityPlan: {
       routeClass,
@@ -452,6 +459,138 @@ function readZoneHandoff() {
   if (!Number.isFinite(primary.timestamp)) return fallback;
   if (!Number.isFinite(fallback.timestamp)) return primary;
   return primary.timestamp >= fallback.timestamp ? primary : fallback;
+}
+
+function createZonePulseState() {
+  const persisted = loadZoneRuntimeState();
+  return {
+    phase: persisted.latestSummary ? "result" : "idle",
+    history: persisted.history.slice(),
+    latestSummary: persisted.latestSummary,
+    latestHandoff: persisted.latestHandoff,
+    live: {
+      progressPct: 0,
+      trialCount: 0,
+      counts: { stair: 0, probe: 0, catch: 0 },
+      qualityText: "Ready"
+    },
+    controller: null,
+    activeRunId: null,
+    cancelled: false
+  };
+}
+
+function zoneRouteState(value) {
+  const raw = String(value || "").trim().toLowerCase();
+  if (raw === "in_band" || raw === "in_zone" || raw === "psi") return "in_zone";
+  if (raw === "subcritical" || raw === "too_cold" || raw === "below_band" || raw === "flat") return "flat";
+  if (raw === "locked_in" || raw === "locked-in" || raw === "locked in" || raw === "overloaded_exploit") return "overloaded_exploit";
+  if (raw === "spun_out" || raw === "spun-out" || raw === "spun out" || raw === "too_hot" || raw === "overloaded_explore") return "overloaded_explore";
+  return "invalid";
+}
+
+function zoneRouteClass(routeState) {
+  if (routeState === "in_zone") return "core";
+  if (routeState === "flat") return "support";
+  if (routeState === "overloaded_explore" || routeState === "overloaded_exploit") return "recovery";
+  return "recovery";
+}
+
+function zoneRouteLabel(routeState) {
+  if (routeState === "in_zone") return "In Zone";
+  if (routeState === "flat") return "Flat";
+  if (routeState === "overloaded_explore") return "Spun Out";
+  if (routeState === "overloaded_exploit") return "Locked In";
+  return "Invalid";
+}
+
+function zoneDisplaySnapshot() {
+  const latestSummary = zonePulseState.latestSummary;
+  const handoff = readZoneHandoff();
+  const freshSummary = latestSummary && isFreshZoneTimestamp(latestSummary.timestamp);
+  const freshHandoff = handoff?.freshForTraining;
+  if (freshSummary && (!freshHandoff || latestSummary.timestamp >= (handoff.timestamp || 0))) {
+    const routeState = zoneRouteState(latestSummary.state);
+    return {
+      source: "runtime",
+      fresh: true,
+      valid: latestSummary.valid === true,
+      routeState,
+      routeClass: zoneRouteClass(routeState),
+      label: zoneRouteLabel(routeState),
+      confidence: latestSummary.confidence || "Low",
+      bitsPerSecond: latestSummary.bitsPerSecond,
+      summary: latestSummary
+    };
+  }
+  if (freshHandoff) {
+    const routeState = zoneRouteState(handoff.state);
+    return {
+      source: handoff.sourceKey,
+      fresh: true,
+      valid: routeState !== "invalid",
+      routeState,
+      routeClass: handoff.capacityPlan?.routeClass || zoneRouteClass(routeState),
+      label: zoneRouteLabel(routeState),
+      confidence: handoff.confidence || "--",
+      bitsPerSecond: handoff.bitsPerSecond,
+      summary: null
+    };
+  }
+  return {
+    source: null,
+    fresh: false,
+    valid: false,
+    routeState: "invalid",
+    routeClass: null,
+    label: "Awaiting check",
+    confidence: "--",
+    bitsPerSecond: null,
+    summary: latestSummary || null
+  };
+}
+
+function zonePulseIsRunning() {
+  return zonePulseState.phase === "running";
+}
+
+function formatBitsPerSecond(value) {
+  return Number.isFinite(value) ? value.toFixed(2) : "--";
+}
+
+function formatMetricPct(value) {
+  return Number.isFinite(value) ? `${Math.round(value * 100)}%` : "--";
+}
+
+function persistCapacityZoneHandoff(summary, handoff) {
+  if (typeof localStorage === "undefined" || !summary || !handoff) return;
+  const routeState = zoneRouteState(summary.state);
+  const routeClass = handoff.capacityPlan?.routeClass || zoneRouteClass(routeState);
+  const payload = {
+    ...handoff,
+    schemaVersion: "iqmw_capacity_handoff_v2",
+    sourceApp: "capacity_gym_zone_check",
+    timestamp: Number.isFinite(summary.timestamp) ? Math.round(summary.timestamp) : Date.now(),
+    state: routeState,
+    uiState: zoneRouteLabel(routeState),
+    gate: {
+      zone: routeState,
+      recommendation: handoff.recommendation
+    },
+    capacityPlan: {
+      ...handoff.capacityPlan,
+      routeClass
+    }
+  };
+  localStorage.setItem(ZONE_HANDOFF_KEY, JSON.stringify(payload));
+  localStorage.setItem(ZONE_FALLBACK_KEY, JSON.stringify({
+    schemaVersion: "mw_handoff_v1",
+    timestamp: payload.timestamp,
+    zone: routeState,
+    recommendation: handoff.recommendation,
+    capacityFocus: payload.capacityPlan?.focusBias || null,
+    routeClass
+  }));
 }
 
 function currentCoachFamilyNumber() {
@@ -658,12 +797,12 @@ function recommendedManualFamilyId() {
 }
 
 function beginCoachSession() {
-  if (activeBlock || state.currentSession) return;
+  if (activeBlock || state.currentSession || zonePulseIsRunning()) return;
   viewState.centerMode = "play";
   const handoff = readZoneHandoff();
   const routeClass = handoff?.freshForTraining ? handoff.capacityPlan.routeClass : "core";
   if (routeClass === "recovery") {
-    viewState.message = "Zone Coach marked this as a recovery route. Use manual light play only after recovery, or re-check first.";
+    viewState.message = "Zone Check marked this as a recovery route. Use manual light play only after recovery, or re-check first.";
     triggerSfx("invalid_action");
     render();
     return;
@@ -731,7 +870,7 @@ function advanceCountdown(expectedStep) {
 }
 
 function startBlock() {
-  if (activeBlock) {
+  if (activeBlock || zonePulseIsRunning()) {
     triggerSfx("invalid_action");
     return;
   }
@@ -864,6 +1003,163 @@ function stopActiveBlock() {
   viewState.message = "Block stopped. No credit was awarded and session progress was not advanced.";
   triggerSfx("session_stop_discard");
   render();
+}
+
+function destroyZonePulseController() {
+  if (zonePulseState.controller) {
+    zonePulseState.controller.destroy();
+    zonePulseState.controller = null;
+  }
+}
+
+function updateZonePulseLiveDom() {
+  const progress = Math.round(zonePulseState.live.progressPct || 0);
+  const progressFill = document.querySelector("[data-zone-pulse-progress-fill]");
+  const progressLabel = document.querySelector("[data-zone-pulse-progress-label]");
+  const quality = document.querySelector("[data-zone-pulse-quality]");
+  const counts = document.querySelector("[data-zone-pulse-counts]");
+  if (progressFill) progressFill.style.width = `${clamp(progress, 0, 100)}%`;
+  if (progressLabel) progressLabel.textContent = `${clamp(progress, 0, 100)}% complete`;
+  if (quality) quality.textContent = zonePulseState.live.qualityText || "Stay on one screen";
+  if (counts) {
+    const liveCounts = zonePulseState.live.counts || {};
+    counts.textContent = `Trials ${zonePulseState.live.trialCount || 0} | S:${liveCounts.stair || 0} P:${liveCounts.probe || 0} C:${liveCounts.catch || 0}`;
+  }
+}
+
+function ensureZonePulseController() {
+  const canvas = document.querySelector("[data-zone-pulse-canvas]");
+  if (!canvas) return null;
+  if (zonePulseState.controller) return zonePulseState.controller;
+  zonePulseState.controller = createZoneProbeController({
+    canvas,
+    onStatus(status) {
+      zonePulseState.live = {
+        progressPct: Number.isFinite(status.progressPct) ? status.progressPct : zonePulseState.live.progressPct,
+        trialCount: Number.isFinite(status.trialCount) ? status.trialCount : zonePulseState.live.trialCount,
+        counts: status.counts || zonePulseState.live.counts || { stair: 0, probe: 0, catch: 0 },
+        qualityText: status.qualityText || zonePulseState.live.qualityText || "Stay on one screen"
+      };
+      updateZonePulseLiveDom();
+    },
+    onComplete(summary) {
+      if (zonePulseState.cancelled || !summary) return;
+      const handoff = buildZoneHandoff(summary);
+      const saved = saveZoneRun(summary, handoff);
+      persistCapacityZoneHandoff(summary, handoff);
+      zonePulseState.history = saved.history.slice();
+      zonePulseState.latestSummary = saved.latestSummary;
+      zonePulseState.latestHandoff = saved.latestHandoff;
+      zonePulseState.phase = summary.valid ? "result" : "invalid";
+      zonePulseState.activeRunId = null;
+      destroyZonePulseController();
+      viewState.centerMode = "zone";
+      viewState.message = summary.valid
+        ? `Zone Check complete: ${zoneRouteLabel(zoneRouteState(summary.state))}, ${formatBitsPerSecond(summary.bitsPerSecond)} bits/sec.`
+        : "Zone Check did not validate. Run a clean pulse before treating it as a route.";
+      render();
+    }
+  });
+  return zonePulseState.controller;
+}
+
+function showZonePulse() {
+  if (activeBlock || zonePulseIsRunning()) {
+    triggerSfx("invalid_action");
+    return;
+  }
+  viewState.centerMode = "zone";
+  zonePulseState.phase = "ready";
+  viewState.leftOpen = false;
+  viewState.rightOpen = false;
+  viewState.message = "Zone Check ready. Take the 3 minute zone pulse when you want a fresh route.";
+  triggerSfx("ui_tap_soft");
+  render();
+  ensureZonePulseController();
+}
+
+function startZonePulse() {
+  if (activeBlock || zonePulseIsRunning() || zonePulseState.cancelled) {
+    triggerSfx("invalid_action");
+    if (zonePulseState.cancelled) {
+      viewState.message = "Zone pulse is finishing its stop. Try again in a moment.";
+      render();
+    }
+    return;
+  }
+  destroyZonePulseController();
+  zonePulseState.phase = "running";
+  zonePulseState.cancelled = false;
+  zonePulseState.activeRunId = `zonepulse_${Date.now()}`;
+  zonePulseState.live = {
+    progressPct: 0,
+    trialCount: 0,
+    counts: { stair: 0, probe: 0, catch: 0 },
+    qualityText: "Calibrating display timing"
+  };
+  viewState.centerMode = "zone";
+  viewState.leftOpen = false;
+  viewState.rightOpen = false;
+  viewState.message = "Zone pulse live. Choose the masked arrow majority: left or right.";
+  triggerSfx("session_start");
+  render();
+  const controller = ensureZonePulseController();
+  if (!controller) {
+    zonePulseState.phase = "ready";
+    viewState.message = "Zone Check could not start because the task canvas was not found.";
+    render();
+    return;
+  }
+  controller.start({ historyRows: zonePulseState.history }).catch((error) => {
+    if (zonePulseState.cancelled) return;
+    zonePulseState.phase = "invalid";
+    zonePulseState.latestSummary = {
+      sessionId: `zonepulse_${Date.now()}`,
+      timestamp: Date.now(),
+      valid: false,
+      invalidReason: error instanceof Error ? error.message : "Zone pulse failed",
+      state: "invalid",
+      confidence: "Low",
+      reasons: ["Zone pulse failed"],
+      bitsPerSecond: null,
+      features: {},
+      counts: {}
+    };
+    destroyZonePulseController();
+    viewState.message = "Zone pulse failed before a result could be computed.";
+    render();
+  }).finally(() => {
+    if (zonePulseState.cancelled) {
+      zonePulseState.cancelled = false;
+      zonePulseState.activeRunId = null;
+    }
+  });
+}
+
+function stopZonePulse() {
+  if (!zonePulseIsRunning()) return;
+  zonePulseState.cancelled = true;
+  zonePulseState.activeRunId = null;
+  destroyZonePulseController();
+  zonePulseState.phase = zonePulseState.latestSummary ? "result" : "ready";
+  zonePulseState.live = {
+    progressPct: 0,
+    trialCount: 0,
+    counts: { stair: 0, probe: 0, catch: 0 },
+    qualityText: "Stopped"
+  };
+  viewState.centerMode = "zone";
+  viewState.message = "Zone pulse stopped. No route was saved.";
+  triggerSfx("session_stop_discard");
+  render();
+  ensureZonePulseController();
+}
+
+function submitZonePulse(direction) {
+  if (!zonePulseIsRunning() || !zonePulseState.controller) return false;
+  zonePulseState.controller.submit(direction === "left" ? "ArrowLeft" : "ArrowRight");
+  triggerSfx("match_primary_press");
+  return true;
 }
 
 function isMatchWindowOpen() {
@@ -1567,6 +1863,30 @@ function sessionStatsModel() {
   };
 }
 
+function zoneBitsStatsModel() {
+  const rows = zonePulseState.history
+    .filter((entry) => entry?.valid && Number.isFinite(entry.bitsPerSecond))
+    .slice(-PROGRAMME_SESSION_TARGET);
+  const slots = Array.from({ length: PROGRAMME_SESSION_TARGET }, (_, index) => {
+    const row = rows[index] || null;
+    return row ? {
+      slot: index + 1,
+      label: `${index + 1}`,
+      bitsPerSecond: row.bitsPerSecond,
+      state: zoneRouteState(row.state)
+    } : {
+      slot: index + 1,
+      label: `${index + 1}`,
+      empty: true
+    };
+  });
+  const maxBits = Math.max(1, ...rows.map((entry) => Number(entry.bitsPerSecond)).filter(Number.isFinite));
+  return {
+    slots,
+    maxValue: Math.max(1, Math.ceil(maxBits * 1.15))
+  };
+}
+
 function hudModel() {
   const plan = displayPlanForHud();
   const family = wrapperFamily(plan.wrapper);
@@ -1579,8 +1899,20 @@ function hudModel() {
   };
 }
 
+function zoneHudModel() {
+  const snapshot = zoneDisplaySnapshot();
+  const progressLabel = zonePulseIsRunning() ? `${Math.round(zonePulseState.live.progressPct || 0)}%` : snapshot.confidence;
+  return {
+    items: [
+      ["Zone", snapshot.fresh ? snapshot.label : "Pending"],
+      ["Bits/sec", formatBitsPerSecond(snapshot.bitsPerSecond)],
+      ["Control", progressLabel || "--"]
+    ]
+  };
+}
+
 function renderHud() {
-  const model = hudModel();
+  const model = viewState.centerMode === "zone" ? zoneHudModel() : hudModel();
   return `
     <div class="hud" aria-label="Capacity block status">
       <div class="hud-status">
@@ -1596,7 +1928,7 @@ function renderHud() {
 }
 
 function shouldShowCoachCallout() {
-  return !activeBlock && viewState.centerMode !== "stats";
+  return !activeBlock && viewState.centerMode !== "stats" && viewState.centerMode !== "zone";
 }
 
 function coachCalloutModel() {
@@ -1655,6 +1987,7 @@ function renderSessionBarChart({ title, subtitle, valueKey, maxValue, unit = "",
 
 function renderCenterStatsDashboard() {
   const model = sessionStatsModel();
+  const zoneBitsModel = zoneBitsStatsModel();
   const rangeLabel = model.manualMode
     ? (model.rolling ? "Last 20 manual sessions" : "Manual session history")
     : (model.rolling ? "Last 20 coach sessions" : "20-session programme");
@@ -1692,54 +2025,126 @@ function renderCenterStatsDashboard() {
         unit: "%",
         model
       })}
+      ${renderSessionBarChart({
+        title: "Zone Check bits/sec",
+        subtitle: "Last 20 valid 3-minute zone pulse recordings.",
+        valueKey: "bitsPerSecond",
+        maxValue: zoneBitsModel.maxValue,
+        unit: "",
+        digits: 2,
+        model: zoneBitsModel
+      })}
     </div>
   `;
 }
 
-function renderZoneCoachPanel() {
-  const handoff = readZoneHandoff();
-  const routeLabel = handoff?.freshForTraining
-    ? `${handoff.uiState} / ${handoff.capacityPlan.routeClass}`
-    : "No fresh Zone handoff";
+function renderZonePulseMetric(label, value) {
+  return `<div class="stat"><span class="mini-label">${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
+}
+
+function renderZonePulseResult() {
+  const summary = zonePulseState.latestSummary;
+  if (!summary) return "";
+  const routeState = zoneRouteState(summary.state);
+  const probe = summary.features?.probe || {};
+  const reasons = Array.isArray(summary.reasons) && summary.reasons.length ? summary.reasons : [summary.invalidReason || "Run another clean pulse"];
+  return `
+    <div class="zone-pulse-result">
+      <span class="stats-kicker">Zone Check result</span>
+      <h2>${escapeHtml(zoneRouteLabel(routeState))}</h2>
+      <p>${escapeHtml(summary.valid ? "Route saved for the next Coach-led session." : (summary.invalidReason || "This pulse did not validate."))}</p>
+      <div class="zone-pulse-metrics">
+        ${renderZonePulseMetric("Bits/sec", formatBitsPerSecond(summary.bitsPerSecond))}
+        ${renderZonePulseMetric("Confidence", summary.confidence || "Low")}
+        ${renderZonePulseMetric("Probe", Number.isFinite(summary.counts?.probeTrials) ? `${summary.counts.probeTrials}` : "--")}
+        ${renderZonePulseMetric("Catch fail", formatMetricPct(summary.features?.catchFailRate))}
+        ${renderZonePulseMetric("RT med", Number.isFinite(probe.rtMed) ? `${probe.rtMed}ms` : "--")}
+        ${renderZonePulseMetric("RT var", Number.isFinite(probe.rtCV) ? probe.rtCV.toFixed(2) : "--")}
+        ${renderZonePulseMetric("Lapse", formatMetricPct(probe.slowLapseRate))}
+        ${renderZonePulseMetric("Timeout", formatMetricPct(probe.timeoutRate))}
+      </div>
+      <div class="zone-pulse-reasons">
+        ${reasons.slice(0, 3).map((reason) => `<span>${escapeHtml(reason)}</span>`).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderZonePulseTask() {
+  const running = zonePulseIsRunning();
+  const showResult = !running && zonePulseState.latestSummary && (zonePulseState.phase === "result" || zonePulseState.phase === "invalid");
+  if (showResult) return renderZonePulseResult();
+  return `
+    <div class="zone-pulse-stage${running ? " is-running" : ""}">
+      <canvas class="zone-pulse-canvas" data-zone-pulse-canvas aria-label="Masked majority arrow task"></canvas>
+      ${running ? `
+        <div class="zone-pulse-progress">
+          <div class="zone-pulse-progress-bar"><span data-zone-pulse-progress-fill style="width:${Math.round(zonePulseState.live.progressPct || 0)}%;"></span></div>
+          <div class="zone-pulse-progress-copy">
+            <span data-zone-pulse-progress-label>${Math.round(zonePulseState.live.progressPct || 0)}% complete</span>
+            <span data-zone-pulse-counts>Trials ${zonePulseState.live.trialCount || 0} | S:${zonePulseState.live.counts?.stair || 0} P:${zonePulseState.live.counts?.probe || 0} C:${zonePulseState.live.counts?.catch || 0}</span>
+          </div>
+          <p data-zone-pulse-quality>${escapeHtml(zonePulseState.live.qualityText || "Stay on one screen")}</p>
+        </div>
+      ` : `
+        <div class="coach-callout zone-pulse-tip" role="status" aria-live="polite">
+          <span>Coach tip</span>
+          <strong>Zone Check / 3 min</strong>
+          <p>Choose LEFT or RIGHT based on the direction most arrows point. Wait for the arrows before you decide. Use your best hunch if unclear.</p>
+        </div>
+      `}
+    </div>
+  `;
+}
+
+function renderZoneCheckPanel() {
+  const snapshot = zoneDisplaySnapshot();
+  const routeLabel = snapshot.fresh
+    ? `${snapshot.label} / ${snapshot.routeClass || "check"}`
+    : "No fresh Zone pulse";
   return `
     <section class="panel">
       <div class="notice">${escapeHtml(routeLabel)}</div>
-      ${renderZoneCoachGraphic(handoff)}
-      ${handoff?.freshForTraining ? `<p class="small muted">Source: ${escapeHtml(handoff.sourceKey)}</p>` : ""}
+      ${renderZoneCheckGraphic(snapshot)}
+      <div class="zone-pulse-action-row">
+        <button class="btn btn-primary zone-pulse-launch" type="button" data-action="show-zone-pulse" ${activeBlock || zonePulseIsRunning() ? "disabled" : ""}>Test your zone</button>
+        <button class="zone-pulse-help-btn" type="button" data-action="toggle-zone-help" aria-label="Open Zone Check help" title="Open Zone Check help">
+          <img src="${ZONE_HELP_ICON_URL}" alt="" aria-hidden="true">
+        </button>
+      </div>
     </section>
   `;
 }
 
-function renderZoneCoachGraphic(handoff) {
-  const activeZone = handoff?.freshForTraining ? handoff.state : null;
-  const label = activeZone ? `${handoff.uiState} highlighted` : "No recent Zone Coach designation highlighted";
+function renderZoneCheckGraphic(snapshot) {
+  const activeZone = snapshot?.fresh && snapshot.routeState !== "invalid" ? snapshot.routeState : null;
+  const label = activeZone ? `${snapshot.label} route highlighted` : "No recent Zone Check designation highlighted";
   const activeClass = (zone) => activeZone === zone ? " is-active" : "";
   return `
-    <div class="zone-flow-graphic" role="img" aria-label="${escapeHtml(label)}">
+    <div class="zone-trident-graphic" role="img" aria-label="${escapeHtml(label)}">
       <svg viewBox="0 0 360 210" focusable="false" aria-hidden="true">
-        <path class="zone-flow-line" d="M12 105H78" />
-        <path class="zone-flow-line" d="M122 105H154" />
-        <path class="zone-flow-line" d="M198 105H306" />
-        <polygon class="zone-flow-arrow" points="306,82 354,105 306,128" />
-        <path class="zone-flow-line" d="M188 88L214 46H274" />
-        <polygon class="zone-flow-arrow" points="274,23 322,46 274,69" />
-        <path class="zone-flow-line" d="M188 122L214 164H274" />
-        <polygon class="zone-flow-arrow" points="274,141 322,164 274,187" />
-        <g class="zone-node-group${activeClass("subcritical")}">
-          <circle class="zone-node" cx="100" cy="105" r="23" />
-          <circle class="zone-node-hole" cx="100" cy="105" r="9" />
+        <path class="zone-trident-line" d="M18 105H110" />
+        <path class="zone-trident-line" d="M150 105H302" />
+        <polygon class="zone-trident-arrow" points="302,80 354,105 302,130" />
+        <path class="zone-trident-line" d="M150 105L194 50H286" />
+        <polygon class="zone-trident-arrow" points="286,25 338,50 286,75" />
+        <path class="zone-trident-line" d="M150 105L194 160H286" />
+        <polygon class="zone-trident-arrow" points="286,135 338,160 286,185" />
+        <g class="zone-trident-node-group${activeClass("flat")}">
+          <circle class="zone-trident-node" cx="104" cy="105" r="23" />
+          <circle class="zone-trident-node-hole" cx="104" cy="105" r="9" />
         </g>
-        <g class="zone-node-group${activeClass("in_band")}">
-          <circle class="zone-node" cx="176" cy="105" r="23" />
-          <circle class="zone-node-hole" cx="176" cy="105" r="9" />
+        <g class="zone-trident-node-group${activeClass("in_zone")}">
+          <circle class="zone-trident-node" cx="152" cy="105" r="23" />
+          <circle class="zone-trident-node-hole" cx="152" cy="105" r="9" />
         </g>
-        <g class="zone-node-group${activeClass("locked_in")}">
-          <circle class="zone-node" cx="216" cy="46" r="23" />
-          <circle class="zone-node-hole" cx="216" cy="46" r="9" />
+        <g class="zone-trident-node-group${activeClass("overloaded_exploit")}">
+          <circle class="zone-trident-node" cx="220" cy="50" r="23" />
+          <circle class="zone-trident-node-hole" cx="220" cy="50" r="9" />
         </g>
-        <g class="zone-node-group${activeClass("spun_out")}">
-          <circle class="zone-node" cx="216" cy="164" r="23" />
-          <circle class="zone-node-hole" cx="216" cy="164" r="9" />
+        <g class="zone-trident-node-group${activeClass("overloaded_explore")}">
+          <circle class="zone-trident-node" cx="220" cy="160" r="23" />
+          <circle class="zone-trident-node-hole" cx="220" cy="160" r="9" />
         </g>
       </svg>
     </div>
@@ -1784,6 +2189,31 @@ function renderModeHelpModal() {
         <div class="mode-help-section">
           <h3>Manual</h3>
           <p>Free-play mode. Choose your game from the menu, set your pace, and pick your N-back loadout. Auto N-back levels up or down from performance, or you can lock a fixed N-back for focused practice.</p>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function renderZoneHelpModal() {
+  if (!viewState.zoneHelpOpen) return "";
+  return `
+    <div class="mode-help-backdrop zone-help-backdrop" data-action="close-zone-help">
+      <section class="mode-help-dialog zone-help-dialog" role="dialog" aria-modal="true" aria-labelledby="zoneHelpTitle" data-dialog-panel>
+        <button class="mode-help-close zone-help-close" type="button" data-action="close-zone-help" aria-label="Close Zone Check help">x</button>
+        <span class="mode-help-kicker zone-help-kicker">Zone pulse help</span>
+        <h2 id="zoneHelpTitle">3-minute control scan</h2>
+        <div class="mode-help-section zone-help-section">
+          <h3>Bits/sec</h3>
+          <p>The pulse estimates how many bits per second your mental workspace can process under masked pressure.</p>
+        </div>
+        <div class="mode-help-section zone-help-section">
+          <h3>Zone route</h3>
+          <p>It assigns your current route: Flat, In Zone, Spun Out, or Locked In. Being In Zone helps training transfer beyond the game into real cognitive capacity.</p>
+        </div>
+        <div class="mode-help-section zone-help-section">
+          <h3>Training signal</h3>
+          <p>Evidence from this task family says it can help train selective attention, verbal learning, working memory, and flexibility.</p>
         </div>
       </section>
     </div>
@@ -1848,11 +2278,11 @@ function renderLeftStrip() {
       <div class="strip-inner">
         <div class="strip-head">
           <div>
-            <h2 class="strip-title">Zone Coach</h2>
+            <h2 class="strip-title">Zone Check</h2>
           </div>
           <button class="sheet-close" type="button" data-action="close-sheets" aria-label="Close sheet">x</button>
         </div>
-        ${renderZoneCoachPanel()}
+        ${renderZoneCheckPanel()}
         ${renderModePanel()}
         ${state.settings.mode === "manual" ? renderManualPanel() : ""}
         ${state.settings.mode === "manual" ? "" : renderCoachCycle()}
@@ -1971,6 +2401,23 @@ function renderRightStrip() {
 
 function renderPlayControls() {
   const coachSession = activeCoachSession();
+  if (viewState.centerMode === "zone") {
+    if (zonePulseIsRunning()) {
+      return `
+        <div class="response-row zone-response-row">
+          <button class="response-btn secondary" type="button" data-action="zone-left"><span class="keycap zone-keycap">←</span> Left</button>
+          <button class="response-btn" type="button" data-action="zone-right">Right <span class="keycap zone-keycap">→</span></button>
+          <button class="response-btn is-stop" type="button" data-action="stop-zone-pulse">Stop</button>
+        </div>
+      `;
+    }
+    return `
+      <div class="response-row">
+        <button class="btn btn-primary" type="button" data-action="start-zone-pulse" ${activeBlock ? "disabled" : ""}>Start zone pulse</button>
+        <button class="btn btn-ghost" type="button" data-action="show-play">Return to gameplay</button>
+      </div>
+    `;
+  }
   if (activeBlock?.status === "paused") {
     return `
       <div class="response-row">
@@ -2016,16 +2463,17 @@ function renderPlayControls() {
 
 function renderPlayCard() {
   const showingStats = viewState.centerMode === "stats" && !activeBlock;
+  const showingZone = viewState.centerMode === "zone";
   return `
-    <section class="play-card" aria-label="Capacity play surface">
+    <section class="play-card${showingStats ? " is-stats-view" : ""}" aria-label="Capacity play surface">
       <div class="mobile-topbar">
         <button class="btn btn-ghost" type="button" data-action="open-left">Coach</button>
         <button class="btn btn-ghost" type="button" data-action="open-right">Stats</button>
       </div>
-      ${renderHud()}
-      <div class="play-body${showingStats ? " is-stats" : ""}">
-        <div class="arena-shell${showingStats ? " is-stats" : ""}">
-          ${showingStats ? renderCenterStatsDashboard() : `${arenaMarkup()}${renderCoachCallout()}`}
+      ${showingStats ? "" : renderHud()}
+      <div class="play-body${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""}">
+        <div class="arena-shell${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""}">
+          ${showingStats ? renderCenterStatsDashboard() : showingZone ? renderZonePulseTask() : `${arenaMarkup()}${renderCoachCallout()}`}
         </div>
         <div class="play-controls">${renderPlayControls()}</div>
       </div>
@@ -2043,6 +2491,7 @@ function render() {
       ${renderRightStrip()}
     </div>
     ${renderModeHelpModal()}
+    ${renderZoneHelpModal()}
   `;
 }
 
@@ -2114,7 +2563,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "open-left") {
-    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown") return;
+    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning()) return;
     triggerSfx("ui_tap_soft");
     viewState.leftOpen = true;
     viewState.rightOpen = false;
@@ -2122,7 +2571,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "open-right") {
-    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown") return;
+    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning()) return;
     triggerSfx("ui_tap_soft");
     viewState.rightOpen = true;
     viewState.leftOpen = false;
@@ -2130,7 +2579,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "show-stats") {
-    if (activeBlock) return;
+    if (activeBlock || zonePulseIsRunning()) return;
     triggerSfx("ui_tap_soft");
     viewState.centerMode = "stats";
     viewState.leftOpen = false;
@@ -2139,6 +2588,8 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "show-play") {
+    if (zonePulseIsRunning()) return;
+    destroyZonePulseController();
     triggerSfx("ui_tap_soft");
     viewState.centerMode = "play";
     render();
@@ -2157,6 +2608,13 @@ document.addEventListener("click", (event) => {
     render();
     return;
   }
+  if (action === "toggle-zone-help") {
+    triggerSfx("ui_tap_soft");
+    viewState.zoneHelpOpen = !viewState.zoneHelpOpen;
+    viewState.modeHelpOpen = false;
+    render();
+    return;
+  }
   if (action === "close-mode-help") {
     if (event.target.closest("[data-dialog-panel]") && !event.target.closest(".mode-help-close")) return;
     triggerSfx("ui_tap_soft");
@@ -2164,16 +2622,45 @@ document.addEventListener("click", (event) => {
     render();
     return;
   }
+  if (action === "close-zone-help") {
+    if (event.target.closest("[data-dialog-panel]") && !event.target.closest(".zone-help-close")) return;
+    triggerSfx("ui_tap_soft");
+    viewState.zoneHelpOpen = false;
+    render();
+    return;
+  }
   if (action === "set-mode") {
+    if (zonePulseIsRunning()) return;
     triggerSfx("ui_tap_soft");
     state.settings.mode = target.getAttribute("data-mode") === "manual" ? "manual" : "coach";
     viewState.modeHelpOpen = false;
+    viewState.zoneHelpOpen = false;
     saveState();
     render();
     return;
   }
   if (action === "start-coach-session") {
     beginCoachSession();
+    return;
+  }
+  if (action === "show-zone-pulse") {
+    showZonePulse();
+    return;
+  }
+  if (action === "start-zone-pulse") {
+    startZonePulse();
+    return;
+  }
+  if (action === "zone-left") {
+    submitZonePulse("left");
+    return;
+  }
+  if (action === "zone-right") {
+    submitZonePulse("right");
+    return;
+  }
+  if (action === "stop-zone-pulse") {
+    stopZonePulse();
     return;
   }
   if (action === "clear-session") {
@@ -2225,7 +2712,7 @@ document.addEventListener("change", (event) => {
   const target = event.target;
   if (!(target instanceof HTMLSelectElement || target instanceof HTMLInputElement)) return;
   const field = target.getAttribute("data-field");
-  if (!field || activeBlock) return;
+  if (!field || activeBlock || zonePulseIsRunning()) return;
   unlockAudioGesture();
   triggerSfx("ui_tap_soft");
   updateSettingsField(field, target.value);
@@ -2240,6 +2727,17 @@ document.addEventListener("keydown", (event) => {
   if (isInteractiveKeyTarget(event.target)) return;
   if (event.repeat) return;
   unlockAudioGesture();
+  if (zonePulseIsRunning()) {
+    if (event.code === "ArrowLeft") {
+      if (submitZonePulse("left")) event.preventDefault();
+      return;
+    }
+    if (event.code === "ArrowRight") {
+      if (submitZonePulse("right")) event.preventDefault();
+      return;
+    }
+    return;
+  }
   if (event.code === "KeyP") {
     if (activeBlock?.status === "paused") resumeActiveBlock();
     else if (activeBlock) pauseActiveBlock();
@@ -2283,7 +2781,7 @@ document.addEventListener("touchstart", (event) => {
 }, { passive: true });
 
 document.addEventListener("touchend", (event) => {
-  if (!touchStart || activeBlock?.status === "trial" || activeBlock?.status === "countdown") {
+  if (!touchStart || activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning()) {
     touchStart = null;
     return;
   }

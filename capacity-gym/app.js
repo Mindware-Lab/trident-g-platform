@@ -14,10 +14,9 @@ import {
   unlockAudioContextFromUserGesture
 } from "./runtime/audio.js";
 import { hash32 } from "./runtime/rng.js";
-import { createZoneProbeController } from "/products/trident-g-iq-basic/runtime/zone/probe.js";
-import { buildZoneHandoff } from "/products/trident-g-iq-basic/runtime/zone/handoff.js";
-import { loadZoneRuntimeState, saveZoneRun } from "/products/trident-g-iq-basic/runtime/zone/storage.js";
-import { zoneStateMeta } from "/products/trident-g-iq-basic/runtime/zone/copy.js";
+import { createZoneProbeController } from "./runtime/zone/probe.js";
+import { buildZoneHandoff } from "./runtime/zone/handoff.js";
+import { loadZoneRuntimeState, saveZoneRun } from "./runtime/zone/storage.js";
 
 const STORAGE_KEY = "tg_iq_live_capacity_v2";
 const ECONOMY_KEY = "tg_iq_live_economy_v1";
@@ -497,6 +496,14 @@ function zoneRouteClass(routeState) {
   return "recovery";
 }
 
+function zoneRouteLabel(routeState) {
+  if (routeState === "in_zone") return "In Zone";
+  if (routeState === "flat") return "Flat";
+  if (routeState === "overloaded_explore") return "Spun Out";
+  if (routeState === "overloaded_exploit") return "Locked In";
+  return "Invalid";
+}
+
 function zoneDisplaySnapshot() {
   const latestSummary = zonePulseState.latestSummary;
   const handoff = readZoneHandoff();
@@ -510,7 +517,7 @@ function zoneDisplaySnapshot() {
       valid: latestSummary.valid === true,
       routeState,
       routeClass: zoneRouteClass(routeState),
-      label: zoneStateMeta(routeState).label,
+      label: zoneRouteLabel(routeState),
       confidence: latestSummary.confidence || "Low",
       bitsPerSecond: latestSummary.bitsPerSecond,
       summary: latestSummary
@@ -524,7 +531,7 @@ function zoneDisplaySnapshot() {
       valid: routeState !== "invalid",
       routeState,
       routeClass: handoff.capacityPlan?.routeClass || zoneRouteClass(routeState),
-      label: zoneStateMeta(routeState).label,
+      label: zoneRouteLabel(routeState),
       confidence: handoff.confidence || "--",
       bitsPerSecond: handoff.bitsPerSecond,
       summary: null
@@ -565,7 +572,7 @@ function persistCapacityZoneHandoff(summary, handoff) {
     sourceApp: "capacity_gym_zone_check",
     timestamp: Number.isFinite(summary.timestamp) ? Math.round(summary.timestamp) : Date.now(),
     state: routeState,
-    uiState: zoneStateMeta(routeState).label,
+    uiState: zoneRouteLabel(routeState),
     gate: {
       zone: routeState,
       recommendation: handoff.recommendation
@@ -1048,7 +1055,7 @@ function ensureZonePulseController() {
       destroyZonePulseController();
       viewState.centerMode = "zone";
       viewState.message = summary.valid
-        ? `Zone Check complete: ${zoneStateMeta(zoneRouteState(summary.state)).label}, ${formatBitsPerSecond(summary.bitsPerSecond)} bits/sec.`
+        ? `Zone Check complete: ${zoneRouteLabel(zoneRouteState(summary.state))}, ${formatBitsPerSecond(summary.bitsPerSecond)} bits/sec.`
         : "Zone Check did not validate. Run a clean pulse before treating it as a route.";
       render();
     }
@@ -2039,13 +2046,12 @@ function renderZonePulseResult() {
   const summary = zonePulseState.latestSummary;
   if (!summary) return "";
   const routeState = zoneRouteState(summary.state);
-  const meta = zoneStateMeta(routeState);
   const probe = summary.features?.probe || {};
   const reasons = Array.isArray(summary.reasons) && summary.reasons.length ? summary.reasons : [summary.invalidReason || "Run another clean pulse"];
   return `
     <div class="zone-pulse-result">
       <span class="stats-kicker">Zone Check result</span>
-      <h2>${escapeHtml(meta.label)}</h2>
+      <h2>${escapeHtml(zoneRouteLabel(routeState))}</h2>
       <p>${escapeHtml(summary.valid ? "Route saved for the next Coach-led session." : (summary.invalidReason || "This pulse did not validate."))}</p>
       <div class="zone-pulse-metrics">
         ${renderZonePulseMetric("Bits/sec", formatBitsPerSecond(summary.bitsPerSecond))}
