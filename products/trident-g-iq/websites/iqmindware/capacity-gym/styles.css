@@ -340,7 +340,7 @@ button {
 
 .mode-select-row {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
 }
 
@@ -353,6 +353,7 @@ button {
   border: 0;
   background: transparent;
   cursor: pointer;
+  transform: translateY(-1px);
   place-items: center;
   transition: filter 160ms ease, transform 160ms ease;
 }
@@ -366,7 +367,7 @@ button {
 .mode-help-btn:hover,
 .mode-help-btn:focus-visible {
   filter: drop-shadow(0 0 10px rgba(173, 92, 255, 0.72));
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   outline: none;
 }
 
