@@ -1,0 +1,321 @@
+{
+  "family": "must_follow",
+  "version": "1.0.0",
+  "purpose": "Generate pronounceable nonsense wrappers for deduction / necessary-consequence items while preserving underlying logical form.",
+  "item_core": {
+    "premises": "array<string>",
+    "query": "string",
+    "answer_type": [
+      "true_false",
+      "single_choice",
+      "multi_select"
+    ],
+    "options": "array<{id:string,text:string}>",
+    "correct_answer": "array<string>",
+    "logical_form": "string",
+    "binding_load": "integer",
+    "uncertainty_level": "integer",
+    "control_burden": "integer"
+  },
+  "phonotactics": {
+    "entity_words": {
+      "syllable_patterns": [
+        "CV",
+        "CVC",
+        "CVV",
+        "CV.CV",
+        "CVC.CV",
+        "CV.CVC"
+      ],
+      "onsets": [
+        "b",
+        "d",
+        "f",
+        "g",
+        "h",
+        "k",
+        "l",
+        "m",
+        "n",
+        "p",
+        "r",
+        "s",
+        "t",
+        "v",
+        "z",
+        "br",
+        "dr",
+        "gl",
+        "kr",
+        "pl",
+        "tr",
+        "vr"
+      ],
+      "vowels": [
+        "a",
+        "e",
+        "i",
+        "o",
+        "u",
+        "ai",
+        "ea",
+        "io",
+        "oa",
+        "ui"
+      ],
+      "codas": [
+        "",
+        "n",
+        "l",
+        "r",
+        "m",
+        "s",
+        "t",
+        "k"
+      ],
+      "capitalise": true,
+      "examples": [
+        "Nalo",
+        "Tiven",
+        "Brako",
+        "Sulen",
+        "Veira",
+        "Korin"
+      ]
+    },
+    "class_words": {
+      "roots": [
+        "lav",
+        "sor",
+        "pel",
+        "mor",
+        "ten",
+        "vak",
+        "rim",
+        "zal",
+        "dov",
+        "kir"
+      ],
+      "suffixes": [
+        "en",
+        "ik",
+        "or",
+        "um",
+        "al",
+        "et"
+      ],
+      "examples": [
+        "laven",
+        "sorik",
+        "pelor",
+        "morum"
+      ]
+    },
+    "property_roots": {
+      "comparative_roots": [
+        "dax",
+        "miv",
+        "lor",
+        "sap",
+        "ten",
+        "vok",
+        "ril",
+        "zan"
+      ],
+      "direction_roots": [
+        [
+          "nef",
+          "sov"
+        ],
+        [
+          "zor",
+          "vem"
+        ],
+        [
+          "pel",
+          "rud"
+        ],
+        [
+          "kim",
+          "tav"
+        ]
+      ],
+      "state_roots": [
+        "plim",
+        "doren",
+        "satek",
+        "vurin",
+        "mevak",
+        "talin"
+      ]
+    }
+  },
+  "morphology": {
+    "comparative_chain": {
+      "logical_form": "greater(X,Y) & greater(Y,Z) => greater(X,Z)",
+      "surface_rules": [
+        "{X} is {root}er than {Y}.",
+        "{Y} is {root}er than {Z}."
+      ],
+      "query_rules": [
+        "Does it have to follow that {X} is {root}er than {Z}?",
+        "Does it have to follow that {Z} is {root}er than {X}?"
+      ],
+      "foil_rule": "reverse the conclusion roles or invert the polarity"
+    },
+    "direction_chain": {
+      "logical_form": "dirA(X,Y) & dirA(Y,Z) => dirA(X,Z)",
+      "surface_rules": [
+        "{X} is to the {roota} of {Y}.",
+        "{Y} is to the {roota} of {Z}."
+      ],
+      "converse_surface": "{Z} is to the {rootb} of {X}.",
+      "pairing_rule": "rootb is the converse of roota"
+    },
+    "set_inclusion_chain": {
+      "logical_form": "all(X,Y) & all(Y,Z) => all(X,Z)",
+      "surface_rules": [
+        "All {class1} are {class2}.",
+        "All {class2} are {class3}."
+      ],
+      "good_conclusion": "All {class1} are {class3}.",
+      "foils": [
+        "All {class3} are {class1}.",
+        "No {class1} are {class3}.",
+        "Some {class1} are not {class3}."
+      ]
+    },
+    "set_exclusion_chain": {
+      "logical_form": "all(X,Y) & no(Y,Z) => no(X,Z)",
+      "surface_rules": [
+        "All {class1} are {class2}.",
+        "No {class2} are {class3}."
+      ],
+      "good_conclusion": "No {class1} are {class3}."
+    },
+    "conditional_chain": {
+      "logical_form": "if(P,Q) & if(Q,R) => if(P,R)",
+      "surface_rules": [
+        "If something is {state1}, it is {state2}.",
+        "If something is {state2}, it is {state3}."
+      ],
+      "good_conclusion": "If something is {state1}, it is {state3}.",
+      "foils": [
+        "If something is {state3}, it is {state1}.",
+        "If something is {state2}, it is {state1}."
+      ]
+    }
+  },
+  "problem_classes": [
+    {
+      "subtype": "must_follow_tf",
+      "answer_type": "true_false",
+      "query_template": "Does it have to follow that ... ?",
+      "good_item_rule": "The conclusion must be guaranteed by the premises, not merely compatible with them.",
+      "foil_rules": [
+        "reverse the relation",
+        "swap middle and end term",
+        "change polarity"
+      ]
+    },
+    {
+      "subtype": "best_conclusion_mcq",
+      "answer_type": "single_choice",
+      "query_template": "Which conclusion must follow?",
+      "good_item_rule": "Exactly one option is deductively forced.",
+      "foil_rules": [
+        "converse error",
+        "quantifier reversal",
+        "unsupported stronger claim",
+        "irrelevant statement"
+      ]
+    },
+    {
+      "subtype": "select_all_must_follow",
+      "answer_type": "multi_select",
+      "query_template": "Select all conclusions that must follow.",
+      "good_item_rule": "Two options should be deductively forced by a longer chain.",
+      "foil_rules": [
+        "role reversal",
+        "scope error",
+        "unsupported existential claim"
+      ]
+    }
+  ],
+  "complexity_rules": {
+    "axis_definitions": {
+      "binding_load": {
+        "1": "single short chain with one intermediate link",
+        "2": "two linked premises with shared middle term and distractor options",
+        "3": "three or more linked premises or mixed positive and negative constraints",
+        "4": "multi-conclusion chains, quantifier scope, or combined relation systems",
+        "5": "long chains with two must-follow conclusions and several near-miss foils"
+      },
+      "uncertainty_level": {
+        "1": "one obvious forced conclusion",
+        "2": "foils share the same entities but reverse or overstate the conclusion",
+        "3": "several near-miss rivals or mixed premise forms",
+        "4": "multi-select pressure or added irrelevant premises"
+      },
+      "control_burden": {
+        "1": "few options, no irrelevant premises",
+        "2": "role-reversal traps present",
+        "3": "quantifier and polarity traps, extra premise, or time pressure",
+        "4": "multi-select with near-miss distractors and wrapper shift"
+      }
+    },
+    "tier_progression": [
+      {
+        "tier": 1,
+        "description": "Two-premise binary or set chain; true/false or single-choice only.",
+        "allowed_logical_forms": [
+          "greater(A,B)&greater(B,C)=>greater(A,C)",
+          "all(X,Y)&all(Y,Z)=>all(X,Z)"
+        ]
+      },
+      {
+        "tier": 2,
+        "description": "Same deep rule, but with converse / polarity foils and 4 options."
+      },
+      {
+        "tier": 3,
+        "description": "Three linked relations or one irrelevant premise; wrapper swaps allowed."
+      },
+      {
+        "tier": 4,
+        "description": "Mixed positive and negative premises, quantifier scope pressure, or multi-select."
+      },
+      {
+        "tier": 5,
+        "description": "Longer chains with two required conclusions and high control burden."
+      }
+    ]
+  },
+  "adaptive_rules": {
+    "decision_model": "UP_HOLD_DOWN",
+    "state_metrics": [
+      "recent_accuracy",
+      "late_collapse",
+      "recent_wrapper_cost",
+      "transitive_reversal_error_rate",
+      "quantifier_scope_error_rate",
+      "conditional_chain_error_rate",
+      "multi_select_overreach"
+    ],
+    "progression_order": [
+      "stability_first",
+      "wrapper_swap",
+      "fast_speed",
+      "load_increase"
+    ],
+    "up_rule": "If accuracy >= .85 and there is no late collapse, first move from real_world to mixed wrapper, then from normal to fast speed if wrapper cost is low, and only then increase difficulty tier.",
+    "hold_rule": "If accuracy is between .70 and .84, keep the same tier and wrapper focus while targeting the dominant error class.",
+    "down_rule": "If accuracy < .70 or there is late collapse, return to real_world, normal speed, and drop one tier.",
+    "error_to_focus_mapping": {
+      "transitive_reversal_error_rate": "must_follow_tf",
+      "quantifier_scope_error_rate": "best_conclusion_mcq",
+      "conditional_chain_error_rate": "best_conclusion_mcq",
+      "multi_select_overreach": "select_all_must_follow"
+    }
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Must Follow Item Schema",
+  "type": "object",
+  "required": [
+    "id",
+    "family",
+    "subtype",
+    "wrapper_type",
+    "difficulty_tier",
+    "binding_load",
+    "uncertainty_level",
+    "control_burden",
+    "logical_form",
+    "premises",
+    "query",
+    "answer_type",
+    "options",
+    "correct_answer"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "family": {
+      "const": "must_follow"
+    },
+    "subtype": {
+      "type": "string",
+      "enum": [
+        "must_follow_tf",
+        "best_conclusion_mcq",
+        "select_all_must_follow",
+        "cannot_follow_mcq"
+      ]
+    },
+    "wrapper_type": {
+      "type": "string",
+      "enum": [
+        "real_world",
+        "nonsense"
+      ]
+    },
+    "difficulty_tier": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "binding_load": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "uncertainty_level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "control_burden": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "logical_form": {
+      "type": "string"
+    },
+    "target_relation_type": {
+      "type": "string"
+    },
+    "premises": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "query": {
+      "type": "string"
+    },
+    "answer_type": {
+      "type": "string",
+      "enum": [
+        "true_false",
+        "single_choice",
+        "multi_select"
+      ]
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "text"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "correct_answer": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "explanation": {
+      "type": "string"
+    },
+    "skill_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
