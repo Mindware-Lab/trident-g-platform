@@ -25,6 +25,7 @@ const ZONE_HANDOFF_FRESH_MS = 39 * 60 * 1000;
 const COACH_CORE_BLOCKS = 6;
 const SUPPORT_BLOCKS = 4;
 const PROGRAMME_SESSION_TARGET = 20;
+const MAX_SESSION_COUNTER = 999;
 const COACH_FAMILY_CYCLE = ["flex", "bind", "relate", "resist", "flex", "relate", "bind", "resist", "relate"];
 const RELATE_LADDER = ["relate_vectors", "relate_numbers", "relate_vectors_dual", "relate_numbers_dual"];
 const TRANSFER_SPRINT_BLOCKS = 3;
@@ -202,7 +203,7 @@ function createDefaultState() {
     version: 4,
     settings: { mode: "coach", wrapper: "hub_cat", targetModality: "loc", n: "auto", speed: "slow", soundOn: true },
     currentSession: null,
-    programme: { coreSessionNumber: 0, programmeBonusAwarded: false, programmeCompletedAt: null },
+    programme: { coreSessionNumber: 0, manualSessionNumber: 0, programmeBonusAwarded: false, programmeCompletedAt: null },
     history: []
   };
 }
@@ -215,6 +216,7 @@ function normalizeState(raw) {
   const wrapper = normalizeWrapper(settings.wrapper);
   const history = Array.isArray(raw.history) ? raw.history.filter((entry) => entry && typeof entry === "object").slice(0, HISTORY_LIMIT) : [];
   const programme = raw.programme && typeof raw.programme === "object" ? raw.programme : {};
+  const inferredManualSessionNumber = history.filter((entry) => entry.routeClass === "manual" || entry.rewardMode === "manual").length;
   return {
     version: 4,
     settings: {
@@ -227,7 +229,10 @@ function normalizeState(raw) {
     },
     currentSession: raw.currentSession && typeof raw.currentSession === "object" ? raw.currentSession : null,
     programme: {
-      coreSessionNumber: Math.max(0, Math.round(Number(programme.coreSessionNumber || 0))),
+      coreSessionNumber: clampSessionCounter(programme.coreSessionNumber),
+      manualSessionNumber: Object.prototype.hasOwnProperty.call(programme, "manualSessionNumber")
+        ? clampSessionCounter(programme.manualSessionNumber)
+        : clampSessionCounter(inferredManualSessionNumber),
       programmeBonusAwarded: programme.programmeBonusAwarded === true,
       programmeCompletedAt: Number.isFinite(programme.programmeCompletedAt) ? Math.round(programme.programmeCompletedAt) : null
     },
@@ -357,11 +362,23 @@ function readZoneHandoff() {
 }
 
 function currentCoachFamilyNumber() {
-  return state.programme.coreSessionNumber + 1;
+  return clamp(completedProgrammeSessions() + 1, 1, MAX_SESSION_COUNTER);
+}
+
+function clampSessionCounter(value) {
+  return clamp(Math.round(Number(value || 0)), 0, MAX_SESSION_COUNTER);
 }
 
 function completedProgrammeSessions() {
-  return Math.max(0, Math.round(Number(state.programme.coreSessionNumber || 0)));
+  return clampSessionCounter(state.programme.coreSessionNumber);
+}
+
+function completedManualSessions() {
+  return clampSessionCounter(state.programme.manualSessionNumber);
+}
+
+function nextManualSessionNumber() {
+  return clamp(completedManualSessions() + 1, 1, MAX_SESSION_COUNTER);
 }
 
 function programmeSessionsToGo() {
@@ -377,6 +394,14 @@ function nextCoachSessionDisplay() {
   const completed = completedProgrammeSessions();
   if (completed >= PROGRAMME_SESSION_TARGET) return programmeSessionDisplay();
   return `${currentCoachFamilyNumber()}/${PROGRAMME_SESSION_TARGET}`;
+}
+
+function currentSessionDisplay() {
+  return state.settings.mode === "coach" ? nextCoachSessionDisplay() : `${nextManualSessionNumber()}`;
+}
+
+function sessionsToGoDisplay() {
+  return state.settings.mode === "coach" ? `${programmeSessionsToGo()}` : "-";
 }
 
 function familyForCoreSession(sessionNumber) {
@@ -1151,6 +1176,7 @@ function finishBlock() {
     nMax: HUB_N_MAX
   });
   const session = state.currentSession?.id === activeBlock.sessionId ? state.currentSession : null;
+  const manualSessionNumber = activeBlock.rewardMode === "manual" ? nextManualSessionNumber() : null;
   const baseEntry = {
     id: `capv2_${activeBlock.tsStart}`,
     tsStart: activeBlock.tsStart,
@@ -1159,6 +1185,7 @@ function finishBlock() {
     zoneState: session?.zoneState || null,
     routeClass: session?.routeClass || "manual",
     coreSessionNumber: session?.coreSessionNumber || null,
+    manualSessionNumber,
     rewardMode: activeBlock.rewardMode,
     wrapper: activeBlock.plan.wrapper,
     targetModality: activeBlock.plan.targetModality,
@@ -1192,6 +1219,9 @@ function finishBlock() {
   state.settings.wrapper = baseEntry.wrapper;
   state.settings.targetModality = baseEntry.targetModality;
   state.settings.speed = baseEntry.speed;
+  if (manualSessionNumber) {
+    state.programme.manualSessionNumber = clampSessionCounter(Math.max(completedManualSessions(), manualSessionNumber));
+  }
 
   let programmeBonus = null;
   if (state.currentSession && state.currentSession.id === activeBlock.sessionId) {
@@ -1374,20 +1404,24 @@ function average(values) {
 }
 
 function programmeSessionGroups() {
+  const manualMode = state.settings.mode === "manual";
   const groups = [];
   const byKey = new Map();
   const chronological = state.history
     .slice()
     .reverse()
-    .filter((entry) => entry && (entry.routeClass === "core" || entry.rewardMode === "core"));
+    .filter((entry) => entry && (manualMode
+      ? (entry.routeClass === "manual" || entry.rewardMode === "manual")
+      : (entry.routeClass === "core" || entry.rewardMode === "core")));
 
   chronological.forEach((entry) => {
     const key = entry.sessionId || entry.id || `block_${entry.tsStart || groups.length}`;
+    const numberedSession = manualMode ? entry.manualSessionNumber : entry.coreSessionNumber;
     let group = byKey.get(key);
     if (!group) {
       group = {
         key,
-        sessionNumber: Number.isFinite(entry.coreSessionNumber) ? Math.round(entry.coreSessionNumber) : null,
+        sessionNumber: Number.isFinite(numberedSession) ? Math.round(numberedSession) : null,
         tsStart: Number.isFinite(entry.tsStart) ? entry.tsStart : 0,
         tsEnd: Number.isFinite(entry.tsEnd) ? entry.tsEnd : 0,
         entries: []
@@ -1395,8 +1429,8 @@ function programmeSessionGroups() {
       byKey.set(key, group);
       groups.push(group);
     }
-    if (!Number.isFinite(group.sessionNumber) && Number.isFinite(entry.coreSessionNumber)) {
-      group.sessionNumber = Math.round(entry.coreSessionNumber);
+    if (!Number.isFinite(group.sessionNumber) && Number.isFinite(numberedSession)) {
+      group.sessionNumber = Math.round(numberedSession);
     }
     if (Number.isFinite(entry.tsStart) && (!group.tsStart || entry.tsStart < group.tsStart)) group.tsStart = entry.tsStart;
     if (Number.isFinite(entry.tsEnd) && entry.tsEnd > group.tsEnd) group.tsEnd = entry.tsEnd;
@@ -1419,6 +1453,7 @@ function programmeSessionGroups() {
 }
 
 function sessionStatsModel() {
+  const manualMode = state.settings.mode === "manual";
   const groups = programmeSessionGroups();
   const rolling = groups.length > PROGRAMME_SESSION_TARGET;
   const visibleGroups = rolling ? groups.slice(-PROGRAMME_SESSION_TARGET) : groups;
@@ -1430,8 +1465,10 @@ function sessionStatsModel() {
   return {
     slots,
     rolling,
-    completed: completedProgrammeSessions(),
-    sessionsToGo: programmeSessionsToGo(),
+    manualMode,
+    completed: manualMode ? completedManualSessions() : completedProgrammeSessions(),
+    completedDisplay: manualMode ? `${completedManualSessions()}` : programmeSessionDisplay(),
+    sessionsToGo: manualMode ? "-" : programmeSessionsToGo(),
     avgN: average(populated.map((slot) => slot.avgN)),
     avgTransfer: average(populated.map((slot) => slot.avgTransfer))
   };
@@ -1542,7 +1579,12 @@ function renderSessionBarChart({ title, subtitle, valueKey, maxValue, unit = "",
 
 function renderCenterStatsDashboard() {
   const model = sessionStatsModel();
-  const rangeLabel = model.rolling ? "Last 20 sessions" : "20-session programme";
+  const rangeLabel = model.manualMode
+    ? (model.rolling ? "Last 20 manual sessions" : "Manual session history")
+    : (model.rolling ? "Last 20 coach sessions" : "20-session programme");
+  const sessionSubtitle = model.manualMode
+    ? "Mean held N across each manual session."
+    : "Mean held N across each coached core session.";
   return `
     <div class="center-stats-dashboard">
       <div class="center-stats-head">
@@ -1553,14 +1595,14 @@ function renderCenterStatsDashboard() {
         <button class="btn btn-ghost" type="button" data-action="show-play">Return to gameplay</button>
       </div>
       <div class="center-stats-summary">
-        <div class="stat"><span class="mini-label">Completed</span><strong>${programmeSessionDisplay()}</strong></div>
+        <div class="stat"><span class="mini-label">Completed</span><strong>${model.completedDisplay}</strong></div>
         <div class="stat"><span class="mini-label">Sessions to go</span><strong>${model.sessionsToGo}</strong></div>
         <div class="stat"><span class="mini-label">Avg N-back</span><strong>${formatGraphValue(model.avgN, 1)}</strong></div>
         <div class="stat"><span class="mini-label">Avg Far Transfer</span><strong>${formatScorePercent(model.avgTransfer)}</strong></div>
       </div>
       ${renderSessionBarChart({
         title: "N-back average per session",
-        subtitle: "Mean held N across each coached core session.",
+        subtitle: sessionSubtitle,
         valueKey: "avgN",
         maxValue: HUB_N_MAX,
         digits: 1,
@@ -1753,8 +1795,8 @@ function gameplayStatsModel() {
   return {
     lastNBack: last ? `N-${blockEndN(last)}` : "--",
     nextNBack: `N-${projectedNextN(plan)}`,
-    currentSession: nextCoachSessionDisplay(),
-    sessionsToGo: programmeSessionsToGo()
+    currentSession: currentSessionDisplay(),
+    sessionsToGo: sessionsToGoDisplay()
   };
 }
 
@@ -1813,6 +1855,7 @@ function renderRightStrip() {
             <div class="stat"><span class="mini-label">Current Session</span><strong>${gameplayStats.currentSession}</strong></div>
             <div class="stat"><span class="mini-label">Sessions To Go</span><strong>${gameplayStats.sessionsToGo}</strong></div>
           </div>
+          <button class="btn btn-ghost right-stats-btn" type="button" data-action="reset-sessions" ${activeBlock ? "disabled" : ""}>Reset sessions</button>
         </section>
       </div>
     </aside>
@@ -1936,6 +1979,27 @@ function resetLocalData() {
   render();
 }
 
+function resetSessions() {
+  if (activeBlock) {
+    triggerSfx("invalid_action");
+    return;
+  }
+  if (!window.confirm("Reset session count and clear session history/graphs on this device? Wallet credits and settings stay unchanged.")) return;
+  state.currentSession = null;
+  state.programme = {
+    coreSessionNumber: 0,
+    manualSessionNumber: 0,
+    programmeBonusAwarded: false,
+    programmeCompletedAt: null
+  };
+  state.history = [];
+  saveState();
+  viewState.centerMode = "play";
+  viewState.message = "Session count and session stats reset. Wallet credits and settings are unchanged.";
+  triggerSfx("ui_tap_soft");
+  render();
+}
+
 document.addEventListener("pointerdown", () => {
   unlockAudioGesture();
 }, { passive: true });
@@ -2036,6 +2100,10 @@ document.addEventListener("click", (event) => {
   }
   if (action === "reset-local") {
     resetLocalData();
+    return;
+  }
+  if (action === "reset-sessions") {
+    resetSessions();
   }
 });
 
