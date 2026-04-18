@@ -1,0 +1,273 @@
+{
+  "family": "best_rule_so_far",
+  "version": "1.0.0",
+  "purpose": "Generate pronounceable nonsense wrappers for induction / updating / rival-rule tracking items while preserving underlying logical form.",
+  "item_core": {
+    "premises": "array<string>",
+    "query": "string",
+    "answer_type": [
+      "single_choice",
+      "true_false",
+      "multi_select"
+    ],
+    "options": "array<{id:string,text:string}>",
+    "correct_answer": "array<string>",
+    "logical_form": "string",
+    "binding_load": "integer",
+    "uncertainty_level": "integer",
+    "control_burden": "integer"
+  },
+  "phonotactics": {
+    "state_words": {
+      "syllable_patterns": [
+        "CV",
+        "CVC",
+        "CVV",
+        "CV.CV",
+        "CVC.CV",
+        "CV.CVC"
+      ],
+      "onsets": [
+        "b",
+        "d",
+        "f",
+        "g",
+        "h",
+        "k",
+        "l",
+        "m",
+        "n",
+        "p",
+        "r",
+        "s",
+        "t",
+        "v",
+        "z",
+        "br",
+        "dr",
+        "gl",
+        "kr",
+        "pl",
+        "tr",
+        "vr"
+      ],
+      "vowels": [
+        "a",
+        "e",
+        "i",
+        "o",
+        "u",
+        "ai",
+        "ea",
+        "io",
+        "oa",
+        "ui"
+      ],
+      "codas": [
+        "",
+        "n",
+        "l",
+        "r",
+        "m",
+        "s",
+        "t",
+        "k"
+      ],
+      "capitalise": true,
+      "examples": [
+        "Nalo",
+        "Tiven",
+        "Brako",
+        "Sulen",
+        "Veira",
+        "Korin"
+      ]
+    },
+    "rule_roots": {
+      "alternation": [
+        "vek",
+        "tal",
+        "rin",
+        "sov"
+      ],
+      "cycle": [
+        "mor",
+        "dav",
+        "kel",
+        "zin"
+      ],
+      "repeat": [
+        "plin",
+        "satek",
+        "vul",
+        "tem"
+      ],
+      "ladder": [
+        "dor",
+        "mav",
+        "ril",
+        "zan"
+      ],
+      "feature": [
+        "fes",
+        "lom",
+        "kir",
+        "vash"
+      ]
+    }
+  },
+  "morphology": {
+    "alternation_rule": {
+      "logical_form": "alternation(A,B)",
+      "surface_rules": [
+        "The stream alternates between {A} and {B}.",
+        "After {A} comes {B}, and after {B} comes {A}."
+      ],
+      "foil_rules": [
+        "The stream repeats each state twice before changing.",
+        "The stream cycles through three states.",
+        "The stream stays on the same state for two steps, then changes."
+      ]
+    },
+    "cycle_rule": {
+      "logical_form": "cycle(A,B,C)",
+      "surface_rules": [
+        "The stream cycles through {A}, {B}, and {C} in order.",
+        "After {A} comes {B}, after {B} comes {C}, and after {C} comes {A}."
+      ]
+    },
+    "ladder_rule": {
+      "logical_form": "increase_by_step_on_ranked_ladder",
+      "surface_rules": [
+        "The state moves one step up the ladder each time.",
+        "The state moves two steps up the ladder each time."
+      ],
+      "ladder_requirement": "Premises must define the ordered ladder explicitly, e.g. Lur < Mav < Nef < Ralo < Tiven."
+    },
+    "pair_repeat_rule": {
+      "logical_form": "pair_repeat(A,A,B,B,...)",
+      "surface_rules": [
+        "Each state repeats twice before the sequence advances.",
+        "The stream moves in two-item blocks."
+      ]
+    },
+    "two_feature_rule": {
+      "logical_form": "hold(F2) & cycle3(F1)",
+      "surface_rules": [
+        "One feature cycles while the second feature stays fixed.",
+        "The first feature changes systematically but the second stays constant."
+      ]
+    }
+  },
+  "relation_templates": [
+    {
+      "relation_type": "best_rule_so_far_mcq",
+      "answer_type": "single_choice",
+      "query_template": "Which rule best fits the observations so far?",
+      "correct_option_count": 1,
+      "good_option_rule": "Select the most specific candidate rule still strongly supported by the observations.",
+      "foil_rules": [
+        "over-general broader rule",
+        "near-miss pattern family",
+        "prematurely complex rule",
+        "role-swapped feature rule"
+      ]
+    },
+    {
+      "relation_type": "confidence_update_tf",
+      "answer_type": "true_false",
+      "query_template": "Should confidence in the current best rule rise relative to the rival?",
+      "correct_option_count": 1,
+      "good_option_rule": "The new observation must favour the named current best rule more than the rival rule.",
+      "foil_rules": [
+        "equally compatible observation",
+        "observation favouring rival",
+        "observation inconsistent with both"
+      ]
+    },
+    {
+      "relation_type": "select_all_consistent",
+      "answer_type": "multi_select",
+      "query_template": "Select all candidate rules that are still consistent with the observations.",
+      "correct_option_count": 2,
+      "good_option_rule": "Correct options can include both a specific rule and a broader super-rule when both remain live.",
+      "foil_rules": [
+        "overly specific unsupported rule",
+        "rule contradicted by final step",
+        "feature-change claim contradicted by fixed feature"
+      ]
+    }
+  ],
+  "complexity_rules": {
+    "axis_definitions": {
+      "binding_load": {
+        "1": "single one-dimensional pattern over one feature",
+        "2": "three-state pattern or multiple live rival rules",
+        "3": "two-feature pattern or multi-step confidence update",
+        "4": "two-feature pattern plus multi-select filtering",
+        "5": "high-load mixed-feature or noisy update item"
+      },
+      "uncertainty_level": {
+        "1": "one clearly best rule",
+        "2": "one best rule with one plausible rival",
+        "3": "several plausible candidates remain live",
+        "4": "ambiguous or noisy evidence requiring calibrated updating"
+      },
+      "control_burden": {
+        "1": "short sequence, few options",
+        "2": "near-miss rule family present",
+        "3": "multiple close rivals or wrapper shift",
+        "4": "multi-select, feature interference, or fast decisions"
+      }
+    },
+    "tier_progression": [
+      {
+        "tier": 1,
+        "description": "Simple one-dimensional alternation or +1 step rule. One clearly best answer."
+      },
+      {
+        "tier": 2,
+        "description": "Cycle-of-3 or +2 step rule. More plausible distractors."
+      },
+      {
+        "tier": 3,
+        "description": "Pair-repeat or longer cycle. More rival rules and stronger near-miss foils."
+      },
+      {
+        "tier": 4,
+        "description": "Two-feature rule where one feature changes and the other stays fixed. Confidence-update items become common."
+      },
+      {
+        "tier": 5,
+        "description": "High-load mixed-feature or noisy evidence items with multi-select filtering and higher control burden."
+      }
+    ],
+    "expansion_note": "Later versions can add causal-model update, matrix-rule candidates, and verbal-category induction variants."
+  },
+  "adaptive_rules": {
+    "decision_logic": "Use block-level UP / HOLD / DOWN with the same principle as the integrated game: stabilise first, then wrapper swap, then speed, then load.",
+    "inputs": [
+      "recent_accuracy",
+      "late_collapse",
+      "recent_wrapper_cost",
+      "alternation_confusion_rate",
+      "cycle_confusion_rate",
+      "feature_rule_error_rate",
+      "overcommitment_rate",
+      "multi_select_overreach"
+    ],
+    "progression_order": [
+      "stability_first",
+      "wrapper_swap",
+      "fast_speed",
+      "load_increase"
+    ],
+    "routing": {
+      "high_alternation_confusion": "return to tier 1-2 one-dimensional alternation blocks",
+      "high_cycle_confusion": "bias toward cycle-vs-alternation contrast items",
+      "high_feature_rule_error": "bias toward two-feature hold-vs-change items",
+      "high_overcommitment": "increase select-all-consistent and confidence-update items",
+      "high_wrapper_cost": "hold tier and keep real-world wrapper before pushing nonsense"
+    }
+  }
+}
