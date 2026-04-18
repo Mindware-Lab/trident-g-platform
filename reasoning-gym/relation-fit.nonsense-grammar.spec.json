@@ -1,0 +1,311 @@
+{
+  "family": "relation_fit",
+  "version": "1.0.0",
+  "purpose": "Generate pronounceable nonsense wrappers for relation-validation items while preserving underlying logical form.",
+  "item_core": {
+    "premises": "array<string>",
+    "query": "string",
+    "answer_type": [
+      "single_choice",
+      "multi_select",
+      "true_false"
+    ],
+    "options": "array<{id:string,text:string}>",
+    "correct_answer": "array<string>",
+    "logical_form": "string",
+    "binding_load": "integer",
+    "uncertainty_level": "integer",
+    "control_burden": "integer"
+  },
+  "phonotactics": {
+    "entity_words": {
+      "syllable_patterns": [
+        "CV",
+        "CVC",
+        "CVV",
+        "CV.CV",
+        "CVC.CV",
+        "CV.CVC"
+      ],
+      "onsets": [
+        "b",
+        "d",
+        "f",
+        "g",
+        "h",
+        "k",
+        "l",
+        "m",
+        "n",
+        "p",
+        "r",
+        "s",
+        "t",
+        "v",
+        "z",
+        "br",
+        "dr",
+        "gl",
+        "kr",
+        "pl",
+        "tr",
+        "vr"
+      ],
+      "vowels": [
+        "a",
+        "e",
+        "i",
+        "o",
+        "u",
+        "ai",
+        "ea",
+        "io",
+        "oa",
+        "ui"
+      ],
+      "codas": [
+        "",
+        "n",
+        "l",
+        "r",
+        "m",
+        "s",
+        "t",
+        "k"
+      ],
+      "capitalise": true,
+      "examples": [
+        "Nalo",
+        "Tiven",
+        "Brako",
+        "Sulen",
+        "Veira",
+        "Korin"
+      ]
+    },
+    "relation_roots": {
+      "comparative_roots": [
+        "dax",
+        "miv",
+        "lor",
+        "sap",
+        "ten",
+        "vok",
+        "ril",
+        "zan"
+      ],
+      "direction_roots": [
+        "nef",
+        "zor",
+        "pel",
+        "rad",
+        "kim",
+        "vash"
+      ],
+      "container_roots": [
+        "nold",
+        "fep",
+        "garb",
+        "tul",
+        "vesh"
+      ],
+      "set_roots": [
+        "samek",
+        "dival",
+        "trin",
+        "mero"
+      ]
+    }
+  },
+  "morphology": {
+    "comparative_pair": {
+      "logical_form": "rel_greater(X,Y)",
+      "surface_rules": [
+        "{X} is {root}er than {Y}.",
+        "{Y} is less {root} than {X}."
+      ],
+      "foils": [
+        "{Y} is {root}er than {X}.",
+        "{X} is less {root} than {Y}."
+      ],
+      "examples": [
+        "Nalo is daxer than Tiven.",
+        "Tiven is less dax than Nalo."
+      ]
+    },
+    "directional_pair": {
+      "logical_form": "rel_dir_A(X,Y)",
+      "surface_rules": [
+        "{X} is to the {roota} of {Y}.",
+        "{Y} is to the {rootb} of {X}."
+      ],
+      "pairing_rule": "rootb is the linked converse of roota",
+      "linked_pairs": [
+        [
+          "nef",
+          "sov"
+        ],
+        [
+          "zor",
+          "vem"
+        ],
+        [
+          "pel",
+          "rud"
+        ],
+        [
+          "kim",
+          "tav"
+        ]
+      ]
+    },
+    "containment_pair": {
+      "logical_form": "contains(X,Y)",
+      "surface_rules": [
+        "{X} {verb} {Y}.",
+        "{Y} is inside {X}."
+      ],
+      "verb_generation": {
+        "pattern": "root + optional final consonant",
+        "examples": [
+          "nolds",
+          "feps",
+          "garbs",
+          "tuls"
+        ]
+      }
+    },
+    "set_relation": {
+      "logical_form": "all_different(A,B,C)",
+      "surface_rules": [
+        "{A}, {B}, and {C} are all {root}.",
+        "All three of {A}, {B}, and {C} satisfy {root}."
+      ],
+      "note": "Use root placeholders only as abstract relation labels."
+    }
+  },
+  "relation_templates": [
+    {
+      "relation_type": "same_relation_mcq",
+      "answer_type": "single_choice",
+      "query_template": "Which option expresses the same underlying relation?",
+      "correct_option_count": 1,
+      "good_option_rule": "Preserve argument-role assignment under the linked converse or equivalent surface form.",
+      "foil_rules": [
+        "swap arguments without changing operator",
+        "keep arguments but invert polarity",
+        "use correct form with unrelated entities"
+      ]
+    },
+    {
+      "relation_type": "select_all_valid",
+      "answer_type": "multi_select",
+      "query_template": "Select all options that instantiate the target relation.",
+      "correct_option_count": 2,
+      "good_option_rule": "Each correct option independently satisfies the target logical form.",
+      "foil_rules": [
+        "single role reversal",
+        "wrong polarity",
+        "surface similarity without role preservation"
+      ]
+    },
+    {
+      "relation_type": "relation_satisfaction",
+      "answer_type": "single_choice",
+      "query_template": "Which option satisfies the target relation?",
+      "correct_option_count": 1,
+      "good_option_rule": "Option must satisfy the relation directly, not merely mention the same tokens.",
+      "foil_rules": [
+        "duplicate argument where distinctness is required",
+        "violate required ordering",
+        "mirror the relation without the needed converse"
+      ]
+    }
+  ],
+  "complexity_rules": {
+    "axis_definitions": {
+      "binding_load": {
+        "1": "single binary relation with two arguments",
+        "2": "binary relation with near-miss distractors or multiple candidate options",
+        "3": "three-argument or chained relations; may require preserving two linked bindings",
+        "4": "graph-like or role-mapping structures with multiple linked bindings"
+      },
+      "uncertainty_level": {
+        "1": "one obvious valid answer",
+        "2": "two plausible rivals",
+        "3": "several near-miss rivals or overlapping cues",
+        "4": "noisy evidence or nested conditions"
+      },
+      "control_burden": {
+        "1": "few options, minimal distractors",
+        "2": "role-reversal traps present",
+        "3": "multiple near-miss distractors, wrapper shift, or time pressure",
+        "4": "mixed wrappers, multi-select, and cross-item interference"
+      }
+    },
+    "tier_progression": [
+      {
+        "tier": 1,
+        "description": "Binary relation only, one premise, one correct option, real-world wrapper, no multi-select.",
+        "allowed_logical_forms": [
+          "older_than(A,B)",
+          "left_of(A,B)",
+          "contains(A,B)"
+        ]
+      },
+      {
+        "tier": 2,
+        "description": "Binary relation with converse mapping; 3-4 options; same entities reused across foils."
+      },
+      {
+        "tier": 3,
+        "description": "Wrapper swap begins; multi-select possible; abstract/nonsense surface forms introduced."
+      },
+      {
+        "tier": 4,
+        "description": "Three-argument or chained relations, e.g. all_different(A,B,C) or earlier_than(A,B)&earlier_than(B,C)."
+      },
+      {
+        "tier": 5,
+        "description": "Relational isomorphism and graph-role matching."
+      }
+    ]
+  },
+  "adaptive_rules": {
+    "design_goal": "Adapt like the n-back: fixed family kernel, then wrapper variation, then speed, then load.",
+    "block_structure": {
+      "items_per_block": 10,
+      "default_time_limit_ms_per_item": 9000,
+      "speed_modes": {
+        "normal": 1.0,
+        "fast": 0.75
+      }
+    },
+    "post_block_decision": {
+      "UP": "accuracy >= .85 and no late collapse; introduce wrapper swap first, then fast mode, then higher tier/binding load",
+      "HOLD": ".70 <= accuracy < .85 or mixed stability; keep tier and optionally rotate surface tokens",
+      "DOWN": "accuracy < .70 or strong collapse; reduce tier, restore familiar wrapper, and reduce distractor burden"
+    },
+    "progression_order": [
+      "stability_first",
+      "wrapper_swap",
+      "fast_speed",
+      "load_increase"
+    ],
+    "adaptive_state_fields": [
+      "current_tier",
+      "wrapper_mode",
+      "speed_mode",
+      "recent_accuracy",
+      "recent_false_alarm_rate",
+      "recent_role_reversal_error_rate",
+      "recent_wrapper_cost"
+    ],
+    "error_sensitive_routing": {
+      "role_reversal_errors": "increase same_relation_mcq items with converse traps",
+      "polarity_errors": "keep same entities but simplify operator polarity",
+      "multi_select_overreach": "reduce option count and return to single-choice",
+      "wrapper_cost_high": "repeat same logical form in new real-world wrapper before full nonsense swap"
+    }
+  }
+}
