@@ -215,6 +215,9 @@ function modalityMark(targetModality, wrapper) {
   if (targetModality === "conj") {
     return "\u2227";
   }
+  if (targetModality === "loc_sym" || targetModality === "loc_col" || targetModality === "sym_col") {
+    return "\u2227";
+  }
   return "\u25ce";
 }
 
@@ -255,7 +258,7 @@ function familyWrappers(wrapper) {
 
 function familyDefaultTarget(wrapper) {
   if (wrapperFamily(wrapper) === "bind") {
-    return "conj";
+    return "loc_sym";
   }
   if (wrapper === "relate_vectors_dual" || wrapper === "relate_numbers_dual") {
     return "dual";
@@ -286,12 +289,12 @@ function isRelateDualWrapper(wrapper) {
 }
 
 function isFixedTargetWrapper(wrapper) {
-  return wrapperFamily(wrapper) === "bind" || isRelateDualWrapper(wrapper);
+  return isRelateDualWrapper(wrapper);
 }
 
 function isTargetAllowedForWrapper(wrapper, targetModality) {
   if (wrapper.startsWith("and_")) {
-    return targetModality === "conj";
+    return targetModality === "loc_sym" || targetModality === "loc_col" || targetModality === "sym_col";
   }
   if (wrapper === "relate_vectors" || wrapper === "relate_numbers") {
     return targetModality === "rel" || targetModality === "sym";
@@ -779,7 +782,7 @@ function baselineRecommendationForWrapper(wrapper) {
   if (wrapperFamily(wrapper) === "bind") {
     return {
       wrapper: "and_cat",
-      targetModality: "conj",
+      targetModality: "loc_sym",
       speed: "slow",
       n: 1,
       reason: "Start with the simplest Bind wrapper to establish a stable baseline."
@@ -1695,7 +1698,7 @@ function setupMarkup(uiState) {
     ? "Number relation"
     : "Relation";
   const targetOptions = family === "bind"
-    ? `<option value="conj" selected>Colour + Symbol</option>`
+    ? `<option value="loc_sym" ${uiState.settings.targetModality === "loc_sym" ? "selected" : ""}>Location + ${uiState.settings.wrapper === "and_cat" ? "Animal" : "Shape"}</option><option value="loc_col" ${uiState.settings.targetModality === "loc_col" ? "selected" : ""}>Location + Colour</option><option value="sym_col" ${uiState.settings.targetModality === "sym_col" ? "selected" : ""}>${uiState.settings.wrapper === "and_cat" ? "Animal" : "Shape"} + Colour</option>`
     : uiState.settings.wrapper === "relate_vectors"
       ? `<option value="rel" ${uiState.settings.targetModality === "rel" ? "selected" : ""}>Relation</option><option value="sym" ${uiState.settings.targetModality === "sym" ? "selected" : ""}>Orientation</option>`
       : uiState.settings.wrapper === "relate_numbers"

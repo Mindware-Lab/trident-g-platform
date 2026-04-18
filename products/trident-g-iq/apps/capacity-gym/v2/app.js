@@ -6,7 +6,7 @@ import {
   displayHubTargetLabel,
   isHubMatchAtIndex,
   summarizeHubBlock
-} from "./runtime/hub-engine.js?v=20260418-noncatshapes";
+} from "./runtime/hub-engine.js?v=20260418-bindtargets";
 import {
   initAudio,
   playSfx,
@@ -47,8 +47,8 @@ const WRAPPER_META = {
   hub_cat: { family: "flex", label: "Flex known", target: ["loc", "col", "sym"], complexity: 2 },
   hub_noncat: { family: "flex", label: "Flex unknown", target: ["loc", "col", "sym"], complexity: 3 },
   hub_concept: { family: "flex", label: "Flex concept", target: ["loc", "col", "sym"], complexity: 4 },
-  and_cat: { family: "bind", label: "Bind known", target: ["conj"], complexity: 5 },
-  and_noncat: { family: "bind", label: "Bind unknown", target: ["conj"], complexity: 6 },
+  and_cat: { family: "bind", label: "Bind known", target: ["loc_sym", "loc_col", "sym_col"], complexity: 5 },
+  and_noncat: { family: "bind", label: "Bind unknown", target: ["loc_sym", "loc_col", "sym_col"], complexity: 6 },
   resist_vectors: { family: "resist", label: "Resist vectors", target: ["loc", "sym"], complexity: 5 },
   resist_words: { family: "resist", label: "Resist words", target: ["col", "sym"], complexity: 5 },
   resist_concept: { family: "resist", label: "Resist concept", target: ["loc", "sym"], complexity: 6 },
@@ -205,9 +205,15 @@ function blockTipRule(plan) {
     return "Track both streams: press F for orientation matches and L for relation matches.";
   }
 
-  if (target === "conj") {
-    const itemName = wrapper === "and_cat" ? "picture-color item" : "shape-color item";
-    return `Press MATCH only when the same ${itemName} repeats; location is not the target.`;
+  if (wrapper === "and_cat" || wrapper === "and_noncat") {
+    const objectName = wrapper === "and_cat" ? "animal" : "shape";
+    if (target === "loc_sym") {
+      return `Press MATCH only when the same location-${objectName} pair repeats; ignore color.`;
+    }
+    if (target === "loc_col") {
+      return `Press MATCH only when the same location-color pair repeats; ignore ${objectName}.`;
+    }
+    return `Press MATCH only when the same ${objectName}-color pair repeats; ignore location.`;
   }
 
   if (wrapper === "relate_vectors") {

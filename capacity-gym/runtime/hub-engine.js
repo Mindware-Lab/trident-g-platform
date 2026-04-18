@@ -354,7 +354,7 @@ function buildIndependentMatchFlags(totalTrials, n, rng, matchRate = 0.3) {
 
 function targetModalitiesForWrapper(wrapper) {
   if (wrapper === "and_cat" || wrapper === "and_noncat") {
-    return ["conj"];
+    return ["loc_sym", "loc_col", "sym_col"];
   }
   if (wrapper === "relate_vectors" || wrapper === "relate_numbers") {
     return ["rel", "sym"];
@@ -478,36 +478,66 @@ function makeShapeBank(count, seedStart, opts) {
 }
 
 function buildConjunctiveStreams(totalTrials, n, matchFlags, lureFlags, rng) {
-  const sym = Array.from({ length: totalTrials }, () => 0);
-  const col = Array.from({ length: totalTrials }, () => 0);
-  const lureMatchedModality = Array.from({ length: totalTrials }, () => null);
+  return buildBindStreams(totalTrials, n, matchFlags, lureFlags, rng, "sym_col");
+}
+
+function bindModalitiesForTarget(targetModality) {
+  if (targetModality === "loc_sym") return ["loc", "sym"];
+  if (targetModality === "loc_col") return ["loc", "col"];
+  return ["sym", "col"];
+}
+
+function bindCanonKey(targetModality, locIdx, colIdx, symIdx) {
+  if (targetModality === "loc_sym") return `loc-sym:${locIdx}-${symIdx}`;
+  if (targetModality === "loc_col") return `loc-col:${locIdx}-${colIdx}`;
+  return `sym-col:${symIdx}-${colIdx}`;
+}
+
+function buildBindStreams(totalTrials, n, matchFlags, lureFlags, rng, targetModality) {
+  const streams = {
+    loc: Array.from({ length: totalTrials }, () => 0),
+    col: Array.from({ length: totalTrials }, () => 0),
+    sym: Array.from({ length: totalTrials }, () => 0),
+    lureMatchedModality: Array.from({ length: totalTrials }, () => null)
+  };
+  const targetPair = bindModalitiesForTarget(targetModality);
+  const nonTarget = ["loc", "col", "sym"].find((modality) => !targetPair.includes(modality));
 
   for (let index = 0; index < totalTrials; index += 1) {
     if (index < n) {
-      sym[index] = randomInt(rng, 0, 3);
-      col[index] = randomInt(rng, 0, 3);
+      streams.loc[index] = randomInt(rng, 0, 3);
+      streams.col[index] = randomInt(rng, 0, 3);
+      streams.sym[index] = randomInt(rng, 0, 3);
       continue;
     }
 
     if (matchFlags[index]) {
-      sym[index] = sym[index - n];
-      col[index] = col[index - n];
+      targetPair.forEach((modality) => {
+        streams[modality][index] = streams[modality][index - n];
+      });
+      streams[nonTarget][index] = randomInt(rng, 0, 3);
       continue;
     }
 
     if (lureFlags[index]) {
-      const matchSym = rng() < 0.5;
-      sym[index] = matchSym ? sym[index - n] : pickDifferent(sym[index - n], rng);
-      col[index] = matchSym ? pickDifferent(col[index - n], rng) : col[index - n];
-      lureMatchedModality[index] = matchSym ? "sym" : "col";
+      const matched = targetPair[randomInt(rng, 0, targetPair.length - 1)];
+      const nonMatched = targetPair.find((modality) => modality !== matched);
+      streams[matched][index] = streams[matched][index - n];
+      streams[nonMatched][index] = pickDifferent(streams[nonMatched][index - n], rng);
+      streams[nonTarget][index] = rng() < 0.5
+        ? streams[nonTarget][index - n]
+        : randomInt(rng, 0, 3);
+      streams.lureMatchedModality[index] = matched;
       continue;
     }
 
-    sym[index] = pickDifferent(sym[index - n], rng);
-    col[index] = pickDifferent(col[index - n], rng);
+    targetPair.forEach((modality) => {
+      streams[modality][index] = pickDifferent(streams[modality][index - n], rng);
+    });
+    streams[nonTarget][index] = randomInt(rng, 0, 3);
   }
 
-  return { sym, col, lureMatchedModality };
+  return streams;
 }
 
 function buildRenderMapping({ wrapper, mappingSeed }) {
@@ -700,6 +730,15 @@ export function modalityLabel(targetModality) {
   if (targetModality === "conj") {
     return "ITEM";
   }
+  if (targetModality === "loc_sym") {
+    return "LOCI + ITEM";
+  }
+  if (targetModality === "loc_col") {
+    return "LOCI + COLOR";
+  }
+  if (targetModality === "sym_col") {
+    return "ITEM + COLOR";
+  }
   if (targetModality === "dual") {
     return "DUAL";
   }
@@ -716,6 +755,12 @@ export function modalityLabel(targetModality) {
 }
 
 export function displayHubTargetLabel(targetModality, wrapper) {
+  if (wrapper === "and_cat" || wrapper === "and_noncat") {
+    const objectLabel = wrapper === "and_cat" ? "ANML" : "SHAPE";
+    if (targetModality === "loc_sym") return `LOCI + ${objectLabel}`;
+    if (targetModality === "loc_col") return "LOCI + COLOR";
+    return `${objectLabel} + COLOR`;
+  }
   if (wrapper === "relate_vectors_dual") {
     return "ORI + REL";
   }
@@ -1300,12 +1345,12 @@ export function createHubBlockTrials({
   }
 
   if (isAnd) {
-    const streams = buildConjunctiveStreams(totalTrials, n, matchFlags, lureFlags, rng);
+    const streams = buildBindStreams(totalTrials, n, matchFlags, lureFlags, rng, resolvedTargetModality);
     const renderMapping = buildRenderMapping({ wrapper, mappingSeed });
     const trials = [];
 
     for (let index = 0; index < totalTrials; index += 1) {
-      const locIdx = randomInt(rng, 0, 3);
+      const locIdx = streams.loc[index];
       const colIdx = streams.col[index];
       const symIdx = streams.sym[index];
       const locationDisplay = resolveDisplayLocation({ wrapper, locIdx, renderMapping, rng });
@@ -1319,7 +1364,7 @@ export function createHubBlockTrials({
         symIdx,
         isLure: Boolean(lureFlags[index]),
         lureMatchedModality: streams.lureMatchedModality[index],
-        canonKey: `conj:${symIdx}-${colIdx}`,
+        canonKey: bindCanonKey(resolvedTargetModality, locIdx, colIdx, symIdx),
         display: {
           pointPct: locationDisplay.pointPct,
           locationLabel: locationDisplay.locationLabel,
