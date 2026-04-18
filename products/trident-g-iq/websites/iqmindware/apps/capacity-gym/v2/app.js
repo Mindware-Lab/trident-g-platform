@@ -520,6 +520,7 @@ function zoneDisplaySnapshot() {
       label: zoneRouteLabel(routeState),
       confidence: latestSummary.confidence || "Low",
       bitsPerSecond: latestSummary.bitsPerSecond,
+      timestamp: latestSummary.timestamp,
       summary: latestSummary
     };
   }
@@ -534,6 +535,7 @@ function zoneDisplaySnapshot() {
       label: zoneRouteLabel(routeState),
       confidence: handoff.confidence || "--",
       bitsPerSecond: handoff.bitsPerSecond,
+      timestamp: handoff.timestamp,
       summary: null
     };
   }
@@ -546,8 +548,40 @@ function zoneDisplaySnapshot() {
     label: "Awaiting check",
     confidence: "--",
     bitsPerSecond: null,
+    timestamp: null,
     summary: latestSummary || null
   };
+}
+
+function latestCoachTrainingTimestamp() {
+  const rows = state.history
+    .filter((entry) => entry && entry.rewardMode !== "manual" && (entry.routeClass === "core" || entry.routeClass === "support"))
+    .map((entry) => Number(entry.tsEnd || entry.tsStart))
+    .filter(Number.isFinite);
+  return rows.length ? Math.max(...rows) : 0;
+}
+
+function coachZonePreflightStatus() {
+  if (state.settings.mode !== "coach" || state.currentSession || activeBlock || zonePulseIsRunning()) {
+    return { recommended: false, reason: "not_applicable", snapshot: zoneDisplaySnapshot() };
+  }
+  const snapshot = zoneDisplaySnapshot();
+  const lastCoachTs = latestCoachTrainingTimestamp();
+  const zoneTs = Number(snapshot.timestamp);
+  if (!snapshot.fresh || !Number.isFinite(zoneTs)) {
+    return { recommended: true, reason: "missing", snapshot };
+  }
+  if (!snapshot.valid) {
+    return { recommended: true, reason: "invalid", snapshot };
+  }
+  if (zoneTs <= lastCoachTs) {
+    return { recommended: true, reason: "used", snapshot };
+  }
+  return { recommended: false, reason: "fresh", snapshot };
+}
+
+function shouldRecommendCoachZonePreflight() {
+  return coachZonePreflightStatus().recommended;
 }
 
 function zonePulseIsRunning() {
@@ -1932,6 +1966,19 @@ function shouldShowCoachCallout() {
 }
 
 function coachCalloutModel() {
+  const preflight = coachZonePreflightStatus();
+  if (preflight.recommended) {
+    const body = preflight.reason === "used"
+      ? "Your last Zone Check was before your last training session. Recommended: test your zone again so Coach-led can tune today's route. You can still start anyway."
+      : preflight.reason === "invalid"
+        ? "Your last Zone Check did not validate. Recommended: run a clean 3-minute pulse before training. You can still start anyway."
+        : "Recommended before Coach-led training: run a 3-minute Zone Check so the coach can tune the route to your current control state. You can still start anyway.";
+    return {
+      kicker: "Coach tip",
+      title: "Test your zone / 3 min",
+      body
+    };
+  }
   return blockTipModel(displayPlanForHud());
 }
 
@@ -2455,7 +2502,8 @@ function renderPlayControls() {
     <div class="response-row">
       ${coachSession ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start next block</button>` : ""}
       ${state.settings.mode === "manual" ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start manual block</button>` : ""}
-      ${state.settings.mode === "coach" && !state.currentSession ? `<button class="btn btn-dark" type="button" data-action="start-coach-session" ${activeBlock ? "disabled" : ""}>Start coach session</button>` : ""}
+      ${state.settings.mode === "coach" && !state.currentSession && shouldRecommendCoachZonePreflight() ? `<button class="btn btn-primary zone-pulse-launch" type="button" data-action="show-zone-pulse" ${activeBlock ? "disabled" : ""}>Test your zone</button>` : ""}
+      ${state.settings.mode === "coach" && !state.currentSession ? `<button class="btn btn-dark" type="button" data-action="start-coach-session" ${activeBlock ? "disabled" : ""}>${shouldRecommendCoachZonePreflight() ? "Start anyway" : "Start coach session"}</button>` : ""}
     </div>
   `;
 }
