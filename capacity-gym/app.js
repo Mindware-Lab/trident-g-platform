@@ -2285,7 +2285,6 @@ function renderLeftStrip() {
         ${renderZoneCheckPanel()}
         ${renderModePanel()}
         ${state.settings.mode === "manual" ? renderManualPanel() : ""}
-        ${state.settings.mode === "manual" ? "" : renderCoachCycle()}
       </div>
     </aside>
   `;
