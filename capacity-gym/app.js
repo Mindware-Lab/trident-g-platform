@@ -6,7 +6,7 @@ import {
   displayHubTargetLabel,
   isHubMatchAtIndex,
   summarizeHubBlock
-} from "./runtime/hub-engine.js";
+} from "./runtime/hub-engine.js?v=20260418-prestarttips";
 import {
   initAudio,
   playSfx,
@@ -185,6 +185,87 @@ function normalizeTarget(wrapper, value) {
 
 function targetLabel(target, wrapper) {
   return displayHubTargetLabel(target, wrapper).toLowerCase();
+}
+
+function turnsBackLabel(n) {
+  const turns = clampN(n);
+  return `${turns} turn${turns === 1 ? "" : "s"} ago`;
+}
+
+function blockTipRule(plan) {
+  const wrapper = plan.wrapper;
+  const target = plan.targetModality;
+
+  if (target === "dual") {
+    if (wrapper === "relate_numbers_dual") {
+      return "Track both streams: press F for direction matches and L for number-relation matches.";
+    }
+    return "Track both streams: press F for orientation matches and L for relation matches.";
+  }
+
+  if (target === "conj") {
+    const itemName = wrapper === "and_cat" ? "picture-color item" : "shape-color item";
+    return `Press MATCH only when the same ${itemName} repeats; location is not the target.`;
+  }
+
+  if (wrapper === "relate_vectors") {
+    if (target === "rel") return "Press MATCH when the arrow relation repeats - same, outwards, inwards, diagonal.";
+    return "Press MATCH when the arrow orientation repeats; ignore relation.";
+  }
+
+  if (wrapper === "relate_numbers") {
+    if (target === "rel") return "Press MATCH when the number relation repeats - same, one-up, one-down or random.";
+    return "Press MATCH when the pair direction repeats; ignore the number relation.";
+  }
+
+  if (wrapper === "resist_vectors") {
+    if (target === "loc") return "Press MATCH when the position repeats; ignore arrow direction.";
+    return "Press MATCH when the arrow direction repeats; ignore position.";
+  }
+
+  if (wrapper === "resist_words") {
+    if (target === "col") return "Press MATCH when the ink color repeats; ignore the word.";
+    return "Press MATCH when the word repeats; ignore ink color.";
+  }
+
+  if (wrapper === "resist_concept") {
+    if (target === "loc") return "Press MATCH when the location zone repeats; ignore the cue direction.";
+    return "Press MATCH when the direction concept repeats; ignore location zone and picture style.";
+  }
+
+  if (wrapper === "emotion_faces") {
+    if (target === "loc") return "Press MATCH when the face position repeats; ignore the emotion.";
+    return "Press MATCH when the emotion repeats; ignore position.";
+  }
+
+  if (wrapper === "emotion_words") {
+    if (target === "col") return "Press MATCH when the ink color repeats; ignore the emotion word.";
+    return "Press MATCH when the emotion category repeats; ignore ink color.";
+  }
+
+  if (wrapper === "hub_concept") {
+    if (target === "loc") return "Press MATCH when the location zone repeats; ignore color category and letter.";
+    if (target === "col") return "Press MATCH when the color category repeats; ignore location zone and letter.";
+    return "Press MATCH when the letter repeats across font and case changes; ignore zone and color category.";
+  }
+
+  if (target === "loc") {
+    return "Press MATCH when the position repeats; ignore color and symbol.";
+  }
+  if (target === "col") {
+    return "Press MATCH when the color repeats; ignore position and symbol.";
+  }
+
+  const symbolName = wrapper === "hub_noncat" ? "symbol" : "letter";
+  return `Press MATCH when the ${symbolName} repeats; ignore position and color.`;
+}
+
+function blockTipModel(plan) {
+  return {
+    kicker: "Coach tip",
+    title: `${wrapperLabel(plan.wrapper)} / ${displayHubTargetLabel(plan.targetModality, plan.wrapper)} / N-${plan.n}`,
+    body: `Compare each cue with the one from ${turnsBackLabel(plan.n)}. ${blockTipRule(plan)}`
+  };
 }
 
 function dateKey(ts = Date.now()) {
@@ -672,7 +753,7 @@ function startBlock() {
     soaMs: build.soaMs,
     displayMs: build.displayMs,
     trialIndex: -1,
-    status: "briefing",
+    status: "countdown",
     stimulusVisible: false,
     trialVisualStage: 0,
     countdownStep: 0,
@@ -756,7 +837,7 @@ function resumeActiveBlock() {
   const pausedFromStatus = activeBlock.pausedFromStatus || "trial";
   viewState.message = "Resuming block.";
   triggerSfx("resume_on");
-  if (pausedFromStatus === "countdown" || pausedFromStatus === "briefing" || activeBlock.trialIndex < 0) {
+  if (pausedFromStatus === "countdown" || activeBlock.trialIndex < 0) {
     beginCountdown();
     return;
   }
@@ -1503,29 +1584,11 @@ function renderHud() {
 }
 
 function shouldShowCoachCallout() {
-  if (state.settings.mode === "manual") return false;
-  return !activeBlock || activeBlock.status === "briefing";
+  return !activeBlock && viewState.centerMode !== "stats";
 }
 
 function coachCalloutModel() {
-  if (activeBlock?.status === "briefing") {
-    const plan = activeBlock.plan;
-    return {
-      kicker: "Get ready",
-      text: `${familyLabel(wrapperFamily(plan.wrapper))} / ${displayHubTargetLabel(plan.targetModality, plan.wrapper)} / N-${plan.n}`
-    };
-  }
-  if (state.settings.mode === "coach") {
-    const plan = resolveCoachBlockSettings();
-    return {
-      kicker: "Coach tip",
-      text: `Next block is ${familyLabel(wrapperFamily(plan.wrapper))}`
-    };
-  }
-  return {
-    kicker: "Manual signal",
-    text: `Next recommended block is ${familyLabel(recommendedManualFamilyId())}`
-  };
+  return blockTipModel(displayPlanForHud());
 }
 
 function renderCoachCallout() {
@@ -1534,7 +1597,8 @@ function renderCoachCallout() {
   return `
     <div class="coach-callout" role="status" aria-live="polite">
       <span>${escapeHtml(callout.kicker)}</span>
-      <strong>${escapeHtml(callout.text)}</strong>
+      <strong>${escapeHtml(callout.title)}</strong>
+      <p>${escapeHtml(callout.body)}</p>
     </div>
   `;
 }
@@ -1887,14 +1951,6 @@ function renderPlayControls() {
       <div class="response-row">
         <button class="response-btn is-control" type="button" data-action="pause-block">Pause</button>
         <button class="response-btn" type="button" data-action="respond">MATCH</button>
-        <button class="response-btn is-stop" type="button" data-action="stop-block">Stop</button>
-      </div>
-    `;
-  }
-  if (activeBlock?.status === "briefing") {
-    return `
-      <div class="response-row">
-        <button class="response-btn is-control" type="button" data-action="pause-block">Pause</button>
         <button class="response-btn is-stop" type="button" data-action="stop-block">Stop</button>
       </div>
     `;

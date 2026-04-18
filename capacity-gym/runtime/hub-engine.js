@@ -684,69 +684,69 @@ function buildRenderMapping({ wrapper, mappingSeed }) {
 
 export function modalityLabel(targetModality) {
   if (targetModality === "conj") {
-    return "COLOUR + SYMBOL";
+    return "ITEM";
   }
   if (targetModality === "dual") {
     return "DUAL";
   }
   if (targetModality === "rel") {
-    return "RELATION";
+    return "REL";
   }
   if (targetModality === "loc") {
-    return "LOCATION";
+    return "LOCI";
   }
   if (targetModality === "col") {
-    return "COLOUR";
+    return "COLOR";
   }
-  return "SYMBOL";
+  return "SYM";
 }
 
 export function displayHubTargetLabel(targetModality, wrapper) {
   if (wrapper === "relate_vectors_dual") {
-    return "ORIENTATION + RELATION";
+    return "ORI + REL";
   }
   if (wrapper === "relate_numbers_dual") {
-    return "DIRECTION + RELATION";
+    return "DIR + REL";
   }
   if (wrapper === "relate_vectors" && targetModality === "sym") {
-    return "ORIENTATION";
+    return "ORI";
   }
   if (wrapper === "relate_numbers" && targetModality === "sym") {
-    return "DIRECTION";
+    return "DIR";
   }
   if (wrapper === "relate_numbers" && targetModality === "rel") {
-    return "NUMBER RELATION";
+    return "NUM REL";
   }
   if (targetModality === "rel" || wrapper === "relate_vectors") {
-    return "RELATION";
+    return "REL";
   }
   if (targetModality === "conj") {
-    return "COLOUR + SYMBOL";
+    return "ITEM";
   }
   if (wrapper === "resist_vectors" && targetModality === "sym") {
-    return "DIRECTION";
+    return "DIR";
   }
   if (wrapper === "resist_concept" && targetModality === "sym") {
-    return "DIRECTION";
+    return "DIR";
   }
   if (wrapper === "resist_words" && targetModality === "sym") {
     return "WORD";
   }
   if (wrapper === "resist_words" && targetModality === "col") {
-    return "INK COLOUR";
+    return "INK COLOR";
   }
   if (wrapper === "emotion_faces" && targetModality === "sym") {
-    return "EMOTION";
+    return "EMO";
   }
   if (wrapper === "emotion_words" && targetModality === "sym") {
-    return "EMOTION WORD";
+    return "EMO WORD";
   }
   if (wrapper === "emotion_words" && targetModality === "col") {
-    return "INK COLOUR";
+    return "INK COLOR";
   }
   const base = modalityLabel(targetModality);
   if (wrapper !== "hub_noncat" && targetModality === "sym") {
-    return "LETTER";
+    return "LTR";
   }
   return base;
 }

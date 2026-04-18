@@ -925,7 +925,7 @@ button {
   min-width: min(420px, 92%);
   max-width: 560px;
   display: grid;
-  gap: 3px;
+  gap: 5px;
   padding: 9px 16px 10px;
   border: 1px solid rgba(196, 99, 255, 0.48);
   background:
@@ -966,6 +966,15 @@ button {
   letter-spacing: 0.04em;
   line-height: 1.2;
   text-transform: uppercase;
+}
+
+.coach-callout p {
+  max-width: 52ch;
+  margin: 0 auto;
+  color: #dce8ff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .arena-shell.is-stats {
