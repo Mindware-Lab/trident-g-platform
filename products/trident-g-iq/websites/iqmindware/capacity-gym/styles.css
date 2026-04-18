@@ -306,6 +306,38 @@ button {
   font-size: 14px;
 }
 
+.training-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 3px;
+}
+
+.training-help-link {
+  flex: 0 0 auto;
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  margin-top: -3px;
+  place-items: center;
+  text-decoration: none;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+.training-help-link img {
+  display: block;
+  width: 34px;
+  height: 34px;
+}
+
+.training-help-link:hover,
+.training-help-link:focus-visible {
+  filter: drop-shadow(0 0 10px rgba(173, 92, 255, 0.72));
+  transform: translateY(-1px);
+  outline: none;
+}
+
 .panel-strip-title {
   margin: 0 0 7px;
   font-size: 15px;

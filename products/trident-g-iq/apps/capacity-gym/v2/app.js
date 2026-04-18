@@ -26,6 +26,8 @@ const COACH_CORE_BLOCKS = 6;
 const SUPPORT_BLOCKS = 4;
 const PROGRAMME_SESSION_TARGET = 20;
 const MAX_SESSION_COUNTER = 999;
+const TRAINING_HELP_VIDEO_URL = "https://youtu.be/uOncXapT-j4?si=uJBBaXw7M1vtL2jL";
+const TRAINING_HELP_ICON_URL = "./assets/help/help-hex-purple.svg";
 const COACH_FAMILY_CYCLE = ["flex", "bind", "relate", "resist", "flex", "relate", "bind", "resist", "relate"];
 const RELATE_LADDER = ["relate_vectors", "relate_numbers", "relate_vectors_dual", "relate_numbers_dual"];
 const TRANSFER_SPRINT_BLOCKS = 3;
@@ -1737,7 +1739,12 @@ function renderZoneCoachGraphic(handoff) {
 function renderModePanel() {
   return `
     <section class="panel training-panel">
-      <h2 class="strip-title training-title">Capacity Training</h2>
+      <div class="training-title-row">
+        <h2 class="strip-title training-title">Capacity Training</h2>
+        <a class="training-help-link" href="${TRAINING_HELP_VIDEO_URL}" target="_blank" rel="noopener noreferrer" aria-label="Open Capacity Training help video" title="Open Capacity Training help video">
+          <img src="${TRAINING_HELP_ICON_URL}" alt="" aria-hidden="true">
+        </a>
+      </div>
       <p class="small muted training-prompt">SELECT COACH LED OR MANUAL</p>
       <div class="mode-toggle" role="group" aria-label="Training mode">
         <button class="chip-btn${state.settings.mode === "coach" ? " is-active" : ""}" type="button" data-action="set-mode" data-mode="coach">Coach-led</button>
