@@ -85,7 +85,7 @@ let viewState = {
   centerMode: "play",
   message: "Choose coached progression or manual play, then start a block."
 };
-const timers = { countdown: null, display: null, sequence: null, trial: null };
+const timers = { countdown: null, display: null, sequence: null, trial: null, zoneCountdown: null };
 let touchStart = null;
 
 initAudio({ enabled: state.settings.soundOn, preloadTier: "p0" });
@@ -476,6 +476,7 @@ function createZonePulseState() {
     },
     controller: null,
     activeRunId: null,
+    countdownStep: 0,
     cancelled: false
   };
 }
@@ -587,6 +588,10 @@ function shouldRecommendCoachZonePreflight() {
 }
 
 function zonePulseIsRunning() {
+  return zonePulseState.phase === "running" || zonePulseState.phase === "countdown";
+}
+
+function zonePulseIsLive() {
   return zonePulseState.phase === "running";
 }
 
@@ -1124,8 +1129,48 @@ function startZonePulse() {
     return;
   }
   destroyZonePulseController();
-  zonePulseState.phase = "running";
   zonePulseState.cancelled = false;
+  beginZonePulseCountdown(0);
+}
+
+function beginZonePulseCountdown(stepIndex = 0) {
+  if (activeBlock || zonePulseState.cancelled) return;
+  if (timers.zoneCountdown) {
+    clearTimeout(timers.zoneCountdown);
+    timers.zoneCountdown = null;
+  }
+  zonePulseState.phase = "countdown";
+  zonePulseState.countdownStep = Math.max(0, Math.min(COUNTDOWN_STEPS.length - 1, stepIndex));
+  zonePulseState.live = {
+    progressPct: 0,
+    trialCount: 0,
+    counts: { stair: 0, probe: 0, catch: 0 },
+    qualityText: `Starting in ${COUNTDOWN_STEPS[zonePulseState.countdownStep]}`
+  };
+  viewState.centerMode = "zone";
+  viewState.leftOpen = false;
+  viewState.rightOpen = false;
+  viewState.message = "Zone pulse starting. Get ready for the masked arrows.";
+  render();
+  timers.zoneCountdown = setTimeout(() => advanceZonePulseCountdown(zonePulseState.countdownStep), COUNTDOWN_STEP_MS);
+}
+
+function advanceZonePulseCountdown(expectedStep) {
+  if (zonePulseState.phase !== "countdown" || zonePulseState.countdownStep !== expectedStep || zonePulseState.cancelled) return;
+  if (expectedStep < COUNTDOWN_STEPS.length - 1) {
+    beginZonePulseCountdown(expectedStep + 1);
+    return;
+  }
+  if (timers.zoneCountdown) {
+    clearTimeout(timers.zoneCountdown);
+    timers.zoneCountdown = null;
+  }
+  startZonePulseRuntime();
+}
+
+function startZonePulseRuntime() {
+  if (activeBlock || zonePulseState.cancelled) return;
+  zonePulseState.phase = "running";
   zonePulseState.activeRunId = `zonepulse_${Date.now()}`;
   zonePulseState.live = {
     progressPct: 0,
@@ -1174,10 +1219,16 @@ function startZonePulse() {
 
 function stopZonePulse() {
   if (!zonePulseIsRunning()) return;
+  const wasCountdown = zonePulseState.phase === "countdown";
   zonePulseState.cancelled = true;
   zonePulseState.activeRunId = null;
+  if (timers.zoneCountdown) {
+    clearTimeout(timers.zoneCountdown);
+    timers.zoneCountdown = null;
+  }
   destroyZonePulseController();
   zonePulseState.phase = zonePulseState.latestSummary ? "result" : "ready";
+  zonePulseState.countdownStep = 0;
   zonePulseState.live = {
     progressPct: 0,
     trialCount: 0,
@@ -1189,10 +1240,13 @@ function stopZonePulse() {
   triggerSfx("session_stop_discard");
   render();
   ensureZonePulseController();
+  if (wasCountdown) {
+    zonePulseState.cancelled = false;
+  }
 }
 
 function submitZonePulse(direction) {
-  if (!zonePulseIsRunning() || !zonePulseState.controller) return false;
+  if (!zonePulseIsLive() || !zonePulseState.controller) return false;
   zonePulseState.controller.submit(direction === "left" ? "ArrowLeft" : "ArrowRight");
   triggerSfx("match_primary_press");
   return true;
@@ -2120,12 +2174,17 @@ function renderZonePulseResult() {
 }
 
 function renderZonePulseTask() {
-  const running = zonePulseIsRunning();
+  const running = zonePulseIsLive();
+  const countdown = zonePulseState.phase === "countdown";
   const showResult = !running && zonePulseState.latestSummary && (zonePulseState.phase === "result" || zonePulseState.phase === "invalid");
   if (showResult) return renderZonePulseResult();
+  const countdownValue = COUNTDOWN_STEPS[zonePulseState.countdownStep] || COUNTDOWN_STEPS[0];
   return `
-    <div class="zone-pulse-stage${running ? " is-running" : ""}">
-      <canvas class="zone-pulse-canvas" data-zone-pulse-canvas aria-label="Masked majority arrow task"></canvas>
+    <div class="zone-pulse-stage${running ? " is-running" : ""}${countdown ? " is-countdown" : ""}">
+      <div class="zone-pulse-canvas-wrap">
+        <canvas class="zone-pulse-canvas" data-zone-pulse-canvas aria-label="Masked majority arrow task"></canvas>
+        ${countdown ? `<div class="capacity-countdown zone-pulse-countdown" aria-live="assertive">${escapeHtml(countdownValue)}</div>` : ""}
+      </div>
       ${running ? `
         <div class="zone-pulse-progress">
           <div class="zone-pulse-progress-bar"><span data-zone-pulse-progress-fill style="width:${Math.round(zonePulseState.live.progressPct || 0)}%;"></span></div>
@@ -2134,6 +2193,15 @@ function renderZonePulseTask() {
             <span data-zone-pulse-counts>Trials ${zonePulseState.live.trialCount || 0} | S:${zonePulseState.live.counts?.stair || 0} P:${zonePulseState.live.counts?.probe || 0} C:${zonePulseState.live.counts?.catch || 0}</span>
           </div>
           <p data-zone-pulse-quality>${escapeHtml(zonePulseState.live.qualityText || "Stay on one screen")}</p>
+        </div>
+      ` : countdown ? `
+        <div class="zone-pulse-progress">
+          <div class="zone-pulse-progress-bar"><span data-zone-pulse-progress-fill style="width:0%;"></span></div>
+          <div class="zone-pulse-progress-copy">
+            <span>Starting</span>
+            <span>Get ready</span>
+          </div>
+          <p>${escapeHtml(zonePulseState.live.qualityText || "Starting")}</p>
         </div>
       ` : `
         <div class="coach-callout zone-pulse-tip" role="status" aria-live="polite">
@@ -2451,7 +2519,14 @@ function renderPlayControls() {
   const coachSession = activeCoachSession();
   const recommendZonePreflight = shouldRecommendCoachZonePreflight();
   if (viewState.centerMode === "zone") {
-    if (zonePulseIsRunning()) {
+    if (zonePulseState.phase === "countdown") {
+      return `
+        <div class="response-row zone-response-row">
+          <button class="response-btn is-stop" type="button" data-action="stop-zone-pulse">Stop</button>
+        </div>
+      `;
+    }
+    if (zonePulseIsLive()) {
       return `
         <div class="response-row zone-response-row">
           <button class="response-btn secondary" type="button" data-action="zone-left"><span class="keycap zone-keycap">←</span> Left</button>
