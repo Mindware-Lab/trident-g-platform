@@ -6,7 +6,7 @@ import {
   displayHubTargetLabel,
   isHubMatchAtIndex,
   summarizeHubBlock
-} from "./runtime/hub-engine.js?v=20260419-locksettings";
+} from "./runtime/hub-engine.js?v=20260419-blockflow";
 import {
   initAudio,
   playSfx,
@@ -41,7 +41,7 @@ import {
   scoreReasoningResponse,
   summarizeReasoningBlock,
   updateReasoningFamilyState
-} from "./runtime/reasoning/engine.js?v=20260419-locksettings";
+} from "./runtime/reasoning/engine.js?v=20260419-blockflow";
 
 const STORAGE_KEY = "tg_iq_live_capacity_v2";
 const ECONOMY_KEY = "tg_iq_live_economy_v1";
@@ -1508,7 +1508,25 @@ function submitReasoningAnswer({ selectedIds = null, timedOut = false } = {}) {
   render();
 }
 
-function advanceReasoningItem() {
+function isFinalReasoningItem(block = activeReasoningBlock) {
+  if (!block) return false;
+  return Number(block.itemIndex || 0) >= Math.max(0, Number(block.items?.length || 1) - 1);
+}
+
+function reasoningCompletionAction(block = activeReasoningBlock) {
+  if (!block || block.mode === "manual") return "finish_session";
+  const session = reasoningState.currentSession;
+  if (!session || session.id !== block.sessionId) return "finish_session";
+  const completedAfterThisBlock = Number(session.blocksCompleted || 0) + 1;
+  const plannedBlocks = Math.max(1, Number(session.plannedBlocks || 1));
+  return completedAfterThisBlock < plannedBlocks ? "next_block" : "finish_session";
+}
+
+function reasoningCompletionButtonLabel(block = activeReasoningBlock) {
+  return reasoningCompletionAction(block) === "next_block" ? "Next block" : "Finish session";
+}
+
+async function advanceReasoningItem() {
   if (!activeReasoningBlock || activeReasoningBlock.status !== "feedback") return;
   if (activeReasoningBlock.itemIndex < activeReasoningBlock.items.length - 1) {
     activeReasoningBlock.itemIndex += 1;
@@ -1520,13 +1538,14 @@ function advanceReasoningItem() {
     scheduleReasoningTimeout();
     return;
   }
-  finishReasoningBlock();
+  await finishReasoningBlock({ nextStep: reasoningCompletionAction(activeReasoningBlock) });
 }
 
-function finishReasoningBlock() {
+async function finishReasoningBlock({ nextStep = "finish_session" } = {}) {
   if (!activeReasoningBlock) return;
+  const completedBlock = activeReasoningBlock;
   clearReasoningTimer();
-  const summary = summarizeReasoningBlock(activeReasoningBlock, activeReasoningBlock.outcomes);
+  const summary = summarizeReasoningBlock(completedBlock, completedBlock.outcomes);
   const blockG = reasoningGAward(summary.transferScore, summary);
   const wallet = addGEvent({
     source: "reasoning_block",
@@ -1547,7 +1566,7 @@ function finishReasoningBlock() {
   let completedSession = null;
   if (summary.mode === "manual") {
     nextState.programme.manualSessionNumber = Math.max(Number(nextState.programme.manualSessionNumber || 0), Number(nextState.programme.manualSessionNumber || 0) + 1);
-  } else if (nextState.currentSession?.id === activeReasoningBlock.sessionId) {
+  } else if (nextState.currentSession?.id === completedBlock.sessionId) {
     nextState.currentSession.blocksCompleted = Number(nextState.currentSession.blocksCompleted || 0) + 1;
     nextState.currentSession.updatedAt = Date.now();
     if (nextState.currentSession.blocksCompleted >= nextState.currentSession.plannedBlocks) {
@@ -1559,11 +1578,19 @@ function finishReasoningBlock() {
     }
   }
   saveReasoningState(nextState);
-  activeReasoningBlock.status = "summary";
-  activeReasoningBlock.summary = entry;
-  viewState.reasoningCloseSession = completedSession?.routeClass === "core" ? completedSession : null;
-  viewState.message = `${reasoningFamilyLabel(summary.family)} block saved: ${percent(summary.accuracy)} accuracy, Reasoning Transfer ${formatScorePercent(summary.transferScore.total)}, +${blockG} g.`;
   playBlockRewardSfx(summary.tier, summary.decision === "UP" ? summary.tier + 1 : summary.decision === "DOWN" ? summary.tier - 1 : summary.tier, blockG, null);
+  activeReasoningBlock = null;
+  viewState.reasoningCloseSession = null;
+
+  if (nextStep === "next_block" && reasoningState.currentSession) {
+    viewState.message = `${reasoningFamilyLabel(summary.family)} block saved: ${percent(summary.accuracy)} accuracy. Loading next block.`;
+    render();
+    await startReasoningBlock({ manual: false });
+    return;
+  }
+
+  const finishedCopy = completedSession ? "Reasoning session complete." : "Reasoning session saved.";
+  viewState.message = `${finishedCopy} ${reasoningFamilyLabel(summary.family)}: ${percent(summary.accuracy)} accuracy, Reasoning Transfer ${formatScorePercent(summary.transferScore.total)}, +${blockG} g.`;
   render();
 }
 
@@ -3237,7 +3264,8 @@ function renderReasoningPlayControls() {
     return `<div class="response-row"><button class="response-btn is-stop" type="button" data-action="stop-reasoning-block">Stop</button></div>`;
   }
   if (activeReasoningBlock?.status === "feedback") {
-    return `<div class="response-row"><button class="response-btn" type="button" data-action="reasoning-next">${activeReasoningBlock.itemIndex < activeReasoningBlock.items.length - 1 ? "Next item" : "Finish block"}</button><button class="response-btn is-stop" type="button" data-action="stop-reasoning-block">Stop</button></div>`;
+    const label = isFinalReasoningItem(activeReasoningBlock) ? reasoningCompletionButtonLabel(activeReasoningBlock) : "Next item";
+    return `<div class="response-row"><button class="response-btn" type="button" data-action="reasoning-next">${escapeHtml(label)}</button></div>`;
   }
   if (activeReasoningBlock?.status === "summary") {
     return `<div class="response-row"><button class="btn btn-primary" type="button" data-action="clear-reasoning-summary">Continue</button></div>`;
