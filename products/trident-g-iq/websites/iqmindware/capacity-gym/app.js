@@ -3569,6 +3569,12 @@ function renderReasoningArena() {
   if (viewState.reasoningCloseSession) return renderReasoningTacticCapture();
   if (activeReasoningBlock?.status === "summary") return renderReasoningBlockSummary();
   if (activeReasoningBlock) return renderReasoningItemCard();
+  return `<div class="arena-placeholder" aria-hidden="true"></div>`;
+}
+
+function renderReasoningCoachSlot() {
+  if (viewState.centerMode === "stats" || viewState.centerMode === "zone") return "";
+  if (viewState.reasoningCloseSession || activeReasoningBlock) return "";
   return renderReasoningIntro();
 }
 
@@ -3667,6 +3673,7 @@ function renderReasoningPlayCard() {
         <div class="arena-shell${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""} is-reasoning">
           ${showingStats ? renderReasoningStatsDashboard() : showingZone ? renderZonePulseTask() : renderReasoningArena()}
         </div>
+        <div class="play-coach-slot">${renderReasoningCoachSlot()}</div>
         <div class="play-controls">${renderReasoningPlayControls()}</div>
       </div>
     </section>
@@ -3893,8 +3900,9 @@ function renderPlayCard() {
       ${showingStats ? "" : renderHud()}
       <div class="play-body${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""}">
         <div class="arena-shell${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""}">
-          ${showingStats ? renderCenterStatsDashboard() : showingZone ? renderZonePulseTask() : `${arenaMarkup()}${renderCoachCallout()}`}
+          ${showingStats ? renderCenterStatsDashboard() : showingZone ? renderZonePulseTask() : arenaMarkup()}
         </div>
+        <div class="play-coach-slot">${showingStats || showingZone ? "" : renderCoachCallout()}</div>
         <div class="play-controls">${renderPlayControls()}</div>
       </div>
     </section>

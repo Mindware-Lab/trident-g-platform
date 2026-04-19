@@ -1277,12 +1277,15 @@ button {
 }
 
 .play-body {
+  --coach-slot-height: 96px;
   position: relative;
   isolation: isolate;
   min-height: 0;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  background: linear-gradient(180deg, rgba(17, 29, 48, 0.16), rgba(7, 13, 24, 0));
+  grid-template-rows: minmax(0, 1fr) var(--coach-slot-height) auto;
+  background:
+    linear-gradient(180deg, rgba(17, 29, 48, 0.12), rgba(7, 13, 24, 0.16)),
+    #08101e;
   overflow: hidden;
 }
 
@@ -1291,12 +1294,15 @@ button {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background-image: var(--capacity-neural-wallpaper-image);
+  background-image:
+    radial-gradient(circle at 18% 72%, rgba(84, 162, 255, 0.16), transparent 28%),
+    radial-gradient(circle at 82% 28%, rgba(255, 95, 44, 0.12), transparent 24%),
+    var(--capacity-neural-wallpaper-image);
   background-position: center;
   background-repeat: no-repeat;
-  background-size: cover;
+  background-size: cover, cover, cover;
   mix-blend-mode: screen;
-  opacity: var(--capacity-neural-wallpaper-opacity);
+  opacity: 0.34;
   pointer-events: none;
 }
 
@@ -1309,19 +1315,43 @@ button {
   display: none;
 }
 
+.play-body.is-stats {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.play-body.is-stats .play-coach-slot {
+  display: none;
+}
+
 .arena-shell {
   min-height: 0;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
   align-items: center;
   justify-items: center;
   gap: 8px;
-  padding: 10px 12px 6px;
+  padding: 10px 12px 2px;
+}
+
+.arena-placeholder {
+  width: min(44vh, 390px);
+  aspect-ratio: 1;
+  max-width: 92%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.play-coach-slot {
+  min-height: var(--coach-slot-height);
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  padding: 0 12px;
 }
 
 .coach-callout {
   position: relative;
   isolation: isolate;
+  align-self: center;
   min-width: min(420px, 92%);
   max-width: 560px;
   display: grid;
@@ -1388,11 +1418,11 @@ button {
 }
 
 .play-body.is-zone::before {
-  opacity: 0.14;
+  opacity: 0.22;
 }
 
 .play-body.is-reasoning::before {
-  opacity: 0.25;
+  opacity: 0.34;
 }
 
 .arena-shell.is-zone {
@@ -2128,6 +2158,8 @@ button {
 .play-controls {
   display: grid;
   gap: 8px;
+  min-height: 54px;
+  align-items: center;
   padding: 0 12px 12px;
 }
 
