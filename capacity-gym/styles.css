@@ -690,11 +690,14 @@ button {
 .field {
   display: grid;
   gap: 3px;
+  min-width: 0;
 }
 
 .field select,
 .field input {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 28px;
   padding: 4px 6px;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -703,6 +706,12 @@ button {
   font-family: "Chakra Petch", sans-serif;
   font-size: 10px;
   font-weight: 700;
+}
+
+.field select {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .notice {

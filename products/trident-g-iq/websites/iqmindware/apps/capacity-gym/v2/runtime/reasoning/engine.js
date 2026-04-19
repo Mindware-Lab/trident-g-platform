@@ -24,8 +24,8 @@ export const REASONING_FAMILIES = {
     generator: relationFitGenerator,
     subtypes: {
       auto: "Auto",
-      same_relation: "Same Relation",
-      resolve_slots: "Resolve Slots"
+      same_relation: "Same Relationship",
+      resolve_slots: "Constraint Match"
     }
   },
   must_follow: {
@@ -37,8 +37,8 @@ export const REASONING_FAMILIES = {
     generator: mustFollowGenerator,
     subtypes: {
       auto: "Auto",
-      choose_forced: "Choose Forced",
-      select_forced: "Select Forced"
+      choose_forced: "One Certain Answer",
+      select_forced: "All Certain Answers"
     }
   }
 };
@@ -47,23 +47,23 @@ const ANSWER_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const bankCache = new Map();
 
 const RELATION_SUBTYPE_LABELS = {
-  same_relation: "Same Relation",
-  resolve_slots: "Resolve Slots",
-  consistent_with_facts: "Resolve Slots",
-  same_relation_mcq: "Same Relation",
-  select_all_valid: "Same Relation",
-  relation_satisfaction: "Resolve Slots",
-  multi_relation_validation: "Resolve Slots"
+  same_relation: "Same Relationship",
+  resolve_slots: "Constraint Match",
+  consistent_with_facts: "Constraint Match",
+  same_relation_mcq: "Same Relationship",
+  select_all_valid: "Same Relationship",
+  relation_satisfaction: "Constraint Match",
+  multi_relation_validation: "Constraint Match"
 };
 
 const MUST_FOLLOW_SUBTYPE_LABELS = {
-  choose_forced: "Choose Forced",
-  select_forced: "Select Forced",
-  select_consistent_not_forced: "Possible",
-  must_follow_tf: "Choose Forced",
-  best_conclusion_mcq: "Choose Forced",
-  select_all_must_follow: "Select Forced",
-  cannot_follow_mcq: "Choose Forced"
+  choose_forced: "One Certain Answer",
+  select_forced: "All Certain Answers",
+  select_consistent_not_forced: "Possible Answers",
+  must_follow_tf: "One Certain Answer",
+  best_conclusion_mcq: "One Certain Answer",
+  select_all_must_follow: "All Certain Answers",
+  cannot_follow_mcq: "One Certain Answer"
 };
 
 const RELATION_UI_TEXT = {
