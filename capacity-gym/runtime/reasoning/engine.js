@@ -199,6 +199,7 @@ function normalizeWrapper(value) {
 }
 
 function normalizeSpeed(value) {
+  if (value === "untimed") return "untimed";
   return value === "fast" ? "fast" : "normal";
 }
 
@@ -878,6 +879,7 @@ export async function buildReasoningBlock({ state, session = null, mode = "coach
 }
 
 export function itemTimeLimitMs(item, speed = "normal") {
+  if (speed === "untimed") return null;
   const fast = speed === "fast";
   if (item?.answer_type === "true_false") return (fast ? 7 : 10) * 1000;
   if (item?.answer_type === "multi_select") return (fast ? 13 : 18) * 1000;

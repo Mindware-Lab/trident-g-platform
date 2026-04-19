@@ -1474,6 +1474,7 @@ function scheduleReasoningTimeout() {
   const item = currentReasoningItem();
   if (!item || activeReasoningBlock?.status !== "question") return;
   const limitMs = itemTimeLimitMs(item, activeReasoningBlock.plan.speed);
+  if (!Number.isFinite(limitMs)) return;
   timers.reasoning = setTimeout(() => submitReasoningAnswer({ timedOut: true }), limitMs);
 }
 
@@ -2873,7 +2874,11 @@ function renderReasoningTrainingPanel() {
   const selectedSubtype = settings.subtype !== "auto" && familyMeta.subtypes[settings.subtype]
     ? settings.subtype
     : familyMeta.defaultSubtype;
-  const fastNote = settings.speed === "fast" ? "Efficiency mode" : "Normal reasoning pace";
+  const speedNote = settings.speed === "untimed"
+    ? "No time limit"
+    : settings.speed === "fast"
+      ? "Efficiency mode"
+      : "Normal reasoning pace";
   return `
     <section class="panel reasoning-training-panel">
       <div class="training-title-row">
@@ -2909,9 +2914,9 @@ function renderReasoningTrainingPanel() {
           <div class="field">
             <label>Speed</label>
             <select data-reasoning-field="speed">
-              ${["normal", "fast"].map((value) => `<option value="${value}" ${settings.speed === value ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
+              ${["untimed", "normal", "fast"].map((value) => `<option value="${value}" ${settings.speed === value ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
             </select>
-            <p class="small muted reasoning-speed-note">${escapeHtml(fastNote)}</p>
+            <p class="small muted reasoning-speed-note">${escapeHtml(speedNote)}</p>
           </div>
           <div class="field">
             <label>Tier</label>
@@ -3059,7 +3064,8 @@ function renderReasoningItemCard() {
   if (!item || !activeReasoningBlock) return "";
   const outcome = activeReasoningBlock.lastOutcome;
   const feedback = activeReasoningBlock.status === "feedback";
-  const limit = Math.round(itemTimeLimitMs(item, activeReasoningBlock.plan.speed) / 1000);
+  const limitMs = itemTimeLimitMs(item, activeReasoningBlock.plan.speed);
+  const limitLabel = Number.isFinite(limitMs) ? `${Math.round(limitMs / 1000)}s` : "UNTIMED";
   const title = item.title_text || item.display_label || reasoningFamilyLabel(item.family);
   const ruleText = item.rule_text || item.display_rule || "";
   const premises = Array.isArray(item.display_premises) ? item.display_premises : (item.premises || []);
@@ -3091,7 +3097,7 @@ function renderReasoningItemCard() {
       <div class="reasoning-timer-strip">
         <span>${escapeHtml(activeReasoningBlock.plan.wrapper.replace("_", " "))}</span>
         <i style="--reasoning-time:${feedback ? 100 : 0}%;"></i>
-        <span>${escapeHtml(`${limit}s`)}</span>
+        <span>${escapeHtml(limitLabel)}</span>
       </div>
       <div class="reasoning-options${item.answer_type === "true_false" ? " is-binary" : ""}">
         ${(item.options || []).map((option) => renderReasoningOptionButton(item, option)).join("")}
@@ -3826,7 +3832,7 @@ document.addEventListener("change", (event) => {
     } else if (reasoningField === "wrapper") {
       settings.wrapper = target.value === "mixed" || target.value === "nonsense" ? target.value : "real_world";
     } else if (reasoningField === "speed") {
-      settings.speed = target.value === "fast" ? "fast" : "normal";
+      settings.speed = target.value === "untimed" ? "untimed" : target.value === "fast" ? "fast" : "normal";
     } else if (reasoningField === "tier") {
       settings.tier = target.value === "auto" ? "auto" : clamp(Math.round(Number(target.value || 1)), 1, 5);
     } else if (reasoningField === "itemsPerBlock") {
