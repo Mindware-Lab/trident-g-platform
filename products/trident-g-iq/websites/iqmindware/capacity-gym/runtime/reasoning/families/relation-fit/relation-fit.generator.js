@@ -199,6 +199,12 @@ function relationForId(id) {
   return RELATIONS.find((relation) => relation.id === id || relation.canonicalRelation === id || relation.inverseRelation === id) || RELATIONS[0];
 }
 
+function relationForSequenceIndex(index = 0, formOffset = 0) {
+  const safeIndex = Math.abs(Math.trunc(Number(index) || 0));
+  const safeOffset = Math.abs(Math.trunc(Number(formOffset) || 0));
+  return RELATIONS[(safeIndex + safeOffset) % RELATIONS.length];
+}
+
 function relationBySemanticName(name) {
   return RELATIONS.find((relation) => relation.canonicalRelation === name || relation.inverseRelation === name) || null;
 }
@@ -770,9 +776,9 @@ function buildSlotAssignmentItem({ relation, wrapperType = "real_world", tier = 
   });
 }
 
-export function buildRelationFitItem({ wrapperType = "real_world", subtype = "same_relation", difficultyTier = 1, promptType = null, relationId = null, rng = Math.random, itemOffset = 0 } = {}) {
+export function buildRelationFitItem({ wrapperType = "real_world", subtype = "same_relation", difficultyTier = 1, promptType = null, relationId = null, rng = Math.random, itemOffset = 0, formOffset = 0 } = {}) {
   const tier = Math.max(1, Math.min(5, Math.round(Number(difficultyTier) || 1)));
-  const relation = relationId ? relationForId(relationId) : choice(RELATIONS, rng);
+  const relation = relationId ? relationForId(relationId) : relationForSequenceIndex(itemOffset, formOffset);
   const normalizedSubtype = normalizeRelationSubtype(subtype, tier);
   const type = promptType || (normalizedSubtype === "resolve_slots" ? slotPromptTypeFor(tier, itemOffset) : promptTypeFor(tier, normalizedSubtype, rng));
   if (normalizedSubtype === "same_relation") {
@@ -781,7 +787,7 @@ export function buildRelationFitItem({ wrapperType = "real_world", subtype = "sa
   return buildSlotAssignmentItem({ relation, wrapperType, tier, promptType: type, rng, itemOffset });
 }
 
-export function generateItems({ wrapperType = "real_world", subtype = "same_relation", difficultyTier = 1, count = 5, rng = Math.random, startIndex = 0 } = {}) {
+export function generateItems({ wrapperType = "real_world", subtype = "same_relation", difficultyTier = 1, count = 5, rng = Math.random, startIndex = 0, formOffset = 0 } = {}) {
   const tier = Math.max(1, Math.min(5, Math.round(Number(difficultyTier) || 1)));
   const normalizedSubtype = normalizeRelationSubtype(subtype, tier);
   return Array.from({ length: count }, (_, index) => buildRelationFitItem({
@@ -792,7 +798,8 @@ export function generateItems({ wrapperType = "real_world", subtype = "same_rela
       ? (tier <= 1 && index % 3 === 0 ? "same_relation_single" : "same_relation_multi")
       : slotPromptTypeFor(tier, startIndex + index),
     rng,
-    itemOffset: startIndex + index
+    itemOffset: startIndex + index,
+    formOffset
   }));
 }
 
@@ -847,17 +854,19 @@ export function generateAdaptiveBlock(state = {}, rng = Math.random) {
   const wrapperMode = state.wrapper_mode || plan.nextWrapperMode || "real_world";
   const tier = plan.nextTier;
   const subtype = normalizeRelationSubtype(state.focusSubtype || plan.focusSubtype, tier);
+  const formOffset = Math.floor(rng() * RELATIONS.length);
   const items = wrapperMode === "mixed"
     ? [
-      ...generateItems({ wrapperType: "real_world", subtype, difficultyTier: tier, count: 5, rng, startIndex: 0 }),
-      ...generateItems({ wrapperType: "nonsense", subtype, difficultyTier: tier, count: 5, rng, startIndex: 5 })
+      ...generateItems({ wrapperType: "real_world", subtype, difficultyTier: tier, count: 5, rng, startIndex: 0, formOffset }),
+      ...generateItems({ wrapperType: "nonsense", subtype, difficultyTier: tier, count: 5, rng, startIndex: 5, formOffset })
     ]
     : generateItems({
       wrapperType: wrapperMode,
       subtype,
       difficultyTier: tier,
       count: 10,
-      rng
+      rng,
+      formOffset
     });
   return { family: "relation_fit", plan, items };
 }

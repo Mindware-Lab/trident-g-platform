@@ -514,8 +514,14 @@ function sequenceForRelation(relation, wrapperType, count, rng) {
   if (wrapperType === "nonsense") {
     return generateEntitySet(count, rng).map((name, index) => makeEntity(name, index));
   }
-  const pool = choice(relation.pools, rng);
-  return pool.slice(0, count).map((name, index) => makeEntity(name, index));
+  const names = [...choice(relation.pools, rng)];
+  let index = 1;
+  while (names.length < count) {
+    const base = relation.relationNoun.split("/")[0].replace(/[^A-Za-z]+/g, "") || "Item";
+    names.push(`${base} ${index}`);
+    index += 1;
+  }
+  return names.slice(0, count).map((name, itemIndex) => makeEntity(name, itemIndex));
 }
 
 function buildOrderItem({ wrapperType, tier, promptType, rng, itemOffset }) {
@@ -603,12 +609,17 @@ function conditionalPack(wrapperType, rng) {
   };
 }
 
-function buildConditionalItem({ wrapperType, tier, promptType, rng, itemOffset }) {
+function buildConditionalItem({ wrapperType, tier, promptType, rng, itemOffset, formOffset = 0 }) {
   const pack = conditionalPack(wrapperType, rng);
   const rule = conditionalStatement(pack.from, pack.to, "item");
   const fact = memberStatement(pack.entity, pack.from);
   const premises = [rule, fact];
-  const displayPremises = tier === 1 ? [`${pack.entity.name} is ${pack.from.singular}, and ${pack.from.singular} items are ${pack.to.singular}.`] : null;
+  const tierOneDisplays = [
+    `${pack.entity.name} is ${pack.from.singular}. ${pack.from.singular} items are ${pack.to.singular}.`,
+    `Every ${pack.from.singular} item is ${pack.to.singular}. ${pack.entity.name} is ${pack.from.singular}.`,
+    `If an item is ${pack.from.singular}, it is ${pack.to.singular}. ${pack.entity.name} is ${pack.from.singular}.`
+  ];
+  const displayPremises = tier === 1 ? [tierOneDisplays[Math.floor((itemOffset + formOffset) / 3) % tierOneDisplays.length]] : null;
   const forced = memberStatement(pack.entity, pack.to);
   const equivalent = statement(`${pack.entity.name} remains ${pack.from.singular}.`, fact.semantic);
   const consistent = memberStatement(makeEntity(`${pack.entity.name} Prime`, 9), pack.from);
@@ -678,19 +689,21 @@ function buildSetExclusionItem({ wrapperType, tier, promptType, rng, itemOffset 
   });
 }
 
-function buildMustFollowItem({ wrapperType = "real_world", subtype = "choose_forced", difficultyTier = 1, rng = Math.random, itemOffset = 0 } = {}) {
-  const tier = Math.max(1, Math.min(5, Math.round(Number(difficultyTier) || 1)));
-  const promptType = promptTypeFor(tier, subtype, itemOffset);
-  const builders = tier >= 4
-    ? [buildOrderItem, buildSetInclusionItem, buildConditionalItem, buildSetExclusionItem]
-    : tier === 1
-      ? [buildConditionalItem]
-      : [buildOrderItem, buildSetInclusionItem, buildConditionalItem];
-  const builder = builders[itemOffset % builders.length];
-  return builder({ wrapperType, tier, promptType, rng, itemOffset });
+function mustFollowBuildersForTier(tier) {
+  const earlyBuilders = [buildConditionalItem, buildOrderItem, buildSetInclusionItem];
+  if (tier >= 4) return [...earlyBuilders, buildSetExclusionItem];
+  return earlyBuilders;
 }
 
-export function generateItems({ wrapperType = "real_world", subtype = "choose_forced", difficultyTier = 1, count = 5, rng = Math.random, startIndex = 0 } = {}) {
+function buildMustFollowItem({ wrapperType = "real_world", subtype = "choose_forced", difficultyTier = 1, rng = Math.random, itemOffset = 0, formOffset = 0 } = {}) {
+  const tier = Math.max(1, Math.min(5, Math.round(Number(difficultyTier) || 1)));
+  const promptType = promptTypeFor(tier, subtype, itemOffset);
+  const builders = mustFollowBuildersForTier(tier);
+  const builder = builders[(itemOffset + formOffset) % builders.length];
+  return builder({ wrapperType, tier, promptType, rng, itemOffset, formOffset });
+}
+
+export function generateItems({ wrapperType = "real_world", subtype = "choose_forced", difficultyTier = 1, count = 5, rng = Math.random, startIndex = 0, formOffset = 0 } = {}) {
   const rows = [];
   let attempts = 0;
   while (rows.length < count && attempts < count * 20) {
@@ -701,7 +714,8 @@ export function generateItems({ wrapperType = "real_world", subtype = "choose_fo
         subtype,
         difficultyTier,
         rng,
-        itemOffset: startIndex + rows.length
+        itemOffset: startIndex + rows.length,
+        formOffset
       }));
     } catch {
       // Regenerate malformed or ambiguous items before they reach the player.
@@ -745,11 +759,12 @@ export function generateAdaptiveBlock(state = {}, rng = Math.random) {
   const wrapperMode = state.wrapper_mode || plan.nextWrapperMode || "real_world";
   const tier = plan.nextTier;
   const subtype = normalizeSubtype(state.focusSubtype || plan.focusSubtype, tier);
+  const formOffset = Math.floor(rng() * 1000);
   const items = wrapperMode === "mixed"
     ? [
-      ...generateItems({ wrapperType: "real_world", subtype, difficultyTier: tier, count: 5, rng, startIndex: 0 }),
-      ...generateItems({ wrapperType: "nonsense", subtype, difficultyTier: tier, count: 5, rng, startIndex: 5 })
+      ...generateItems({ wrapperType: "real_world", subtype, difficultyTier: tier, count: 5, rng, startIndex: 0, formOffset }),
+      ...generateItems({ wrapperType: "nonsense", subtype, difficultyTier: tier, count: 5, rng, startIndex: 5, formOffset })
     ]
-    : generateItems({ wrapperType: wrapperMode, subtype, difficultyTier: tier, count: 10, rng });
+    : generateItems({ wrapperType: wrapperMode, subtype, difficultyTier: tier, count: 10, rng, formOffset });
   return { family: "must_follow", plan, items };
 }

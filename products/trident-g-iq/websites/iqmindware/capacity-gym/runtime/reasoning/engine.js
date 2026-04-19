@@ -753,26 +753,28 @@ function pickRealWorldItems(bank, plan, count, rng, blockId) {
   return shuffleWithRng(candidates, rng).slice(0, count).map((item, index) => prepareItem(item, rng, index, blockId));
 }
 
-function generateRelationFitItems(plan, count, rng, blockId, wrapperType, startIndex = 0) {
+function generateRelationFitItems(plan, count, rng, blockId, wrapperType, startIndex = 0, formOffset = 0) {
   const rows = relationFitGenerator.generateItems({
     wrapperType,
     subtype: normalizeReasoningSubtype("relation_fit", plan.subtype, plan.tier),
     difficultyTier: plan.tier,
     count,
     rng,
-    startIndex
+    startIndex,
+    formOffset
   });
   return rows.slice(0, count).map((item, index) => prepareItem(item, rng, startIndex + index, blockId));
 }
 
-function generateMustFollowItems(plan, count, rng, blockId, wrapperType, startIndex = 0) {
+function generateMustFollowItems(plan, count, rng, blockId, wrapperType, startIndex = 0, formOffset = 0) {
   const rows = mustFollowGenerator.generateItems({
     wrapperType,
     subtype: normalizeReasoningSubtype("must_follow", plan.subtype, plan.tier),
     difficultyTier: plan.tier,
     count,
     rng,
-    startIndex
+    startIndex,
+    formOffset
   });
   return rows.slice(0, count).map((item, index) => prepareItem(item, rng, startIndex + index, blockId));
 }
@@ -830,15 +832,16 @@ export async function buildReasoningBlock({ state, session = null, mode = "coach
   let items;
   if (family === "relation_fit" || family === "must_follow") {
     const generator = family === "relation_fit" ? generateRelationFitItems : generateMustFollowItems;
+    const formOffset = Math.floor(rng() * 1000);
     if (plan.wrapper === "mixed") {
       const realCount = Math.ceil(itemsPerBlock / 2);
       const nonsenseCount = itemsPerBlock - realCount;
       items = [
-        ...generator(plan, realCount, rng, blockId, "real_world", 0),
-        ...generator(plan, nonsenseCount, rng, blockId, "nonsense", realCount)
+        ...generator(plan, realCount, rng, blockId, "real_world", 0, formOffset),
+        ...generator(plan, nonsenseCount, rng, blockId, "nonsense", realCount, formOffset)
       ];
     } else {
-      items = generator(plan, itemsPerBlock, rng, blockId, plan.wrapper === "nonsense" ? "nonsense" : "real_world", 0);
+      items = generator(plan, itemsPerBlock, rng, blockId, plan.wrapper === "nonsense" ? "nonsense" : "real_world", 0, formOffset);
     }
   } else {
     const bank = await loadBank(family);
