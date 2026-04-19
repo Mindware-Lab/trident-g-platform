@@ -263,9 +263,16 @@ function statement(text, semantic) {
   };
 }
 
-function orderStatement(relation, lhs, rhs, { form = "direct", wrapperType = "real_world" } = {}) {
+function orderLexicon(wrapperType, rng = Math.random) {
+  if (wrapperType !== "nonsense") return null;
+  return { root: generatePropertyWord(rng) };
+}
+
+function orderStatement(relation, lhs, rhs, { form = "direct", wrapperType = "real_world", lexicon = null } = {}) {
   const inverse = form === "inverse";
-  const text = inverse ? relation.inverseText(lhs.name, rhs.name) : relation.directText(lhs.name, rhs.name);
+  const text = wrapperType === "nonsense" && lexicon
+    ? `${lhs.name} is ${inverse ? "less" : "more"} ${lexicon.root} than ${rhs.name}.`
+    : inverse ? relation.inverseText(lhs.name, rhs.name) : relation.directText(lhs.name, rhs.name);
   return statement(text, {
     relation: inverse ? relation.inverseRelation : relation.canonicalRelation,
     lhs: lhs.id,
@@ -274,10 +281,10 @@ function orderStatement(relation, lhs, rhs, { form = "direct", wrapperType = "re
   });
 }
 
-function equivalentOrderStatement(relation, lhs, rhs, { inverse = false, wrapperType = "real_world" } = {}) {
+function equivalentOrderStatement(relation, lhs, rhs, { inverse = false, wrapperType = "real_world", lexicon = null } = {}) {
   return inverse
-    ? orderStatement(relation, rhs, lhs, { form: "inverse", wrapperType })
-    : orderStatement(relation, lhs, rhs, { form: "direct", wrapperType });
+    ? orderStatement(relation, rhs, lhs, { form: "inverse", wrapperType, lexicon })
+    : orderStatement(relation, lhs, rhs, { form: "direct", wrapperType, lexicon });
 }
 
 function subsetStatement(lhs, rhs, variant = "all") {
@@ -547,20 +554,21 @@ function sequenceForRelation(relation, wrapperType, count, rng) {
 
 function buildOrderItem({ wrapperType, tier, promptType, rng, itemOffset }) {
   const relation = choice(ORDER_RELATIONS, rng);
+  const lexicon = orderLexicon(wrapperType, rng);
   const edgeCount = promptType === "select_forced" ? (tier >= 5 ? 4 : 3) : tier >= 3 ? 3 : 2;
   const length = edgeCount + 1;
   const values = sequenceForRelation(relation, wrapperType, length + 1, rng);
   const premises = Array.from({ length: edgeCount }, (_, index) => (
     index === 1 && tier >= 4
-      ? equivalentOrderStatement(relation, values[index], values[index + 1], { wrapperType, inverse: itemOffset % 2 === 1 })
-      : orderStatement(relation, values[index], values[index + 1], { wrapperType })
+      ? equivalentOrderStatement(relation, values[index], values[index + 1], { wrapperType, lexicon, inverse: itemOffset % 2 === 1 })
+      : orderStatement(relation, values[index], values[index + 1], { wrapperType, lexicon })
   ));
-  const forced = equivalentOrderStatement(relation, values[0], values[edgeCount], { wrapperType, inverse: itemOffset % 2 === 1 });
-  const forcedNear = equivalentOrderStatement(relation, values[0], values[2], { wrapperType, inverse: itemOffset % 2 === 0 });
-  const forcedSecond = equivalentOrderStatement(relation, values[1], values[Math.min(edgeCount, 3)], { wrapperType, inverse: itemOffset % 2 === 1 });
-  const forcedDeep = equivalentOrderStatement(relation, values[0], values[edgeCount - 1], { wrapperType, inverse: itemOffset % 2 === 1 });
-  const contradiction = orderStatement(relation, values[edgeCount], values[0], { wrapperType });
-  const consistent = orderStatement(relation, values[0], values[length], { wrapperType });
+  const forced = equivalentOrderStatement(relation, values[0], values[edgeCount], { wrapperType, lexicon, inverse: itemOffset % 2 === 1 });
+  const forcedNear = equivalentOrderStatement(relation, values[0], values[2], { wrapperType, lexicon, inverse: itemOffset % 2 === 0 });
+  const forcedSecond = equivalentOrderStatement(relation, values[1], values[Math.min(edgeCount, 3)], { wrapperType, lexicon, inverse: itemOffset % 2 === 1 });
+  const forcedDeep = equivalentOrderStatement(relation, values[0], values[edgeCount - 1], { wrapperType, lexicon, inverse: itemOffset % 2 === 1 });
+  const contradiction = orderStatement(relation, values[edgeCount], values[0], { wrapperType, lexicon });
+  const consistent = orderStatement(relation, values[0], values[length], { wrapperType, lexicon });
   const irrelevant = unrelatedStatement(values[0], values[length]);
   const candidates = promptType === "select_forced"
     ? tier >= 5
