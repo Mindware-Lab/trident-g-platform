@@ -2389,16 +2389,11 @@ function reasoningHudModel() {
     ? percent(activeReasoningBlock.outcomes.filter((outcome) => outcome.isCorrect).length / activeReasoningBlock.outcomes.length)
     : latest ? percent(latest.accuracy) : "--";
   const transfer = latest?.transferScore ? formatScorePercent(latest.transferScore.total) : "--";
-  const session = reasoningState.currentSession;
-  const blocksLeftValue = activeReasoningBlock
-    ? Math.max(0, Number(session?.plannedBlocks || 1) - Number(session?.blocksCompleted || 0))
-    : session ? Math.max(0, Number(session.plannedBlocks || 0) - Number(session.blocksCompleted || 0)) : 0;
   return {
     items: [
       ["Family", reasoningFamilyLabel(family)],
       ["Accuracy", accuracy],
-      ["Transfer", transfer],
-      ["Blocks", `${blocksLeftValue}`]
+      ["Transfer", transfer]
     ]
   };
 }
