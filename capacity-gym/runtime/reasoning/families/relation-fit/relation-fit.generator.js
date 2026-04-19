@@ -261,6 +261,17 @@ function relationLexicon(relation, wrapperType, rng = Math.random) {
   return { direct: choice(RELATION_ROOTS, rng), inverse: "less" };
 }
 
+function clampCoreStage(value) {
+  return Math.max(1, Math.min(5, Math.round(Number(value) || 1)));
+}
+
+function deriveRelationFitProgression(tier, wrapperType = "real_world") {
+  const coreStage = clampCoreStage(tier);
+  const wrapperStage = wrapperType === "nonsense" ? "nonsense" : "real_world";
+  const internalLevel = (coreStage - 1) * 2 + (wrapperStage === "real_world" ? 1 : 2);
+  return { coreStage, wrapperStage, internalLevel };
+}
+
 export function normalizeRelationStatement(statement) {
   const source = statement?.semantic || statement || {};
   const relation = relationBySemanticName(source.relation);
@@ -340,6 +351,74 @@ function restatedStatementFor(relation, lhs, rhs, context) {
   return { ...statement, text };
 }
 
+function relationWord(relation, lexicon, direct = true) {
+  if (relation.id === "right_left") return direct ? "right" : "left";
+  if (relation.id === "north_south") return direct ? "north" : "south";
+  if (relation.id === "contains_inside") return direct ? "inside" : "contains";
+  if (lexicon?.direct) return direct ? `${lexicon.direct}er` : `less ${lexicon.direct}`;
+  if (relation.id === "heavier_lighter") return direct ? "heavier" : "lighter";
+  if (relation.id === "older_younger") return direct ? "older" : "younger";
+  if (relation.id === "taller_shorter") return direct ? "taller" : "shorter";
+  if (relation.id === "before_after") return direct ? "earlier" : "later";
+  return direct ? "ahead" : "behind";
+}
+
+function paraphrasedStatementFor(relation, lhs, rhs, { wrapperType = "real_world", form = "direct", lexicon = null } = {}) {
+  const inverse = form === "inverse";
+  const statement = inverse
+    ? statementFor(relation, rhs, lhs, { wrapperType, form: "inverse", lexicon })
+    : statementFor(relation, lhs, rhs, { wrapperType, form: "direct", lexicon });
+  if (wrapperType === "nonsense") {
+    if (relation.id === "right_left" || relation.id === "north_south") {
+      const word = relationWord(relation, lexicon, !inverse);
+      return { ...statement, text: `${inverse ? rhs.name : lhs.name} holds the ${word} side of ${inverse ? lhs.name : rhs.name}.` };
+    }
+    if (relation.id === "contains_inside") {
+      return inverse
+        ? { ...statement, text: `${rhs.name} is held inside ${lhs.name}.` }
+        : { ...statement, text: `${rhs.name} sits inside ${lhs.name}.` };
+    }
+    const word = relationWord(relation, lexicon, !inverse);
+    return { ...statement, text: `${inverse ? rhs.name : lhs.name} ranks ${word} than ${inverse ? lhs.name : rhs.name}.` };
+  }
+  if (relation.id === "right_left") {
+    return inverse
+      ? { ...statement, text: `${rhs.name} sits left of ${lhs.name}.` }
+      : { ...statement, text: `${lhs.name} sits right of ${rhs.name}.` };
+  }
+  if (relation.id === "north_south") {
+    return inverse
+      ? { ...statement, text: `${rhs.name} lies south of ${lhs.name}.` }
+      : { ...statement, text: `${lhs.name} lies north of ${rhs.name}.` };
+  }
+  if (relation.id === "heavier_lighter") {
+    return inverse
+      ? { ...statement, text: `${rhs.name} weighs less than ${lhs.name}.` }
+      : { ...statement, text: `${lhs.name} outweighs ${rhs.name}.` };
+  }
+  if (relation.id === "older_younger") {
+    return inverse
+      ? { ...statement, text: `${rhs.name} is the younger of ${lhs.name} and ${rhs.name}.` }
+      : { ...statement, text: `${lhs.name} was born earlier than ${rhs.name}.` };
+  }
+  if (relation.id === "taller_shorter") {
+    return inverse
+      ? { ...statement, text: `${rhs.name} is the shorter of ${lhs.name} and ${rhs.name}.` }
+      : { ...statement, text: `${lhs.name} stands higher than ${rhs.name}.` };
+  }
+  if (relation.id === "before_after") {
+    return inverse
+      ? { ...statement, text: `${rhs.name} comes after ${lhs.name}.` }
+      : { ...statement, text: `${lhs.name} occurs earlier than ${rhs.name}.` };
+  }
+  if (relation.id === "contains_inside") {
+    return inverse
+      ? { ...statement, text: `${rhs.name} is held inside ${lhs.name}.` }
+      : { ...statement, text: `${rhs.name} is held inside ${lhs.name}.` };
+  }
+  return statement;
+}
+
 function equivalentStatement(relation, roleA, roleB, context) {
   return context.form === "inverse"
     ? statementFor(relation, roleB, roleA, { ...context, form: "inverse" })
@@ -367,6 +446,18 @@ function irrelevantStatement(relation, roleA, roleB, wrapperType, rng = Math.ran
     semantic: { relation: picked.relation, lhs: roleA.id, rhs: roleB.id, polarity: "positive" },
     canonical: { relation: picked.relation, lhs: roleA.id, rhs: roleB.id, polarity: "positive" }
   };
+}
+
+function closeRelationLureStatement(sourceRelation, wrapperType, rng = Math.random, form = "direct") {
+  const candidates = RELATIONS.filter((relation) => relation.id !== sourceRelation.id);
+  const relation = choice(candidates, rng);
+  const lexicon = relationLexicon(relation, wrapperType, rng);
+  const [lhs, rhs] = entityPairsFor(relation, wrapperType, 1, rng)[0];
+  return paraphrasedStatementFor(relation, lhs, rhs, { wrapperType, form, lexicon });
+}
+
+function contradictionParaphraseFor(relation, lhs, rhs, context) {
+  return contradictionStatement(relation, lhs, rhs, context);
 }
 
 function optionExplanation(label, statement, target, relation, promptType) {
@@ -465,7 +556,12 @@ function itemExplanation(options, promptType) {
 
 function complexityForTier(tier, promptType) {
   if (promptType === "same_relation_single") return { binding: 1, uncertainty: 1, control: 1 };
-  if (promptType === "same_relation_multi") return { binding: 1, uncertainty: 2, control: 2 };
+  if (promptType === "same_relation_multi") {
+    if (tier <= 2) return { binding: 1, uncertainty: 1, control: 2 };
+    if (tier === 3) return { binding: 1, uncertainty: 2, control: 2 };
+    if (tier === 4) return { binding: 2, uncertainty: 2, control: 3 };
+    return { binding: 2, uncertainty: 3, control: 3 };
+  }
   if (promptType === "choose_x" || promptType === "choose_y" || promptType === "choose_z") return { binding: Math.min(4, Math.max(2, tier)), uncertainty: tier >= 4 ? 3 : 2, control: tier >= 5 ? 4 : 3 };
   if (promptType === "choose_assignment") return { binding: 4, uncertainty: 4, control: 4 };
   return { binding: Math.min(4, tier), uncertainty: 4, control: 4 };
@@ -474,6 +570,7 @@ function complexityForTier(tier, promptType) {
 function baseItem({ relation, wrapperType, tier, promptType, subtype, premises, options, rng, itemOffset = 0, promptText = null, titleText = null, displayPremises = null, preFlightCheck = null }) {
   const withIds = assignIds(balanceOptionOrder(options, promptType, itemOffset, rng));
   const complexity = complexityForTier(tier, promptType);
+  const progression = deriveRelationFitProgression(tier, wrapperType);
   const prompt = promptText || promptCopy(promptType);
   const title = titleText || (promptType.startsWith("same_relation") ? "Relationship to match" : "Facts");
   return {
@@ -483,7 +580,10 @@ function baseItem({ relation, wrapperType, tier, promptType, subtype, premises, 
     prompt_type: promptType,
     semantic_v2: true,
     wrapper_type: wrapperType,
-    difficulty_tier: tier,
+    wrapper_stage: progression.wrapperStage,
+    core_stage: progression.coreStage,
+    internal_level: progression.internalLevel,
+    difficulty_tier: progression.coreStage,
     binding_load: complexity.binding,
     uncertainty_level: complexity.uncertainty,
     control_burden: complexity.control,
@@ -516,35 +616,56 @@ function buildSameRelationItem({ relation, wrapperType = "real_world", tier = 1,
   const pairs = entityPairsFor(relation, wrapperType, 3, rng);
   const [targetA, targetB] = pairs[0];
   const target = statementFor(relation, targetA, targetB, { wrapperType, form: "direct", lexicon });
-  const equivalentCount = promptType === "same_relation_single" ? 1 : (tier >= 2 && rng() < 0.5 ? 2 : 1);
-  const distractorLabels = equivalentCount === 1
-    ? ["contradiction", "contradiction", "irrelevant"]
-    : equivalentCount === 2
-      ? ["contradiction", "irrelevant"]
-      : ["contradiction"];
-  const labels = [
-    ...Array.from({ length: equivalentCount }, () => "equivalent"),
-    ...distractorLabels
-  ].slice(0, 4);
-  let equivalentIndex = 0;
-  const options = labels.map((label, index) => {
-    const form = index % 2 === 0 ? "inverse" : "direct";
-    if (label === "equivalent") {
-      const equivalentForm = equivalentIndex === 0 ? "inverse" : "direct";
-      equivalentIndex += 1;
-      const statement = equivalentForm === "inverse"
-        ? statementFor(relation, targetB, targetA, { wrapperType, form: "inverse", lexicon })
-        : restatedStatementFor(relation, targetA, targetB, { wrapperType, form: "direct", lexicon });
-      return makeOption(label, statement, target, relation, promptType);
-    }
-    if (label === "contradiction") {
-      const statement = form === "inverse"
-        ? statementFor(relation, targetA, targetB, { wrapperType, form: "inverse", lexicon })
-        : statementFor(relation, targetB, targetA, { wrapperType, form: "direct", lexicon });
-      return makeOption(label, statement, target, relation, promptType);
-    }
-    return makeOption(label, irrelevantStatement(relation, pairs[1][0], pairs[1][1], wrapperType, rng), target, relation, promptType);
-  });
+  const inverseEquivalent = () => makeOption("equivalent", statementFor(relation, targetB, targetA, { wrapperType, form: "inverse", lexicon }), target, relation, promptType);
+  const directParaphrase = () => makeOption("equivalent", paraphrasedStatementFor(relation, targetA, targetB, { wrapperType, form: "direct", lexicon }), target, relation, promptType);
+  const inverseParaphrase = () => makeOption("equivalent", paraphrasedStatementFor(relation, targetA, targetB, { wrapperType, form: "inverse", lexicon }), target, relation, promptType);
+  const directContradiction = () => makeOption("contradiction", contradictionStatement(relation, targetA, targetB, { wrapperType, form: "direct", lexicon }), target, relation, promptType);
+  const inverseContradiction = () => makeOption("contradiction", contradictionStatement(relation, targetA, targetB, { wrapperType, form: "inverse", lexicon }), target, relation, promptType);
+  const paraphraseContradiction = () => makeOption("contradiction", contradictionParaphraseFor(relation, targetA, targetB, { wrapperType, form: itemOffset % 2 === 0 ? "direct" : "inverse", lexicon }), target, relation, promptType);
+  const weakDistractor = () => makeOption("irrelevant", irrelevantStatement(relation, pairs[1][0], pairs[1][1], wrapperType, rng), target, relation, promptType);
+  const closeLure = (form = "direct") => makeOption("irrelevant", closeRelationLureStatement(relation, wrapperType, rng, form), target, relation, promptType);
+  let options;
+  if (tier <= 1) {
+    promptType = "same_relation_single";
+    options = [
+      inverseEquivalent(),
+      directContradiction(),
+      inverseContradiction(),
+      weakDistractor()
+    ];
+  } else if (tier === 2) {
+    promptType = "same_relation_multi";
+    options = [
+      directParaphrase(),
+      inverseEquivalent(),
+      directContradiction(),
+      weakDistractor()
+    ];
+  } else if (tier === 3) {
+    promptType = "same_relation_multi";
+    options = [
+      directParaphrase(),
+      inverseParaphrase(),
+      paraphraseContradiction(),
+      closeLure(itemOffset % 2 === 0 ? "direct" : "inverse")
+    ];
+  } else if (tier === 4) {
+    promptType = "same_relation_multi";
+    options = [
+      directParaphrase(),
+      inverseParaphrase(),
+      closeLure("direct"),
+      closeLure("inverse")
+    ];
+  } else {
+    promptType = "same_relation_multi";
+    options = [
+      directParaphrase(),
+      inverseParaphrase(),
+      paraphraseContradiction(),
+      closeLure(itemOffset % 2 === 0 ? "inverse" : "direct")
+    ];
+  }
   return baseItem({
     relation,
     wrapperType,
@@ -880,7 +1001,7 @@ function buildSlotAssignmentItem({ relation, wrapperType = "real_world", tier = 
 }
 
 export function buildRelationFitItem({ wrapperType = "real_world", subtype = "same_relation", difficultyTier = 1, promptType = null, relationId = null, rng = Math.random, itemOffset = 0, formOffset = 0 } = {}) {
-  const tier = Math.max(1, Math.min(5, Math.round(Number(difficultyTier) || 1)));
+  const tier = clampCoreStage(difficultyTier);
   const relation = relationId ? relationForId(relationId) : relationForSequenceIndex(itemOffset, formOffset);
   const normalizedSubtype = normalizeRelationSubtype(subtype, tier);
   const type = promptType || (normalizedSubtype === "resolve_slots" ? slotPromptTypeFor(tier, itemOffset) : promptTypeFor(tier, normalizedSubtype, rng));
@@ -891,14 +1012,14 @@ export function buildRelationFitItem({ wrapperType = "real_world", subtype = "sa
 }
 
 export function generateItems({ wrapperType = "real_world", subtype = "same_relation", difficultyTier = 1, count = 5, rng = Math.random, startIndex = 0, formOffset = 0 } = {}) {
-  const tier = Math.max(1, Math.min(5, Math.round(Number(difficultyTier) || 1)));
+  const tier = clampCoreStage(difficultyTier);
   const normalizedSubtype = normalizeRelationSubtype(subtype, tier);
   return Array.from({ length: count }, (_, index) => buildRelationFitItem({
     wrapperType,
     subtype: normalizedSubtype,
     difficultyTier: tier,
     promptType: normalizedSubtype === "same_relation"
-      ? (tier <= 1 && index % 3 === 0 ? "same_relation_single" : "same_relation_multi")
+      ? (tier <= 1 ? "same_relation_single" : "same_relation_multi")
       : slotPromptTypeFor(tier, startIndex + index),
     rng,
     itemOffset: startIndex + index,

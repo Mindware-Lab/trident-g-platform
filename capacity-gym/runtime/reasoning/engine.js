@@ -1,6 +1,6 @@
 import { createSeededRng, reasoningSeed, shuffleWithRng } from "./random.js";
-import * as relationFitGenerator from "./families/relation-fit/relation-fit.generator.js?v=20260419-feedbacksimple";
-import * as mustFollowGenerator from "./families/must-follow/must-follow.generator.js?v=20260419-feedbacksimple";
+import * as relationFitGenerator from "./families/relation-fit/relation-fit.generator.js?v=20260419-samerel5diff";
+import * as mustFollowGenerator from "./families/must-follow/must-follow.generator.js?v=20260419-samerel5diff";
 
 export const REASONING_VERSION = 1;
 export const REASONING_STORAGE_KEY = "tg_iq_live_reasoning_v1";
@@ -174,6 +174,13 @@ function numeric(value, fallback = 0) {
 
 function clampTier(value) {
   return clamp(Math.round(numeric(value, 1)), 1, 5);
+}
+
+export function deriveReasoningProgression(difficulty, wrapperStage = "real_world") {
+  const coreStage = clampTier(difficulty);
+  const normalizedWrapper = wrapperStage === "nonsense" ? "nonsense" : "real_world";
+  const internalLevel = (coreStage - 1) * 2 + (normalizedWrapper === "real_world" ? 1 : 2);
+  return { coreStage, wrapperStage: normalizedWrapper, internalLevel };
 }
 
 function normalizeFamilyId(value) {
@@ -738,12 +745,48 @@ function normalizeAnswerIds(item, rng) {
   return { ...item, options, correct_answer: mappedCorrect };
 }
 
-function prepareItem(item, rng, index, blockId) {
+function itemProgressionFields(item, plan = null) {
+  const wrapperStage = item?.wrapper_stage === "nonsense" || item?.wrapper_type === "nonsense"
+    ? "nonsense"
+    : "real_world";
+  const coreStage = clampTier(item?.core_stage ?? item?.difficulty_tier ?? plan?.tier ?? 1);
+  const progression = deriveReasoningProgression(coreStage, wrapperStage);
+  return {
+    wrapper_type: item?.wrapper_type || progression.wrapperStage,
+    wrapper_stage: item?.wrapper_stage || progression.wrapperStage,
+    core_stage: item?.core_stage || progression.coreStage,
+    internal_level: item?.internal_level || progression.internalLevel,
+    difficulty_tier: progression.coreStage
+  };
+}
+
+function planProgressionFields(plan) {
+  const real = deriveReasoningProgression(plan.tier, "real_world");
+  const nonsense = deriveReasoningProgression(plan.tier, "nonsense");
+  if (plan.wrapper === "mixed") {
+    return {
+      core_stage: real.coreStage,
+      wrapper_stage: "mixed",
+      internal_levels: [real.internalLevel, nonsense.internalLevel]
+    };
+  }
+  const progression = plan.wrapper === "nonsense" ? nonsense : real;
+  return {
+    core_stage: progression.coreStage,
+    wrapper_stage: progression.wrapperStage,
+    internal_level: progression.internalLevel,
+    internal_levels: [progression.internalLevel]
+  };
+}
+
+function prepareItem(item, rng, index, blockId, plan = null) {
   const publicFields = publicReasoningFields(item);
   const corrected = normalizeRelationFitCorrectAnswers(item);
+  const progression = itemProgressionFields(corrected, plan);
   const normalized = normalizeAnswerIds({ ...corrected, ...publicFields }, rng);
   return {
     ...normalized,
+    ...progression,
     runtime_id: `${blockId}_item_${index + 1}`,
     item_index: index
   };
@@ -756,7 +799,7 @@ function pickRealWorldItems(bank, plan, count, rng, blockId) {
   const exact = pool.filter((item) => Number(item.difficulty_tier) === plan.tier);
   const near = pool.filter((item) => Math.abs(Number(item.difficulty_tier || 1) - plan.tier) <= 1);
   const candidates = exact.length >= count ? exact : near.length >= count ? near : pool;
-  return shuffleWithRng(candidates, rng).slice(0, count).map((item, index) => prepareItem(item, rng, index, blockId));
+  return shuffleWithRng(candidates, rng).slice(0, count).map((item, index) => prepareItem({ ...item, wrapper_type: "real_world" }, rng, index, blockId, plan));
 }
 
 function generateRelationFitItems(plan, count, rng, blockId, wrapperType, startIndex = 0, formOffset = 0) {
@@ -769,7 +812,7 @@ function generateRelationFitItems(plan, count, rng, blockId, wrapperType, startI
     startIndex,
     formOffset
   });
-  return rows.slice(0, count).map((item, index) => prepareItem(item, rng, startIndex + index, blockId));
+  return rows.slice(0, count).map((item, index) => prepareItem(item, rng, startIndex + index, blockId, plan));
 }
 
 function generateMustFollowItems(plan, count, rng, blockId, wrapperType, startIndex = 0, formOffset = 0) {
@@ -782,7 +825,7 @@ function generateMustFollowItems(plan, count, rng, blockId, wrapperType, startIn
     startIndex,
     formOffset
   });
-  return rows.slice(0, count).map((item, index) => prepareItem(item, rng, startIndex + index, blockId));
+  return rows.slice(0, count).map((item, index) => prepareItem(item, rng, startIndex + index, blockId, plan));
 }
 
 function generateNonsenseItems(plan, count, rng, blockId) {
@@ -803,7 +846,7 @@ function generateNonsenseItems(plan, count, rng, blockId) {
     recent_wrapper_cost: 0
   }, rng);
   const rows = generated.items.filter((item) => !item.placeholder);
-  return rows.slice(0, count).map((item, index) => prepareItem(item, rng, index, blockId));
+  return rows.slice(0, count).map((item, index) => prepareItem(item, rng, index, blockId, plan));
 }
 
 export async function buildReasoningBlock({ state, session = null, mode = "coach", manualSettings = null, blockIndex = 0 } = {}) {
@@ -811,7 +854,7 @@ export async function buildReasoningBlock({ state, session = null, mode = "coach
   const familyState = normalizeFamilyState(family, state.familyState?.[family]);
   const routeClass = session?.routeClass || (mode === "manual" ? "manual" : "core");
   const support = routeClass === "support" || routeClass === "recovery_light";
-  const plan = support
+  let plan = support
     ? {
       family,
       tier: 1,
@@ -821,6 +864,14 @@ export async function buildReasoningBlock({ state, session = null, mode = "coach
       priorDecision: "HOLD"
     }
     : selectReasoningPlanForFamily(family, familyState, mode === "manual" ? manualSettings : {});
+  if (mode === "manual") {
+    plan = {
+      ...plan,
+      tier: clampTier(manualSettings?.tier === "auto" ? 1 : manualSettings?.tier),
+      wrapper: "mixed"
+    };
+  }
+  plan = { ...plan, ...planProgressionFields(plan) };
   const itemsPerBlock = mode === "manual"
     ? normalizeItemsPerBlock(manualSettings?.itemsPerBlock)
     : Math.max(1, Math.round(numeric(session?.itemsPerBlock, REASONING_CORE_ITEMS)));
@@ -872,7 +923,7 @@ export async function buildReasoningBlock({ state, session = null, mode = "coach
     blockIndex,
     plan,
     seed,
-    seedParts: { sessionId: session?.id || null, blockIndex, family, tier: plan.tier, wrapper: plan.wrapper, speed: plan.speed },
+    seedParts: { sessionId: session?.id || null, blockIndex, family, tier: plan.tier, wrapper: plan.wrapper, speed: plan.speed, core_stage: plan.core_stage, wrapper_stage: plan.wrapper_stage, internal_levels: plan.internal_levels },
     items,
     startedAt: Date.now()
   };
@@ -910,6 +961,9 @@ export function scoreReasoningResponse(item, selectedIds = [], elapsedMs = null,
     subtype: item.subtype,
     wrapper_type: item.wrapper_type,
     answer_type: item.answer_type,
+    core_stage: item.core_stage,
+    wrapper_stage: item.wrapper_stage,
+    internal_level: item.internal_level,
     selected: [...selectedSet],
     correct: [...correctSet],
     isCorrect,
@@ -1014,6 +1068,10 @@ export function summarizeReasoningBlock(block, outcomesInput = []) {
     familyLabel: reasoningFamilyLabel(block.plan.family),
     subtype: block.plan.subtype,
     wrapper: block.plan.wrapper,
+    core_stage: block.plan.core_stage,
+    wrapper_stage: block.plan.wrapper_stage,
+    internal_level: block.plan.internal_level || null,
+    internal_levels: block.plan.internal_levels || [],
     speed: block.plan.speed,
     tier: block.plan.tier,
     blockIndex: block.blockIndex,

@@ -6,7 +6,7 @@ import {
   displayHubTargetLabel,
   isHubMatchAtIndex,
   summarizeHubBlock
-} from "./runtime/hub-engine.js?v=20260419-feedbacksimple";
+} from "./runtime/hub-engine.js?v=20260419-samerel5diff";
 import {
   initAudio,
   playSfx,
@@ -41,7 +41,7 @@ import {
   scoreReasoningResponse,
   summarizeReasoningBlock,
   updateReasoningFamilyState
-} from "./runtime/reasoning/engine.js?v=20260419-feedbacksimple";
+} from "./runtime/reasoning/engine.js?v=20260419-samerel5diff";
 
 const STORAGE_KEY = "tg_iq_live_capacity_v2";
 const ECONOMY_KEY = "tg_iq_live_economy_v1";
@@ -2901,6 +2901,7 @@ function renderReasoningTrainingPanel() {
   const selectedSubtype = settings.subtype !== "auto" && familyMeta.subtypes[settings.subtype]
     ? settings.subtype
     : familyMeta.defaultSubtype;
+  const selectedDifficulty = settings.tier === "auto" ? 1 : settings.tier;
   const settingsLocked = anyGameplayActive() || viewState.reasoningBusy;
   const settingsLockAttr = settingsLocked ? "disabled" : "";
   return `
@@ -2930,22 +2931,15 @@ function renderReasoningTrainingPanel() {
             </select>
           </div>
           <div class="field">
-            <label>Wrapper</label>
-            <select data-reasoning-field="wrapper" ${settingsLockAttr}>
-              ${["real_world", "mixed", "nonsense"].map((value) => `<option value="${value}" ${settings.wrapper === value ? "selected" : ""}>${escapeHtml(value.replace("_", " "))}</option>`).join("")}
-            </select>
-          </div>
-          <div class="field">
             <label>Speed</label>
             <select data-reasoning-field="speed" ${settingsLockAttr}>
               ${["untimed", "normal", "fast"].map((value) => `<option value="${value}" ${settings.speed === value ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
             </select>
           </div>
           <div class="field">
-            <label>Tier</label>
+            <label>Difficulty</label>
             <select data-reasoning-field="tier" ${settingsLockAttr}>
-              <option value="auto" ${settings.tier === "auto" ? "selected" : ""}>Auto</option>
-              ${[1, 2, 3, 4, 5].map((tier) => `<option value="${tier}" ${settings.tier === tier ? "selected" : ""}>${tier}</option>`).join("")}
+              ${[1, 2, 3, 4, 5].map((tier) => `<option value="${tier}" ${selectedDifficulty === tier ? "selected" : ""}>${tier}</option>`).join("")}
             </select>
           </div>
           <div class="field">
@@ -3004,6 +2998,7 @@ function renderReasoningItemCard() {
   const prompt = item.prompt_text || item.query || "Choose the best answer.";
   const hint = item.hint_text || item.helper_text || "";
   const feedbackStatus = outcome?.isCorrect ? "Correct" : "Incorrect";
+  const wrapperLabel = String(item.wrapper_stage || item.wrapper_type || activeReasoningBlock.plan.wrapper || "real_world").replace("_", " ");
   return `
     <div class="reasoning-item-card">
       <div class="reasoning-item-topline">
@@ -3021,7 +3016,7 @@ function renderReasoningItemCard() {
       <div class="reasoning-query">${escapeHtml(prompt)}</div>
       ${hint ? `<div class="reasoning-hint">${escapeHtml(hint)}</div>` : ""}
       <div class="reasoning-timer-strip">
-        <span>${escapeHtml(activeReasoningBlock.plan.wrapper.replace("_", " "))}</span>
+        <span>${escapeHtml(wrapperLabel)}</span>
         <i style="--reasoning-time:${feedback ? 100 : 0}%;"></i>
         <span>${escapeHtml(limitLabel)}</span>
       </div>
@@ -3563,6 +3558,9 @@ document.addEventListener("click", (event) => {
       if (reasoningState.settings.subtype === "auto" || !familyMeta.subtypes[reasoningState.settings.subtype]) {
         reasoningState.settings.subtype = familyMeta.defaultSubtype;
       }
+      if (reasoningState.settings.tier === "auto") {
+        reasoningState.settings.tier = 1;
+      }
     }
     reasoningState.currentSession = null;
     saveReasoningState();
@@ -3754,12 +3752,10 @@ document.addEventListener("change", (event) => {
       settings.subtype = familyMeta.subtypes[target.value] && target.value !== "auto"
         ? target.value
         : familyMeta.defaultSubtype;
-    } else if (reasoningField === "wrapper") {
-      settings.wrapper = target.value === "mixed" || target.value === "nonsense" ? target.value : "real_world";
     } else if (reasoningField === "speed") {
       settings.speed = target.value === "untimed" ? "untimed" : target.value === "fast" ? "fast" : "normal";
     } else if (reasoningField === "tier") {
-      settings.tier = target.value === "auto" ? "auto" : clamp(Math.round(Number(target.value || 1)), 1, 5);
+      settings.tier = clamp(Math.round(Number(target.value || 1)), 1, 5);
     } else if (reasoningField === "itemsPerBlock") {
       const count = Math.round(Number(target.value || 5));
       settings.itemsPerBlock = REASONING_MANUAL_ITEM_OPTIONS.includes(count) ? count : 5;
