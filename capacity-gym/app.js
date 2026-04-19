@@ -1481,7 +1481,8 @@ function toggleReasoningOption(optionId) {
   const item = currentReasoningItem();
   if (!item || activeReasoningBlock?.status !== "question") return;
   if (item.answer_type !== "multi_select") {
-    submitReasoningAnswer({ selectedIds: [optionId] });
+    activeReasoningBlock.selectedIds = [optionId];
+    render();
     return;
   }
   const selected = new Set(activeReasoningBlock.selectedIds || []);
@@ -3095,8 +3096,8 @@ function renderReasoningItemCard() {
       <div class="reasoning-options${item.answer_type === "true_false" ? " is-binary" : ""}">
         ${(item.options || []).map((option) => renderReasoningOptionButton(item, option)).join("")}
       </div>
-      ${item.answer_type === "multi_select" && activeReasoningBlock.status === "question" ? `
-        <button class="btn btn-primary reasoning-submit" type="button" data-action="reasoning-submit">Submit</button>
+      ${activeReasoningBlock.status === "question" ? `
+        <button class="btn btn-primary reasoning-submit" type="button" data-action="reasoning-submit">Submit Answer</button>
       ` : ""}
       ${feedback ? `
         <div class="coach-callout reasoning-feedback-tip" role="status" aria-live="polite">
