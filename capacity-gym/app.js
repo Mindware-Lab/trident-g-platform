@@ -3026,15 +3026,12 @@ function renderReasoningItemCard() {
   if (!item || !activeReasoningBlock) return "";
   const outcome = activeReasoningBlock.lastOutcome;
   const feedback = activeReasoningBlock.status === "feedback";
-  const limitMs = itemTimeLimitMs(item, activeReasoningBlock.plan.speed);
-  const limitLabel = Number.isFinite(limitMs) ? `${Math.round(limitMs / 1000)}s` : "UNTIMED";
   const title = item.title_text || item.display_label || reasoningFamilyLabel(item.family);
   const ruleText = item.rule_text || item.display_rule || "";
   const premises = Array.isArray(item.display_premises) ? item.display_premises : (item.premises || []);
   const prompt = item.prompt_text || item.query || "Choose the best answer.";
   const hint = item.hint_text || item.helper_text || "";
   const feedbackStatus = outcome?.isCorrect ? "Correct" : "Incorrect";
-  const wrapperLabel = String(item.wrapper_stage || item.wrapper_type || activeReasoningBlock.plan.wrapper || "real_world").replace("_", " ");
   return `
     <div class="reasoning-item-card">
       <div class="reasoning-item-topline">
@@ -3051,11 +3048,6 @@ function renderReasoningItemCard() {
       </div>` : ""}
       <div class="reasoning-query">${escapeHtml(prompt)}</div>
       ${hint ? `<div class="reasoning-hint">${escapeHtml(hint)}</div>` : ""}
-      <div class="reasoning-timer-strip">
-        <span>${escapeHtml(wrapperLabel)}</span>
-        <i style="--reasoning-time:${feedback ? 100 : 0}%;"></i>
-        <span>${escapeHtml(limitLabel)}</span>
-      </div>
       <div class="reasoning-options${item.answer_type === "true_false" ? " is-binary" : ""}">
         ${(item.options || []).map((option) => renderReasoningOptionButton(item, option)).join("")}
       </div>

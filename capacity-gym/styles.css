@@ -1456,26 +1456,6 @@ button {
   line-height: 1.3;
 }
 
-.reasoning-timer-strip {
-  display: grid;
-  grid-template-columns: auto minmax(80px, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-  color: var(--module-accent);
-  font-family: "Chakra Petch", sans-serif;
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.reasoning-timer-strip i {
-  height: 7px;
-  border: 1px solid rgba(84, 162, 255, 0.28);
-  background:
-    linear-gradient(90deg, var(--module-accent), var(--transfer)) 0 / var(--reasoning-time, 0%) 100% no-repeat,
-    rgba(7, 13, 24, 0.86);
-}
-
 .reasoning-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
