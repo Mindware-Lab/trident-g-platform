@@ -2874,11 +2874,6 @@ function renderReasoningTrainingPanel() {
   const selectedSubtype = settings.subtype !== "auto" && familyMeta.subtypes[settings.subtype]
     ? settings.subtype
     : familyMeta.defaultSubtype;
-  const speedNote = settings.speed === "untimed"
-    ? "No time limit"
-    : settings.speed === "fast"
-      ? "Efficiency mode"
-      : "Normal reasoning pace";
   return `
     <section class="panel reasoning-training-panel">
       <div class="training-title-row">
@@ -2916,7 +2911,6 @@ function renderReasoningTrainingPanel() {
             <select data-reasoning-field="speed">
               ${["untimed", "normal", "fast"].map((value) => `<option value="${value}" ${settings.speed === value ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
             </select>
-            <p class="small muted reasoning-speed-note">${escapeHtml(speedNote)}</p>
           </div>
           <div class="field">
             <label>Tier</label>
