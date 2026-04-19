@@ -3147,7 +3147,7 @@ function renderZoneCheckPanel() {
       ${renderZoneCheckGraphic(snapshot)}
       <div class="zone-pulse-action-row">
         ${contract
-          ? coachContractPrimaryActionMarkup(contract, { disabled: controlsDisabled })
+          ? `<button class="btn btn-primary zone-pulse-launch" type="button" data-action="toggle-zone-help" ${controlsDisabled ? "disabled" : ""}>Trident G Zones Info</button>`
           : `<button class="btn btn-primary zone-pulse-launch" type="button" data-action="show-zone-pulse" ${controlsDisabled ? "disabled" : ""}>Test your zone</button>`}
         <button class="zone-pulse-help-btn" type="button" data-action="toggle-zone-help" aria-label="Open Zone Check help" title="Open Zone Check help">
           <img src="${ZONE_HELP_ICON_URL}" alt="" aria-hidden="true">
@@ -3251,6 +3251,10 @@ function renderZoneHelpModal() {
         <div class="mode-help-section zone-help-section">
           <h3>Zone route</h3>
           <p>It assigns your current route: Flat, In Zone, Spun Out, or Locked In. Being In Zone helps training transfer beyond the game into real cognitive capacity.</p>
+        </div>
+        <div class="mode-help-section zone-help-section">
+          <h3>Trident graphic</h3>
+          <p>The centre path is In Zone. The left node is Flat, so the coach gives a reduced core route. The upper branch is Locked In, so the coach gives lower-demand reset/control work. The lower branch is Spun Out, so the coach gives stabilising work before heavier training.</p>
         </div>
         <div class="mode-help-section zone-help-section">
           <h3>Training signal</h3>
@@ -3583,11 +3587,11 @@ function renderReasoningRightStrip() {
             <div class="coin">
               <img class="coin-icon" src="./assets/coins/g-plasticity-cell.png?v=20260417-coin2" alt="" loading="lazy">
               <strong>${economy.walletG} g</strong>
-              <span class="coin-label">reasoning credit</span>
+              <span class="coin-label">brain cell credit</span>
             </div>
             <div class="coin iq">
               <img class="coin-icon" src="./assets/coins/iq-credit.png?v=20260417-coin2" alt="" loading="lazy">
-              <strong>${(economy.walletG / 100).toFixed(2)}</strong>
+              <strong>${(economy.walletG / 100).toFixed(2)} IQ</strong>
               <span class="coin-label">IQ point credit</span>
             </div>
           </div>
