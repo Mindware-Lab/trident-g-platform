@@ -261,6 +261,14 @@ function relationLexicon(relation, wrapperType, rng = Math.random) {
   return { direct: choice(RELATION_ROOTS, rng), inverse: "less" };
 }
 
+function relationNeighbourhood(relation) {
+  if (relation.id === "right_left" || relation.id === "north_south") return "spatial_direction";
+  if (relation.id === "before_after" || relation.id === "older_younger") return "temporal_order";
+  if (relation.id === "heavier_lighter" || relation.id === "taller_shorter") return "magnitude_comparison";
+  if (relation.id === "contains_inside") return "containment";
+  return relation.id || relation.canonicalRelation || "relation";
+}
+
 function clampCoreStage(value) {
   return Math.max(1, Math.min(5, Math.round(Number(value) || 1)));
 }
@@ -330,7 +338,18 @@ function statementFor(relation, lhs, rhs, { wrapperType = "real_world", form = "
       lhs: lhs.id,
       rhs: rhs.id,
       polarity: "positive"
-    })
+    }),
+    relation_id: relation.id,
+    relation_neighbourhood: relationNeighbourhood(relation),
+    surface_form: inverse ? "simple_converse" : "near_copy",
+    structural_plausible: true
+  };
+}
+
+function withStatementMeta(statement, meta = {}) {
+  return {
+    ...statement,
+    ...meta
   };
 }
 
@@ -348,7 +367,7 @@ function restatedStatementFor(relation, lhs, rhs, context) {
   } else if (text.includes(" is ")) {
     text = text.replace(" is ", " remains ");
   }
-  return { ...statement, text };
+  return withStatementMeta(statement, { text, surface_form: "near_copy" });
 }
 
 function relationWord(relation, lexicon, direct = true) {
@@ -371,52 +390,108 @@ function paraphrasedStatementFor(relation, lhs, rhs, { wrapperType = "real_world
   if (wrapperType === "nonsense") {
     if (relation.id === "right_left" || relation.id === "north_south") {
       const word = relationWord(relation, lexicon, !inverse);
-      return { ...statement, text: `${inverse ? rhs.name : lhs.name} holds the ${word} side of ${inverse ? lhs.name : rhs.name}.` };
+      return withStatementMeta(statement, { text: `${inverse ? rhs.name : lhs.name} holds the ${word} side of ${inverse ? lhs.name : rhs.name}.`, surface_form: "moderate_paraphrase" });
     }
     if (relation.id === "contains_inside") {
       return inverse
-        ? { ...statement, text: `${rhs.name} is held inside ${lhs.name}.` }
-        : { ...statement, text: `${rhs.name} sits inside ${lhs.name}.` };
+        ? withStatementMeta(statement, { text: `${rhs.name} is held inside ${lhs.name}.`, surface_form: "moderate_paraphrase" })
+        : withStatementMeta(statement, { text: `${lhs.name} holds ${rhs.name} within it.`, surface_form: "moderate_paraphrase" });
     }
     const word = relationWord(relation, lexicon, !inverse);
-    return { ...statement, text: `${inverse ? rhs.name : lhs.name} ranks ${word} than ${inverse ? lhs.name : rhs.name}.` };
+    return withStatementMeta(statement, { text: `${inverse ? rhs.name : lhs.name} ranks ${word} than ${inverse ? lhs.name : rhs.name}.`, surface_form: "moderate_paraphrase" });
   }
   if (relation.id === "right_left") {
     return inverse
-      ? { ...statement, text: `${rhs.name} sits left of ${lhs.name}.` }
-      : { ...statement, text: `${lhs.name} sits right of ${rhs.name}.` };
+      ? withStatementMeta(statement, { text: `${rhs.name} sits left of ${lhs.name}.`, surface_form: "moderate_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} sits right of ${rhs.name}.`, surface_form: "moderate_paraphrase" });
   }
   if (relation.id === "north_south") {
     return inverse
-      ? { ...statement, text: `${rhs.name} lies south of ${lhs.name}.` }
-      : { ...statement, text: `${lhs.name} lies north of ${rhs.name}.` };
+      ? withStatementMeta(statement, { text: `${rhs.name} lies south of ${lhs.name}.`, surface_form: "moderate_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} lies north of ${rhs.name}.`, surface_form: "moderate_paraphrase" });
   }
   if (relation.id === "heavier_lighter") {
     return inverse
-      ? { ...statement, text: `${rhs.name} weighs less than ${lhs.name}.` }
-      : { ...statement, text: `${lhs.name} outweighs ${rhs.name}.` };
+      ? withStatementMeta(statement, { text: `${rhs.name} weighs less than ${lhs.name}.`, surface_form: "moderate_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} outweighs ${rhs.name}.`, surface_form: "moderate_paraphrase" });
   }
   if (relation.id === "older_younger") {
     return inverse
-      ? { ...statement, text: `${rhs.name} is the younger of ${lhs.name} and ${rhs.name}.` }
-      : { ...statement, text: `${lhs.name} was born earlier than ${rhs.name}.` };
+      ? withStatementMeta(statement, { text: `${rhs.name} is the younger of ${lhs.name} and ${rhs.name}.`, surface_form: "moderate_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} was born earlier than ${rhs.name}.`, surface_form: "moderate_paraphrase" });
   }
   if (relation.id === "taller_shorter") {
     return inverse
-      ? { ...statement, text: `${rhs.name} is the shorter of ${lhs.name} and ${rhs.name}.` }
-      : { ...statement, text: `${lhs.name} stands higher than ${rhs.name}.` };
+      ? withStatementMeta(statement, { text: `${rhs.name} is the shorter of ${lhs.name} and ${rhs.name}.`, surface_form: "moderate_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} stands higher than ${rhs.name}.`, surface_form: "moderate_paraphrase" });
   }
   if (relation.id === "before_after") {
     return inverse
-      ? { ...statement, text: `${rhs.name} comes after ${lhs.name}.` }
-      : { ...statement, text: `${lhs.name} occurs earlier than ${rhs.name}.` };
+      ? withStatementMeta(statement, { text: `${rhs.name} comes after ${lhs.name}.`, surface_form: "moderate_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} occurs earlier than ${rhs.name}.`, surface_form: "moderate_paraphrase" });
   }
   if (relation.id === "contains_inside") {
     return inverse
-      ? { ...statement, text: `${rhs.name} is held inside ${lhs.name}.` }
-      : { ...statement, text: `${rhs.name} is held inside ${lhs.name}.` };
+      ? withStatementMeta(statement, { text: `${rhs.name} is held inside ${lhs.name}.`, surface_form: "moderate_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} holds ${rhs.name} within it.`, surface_form: "moderate_paraphrase" });
   }
   return statement;
+}
+
+function strongParaphrasedStatementFor(relation, lhs, rhs, { wrapperType = "real_world", form = "direct", lexicon = null } = {}) {
+  const inverse = form === "inverse";
+  const statement = inverse
+    ? statementFor(relation, rhs, lhs, { wrapperType, form: "inverse", lexicon })
+    : statementFor(relation, lhs, rhs, { wrapperType, form: "direct", lexicon });
+  if (wrapperType === "nonsense") {
+    if (relation.id === "right_left" || relation.id === "north_south") {
+      const word = relationWord(relation, lexicon, !inverse);
+      return withStatementMeta(statement, { text: `${inverse ? rhs.name : lhs.name} occupies the ${word}-side role relative to ${inverse ? lhs.name : rhs.name}.`, surface_form: "strong_paraphrase" });
+    }
+    if (relation.id === "contains_inside") {
+      return inverse
+        ? withStatementMeta(statement, { text: `${rhs.name} takes the inner role with respect to ${lhs.name}.`, surface_form: "strong_paraphrase" })
+        : withStatementMeta(statement, { text: `${lhs.name} takes the outer role with respect to ${rhs.name}.`, surface_form: "strong_paraphrase" });
+    }
+    const word = relationWord(relation, lexicon, !inverse);
+    return withStatementMeta(statement, { text: `${inverse ? rhs.name : lhs.name} has the ${word} role in the pair with ${inverse ? lhs.name : rhs.name}.`, surface_form: "strong_paraphrase" });
+  }
+  if (relation.id === "right_left") {
+    return inverse
+      ? withStatementMeta(statement, { text: `${rhs.name} occupies the left-hand position relative to ${lhs.name}.`, surface_form: "strong_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} occupies the right-hand position relative to ${rhs.name}.`, surface_form: "strong_paraphrase" });
+  }
+  if (relation.id === "north_south") {
+    return inverse
+      ? withStatementMeta(statement, { text: `${rhs.name} is the southern point relative to ${lhs.name}.`, surface_form: "strong_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} is the northern point relative to ${rhs.name}.`, surface_form: "strong_paraphrase" });
+  }
+  if (relation.id === "heavier_lighter") {
+    return inverse
+      ? withStatementMeta(statement, { text: `${rhs.name} has the lower weight in the pair with ${lhs.name}.`, surface_form: "strong_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} has the greater weight in the pair with ${rhs.name}.`, surface_form: "strong_paraphrase" });
+  }
+  if (relation.id === "older_younger") {
+    return inverse
+      ? withStatementMeta(statement, { text: `${rhs.name} is the younger member of the pair with ${lhs.name}.`, surface_form: "strong_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} is the elder member of the pair with ${rhs.name}.`, surface_form: "strong_paraphrase" });
+  }
+  if (relation.id === "taller_shorter") {
+    return inverse
+      ? withStatementMeta(statement, { text: `${rhs.name} has the lower height in the pair with ${lhs.name}.`, surface_form: "strong_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} has the greater height in the pair with ${rhs.name}.`, surface_form: "strong_paraphrase" });
+  }
+  if (relation.id === "before_after") {
+    return inverse
+      ? withStatementMeta(statement, { text: `${rhs.name} is later in sequence than ${lhs.name}.`, surface_form: "strong_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} is scheduled earlier than ${rhs.name}.`, surface_form: "strong_paraphrase" });
+  }
+  if (relation.id === "contains_inside") {
+    return inverse
+      ? withStatementMeta(statement, { text: `${rhs.name} is enclosed by ${lhs.name}.`, surface_form: "strong_paraphrase" })
+      : withStatementMeta(statement, { text: `${lhs.name} is the outer container for ${rhs.name}.`, surface_form: "strong_paraphrase" });
+  }
+  return withStatementMeta(statement, { surface_form: "strong_paraphrase" });
 }
 
 function equivalentStatement(relation, roleA, roleB, context) {
@@ -437,14 +512,22 @@ function irrelevantStatement(relation, roleA, roleB, wrapperType, rng = Math.ran
     return {
       text: `${roleA.name} is ${root} marked like ${roleB.name}.`,
       semantic: { relation: "irrelevant_mark", lhs: roleA.id, rhs: roleB.id, polarity: "positive" },
-      canonical: { relation: "irrelevant_mark", lhs: roleA.id, rhs: roleB.id, polarity: "positive" }
+      canonical: { relation: "irrelevant_mark", lhs: roleA.id, rhs: roleB.id, polarity: "positive" },
+      relation_id: "irrelevant_mark",
+      relation_neighbourhood: "weak_irrelevant",
+      surface_form: "weak_irrelevant",
+      structural_plausible: false
     };
   }
   const picked = choice(IRRELEVANT_RELATIONS, rng);
   return {
     text: picked.text(roleA.name, roleB.name),
     semantic: { relation: picked.relation, lhs: roleA.id, rhs: roleB.id, polarity: "positive" },
-    canonical: { relation: picked.relation, lhs: roleA.id, rhs: roleB.id, polarity: "positive" }
+    canonical: { relation: picked.relation, lhs: roleA.id, rhs: roleB.id, polarity: "positive" },
+    relation_id: picked.relation,
+    relation_neighbourhood: "weak_irrelevant",
+    surface_form: "weak_irrelevant",
+    structural_plausible: false
   };
 }
 
@@ -453,11 +536,36 @@ function closeRelationLureStatement(sourceRelation, wrapperType, rng = Math.rand
   const relation = choice(candidates, rng);
   const lexicon = relationLexicon(relation, wrapperType, rng);
   const [lhs, rhs] = entityPairsFor(relation, wrapperType, 1, rng)[0];
-  return paraphrasedStatementFor(relation, lhs, rhs, { wrapperType, form, lexicon });
+  return withStatementMeta(
+    paraphrasedStatementFor(relation, lhs, rhs, { wrapperType, form, lexicon }),
+    { surface_form: "off_family_lure" }
+  );
+}
+
+function sameNeighbourhoodLureStatement(sourceRelation, wrapperType, rng = Math.random, form = "direct") {
+  const targetNeighbourhood = relationNeighbourhood(sourceRelation);
+  const candidates = RELATIONS.filter((relation) => relation.id !== sourceRelation.id && relationNeighbourhood(relation) === targetNeighbourhood);
+  const relation = candidates.length ? choice(candidates, rng) : sourceRelation;
+  const lexicon = relationLexicon(relation, wrapperType, rng);
+  const [lhs, rhs] = candidates.length
+    ? entityPairsFor(relation, wrapperType, 1, rng)[0]
+    : entityPairsFor(sourceRelation, wrapperType, 2, rng)[1];
+  const statement = candidates.length
+    ? paraphrasedStatementFor(relation, lhs, rhs, { wrapperType, form, lexicon })
+    : contradictionStatement(sourceRelation, lhs, rhs, { wrapperType, form, lexicon });
+  return withStatementMeta(statement, {
+    relation_neighbourhood: targetNeighbourhood,
+    surface_form: candidates.length ? "same_neighbourhood_lure" : "close_family_reversal",
+    structural_plausible: true
+  });
 }
 
 function contradictionParaphraseFor(relation, lhs, rhs, context) {
-  return contradictionStatement(relation, lhs, rhs, context);
+  return withStatementMeta(contradictionStatement(relation, lhs, rhs, context), {
+    relation_neighbourhood: relationNeighbourhood(relation),
+    surface_form: "close_family_reversal",
+    structural_plausible: true
+  });
 }
 
 function optionExplanation(label, statement, target, relation, promptType) {
@@ -480,7 +588,54 @@ function makeOption(label, statement, target, relation, promptType, id = null) {
     text: statement.text,
     semantic_label: label,
     semantic: statement.canonical,
+    relation_id: statement.relation_id || relation.id,
+    relation_neighbourhood: statement.relation_neighbourhood || relationNeighbourhood(relation),
+    surface_form: statement.surface_form || "unspecified",
+    structural_plausible: statement.structural_plausible !== false,
     explanation: optionExplanation(label, statement, target, relation, promptType)
+  };
+}
+
+function weakDistractorText(text) {
+  return /\bsame colou?r\b|\bsame route\b|\bsame group\b|\bmarked like\b/i.test(String(text || ""));
+}
+
+function preFlightSameRelationItem({ relation, tier, options }) {
+  const targetNeighbourhood = relationNeighbourhood(relation);
+  const correct = options.filter((option) => option.semantic_label === "equivalent");
+  const wrong = options.filter((option) => option.semantic_label !== "equivalent");
+  const weakCount = options.filter((option) => weakDistractorText(option.text) || option.structural_plausible === false).length;
+  const sameNeighbourhoodCount = options.filter((option) => option.relation_neighbourhood === targetNeighbourhood).length;
+  const offFamilyWrongCount = wrong.filter((option) => option.relation_neighbourhood !== targetNeighbourhood).length;
+  const nearCopyCorrectCount = correct.filter((option) => option.surface_form === "near_copy").length;
+  const simpleConverseCorrectCount = correct.filter((option) => option.surface_form === "simple_converse").length;
+  const surfaceEchoCorrectCount = correct.filter((option) => option.surface_form === "near_copy" || option.surface_form === "simple_converse").length;
+  const structurallyPlausibleCount = options.filter((option) => option.structural_plausible !== false && !weakDistractorText(option.text)).length;
+  const hasCloseWrong = wrong.some((option) => option.surface_form === "close_family_reversal" || option.surface_form === "same_neighbourhood_lure");
+  const difficulty4Valid = tier !== 4 || (
+    sameNeighbourhoodCount >= 3
+    && weakCount === 0
+    && offFamilyWrongCount < 2
+    && hasCloseWrong
+  );
+  const difficulty5Valid = tier !== 5 || (
+    weakCount === 0
+    && !(nearCopyCorrectCount >= 1 && simpleConverseCorrectCount >= 1)
+    && surfaceEchoCorrectCount < 2
+    && structurallyPlausibleCount >= 3
+    && sameNeighbourhoodCount >= 3
+  );
+  return {
+    target_neighbourhood: targetNeighbourhood,
+    same_neighbourhood_option_count: sameNeighbourhoodCount,
+    weak_distractor_count: weakCount,
+    off_family_wrong_count: offFamilyWrongCount,
+    near_copy_correct_count: nearCopyCorrectCount,
+    simple_converse_correct_count: simpleConverseCorrectCount,
+    surface_echo_correct_count: surfaceEchoCorrectCount,
+    structurally_plausible_count: structurallyPlausibleCount,
+    has_close_family_wrong: hasCloseWrong,
+    valid: difficulty4Valid && difficulty5Valid
   };
 }
 
@@ -619,11 +774,14 @@ function buildSameRelationItem({ relation, wrapperType = "real_world", tier = 1,
   const inverseEquivalent = () => makeOption("equivalent", statementFor(relation, targetB, targetA, { wrapperType, form: "inverse", lexicon }), target, relation, promptType);
   const directParaphrase = () => makeOption("equivalent", paraphrasedStatementFor(relation, targetA, targetB, { wrapperType, form: "direct", lexicon }), target, relation, promptType);
   const inverseParaphrase = () => makeOption("equivalent", paraphrasedStatementFor(relation, targetA, targetB, { wrapperType, form: "inverse", lexicon }), target, relation, promptType);
+  const strongDirectParaphrase = () => makeOption("equivalent", strongParaphrasedStatementFor(relation, targetA, targetB, { wrapperType, form: "direct", lexicon }), target, relation, promptType);
+  const strongInverseParaphrase = () => makeOption("equivalent", strongParaphrasedStatementFor(relation, targetA, targetB, { wrapperType, form: "inverse", lexicon }), target, relation, promptType);
   const directContradiction = () => makeOption("contradiction", contradictionStatement(relation, targetA, targetB, { wrapperType, form: "direct", lexicon }), target, relation, promptType);
   const inverseContradiction = () => makeOption("contradiction", contradictionStatement(relation, targetA, targetB, { wrapperType, form: "inverse", lexicon }), target, relation, promptType);
   const paraphraseContradiction = () => makeOption("contradiction", contradictionParaphraseFor(relation, targetA, targetB, { wrapperType, form: itemOffset % 2 === 0 ? "direct" : "inverse", lexicon }), target, relation, promptType);
   const weakDistractor = () => makeOption("irrelevant", irrelevantStatement(relation, pairs[1][0], pairs[1][1], wrapperType, rng), target, relation, promptType);
   const closeLure = (form = "direct") => makeOption("irrelevant", closeRelationLureStatement(relation, wrapperType, rng, form), target, relation, promptType);
+  const neighbourhoodLure = (form = "direct") => makeOption("irrelevant", sameNeighbourhoodLureStatement(relation, wrapperType, rng, form), target, relation, promptType);
   let options;
   if (tier <= 1) {
     promptType = "same_relation_single";
@@ -654,17 +812,21 @@ function buildSameRelationItem({ relation, wrapperType = "real_world", tier = 1,
     options = [
       directParaphrase(),
       inverseParaphrase(),
-      closeLure("direct"),
-      closeLure("inverse")
+      paraphraseContradiction(),
+      neighbourhoodLure(itemOffset % 2 === 0 ? "direct" : "inverse")
     ];
   } else {
     promptType = "same_relation_multi";
     options = [
-      directParaphrase(),
-      inverseParaphrase(),
+      strongDirectParaphrase(),
+      strongInverseParaphrase(),
       paraphraseContradiction(),
-      closeLure(itemOffset % 2 === 0 ? "inverse" : "direct")
+      neighbourhoodLure(itemOffset % 2 === 0 ? "inverse" : "direct")
     ];
+  }
+  const preFlight = preFlightSameRelationItem({ relation, tier, options });
+  if (!preFlight.valid) {
+    throw new Error(`Relation Fit same_relation pre-flight failed: ${JSON.stringify(preFlight)}`);
   }
   return baseItem({
     relation,
@@ -675,7 +837,8 @@ function buildSameRelationItem({ relation, wrapperType = "real_world", tier = 1,
     premises: [target],
     options,
     rng,
-    itemOffset
+    itemOffset,
+    preFlightCheck: preFlight
   });
 }
 
