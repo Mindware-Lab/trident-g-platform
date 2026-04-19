@@ -2868,7 +2868,6 @@ function renderReasoningTrainingPanel() {
   const settings = reasoningState.settings;
   const familyKeys = Object.keys(REASONING_FAMILIES);
   const familyMeta = REASONING_FAMILIES[settings.family] || REASONING_FAMILIES.relation_fit;
-  const familyState = reasoningState.familyState[settings.family] || {};
   const fastNote = settings.speed === "fast" ? "Efficiency mode" : "Normal reasoning pace";
   return `
     <section class="panel reasoning-training-panel">
@@ -2881,11 +2880,6 @@ function renderReasoningTrainingPanel() {
           <button class="chip-btn${settings.mode === "coach" ? " is-active" : ""}" type="button" data-action="set-reasoning-mode" data-mode="coach">Coach-led</button>
           <button class="chip-btn${settings.mode === "manual" ? " is-active" : ""}" type="button" data-action="set-reasoning-mode" data-mode="manual">Manual</button>
         </div>
-      </div>
-      <div class="reasoning-focus-card">
-        <span class="mini-label">Current Focus</span>
-        <strong>${escapeHtml(reasoningFamilyLabel(settings.mode === "coach" ? reasoningFamilyForCoreSession(nextReasoningSessionNumber(reasoningState)) : settings.family))}</strong>
-        <p>Tier ${escapeHtml(String(familyState.current_tier || 1))} / ${escapeHtml(familyState.wrapper_mode || "real_world")} / ${escapeHtml(familyState.speed_mode || "normal")}</p>
       </div>
       ${settings.mode === "manual" ? `
         <div class="manual-suite reasoning-suite">

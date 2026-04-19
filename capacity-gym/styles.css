@@ -1319,7 +1319,6 @@ button {
   gap: 9px;
 }
 
-.reasoning-focus-card,
 .reasoning-intro-card,
 .reasoning-item-card,
 .reasoning-summary-card {
@@ -1337,13 +1336,6 @@ button {
     0 0 28px rgba(84, 162, 255, 0.14);
 }
 
-.reasoning-focus-card {
-  width: 100%;
-  padding: 9px;
-  gap: 4px;
-}
-
-.reasoning-focus-card strong,
 .reasoning-intro-card h2,
 .reasoning-summary-card h2 {
   margin: 0;
@@ -1355,7 +1347,6 @@ button {
   text-shadow: 0 0 14px rgba(84, 162, 255, 0.38);
 }
 
-.reasoning-focus-card p,
 .reasoning-intro-card p {
   margin: 0;
   color: #dce8ff;
