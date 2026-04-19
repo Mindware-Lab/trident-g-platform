@@ -616,6 +616,82 @@ function roleStatementFor(relation, slots, index, { wrapperType, lexicon, invers
     : statementFor(relation, slots[index], slots[index + 1], { wrapperType, form: "direct", lexicon });
 }
 
+function adjacentClueFor(relation, values, index, { wrapperType, lexicon, inverse = false } = {}) {
+  return {
+    ...roleStatementFor(relation, values, index, { wrapperType, lexicon, inverse }),
+    clue_kind: "adjacent",
+    clue_edge_index: index,
+    clue_form: inverse ? "inverse" : "direct"
+  };
+}
+
+function endpointClueFor(relation, values, endIndex, { wrapperType, lexicon, inverse = false } = {}) {
+  const statement = inverse
+    ? statementFor(relation, values[endIndex], values[0], { wrapperType, form: "inverse", lexicon })
+    : statementFor(relation, values[0], values[endIndex], { wrapperType, form: "direct", lexicon });
+  return {
+    ...statement,
+    clue_kind: "span",
+    clue_edge_index: `0_${endIndex}`,
+    clue_form: inverse ? "inverse" : "direct"
+  };
+}
+
+function shuffleClues(clues, rng = Math.random) {
+  const copy = clues.map((clue) => ({ ...clue }));
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(rng() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+  return copy;
+}
+
+function displayedAdjacentEdgeOrder(clues) {
+  return clues
+    .filter((clue) => clue.clue_kind === "adjacent")
+    .map((clue) => clue.clue_edge_index);
+}
+
+function isAdjacentOrderShuffled(clues) {
+  const edgeOrder = displayedAdjacentEdgeOrder(clues);
+  return edgeOrder.some((edgeIndex, displayIndex) => edgeIndex !== displayIndex);
+}
+
+function surfaceOrderMirrorsRolePattern(clues, slotCount) {
+  const edgeOrder = displayedAdjacentEdgeOrder(clues);
+  if (edgeOrder.length < slotCount - 1) return false;
+  return edgeOrder.every((edgeIndex, displayIndex) => edgeIndex === displayIndex)
+    && clues.filter((clue) => clue.clue_kind === "adjacent").every((clue) => clue.clue_form === "direct");
+}
+
+function nonMirroringClueOrder(clues, slotCount, rng = Math.random) {
+  let shuffled = shuffleClues(clues, rng);
+  if (slotCount > 2 && !isAdjacentOrderShuffled(shuffled)) {
+    const adjacent = shuffled.filter((clue) => clue.clue_kind === "adjacent").reverse();
+    const span = shuffled.filter((clue) => clue.clue_kind !== "adjacent");
+    shuffled = [...adjacent, ...span];
+  }
+  if (surfaceOrderMirrorsRolePattern(shuffled, slotCount)) {
+    return [...shuffled].reverse();
+  }
+  return shuffled;
+}
+
+function clueEntityIds(clue) {
+  const semantic = clue?.semantic || {};
+  return [semantic.lhs, semantic.rhs].filter(Boolean);
+}
+
+function entityOccurrenceCounts(clues, candidates) {
+  const counts = new Map(candidates.map((entity) => [entity.id, 0]));
+  clues.forEach((clue) => {
+    clueEntityIds(clue).forEach((id) => {
+      if (counts.has(id)) counts.set(id, counts.get(id) + 1);
+    });
+  });
+  return counts;
+}
+
 function roleForIndex(index) {
   return ["X", "Y", "Z", "W"][index] || `Role ${index + 1}`;
 }
@@ -678,13 +754,43 @@ export function solveSlotMapping({ rolePattern = [], clues = [], slots = [], can
   return solutions;
 }
 
-function preFlightCheckSlotPuzzle({ rolePattern, clues, slots, values }) {
+function preFlightCheckSlotPuzzle({ rolePattern, clues, slots, values, askIndex = 0, tier = 3 }) {
   const candidates = values.slice(0, slots.length);
   const solutions = solveSlotMapping({ rolePattern, clues, slots, candidates });
+  const counts = entityOccurrenceCounts(clues, candidates);
+  const targetEntity = candidates[askIndex];
+  const targetOccurrences = counts.get(targetEntity?.id) || 0;
+  const sameOccurrenceCount = Array.from(counts.values()).filter((count) => count === targetOccurrences).length;
+  const hasConverseClue = clues.some((clue) => clue.clue_form === "inverse");
+  const hasShuffledClueOrder = isAdjacentOrderShuffled(clues);
+  const hasSpanClue = clues.some((clue) => clue.clue_kind === "span");
+  const mirrorsRoleOrder = surfaceOrderMirrorsRolePattern(clues, slots.length);
+  const targetIsUniqueRepeatedSurfaceItem = targetOccurrences > 1 && sameOccurrenceCount === 1;
+  const plausibleDistractorCount = Math.max(0, candidates.length - 1);
+  const antiTrivialityFeatureCount = [
+    hasConverseClue,
+    hasShuffledClueOrder,
+    hasSpanClue,
+    !targetIsUniqueRepeatedSurfaceItem && !mirrorsRoleOrder
+  ].filter(Boolean).length;
+  const requiredFeatureCount = tier <= 1 ? 1 : 2;
   return {
     unique_solution: solutions.length === 1,
     solution_count: solutions.length,
-    solution: solutions[0]?.assignment || null
+    solution: solutions[0]?.assignment || null,
+    no_exact_surface_order_mirroring: !mirrorsRoleOrder,
+    no_trivial_positional_solve: !mirrorsRoleOrder && !targetIsUniqueRepeatedSurfaceItem,
+    not_all_clues_same_direction_as_role_pattern: hasConverseClue,
+    minimum_distractor_quality: plausibleDistractorCount >= 2,
+    form_variation: hasConverseClue,
+    anti_triviality_feature_count: antiTrivialityFeatureCount,
+    required_anti_triviality_features: requiredFeatureCount,
+    valid: solutions.length === 1
+      && !mirrorsRoleOrder
+      && !targetIsUniqueRepeatedSurfaceItem
+      && hasConverseClue
+      && plausibleDistractorCount >= 2
+      && antiTrivialityFeatureCount >= requiredFeatureCount
   };
 }
 
@@ -711,15 +817,21 @@ function buildSlotAssignmentItem({ relation, wrapperType = "real_world", tier = 
   const slots = Array.from({ length: slotCount }, (_, index) => makeEntity(`slot_${roleForIndex(index).toLowerCase()}`, roleForIndex(index)));
   const values = entitySequenceFor(relation, wrapperType, slotCount + 1, rng);
   const rolePattern = Array.from({ length: slotCount - 1 }, (_, index) => roleStatementFor(relation, slots, index, { wrapperType, lexicon, inverse: false }));
-  const clues = Array.from({ length: slotCount - 1 }, (_, index) => {
-    const useInverse = tier >= 4 && (itemOffset + index) % 2 === 1;
-    return roleStatementFor(relation, values, index, { wrapperType, lexicon, inverse: useInverse });
-  });
-  const preFlight = preFlightCheckSlotPuzzle({ rolePattern, clues, slots, values });
-  if (!preFlight.unique_solution) {
-    throw new Error(`Relation Fit resolve_slots pre-flight failed: ${preFlight.solution_count} solutions`);
-  }
   const askIndex = slotIndexForPrompt(promptType, itemOffset, slotCount);
+  const inverseEdgeIndex = Math.abs(itemOffset) % Math.max(1, slotCount - 1);
+  const clues = nonMirroringClueOrder([
+    ...Array.from({ length: slotCount - 1 }, (_, index) => {
+      const useInverse = index === inverseEdgeIndex || (tier >= 4 && (itemOffset + index) % 3 === 1);
+      return adjacentClueFor(relation, values, index, { wrapperType, lexicon, inverse: useInverse });
+    }),
+    ...(slotCount === 3 && askIndex === 1
+      ? [endpointClueFor(relation, values, 2, { wrapperType, lexicon, inverse: (itemOffset + tier) % 2 === 0 })]
+      : [])
+  ], slotCount, rng);
+  const preFlight = preFlightCheckSlotPuzzle({ rolePattern, clues, slots, values, askIndex, tier });
+  if (!preFlight.valid) {
+    throw new Error(`Relation Fit resolve_slots pre-flight failed: ${JSON.stringify(preFlight)}`);
+  }
   const slotName = roleForIndex(askIndex);
   const correctEntity = values[askIndex];
   const wrongValues = values
@@ -732,11 +844,11 @@ function buildSlotAssignmentItem({ relation, wrapperType = "real_world", tier = 
       makeAssignmentOption("forced", assignmentRowsFor(slots, values), `This assignment fits every clue: ${clueSummary}.`),
       makeAssignmentOption("contradiction", swappedAssignmentRows(slots, values, 0, 1), "This swaps two nearby slots, so at least one clue points the wrong way."),
       makeAssignmentOption("contradiction", swappedAssignmentRows(slots, values, Math.max(0, slotCount - 2), slotCount - 1), "This changes the end of the chain, so it breaks the final clue."),
-      makeAssignmentOption("irrelevant", assignmentRowsFor(slots, [...values.slice(1, slotCount), values[slotCount]]), "This uses an item that is not fixed by the slot clues.")
+      makeAssignmentOption("contradiction", swappedAssignmentRows(slots, values, 0, slotCount - 1), "This reverses the endpoints, so the chain no longer fits the clues.")
     ]
     : [
     makeRoleOption("forced", correctEntity, slotName, slotName, roleExplanationFromClues(slotName, correctEntity, clueSummary) || roleExplanation(slotName, askIndex, values.slice(0, slotCount), correctEntity)),
-    ...wrongValues.slice(0, slotCount >= 4 ? 3 : 2).map((row) => makeRoleOption(
+    ...wrongValues.map((row) => makeRoleOption(
       "contradiction",
       row.entity,
       slotName,
@@ -744,15 +856,6 @@ function buildSlotAssignmentItem({ relation, wrapperType = "real_world", tier = 
       wrongRoleExplanation(slotName, roleForIndex(row.index), row.entity)
     ))
   ];
-  if (options.length < 4) {
-    options.push(makeRoleOption(
-      "irrelevant",
-      values[slotCount],
-      slotName,
-      "no role",
-      `${values[slotCount].name} is not named in the clues, so it cannot be ${slotName}.`
-    ));
-  }
   const displayPremises = [
     "Role pattern:",
     ...rolePattern.map((premise) => premise.text),
