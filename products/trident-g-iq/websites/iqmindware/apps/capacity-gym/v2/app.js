@@ -6,7 +6,7 @@ import {
   displayHubTargetLabel,
   isHubMatchAtIndex,
   summarizeHubBlock
-} from "./runtime/hub-engine.js?v=20260419-resolveslots";
+} from "./runtime/hub-engine.js?v=20260419-locksettings";
 import {
   initAudio,
   playSfx,
@@ -41,7 +41,7 @@ import {
   scoreReasoningResponse,
   summarizeReasoningBlock,
   updateReasoningFamilyState
-} from "./runtime/reasoning/engine.js?v=20260419-resolveslots";
+} from "./runtime/reasoning/engine.js?v=20260419-locksettings";
 
 const STORAGE_KEY = "tg_iq_live_capacity_v2";
 const ECONOMY_KEY = "tg_iq_live_economy_v1";
@@ -2874,6 +2874,8 @@ function renderReasoningTrainingPanel() {
   const selectedSubtype = settings.subtype !== "auto" && familyMeta.subtypes[settings.subtype]
     ? settings.subtype
     : familyMeta.defaultSubtype;
+  const settingsLocked = anyGameplayActive() || viewState.reasoningBusy;
+  const settingsLockAttr = settingsLocked ? "disabled" : "";
   return `
     <section class="panel reasoning-training-panel">
       <div class="training-title-row">
@@ -2882,46 +2884,46 @@ function renderReasoningTrainingPanel() {
       <p class="small muted training-prompt">SELECT COACH LED OR MANUAL</p>
       <div class="mode-help-layout">
         <div class="mode-buttons">
-          <button class="chip-btn${settings.mode === "coach" ? " is-active" : ""}" type="button" data-action="set-reasoning-mode" data-mode="coach">Coach-led</button>
-          <button class="chip-btn${settings.mode === "manual" ? " is-active" : ""}" type="button" data-action="set-reasoning-mode" data-mode="manual">Manual</button>
+          <button class="chip-btn${settings.mode === "coach" ? " is-active" : ""}" type="button" data-action="set-reasoning-mode" data-mode="coach" ${settingsLockAttr}>Coach-led</button>
+          <button class="chip-btn${settings.mode === "manual" ? " is-active" : ""}" type="button" data-action="set-reasoning-mode" data-mode="manual" ${settingsLockAttr}>Manual</button>
         </div>
       </div>
       ${settings.mode === "manual" ? `
-        <div class="manual-suite reasoning-suite">
+        <div class="manual-suite reasoning-suite${settingsLocked ? " is-locked" : ""}">
           <div class="field">
             <label>Family</label>
-            <select data-reasoning-field="family">
+            <select data-reasoning-field="family" ${settingsLockAttr}>
               ${familyKeys.map((familyId) => `<option value="${familyId}" ${settings.family === familyId ? "selected" : ""}>${escapeHtml(REASONING_FAMILIES[familyId].label)}</option>`).join("")}
             </select>
           </div>
           <div class="field">
             <label>Subgame</label>
-            <select data-reasoning-field="subtype">
+            <select data-reasoning-field="subtype" ${settingsLockAttr}>
               ${subtypeEntries.map(([value, label]) => `<option value="${value}" ${selectedSubtype === value ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}
             </select>
           </div>
           <div class="field">
             <label>Wrapper</label>
-            <select data-reasoning-field="wrapper">
+            <select data-reasoning-field="wrapper" ${settingsLockAttr}>
               ${["real_world", "mixed", "nonsense"].map((value) => `<option value="${value}" ${settings.wrapper === value ? "selected" : ""}>${escapeHtml(value.replace("_", " "))}</option>`).join("")}
             </select>
           </div>
           <div class="field">
             <label>Speed</label>
-            <select data-reasoning-field="speed">
+            <select data-reasoning-field="speed" ${settingsLockAttr}>
               ${["untimed", "normal", "fast"].map((value) => `<option value="${value}" ${settings.speed === value ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
             </select>
           </div>
           <div class="field">
             <label>Tier</label>
-            <select data-reasoning-field="tier">
+            <select data-reasoning-field="tier" ${settingsLockAttr}>
               <option value="auto" ${settings.tier === "auto" ? "selected" : ""}>Auto</option>
               ${[1, 2, 3, 4, 5].map((tier) => `<option value="${tier}" ${settings.tier === tier ? "selected" : ""}>${tier}</option>`).join("")}
             </select>
           </div>
           <div class="field">
             <label>Items</label>
-            <select data-reasoning-field="itemsPerBlock">
+            <select data-reasoning-field="itemsPerBlock" ${settingsLockAttr}>
               ${REASONING_MANUAL_ITEM_OPTIONS.map((count) => `<option value="${count}" ${settings.itemsPerBlock === count ? "selected" : ""}>${count}</option>`).join("")}
             </select>
           </div>

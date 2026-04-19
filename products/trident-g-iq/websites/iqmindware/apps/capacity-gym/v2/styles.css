@@ -714,6 +714,19 @@ button {
   white-space: nowrap;
 }
 
+.field select:disabled,
+.field input:disabled,
+.manual-suite.is-locked {
+  opacity: 0.48;
+}
+
+.field select:disabled,
+.field input:disabled {
+  cursor: default;
+  border-color: rgba(255, 255, 255, 0.05);
+  color: rgba(238, 246, 255, 0.55);
+}
+
 .notice {
   padding: 7px;
   border: 1px solid rgba(245, 181, 68, 0.18);
