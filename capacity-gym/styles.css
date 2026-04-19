@@ -258,7 +258,7 @@ button {
 .play-card {
   position: relative;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   background: var(--card);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.03),
@@ -1207,6 +1207,73 @@ button {
   text-shadow: 0 0 12px color-mix(in srgb, var(--hud-accent) 46%, transparent);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.coach-session-bar {
+  --session-progress: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 26px;
+  padding: 4px 12px;
+  border-bottom: 1px solid rgba(204, 255, 102, 0.16);
+  background:
+    linear-gradient(90deg, rgba(84, 162, 255, 0.08), transparent 42%, rgba(68, 221, 136, 0.07)),
+    rgba(7, 13, 24, 0.92);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.coach-session-label {
+  min-width: 0;
+  color: var(--module-accent);
+  font-family: "Orbitron", monospace;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-shadow: 0 0 10px rgba(84, 162, 255, 0.38);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.coach-session-progress {
+  min-width: 0;
+}
+
+.coach-session-track {
+  position: relative;
+  height: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(84, 162, 255, 0.24);
+  background:
+    linear-gradient(90deg, rgba(255, 95, 44, 0.08), rgba(17, 29, 48, 0.82) 32%, rgba(17, 29, 48, 0.82) 72%, rgba(68, 221, 136, 0.08)),
+    rgba(7, 13, 24, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+    0 0 12px rgba(84, 162, 255, 0.11);
+}
+
+.coach-session-track span {
+  display: block;
+  width: var(--session-progress, 0%);
+  height: 100%;
+  background: linear-gradient(90deg, #ff5f2c 0%, #ffb02e 34%, #54a2ff 68%, #44dd88 100%);
+  box-shadow:
+    0 0 16px rgba(84, 162, 255, 0.42),
+    0 0 22px rgba(68, 221, 136, 0.2);
+  transition: width 260ms ease;
+}
+
+.coach-session-track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0, transparent calc(5% - 1px), rgba(255, 255, 255, 0.16) calc(5% - 1px), rgba(255, 255, 255, 0.16) 5%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 52%);
+  pointer-events: none;
 }
 
 .play-body {
@@ -2329,6 +2396,7 @@ button {
     width: 100%;
     margin-inline: auto;
     min-height: calc(100vh - 92px);
+    grid-template-rows: auto auto auto minmax(0, 1fr);
   }
 
   .play-card.is-stats-view {
@@ -2396,6 +2464,11 @@ button {
   .hud-item {
     min-height: 42px;
     border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .coach-session-bar {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
   }
 
   .coach-callout {

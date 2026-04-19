@@ -6,7 +6,7 @@ import {
   displayHubTargetLabel,
   isHubMatchAtIndex,
   summarizeHubBlock
-} from "./runtime/hub-engine.js?v=20260419-feedbacksimple";
+} from "./runtime/hub-engine.js?v=20260419-mfprogress";
 import {
   initAudio,
   playSfx,
@@ -41,17 +41,18 @@ import {
   scoreReasoningResponse,
   summarizeReasoningBlock,
   updateReasoningFamilyState
-} from "./runtime/reasoning/engine.js?v=20260419-feedbacksimple";
+} from "./runtime/reasoning/engine.js?v=20260419-sessioncount";
 
 const STORAGE_KEY = "tg_iq_live_capacity_v2";
 const ECONOMY_KEY = "tg_iq_live_economy_v1";
 const ACTIVE_MODULE_KEY = "tg_iq_live_active_module_v1";
+const UNIFIED_COACH_KEY = "tg_iq_live_unified_coach_v1";
 const ZONE_HANDOFF_KEY = "iqmw.capacity.handoffFromZone";
 const ZONE_FALLBACK_KEY = "lastCapacitySession";
 const HISTORY_LIMIT = 160;
 const ECONOMY_EVENT_LIMIT = 240;
 const ZONE_HANDOFF_FRESH_MS = 39 * 60 * 1000;
-const COACH_CORE_BLOCKS = 6;
+const COACH_CORE_BLOCKS = 10;
 const SUPPORT_BLOCKS = 4;
 const PROGRAMME_SESSION_TARGET = 20;
 const MAX_SESSION_COUNTER = 999;
@@ -65,6 +66,13 @@ const TRANSFER_SPRINT_BLOCKS = 3;
 const MANUAL_RECOMMENDATION_FAMILIES = ["flex", "bind", "relate", "resist"];
 const COUNTDOWN_STEPS = ["3", "2", "1"];
 const COUNTDOWN_STEP_MS = 700;
+const COACH_ROUTE_TARGETS = {
+  in_zone: { routeClass: "core", capacityBlocks: 10, reasoningItems: 10, countsTowardCore20: true, label: "In Zone" },
+  flat: { routeClass: "core", capacityBlocks: 5, reasoningItems: 8, countsTowardCore20: true, label: "Flat" },
+  overloaded_exploit: { routeClass: "support", capacityBlocks: 4, reasoningItems: 4, countsTowardCore20: false, label: "Locked In" },
+  overloaded_explore: { routeClass: "support", capacityBlocks: 3, reasoningItems: 4, countsTowardCore20: false, label: "Spun Out" },
+  invalid: { routeClass: "recovery", capacityBlocks: 0, reasoningItems: 0, countsTowardCore20: false, label: "Invalid" }
+};
 
 const FAMILY_META = {
   flex: { label: "Flex", wrappers: ["hub_cat", "hub_noncat", "hub_concept"] },
@@ -102,6 +110,7 @@ const appRoot = document.querySelector("#app");
 let state = loadState();
 let economy = loadEconomy();
 let reasoningState = loadReasoningState();
+let coachState = loadUnifiedCoachState();
 let zonePulseState = createZonePulseState();
 let activeBlock = null;
 let activeReasoningBlock = null;
@@ -431,6 +440,84 @@ function saveReasoningState(nextState = reasoningState) {
   return reasoningState;
 }
 
+function createDefaultUnifiedCoachState() {
+  return {
+    version: 1,
+    active: null,
+    lastCompleted: null,
+    programme: { coreSessionNumber: 0, supportSessionNumber: 0 },
+    history: []
+  };
+}
+
+function normalizeCoachContract(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const routeState = zoneRouteState(raw.routeState || raw.zone_state);
+  const targets = COACH_ROUTE_TARGETS[routeState] || COACH_ROUTE_TARGETS.invalid;
+  const capacityTargetBlocks = Math.max(0, Math.round(Number(raw.capacityTargetBlocks ?? raw.capacity_target_blocks ?? targets.capacityBlocks) || 0));
+  const reasoningTargetItems = Math.max(0, Math.round(Number(raw.reasoningTargetItems ?? raw.reasoning_target_items ?? targets.reasoningItems) || 0));
+  const status = raw.status === "complete" ? "complete" : "active";
+  return {
+    id: String(raw.id || `coach_${Date.now()}`),
+    status,
+    sessionNumber: clampSessionCounter(raw.sessionNumber ?? raw.session_number ?? 1) || 1,
+    phase: raw.phase || phaseForCoachSession(raw.sessionNumber ?? raw.session_number ?? 1).id,
+    routeState,
+    routeClass: raw.routeClass || raw.route_class || targets.routeClass,
+    routeLabel: raw.routeLabel || raw.route_label || targets.label,
+    countsTowardCore20: raw.countsTowardCore20 ?? raw.counts_toward_core_20 ?? targets.countsTowardCore20,
+    capacityTargetBlocks,
+    reasoningTargetItems,
+    capacityCompletedBlocks: clamp(Math.round(Number(raw.capacityCompletedBlocks ?? raw.capacity_completed_blocks ?? 0) || 0), 0, capacityTargetBlocks),
+    reasoningCompletedItems: clamp(Math.round(Number(raw.reasoningCompletedItems ?? raw.reasoning_completed_items ?? 0) || 0), 0, reasoningTargetItems),
+    capacitySessionId: raw.capacitySessionId || raw.capacity_session_id || null,
+    reasoningSessionId: raw.reasoningSessionId || raw.reasoning_session_id || null,
+    capacityFamily: raw.capacityFamily || raw.capacity_family || null,
+    reasoningFamily: raw.reasoningFamily || raw.reasoning_family || null,
+    zoneTimestamp: Number.isFinite(Number(raw.zoneTimestamp ?? raw.zone_timestamp)) ? Math.round(Number(raw.zoneTimestamp ?? raw.zone_timestamp)) : null,
+    zoneSource: raw.zoneSource || raw.zone_source || null,
+    startedAt: Number.isFinite(Number(raw.startedAt ?? raw.started_at)) ? Math.round(Number(raw.startedAt ?? raw.started_at)) : Date.now(),
+    updatedAt: Number.isFinite(Number(raw.updatedAt ?? raw.updated_at)) ? Math.round(Number(raw.updatedAt ?? raw.updated_at)) : Date.now(),
+    completedAt: Number.isFinite(Number(raw.completedAt ?? raw.completed_at)) ? Math.round(Number(raw.completedAt ?? raw.completed_at)) : null
+  };
+}
+
+function normalizeUnifiedCoachState(raw) {
+  const defaults = createDefaultUnifiedCoachState();
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return defaults;
+  const programme = raw.programme && typeof raw.programme === "object" ? raw.programme : {};
+  return {
+    version: 1,
+    active: normalizeCoachContract(raw.active),
+    lastCompleted: normalizeCoachContract(raw.lastCompleted),
+    programme: {
+      coreSessionNumber: clampSessionCounter(programme.coreSessionNumber),
+      supportSessionNumber: clampSessionCounter(programme.supportSessionNumber)
+    },
+    history: Array.isArray(raw.history) ? raw.history.map(normalizeCoachContract).filter(Boolean).slice(0, 60) : []
+  };
+}
+
+function loadUnifiedCoachState() {
+  if (typeof localStorage === "undefined") return createDefaultUnifiedCoachState();
+  const loaded = normalizeUnifiedCoachState(parseJson(localStorage.getItem(UNIFIED_COACH_KEY)));
+  const legacyCore = Math.max(
+    clampSessionCounter(state?.programme?.coreSessionNumber),
+    clampSessionCounter(reasoningState?.programme?.coreSessionNumber)
+  );
+  loaded.programme.coreSessionNumber = Math.max(loaded.programme.coreSessionNumber, legacyCore);
+  localStorage.setItem(UNIFIED_COACH_KEY, JSON.stringify(loaded));
+  return loaded;
+}
+
+function saveUnifiedCoachState(nextState = coachState) {
+  coachState = normalizeUnifiedCoachState(nextState);
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(UNIFIED_COACH_KEY, JSON.stringify(coachState));
+  }
+  return coachState;
+}
+
 function createDefaultEconomy() {
   return { version: 1, walletG: 0, events: [] };
 }
@@ -631,6 +718,206 @@ function zoneDisplaySnapshot() {
   };
 }
 
+function phaseForCoachSession(sessionNumber) {
+  const n = Math.max(1, Math.round(Number(sessionNumber || 1)));
+  if (n <= 5) return { id: "foundation", label: "Foundation", copy: "build clean habits with easier forms first" };
+  if (n <= 10) return { id: "portability", label: "Portability", copy: "carry the skill into less familiar forms" };
+  if (n <= 15) return { id: "integration", label: "Integration", copy: "combine skills under more control pressure" };
+  return { id: "transfer", label: "Transfer", copy: "hold the skill in the hardest transfer forms" };
+}
+
+function completedUnifiedCoreSessions() {
+  return Math.max(
+    clampSessionCounter(coachState?.programme?.coreSessionNumber),
+    clampSessionCounter(state?.programme?.coreSessionNumber),
+    clampSessionCounter(reasoningState?.programme?.coreSessionNumber)
+  );
+}
+
+function currentCoachContract() {
+  return coachState.active?.status === "active" ? coachState.active : null;
+}
+
+function coachContractForDisplay() {
+  return currentCoachContract() || coachState.lastCompleted || null;
+}
+
+function coachTargetsForSnapshot(snapshot = {}) {
+  const routeState = zoneRouteState(snapshot.routeState || snapshot.state);
+  return COACH_ROUTE_TARGETS[routeState] || COACH_ROUTE_TARGETS.invalid;
+}
+
+function coachContractIsComplete(contract) {
+  if (!contract) return false;
+  return Number(contract.capacityCompletedBlocks || 0) >= Number(contract.capacityTargetBlocks || 0)
+    && Number(contract.reasoningCompletedItems || 0) >= Number(contract.reasoningTargetItems || 0);
+}
+
+function capacityRemainingForContract(contract = currentCoachContract()) {
+  if (!contract) return 0;
+  return Math.max(0, Number(contract.capacityTargetBlocks || 0) - Number(contract.capacityCompletedBlocks || 0));
+}
+
+function reasoningRemainingForContract(contract = currentCoachContract()) {
+  if (!contract) return 0;
+  return Math.max(0, Number(contract.reasoningTargetItems || 0) - Number(contract.reasoningCompletedItems || 0));
+}
+
+function capacityRouteStartLabel(contract) {
+  if (!contract) return "Start Capacity route";
+  if (contract.routeClass === "support") return "Start support training";
+  if (contract.routeState === "flat") return "Start reduced Capacity route";
+  return "Start Capacity route";
+}
+
+function coachContractPrimaryActionMarkup(contract, options = {}) {
+  if (!contract) return "";
+  const disabled = options.disabled ? "disabled" : "";
+  if (capacityRemainingForContract(contract) > 0) {
+    return `<button class="btn btn-primary" type="button" data-action="start-coach-session" ${disabled}>${escapeHtml(capacityRouteStartLabel(contract))}</button>`;
+  }
+  if (reasoningRemainingForContract(contract) > 0) {
+    return `<button class="btn btn-primary" type="button" data-action="switch-to-reasoning" ${disabled}>Go to Reasoning Gym</button>`;
+  }
+  return `<button class="btn btn-primary" type="button" data-action="show-play" ${disabled}>Return to gameplay</button>`;
+}
+
+function zoneRouteReadyCopy(summary, contract = currentCoachContract()) {
+  if (!summary?.valid) return summary?.invalidReason || "This pulse did not validate.";
+  const routeState = contract?.routeState || zoneRouteState(summary.state);
+  const targets = contract
+    ? {
+        routeClass: contract.routeClass,
+        capacityBlocks: Number(contract.capacityTargetBlocks || 0),
+        reasoningItems: Number(contract.reasoningTargetItems || 0)
+      }
+    : coachTargetsForSnapshot({ routeState });
+  const capacityBlocks = Number(targets.capacityBlocks || 0);
+  const reasoningItems = Number(targets.reasoningItems || 0);
+  const capacityLabel = `${capacityBlocks} Capacity block${capacityBlocks === 1 ? "" : "s"}`;
+  const reasoningLabel = `${reasoningItems} Reasoning item${reasoningItems === 1 ? "" : "s"}`;
+  if (targets.routeClass === "support") {
+    return `A lighter support route is ready: ${capacityLabel} and ${reasoningLabel}.`;
+  }
+  if (routeState === "flat") {
+    return `A reduced core route is ready: ${capacityLabel} and ${reasoningLabel}.`;
+  }
+  return `Full coach route ready: ${capacityLabel} and ${reasoningLabel}.`;
+}
+
+function syncLegacyProgrammeCounters(coreSessionNumber) {
+  const completed = clampSessionCounter(coreSessionNumber);
+  state.programme.coreSessionNumber = Math.max(clampSessionCounter(state.programme.coreSessionNumber), completed);
+  reasoningState.programme.coreSessionNumber = Math.max(clampSessionCounter(reasoningState.programme.coreSessionNumber), completed);
+  saveState();
+  saveReasoningState();
+}
+
+function completeUnifiedCoachContractIfReady() {
+  const contract = currentCoachContract();
+  if (!coachContractIsComplete(contract)) {
+    saveUnifiedCoachState();
+    return null;
+  }
+  const completed = {
+    ...contract,
+    status: "complete",
+    completedAt: Date.now(),
+    updatedAt: Date.now()
+  };
+  coachState.active = null;
+  coachState.lastCompleted = completed;
+  coachState.history = [completed, ...coachState.history].slice(0, 60);
+  if (completed.countsTowardCore20) {
+    coachState.programme.coreSessionNumber = Math.max(clampSessionCounter(coachState.programme.coreSessionNumber), completed.sessionNumber);
+    syncLegacyProgrammeCounters(coachState.programme.coreSessionNumber);
+  } else {
+    coachState.programme.supportSessionNumber = clampSessionCounter(coachState.programme.supportSessionNumber + 1);
+  }
+  saveUnifiedCoachState();
+  return completed;
+}
+
+function createUnifiedCoachContract(snapshot = zoneDisplaySnapshot()) {
+  if (!snapshot?.fresh || snapshot.valid !== true) {
+    return {
+      ok: false,
+      reason: "zone_required",
+      message: "Run a clean Zone Check first. It sets today's Capacity and Reasoning targets."
+    };
+  }
+  const targets = coachTargetsForSnapshot(snapshot);
+  if (targets.routeClass === "recovery") {
+    return {
+      ok: false,
+      reason: "recovery",
+      message: "Zone Check says recovery today. Repeat the check later or use light manual practice."
+    };
+  }
+  const sessionNumber = clamp(completedUnifiedCoreSessions() + 1, 1, PROGRAMME_SESSION_TARGET);
+  const phase = phaseForCoachSession(sessionNumber);
+  const capacityFamily = targets.routeClass === "core" ? familyForCoreSession(sessionNumber) : "flex";
+  const reasoningFamily = targets.routeClass === "core"
+    ? reasoningFamilyForCoreSession(sessionNumber)
+    : (snapshot.routeState === "overloaded_exploit" ? "must_follow" : "relation_fit");
+  const contract = {
+    id: `coach_${Date.now()}`,
+    status: "active",
+    sessionNumber,
+    phase: phase.id,
+    routeState: zoneRouteState(snapshot.routeState),
+    routeClass: targets.routeClass,
+    routeLabel: targets.label,
+    countsTowardCore20: targets.countsTowardCore20,
+    capacityTargetBlocks: targets.capacityBlocks,
+    reasoningTargetItems: targets.reasoningItems,
+    capacityCompletedBlocks: 0,
+    reasoningCompletedItems: 0,
+    capacitySessionId: null,
+    reasoningSessionId: null,
+    capacityFamily,
+    reasoningFamily,
+    zoneTimestamp: Number.isFinite(snapshot.timestamp) ? Math.round(snapshot.timestamp) : Date.now(),
+    zoneSource: snapshot.source || null,
+    startedAt: Date.now(),
+    updatedAt: Date.now(),
+    completedAt: null
+  };
+  coachState.active = contract;
+  coachState.lastCompleted = null;
+  saveUnifiedCoachState();
+  return { ok: true, contract };
+}
+
+function ensureUnifiedCoachContract() {
+  const current = currentCoachContract();
+  if (current) return { ok: true, contract: current };
+  return createUnifiedCoachContract(zoneDisplaySnapshot());
+}
+
+function maybeCreateCoachContractFromZoneSummary(summary) {
+  if (!summary?.valid || currentCoachContract()) return null;
+  if (state.settings.mode !== "coach" && reasoningState.settings.mode !== "coach") return null;
+  return createUnifiedCoachContract(zoneDisplaySnapshot());
+}
+
+function recordUnifiedCapacityBlock(sessionId) {
+  const contract = currentCoachContract();
+  if (!contract || !sessionId || contract.capacitySessionId !== sessionId) return null;
+  contract.capacityCompletedBlocks = Math.min(contract.capacityTargetBlocks, Number(contract.capacityCompletedBlocks || 0) + 1);
+  contract.updatedAt = Date.now();
+  return completeUnifiedCoachContractIfReady();
+}
+
+function recordUnifiedReasoningItems(sessionId, itemCount) {
+  const contract = currentCoachContract();
+  if (!contract || !sessionId || contract.reasoningSessionId !== sessionId) return null;
+  const increment = Math.max(0, Math.round(Number(itemCount || 0)));
+  contract.reasoningCompletedItems = Math.min(contract.reasoningTargetItems, Number(contract.reasoningCompletedItems || 0) + increment);
+  contract.updatedAt = Date.now();
+  return completeUnifiedCoachContractIfReady();
+}
+
 function latestCoachTrainingTimestamp() {
   const rows = state.history
     .filter((entry) => entry && entry.rewardMode !== "manual" && (entry.routeClass === "core" || entry.routeClass === "support"))
@@ -640,6 +927,9 @@ function latestCoachTrainingTimestamp() {
 }
 
 function coachZonePreflightStatus() {
+  if (currentCoachContract()) {
+    return { recommended: false, reason: "contract_locked", snapshot: zoneDisplaySnapshot() };
+  }
   const session = activeCoachSession();
   const beforeFirstSessionBlock = !session || Math.max(0, Number(session.blocksCompleted || 0)) === 0;
   if (state.settings.mode !== "coach" || !beforeFirstSessionBlock || activeBlock || zonePulseIsRunning()) {
@@ -728,7 +1018,7 @@ function clampSessionCounter(value) {
 }
 
 function completedProgrammeSessions() {
-  return clampSessionCounter(state.programme.coreSessionNumber);
+  return completedUnifiedCoreSessions();
 }
 
 function completedManualSessions() {
@@ -925,38 +1215,51 @@ function recommendedManualFamilyId() {
 function beginCoachSession() {
   if (activeBlock || state.currentSession || zonePulseIsRunning()) return;
   viewState.centerMode = "play";
-  const handoff = readZoneHandoff();
-  const routeClass = handoff?.freshForTraining ? handoff.capacityPlan.routeClass : "core";
-  if (routeClass === "recovery") {
-    viewState.message = "Zone Check marked this as a recovery route. Use manual light play only after recovery, or re-check first.";
+  const contractResult = ensureUnifiedCoachContract();
+  if (!contractResult.ok) {
+    viewState.message = contractResult.message;
     triggerSfx("invalid_action");
     render();
     return;
   }
-  const sessionNumber = currentCoachFamilyNumber();
-  const familyId = routeClass === "core" ? familyForCoreSession(sessionNumber) : "flex";
-  const plannedBlocks = routeClass === "core"
-    ? COACH_CORE_BLOCKS
-    : Math.max(1, Math.min(SUPPORT_BLOCKS, handoff?.capacityPlan?.defaultBlocks || SUPPORT_BLOCKS));
+  const contract = contractResult.contract;
+  const remainingBlocks = capacityRemainingForContract(contract);
+  if (remainingBlocks <= 0) {
+    viewState.message = reasoningRemainingForContract(contract) > 0
+      ? "Capacity is done for this session. Switch to Reasoning Gym to finish the session."
+      : "Capacity is done for this session.";
+    triggerSfx("ui_tap_soft");
+    render();
+    return;
+  }
+  const routeClass = contract.routeClass;
+  const sessionNumber = contract.sessionNumber;
+  const familyId = routeClass === "core" ? (contract.capacityFamily || familyForCoreSession(sessionNumber)) : "flex";
+  const plannedBlocks = remainingBlocks;
+  const sessionId = `capv2_${Date.now()}`;
   state.currentSession = {
-    id: `capv2_${Date.now()}`,
+    id: sessionId,
     mode: "coach",
     routeClass,
     rewardMode: routeClass === "core" ? "core" : "support",
-    eligibleForEncoding20: routeClass === "core",
+    eligibleForEncoding20: contract.countsTowardCore20 === true,
     familyId,
     coreSessionNumber: routeClass === "core" ? sessionNumber : null,
     plannedBlocks,
     blocksCompleted: 0,
-    zoneState: handoff?.state || "not_checked",
-    zoneFresh: handoff?.freshForTraining === true,
-    zoneSource: handoff?.sourceKey || null,
+    zoneState: contract.routeState,
+    zoneFresh: true,
+    zoneSource: contract.zoneSource || null,
     startedAt: Date.now()
   };
+  contract.capacitySessionId = sessionId;
+  contract.capacityFamily = familyId;
+  contract.updatedAt = Date.now();
+  saveUnifiedCoachState();
   saveState();
   viewState.message = routeClass === "core"
-    ? `Coach session ${sessionNumber} is set to ${familyLabel(familyId)}.`
-    : "Support route started with safer Flex blocks.";
+    ? `Session ${sessionNumber} capacity route: ${familyLabel(familyId)}. Complete ${plannedBlocks} block${plannedBlocks === 1 ? "" : "s"}, then switch to Reasoning Gym.`
+    : `Support capacity route: ${plannedBlocks} stabilising block${plannedBlocks === 1 ? "" : "s"}.`;
   triggerSfx("session_start");
   render();
 }
@@ -1178,10 +1481,13 @@ function ensureZonePulseController() {
       zonePulseState.latestHandoff = saved.latestHandoff;
       zonePulseState.phase = summary.valid ? "result" : "invalid";
       zonePulseState.activeRunId = null;
+      const contractResult = maybeCreateCoachContractFromZoneSummary(summary);
       destroyZonePulseController();
       viewState.centerMode = "zone";
       viewState.message = summary.valid
-        ? `Zone Check complete: ${zoneRouteLabel(zoneRouteState(summary.state))}, ${formatBitsPerSecond(summary.bitsPerSecond)} bits/sec.`
+        ? contractResult?.ok
+          ? `Zone Check complete. Today's coached session is set: ${contractResult.contract.capacityTargetBlocks} Capacity blocks and ${contractResult.contract.reasoningTargetItems} Reasoning items.`
+          : `Zone Check complete: ${zoneRouteLabel(zoneRouteState(summary.state))}, ${formatBitsPerSecond(summary.bitsPerSecond)} bits/sec.`
         : "Zone Check did not validate. Run a clean pulse before treating it as a route.";
       render();
     }
@@ -1346,29 +1652,34 @@ function clearReasoningTimer() {
 
 function currentReasoningSessionDisplay() {
   return reasoningState.settings.mode === "coach"
-    ? `${Math.min(REASONING_SESSION_TARGET, completedReasoningSessions(reasoningState))}/${REASONING_SESSION_TARGET}`
+    ? `${Math.min(REASONING_SESSION_TARGET, completedUnifiedCoreSessions())}/${REASONING_SESSION_TARGET}`
     : `${Math.max(1, Number(reasoningState.programme.manualSessionNumber || 0) + 1)}`;
 }
 
 function reasoningSessionToGoDisplay() {
-  return reasoningState.settings.mode === "coach" ? `${reasoningSessionsToGo(reasoningState)}` : "-";
+  return reasoningState.settings.mode === "coach"
+    ? `${Math.max(0, REASONING_SESSION_TARGET - Math.min(REASONING_SESSION_TARGET, completedUnifiedCoreSessions()))}`
+    : "-";
 }
 
 function reasoningZoneRecommendation() {
   if (reasoningState.settings.mode !== "coach" || activeReasoningBlock || activeBlock || zonePulseIsRunning()) {
     return { recommended: false, copy: "" };
   }
+  if (currentCoachContract()) {
+    return { recommended: false, copy: "" };
+  }
   const snapshot = zoneDisplaySnapshot();
   if (!snapshot.fresh) {
     return {
       recommended: true,
-      copy: "Recommended before Reasoning Gym: test your zone so the coach can tune today's logic route. You can still start anyway."
+      copy: "Start with a Zone Check so the coach can set today's Capacity and Reasoning targets."
     };
   }
   if (snapshot.routeState === "invalid") {
     return {
       recommended: true,
-      copy: "Your last Zone Check did not validate. Recommended: run a clean pulse before Coach-led reasoning. You can still start anyway."
+      copy: "Your last Zone Check did not validate. Run a clean pulse before Coach-led reasoning."
     };
   }
   return { recommended: false, copy: "" };
@@ -1410,16 +1721,50 @@ function beginReasoningCoachSession() {
     return;
   }
   markStaleReasoningPartial();
-  const planned = planReasoningSession(reasoningState, zoneDisplaySnapshot());
-  if (planned.blocked) {
-    viewState.message = planned.message;
+  const contractResult = ensureUnifiedCoachContract();
+  if (!contractResult.ok) {
+    viewState.message = contractResult.message;
     triggerSfx("invalid_action");
     render();
     return;
   }
+  const contract = contractResult.contract;
+  const remainingItems = reasoningRemainingForContract(contract);
+  if (remainingItems <= 0) {
+    viewState.message = capacityRemainingForContract(contract) > 0
+      ? "Reasoning is already done for this session. Switch back to Capacity Gym to finish the remaining blocks."
+      : "Reasoning is already done for this session.";
+    triggerSfx("ui_tap_soft");
+    render();
+    return;
+  }
+  const routeClass = contract.routeClass;
+  const family = routeClass === "core"
+    ? (contract.reasoningFamily || reasoningFamilyForCoreSession(contract.sessionNumber))
+    : (contract.routeState === "overloaded_exploit" ? "must_follow" : "relation_fit");
+  const itemsPerBlock = routeClass === "core" && contract.routeState !== "flat" ? 5 : Math.min(4, remainingItems);
+  const planned = {
+    blocked: false,
+    id: `reason_${Date.now()}`,
+    mode: "coach",
+    status: "active",
+    routeClass,
+    routeState: contract.routeState,
+    family,
+    coreSessionNumber: contract.countsTowardCore20 ? contract.sessionNumber : null,
+    plannedBlocks: Math.max(1, Math.ceil(remainingItems / Math.max(1, itemsPerBlock))),
+    itemsPerBlock,
+    blocksCompleted: 0,
+    startedAt: Date.now(),
+    updatedAt: Date.now()
+  };
   reasoningState.currentSession = planned;
+  contract.reasoningSessionId = planned.id;
+  contract.reasoningFamily = family;
+  contract.updatedAt = Date.now();
+  saveUnifiedCoachState();
   saveReasoningState();
-  viewState.message = `${reasoningFamilyLabel(planned.family)} reasoning route ready: ${planned.plannedBlocks} block${planned.plannedBlocks === 1 ? "" : "s"}.`;
+  viewState.message = `${reasoningFamilyLabel(planned.family)} reasoning route ready: ${remainingItems} item${remainingItems === 1 ? "" : "s"} to finish today's session.`;
   triggerSfx("session_start");
   render();
 }
@@ -1434,7 +1779,11 @@ async function startReasoningBlock({ manual = false } = {}) {
   render();
   try {
     const session = manual ? null : reasoningState.currentSession;
-    const manualSettings = manual ? reasoningState.settings : null;
+    const manualSettings = manual ? normalizeReasoningManualSettings(reasoningState.settings) : null;
+    if (manual) {
+      reasoningState.settings = manualSettings;
+      saveReasoningState();
+    }
     const block = await buildReasoningBlock({
       state: reasoningState,
       session,
@@ -1564,6 +1913,7 @@ async function finishReasoningBlock({ nextStep = "finish_session" } = {}) {
   let nextState = updateReasoningFamilyState(reasoningState, summary);
   nextState.history = [entry, ...nextState.history].slice(0, 180);
   let completedSession = null;
+  const unifiedReasoningSession = currentCoachContract()?.reasoningSessionId === completedBlock.sessionId;
   if (summary.mode === "manual") {
     nextState.programme.manualSessionNumber = Math.max(Number(nextState.programme.manualSessionNumber || 0), Number(nextState.programme.manualSessionNumber || 0) + 1);
   } else if (nextState.currentSession?.id === completedBlock.sessionId) {
@@ -1571,13 +1921,14 @@ async function finishReasoningBlock({ nextStep = "finish_session" } = {}) {
     nextState.currentSession.updatedAt = Date.now();
     if (nextState.currentSession.blocksCompleted >= nextState.currentSession.plannedBlocks) {
       completedSession = { ...nextState.currentSession, status: "complete", completedAt: Date.now() };
-      if (completedSession.routeClass === "core") {
+      if (completedSession.routeClass === "core" && !unifiedReasoningSession) {
         nextState.programme.coreSessionNumber = Math.max(Number(nextState.programme.coreSessionNumber || 0), Number(completedSession.coreSessionNumber || 0));
       }
       nextState.currentSession = null;
     }
   }
   saveReasoningState(nextState);
+  const unifiedCompleted = unifiedReasoningSession ? recordUnifiedReasoningItems(completedBlock.sessionId, summary.items) : null;
   playBlockRewardSfx(summary.tier, summary.decision === "UP" ? summary.tier + 1 : summary.decision === "DOWN" ? summary.tier - 1 : summary.tier, blockG, null);
   activeReasoningBlock = null;
   viewState.reasoningCloseSession = null;
@@ -1589,8 +1940,15 @@ async function finishReasoningBlock({ nextStep = "finish_session" } = {}) {
     return;
   }
 
-  const finishedCopy = completedSession ? "Reasoning session complete." : "Reasoning session saved.";
+  const finishedCopy = unifiedCompleted
+    ? "Session complete."
+    : completedSession
+      ? "Reasoning target complete."
+      : "Reasoning block saved.";
   viewState.message = `${finishedCopy} ${reasoningFamilyLabel(summary.family)}: ${percent(summary.accuracy)} accuracy, Reasoning Transfer ${formatScorePercent(summary.transferScore.total)}, +${blockG} g.`;
+  if (!unifiedCompleted && currentCoachContract() && reasoningRemainingForContract() <= 0 && capacityRemainingForContract() > 0) {
+    viewState.message = `Reasoning target complete. Nice work. Switch back to Capacity Gym to finish ${capacityRemainingForContract()} block${capacityRemainingForContract() === 1 ? "" : "s"}.`;
+  }
   render();
 }
 
@@ -2078,21 +2436,30 @@ function finishBlock() {
   }
 
   let programmeBonus = null;
+  let unifiedCompleted = null;
   if (state.currentSession && state.currentSession.id === activeBlock.sessionId) {
+    unifiedCompleted = recordUnifiedCapacityBlock(state.currentSession.id);
     state.currentSession.blocksCompleted += 1;
     if (state.currentSession.blocksCompleted >= state.currentSession.plannedBlocks) {
       const completedSession = state.currentSession;
       state.currentSession = null;
-      if (completedSession.routeClass === "core") {
+      if (completedSession.routeClass === "core" && !currentCoachContract() && !unifiedCompleted) {
         state.programme.coreSessionNumber = Math.max(state.programme.coreSessionNumber, completedSession.coreSessionNumber || state.programme.coreSessionNumber + 1);
       }
       saveState();
-      programmeBonus = maybeAwardProgrammeBonus(completedSession);
+      if (!completedSession.eligibleForEncoding20 || !currentCoachContract()) {
+        programmeBonus = maybeAwardProgrammeBonus(completedSession);
+      }
     }
   }
   saveState();
   activeBlock = null;
-  viewState.message = `${wrapperLabel(entry.wrapper)} saved: ${percent(entry.block.accuracy)} accuracy, Far Transfer Score ${formatScorePercent(transferScore.total)}, +${blockG} g plasticity cells.`;
+  viewState.message = unifiedCompleted
+    ? `Session complete. Strong finish: Capacity and Reasoning are both done. +${blockG} g plasticity cells.`
+    : `${wrapperLabel(entry.wrapper)} saved: ${percent(entry.block.accuracy)} accuracy, Far Transfer Score ${formatScorePercent(transferScore.total)}, +${blockG} g plasticity cells.`;
+  if (!unifiedCompleted && currentCoachContract() && capacityRemainingForContract() <= 0 && reasoningRemainingForContract() > 0) {
+    viewState.message = `Capacity target complete. Good work. Switch to Reasoning Gym to finish ${reasoningRemainingForContract()} reasoning item${reasoningRemainingForContract() === 1 ? "" : "s"}.`;
+  }
   if (programmeBonus) viewState.message += ` Programme complete bonus: +${programmeBonus.bonusG} g.`;
   playBlockRewardSfx(baseEntry.block.nStart, summary.nEnd, blockG, programmeBonus);
   render();
@@ -2385,16 +2752,11 @@ function reasoningHudModel() {
     ? percent(activeReasoningBlock.outcomes.filter((outcome) => outcome.isCorrect).length / activeReasoningBlock.outcomes.length)
     : latest ? percent(latest.accuracy) : "--";
   const transfer = latest?.transferScore ? formatScorePercent(latest.transferScore.total) : "--";
-  const session = reasoningState.currentSession;
-  const blocksLeftValue = activeReasoningBlock
-    ? Math.max(0, Number(session?.plannedBlocks || 1) - Number(session?.blocksCompleted || 0))
-    : session ? Math.max(0, Number(session.plannedBlocks || 0) - Number(session.blocksCompleted || 0)) : 0;
   return {
     items: [
       ["Family", reasoningFamilyLabel(family)],
       ["Accuracy", accuracy],
-      ["Transfer", transfer],
-      ["Blocks", `${blocksLeftValue}`]
+      ["Transfer", transfer]
     ]
   };
 }
@@ -2417,25 +2779,77 @@ function renderHud() {
   `;
 }
 
+function renderCoachSessionBar() {
+  if (viewState.centerMode === "stats") return "";
+  const coachSelected = state.settings.mode === "coach" || reasoningState.settings.mode === "coach";
+  const contract = coachContractForDisplay();
+  if (!contract && !coachSelected) return "";
+  const completedSessions = clamp(completedUnifiedCoreSessions(), 0, PROGRAMME_SESSION_TARGET);
+  const sessionsToGo = Math.max(0, PROGRAMME_SESSION_TARGET - completedSessions);
+  const remainingPct = clamp(Math.round((sessionsToGo / PROGRAMME_SESSION_TARGET) * 100), 0, 100);
+  return `
+    <div class="coach-session-bar" aria-label="${escapeHtml(`${sessionsToGo} coached sessions to go`)}">
+      <span class="coach-session-label">Sessions to go</span>
+      <div class="coach-session-progress" style="--session-progress:${remainingPct}%;" aria-label="${escapeHtml(`${sessionsToGo} of ${PROGRAMME_SESSION_TARGET} sessions remaining`)}">
+        <div class="coach-session-track"><span></span></div>
+      </div>
+    </div>
+  `;
+}
+
 function shouldShowCoachCallout() {
   return !activeBlock && viewState.centerMode !== "stats" && viewState.centerMode !== "zone";
 }
 
 function coachCalloutModel() {
+  const contract = currentCoachContract();
+  if (contract) {
+    if (capacityRemainingForContract(contract) <= 0 && reasoningRemainingForContract(contract) > 0) {
+      return {
+        kicker: "Coach tip",
+        title: "Capacity done. Move to Reasoning Gym.",
+        body: `Good work. You have ${reasoningRemainingForContract(contract)} reasoning item${reasoningRemainingForContract(contract) === 1 ? "" : "s"} left to complete this session.`
+      };
+    }
+    if (contract.capacityCompletedBlocks > 0 && contract.capacityCompletedBlocks % 3 === 0) {
+      return {
+        kicker: "Coach tip",
+        title: "Nice progress. Keep this pace.",
+        body: `You have finished ${contract.capacityCompletedBlocks} of ${contract.capacityTargetBlocks} Capacity blocks. Stay steady; Reasoning Gym comes after this target.`
+      };
+    }
+    const phase = phaseForCoachSession(contract.sessionNumber);
+    return {
+      kicker: "Coach tip",
+      title: `${phase.label} session: Capacity first`,
+      body: `Finish today's Capacity blocks first. Then switch to Reasoning Gym to turn the same control skill into logic practice.`
+    };
+  }
+  if (coachState.lastCompleted?.status === "complete") {
+    return {
+      kicker: "Coach tip",
+      title: "Session complete",
+      body: "Good work. Your Capacity and Reasoning targets are both done. Run a fresh Zone Check next time to set the next session."
+    };
+  }
   const preflight = coachZonePreflightStatus();
   if (preflight.recommended) {
     const body = preflight.reason === "used"
-      ? "Your last Zone Check was before your last training session. Recommended: test your zone again so Coach-led can tune today's route. You can still start anyway."
+      ? "Your last Zone Check was before your last training session. Test your zone again so the coach can set today's target."
       : preflight.reason === "invalid"
-        ? "Your last Zone Check did not validate. Recommended: run a clean 3-minute pulse before training. You can still start anyway."
-        : "Recommended before Coach-led training: run a 3-minute Zone Check so the coach can tune the route to your current control state. You can still start anyway.";
+        ? "Your last Zone Check did not validate. Run a clean 3-minute pulse before starting coach-led training."
+        : "Start with a 3-minute Zone Check. It sets a clear target for today's Capacity and Reasoning work.";
     return {
       kicker: "Coach tip",
       title: "Test your zone / 3 min",
       body
     };
   }
-  return blockTipModel(displayPlanForHud());
+  const tip = blockTipModel(displayPlanForHud());
+  return {
+    ...tip,
+    body: `Match what matters from ${turnsBackLabel(displayPlanForHud().n)} ago. Ignore the features that are not part of this block.`
+  };
 }
 
 function renderCoachCallout() {
@@ -2653,13 +3067,14 @@ function renderZonePulseResult() {
   const summary = zonePulseState.latestSummary;
   if (!summary) return "";
   const routeState = zoneRouteState(summary.state);
+  const contract = currentCoachContract();
   const probe = summary.features?.probe || {};
   const reasons = Array.isArray(summary.reasons) && summary.reasons.length ? summary.reasons : [summary.invalidReason || "Run another clean pulse"];
   return `
     <div class="zone-pulse-result">
       <span class="stats-kicker">Zone Check result</span>
       <h2>${escapeHtml(zoneRouteLabel(routeState))}</h2>
-      <p>${escapeHtml(summary.valid ? "Route saved for the next Coach-led session." : (summary.invalidReason || "This pulse did not validate."))}</p>
+      <p>${escapeHtml(zoneRouteReadyCopy(summary, contract))}</p>
       <div class="zone-pulse-metrics">
         ${renderZonePulseMetric("Bits/sec", formatBitsPerSecond(summary.bitsPerSecond))}
         ${renderZonePulseMetric("Confidence", summary.confidence || "Low")}
@@ -2720,15 +3135,20 @@ function renderZonePulseTask() {
 
 function renderZoneCheckPanel() {
   const snapshot = zoneDisplaySnapshot();
+  const contract = currentCoachContract();
+  const targetRoute = coachTargetsForSnapshot(snapshot);
+  const controlsDisabled = activeBlock || activeReasoningBlock || zonePulseIsRunning();
   const routeLabel = snapshot.fresh
-    ? `${snapshot.label} / ${snapshot.routeClass || "check"}`
+    ? `${snapshot.label} / ${targetRoute.routeClass || "check"}`
     : "No fresh Zone pulse";
   return `
     <section class="panel">
       <div class="notice">${escapeHtml(routeLabel)}</div>
       ${renderZoneCheckGraphic(snapshot)}
       <div class="zone-pulse-action-row">
-        <button class="btn btn-primary zone-pulse-launch" type="button" data-action="show-zone-pulse" ${activeBlock || activeReasoningBlock || zonePulseIsRunning() ? "disabled" : ""}>Test your zone</button>
+        ${contract
+          ? coachContractPrimaryActionMarkup(contract, { disabled: controlsDisabled })
+          : `<button class="btn btn-primary zone-pulse-launch" type="button" data-action="show-zone-pulse" ${controlsDisabled ? "disabled" : ""}>Test your zone</button>`}
         <button class="zone-pulse-help-btn" type="button" data-action="toggle-zone-help" aria-label="Open Zone Check help" title="Open Zone Check help">
           <img src="${ZONE_HELP_ICON_URL}" alt="" aria-hidden="true">
         </button>
@@ -2880,7 +3300,7 @@ function renderCoachCycle() {
       <p class="small muted coach-cycle-subtitle">20 sessions total</p>
       <div class="cycle-list">
         ${COACH_FAMILY_CYCLE.map((familyId, index) => {
-          const sessionNo = state.programme.coreSessionNumber + index + 1;
+          const sessionNo = completedUnifiedCoreSessions() + index + 1;
           return `
             <div class="cycle-item${index === 0 ? " is-current" : ""}">
               <span>${sessionNo}. ${escapeHtml(familyLabel(familyId))}</span>
@@ -2893,6 +3313,37 @@ function renderCoachCycle() {
   `;
 }
 
+function reasoningManualDifficultyOptions(familyId, subtype) {
+  if (familyId === "relation_fit") {
+    return subtype === "resolve_slots" ? [4, 5] : [1, 2, 3];
+  }
+  if (familyId === "must_follow") {
+    return subtype === "select_forced" ? [4, 5] : [1, 2, 3];
+  }
+  return [1, 2, 3, 4, 5];
+}
+
+function normalizeReasoningManualDifficulty(value, familyId, subtype) {
+  const options = reasoningManualDifficultyOptions(familyId, subtype);
+  const tier = value === "auto" ? options[0] : clamp(Math.round(Number(value || options[0])), options[0], options[options.length - 1]);
+  if (options.includes(tier)) return tier;
+  return options.reduce((best, option) => Math.abs(option - tier) < Math.abs(best - tier) ? option : best, options[0]);
+}
+
+function normalizeReasoningManualSettings(settings) {
+  const family = REASONING_FAMILIES[settings.family] ? settings.family : "relation_fit";
+  const familyMeta = REASONING_FAMILIES[family] || REASONING_FAMILIES.relation_fit;
+  const subtype = settings.subtype !== "auto" && familyMeta.subtypes[settings.subtype]
+    ? settings.subtype
+    : familyMeta.defaultSubtype;
+  return {
+    ...settings,
+    family,
+    subtype,
+    tier: normalizeReasoningManualDifficulty(settings.tier, family, subtype)
+  };
+}
+
 function renderReasoningTrainingPanel() {
   const settings = reasoningState.settings;
   const familyKeys = Object.keys(REASONING_FAMILIES);
@@ -2901,6 +3352,8 @@ function renderReasoningTrainingPanel() {
   const selectedSubtype = settings.subtype !== "auto" && familyMeta.subtypes[settings.subtype]
     ? settings.subtype
     : familyMeta.defaultSubtype;
+  const difficultyOptions = reasoningManualDifficultyOptions(settings.family, selectedSubtype);
+  const selectedDifficulty = normalizeReasoningManualDifficulty(settings.tier, settings.family, selectedSubtype);
   const settingsLocked = anyGameplayActive() || viewState.reasoningBusy;
   const settingsLockAttr = settingsLocked ? "disabled" : "";
   return `
@@ -2930,22 +3383,15 @@ function renderReasoningTrainingPanel() {
             </select>
           </div>
           <div class="field">
-            <label>Wrapper</label>
-            <select data-reasoning-field="wrapper" ${settingsLockAttr}>
-              ${["real_world", "mixed", "nonsense"].map((value) => `<option value="${value}" ${settings.wrapper === value ? "selected" : ""}>${escapeHtml(value.replace("_", " "))}</option>`).join("")}
-            </select>
-          </div>
-          <div class="field">
             <label>Speed</label>
             <select data-reasoning-field="speed" ${settingsLockAttr}>
               ${["untimed", "normal", "fast"].map((value) => `<option value="${value}" ${settings.speed === value ? "selected" : ""}>${escapeHtml(value)}</option>`).join("")}
             </select>
           </div>
           <div class="field">
-            <label>Tier</label>
+            <label>Difficulty</label>
             <select data-reasoning-field="tier" ${settingsLockAttr}>
-              <option value="auto" ${settings.tier === "auto" ? "selected" : ""}>Auto</option>
-              ${[1, 2, 3, 4, 5].map((tier) => `<option value="${tier}" ${settings.tier === tier ? "selected" : ""}>${tier}</option>`).join("")}
+              ${difficultyOptions.map((tier) => `<option value="${tier}" ${selectedDifficulty === tier ? "selected" : ""}>${tier}</option>`).join("")}
             </select>
           </div>
           <div class="field">
@@ -2996,9 +3442,6 @@ function renderReasoningItemCard() {
   if (!item || !activeReasoningBlock) return "";
   const outcome = activeReasoningBlock.lastOutcome;
   const feedback = activeReasoningBlock.status === "feedback";
-  const limitMs = itemTimeLimitMs(item, activeReasoningBlock.plan.speed);
-  const limitLabel = Number.isFinite(limitMs) ? `${Math.round(limitMs / 1000)}s` : "UNTIMED";
-  const title = item.title_text || item.display_label || reasoningFamilyLabel(item.family);
   const ruleText = item.rule_text || item.display_rule || "";
   const premises = Array.isArray(item.display_premises) ? item.display_premises : (item.premises || []);
   const prompt = item.prompt_text || item.query || "Choose the best answer.";
@@ -3006,25 +3449,14 @@ function renderReasoningItemCard() {
   const feedbackStatus = outcome?.isCorrect ? "Correct" : "Incorrect";
   return `
     <div class="reasoning-item-card">
-      <div class="reasoning-item-topline">
-        <span>${escapeHtml(reasoningFamilyLabel(item.family))}</span>
-        <span>${escapeHtml(reasoningSubtypeLabel(item.family, item.subtype))}</span>
-        <span>${escapeHtml(`${activeReasoningBlock.itemIndex + 1}/${activeReasoningBlock.items.length}`)}</span>
-      </div>
-      <div class="reasoning-rule-card">
-        <span>${escapeHtml(title)}</span>
+      ${ruleText ? `<div class="reasoning-rule-card">
         ${ruleText ? `<strong>${escapeHtml(ruleText)}</strong>` : ""}
-      </div>
+      </div>` : ""}
       ${premises.length ? `<div class="reasoning-premises">
         ${premises.map((premise) => `<p>${escapeHtml(premise)}</p>`).join("")}
       </div>` : ""}
       <div class="reasoning-query">${escapeHtml(prompt)}</div>
       ${hint ? `<div class="reasoning-hint">${escapeHtml(hint)}</div>` : ""}
-      <div class="reasoning-timer-strip">
-        <span>${escapeHtml(activeReasoningBlock.plan.wrapper.replace("_", " "))}</span>
-        <i style="--reasoning-time:${feedback ? 100 : 0}%;"></i>
-        <span>${escapeHtml(limitLabel)}</span>
-      </div>
       <div class="reasoning-options${item.answer_type === "true_false" ? " is-binary" : ""}">
         ${(item.options || []).map((option) => renderReasoningOptionButton(item, option)).join("")}
       </div>
@@ -3081,7 +3513,35 @@ function renderReasoningTacticCapture() {
 function renderReasoningIntro() {
   const session = reasoningState.currentSession;
   const rec = reasoningZoneRecommendation();
-  const family = session?.family || (reasoningState.settings.mode === "coach" ? reasoningFamilyForCoreSession(nextReasoningSessionNumber(reasoningState)) : reasoningState.settings.family);
+  const contract = currentCoachContract();
+  if (contract && capacityRemainingForContract(contract) > 0 && reasoningRemainingForContract(contract) > 0) {
+    return `
+      <div class="coach-callout reasoning-coach-tip" role="status" aria-live="polite">
+        <span>Coach tip</span>
+        <strong>Do Capacity Gym first</strong>
+        <p>${escapeHtml(`You still have ${capacityRemainingForContract(contract)} Capacity block${capacityRemainingForContract(contract) === 1 ? "" : "s"} before the Reasoning part of this session.`)}</p>
+      </div>
+    `;
+  }
+  if (contract && capacityRemainingForContract(contract) <= 0 && reasoningRemainingForContract(contract) > 0) {
+    return `
+      <div class="coach-callout reasoning-coach-tip" role="status" aria-live="polite">
+        <span>Coach tip</span>
+        <strong>Reasoning is next</strong>
+        <p>${escapeHtml(`Capacity is complete. Finish ${reasoningRemainingForContract(contract)} reasoning item${reasoningRemainingForContract(contract) === 1 ? "" : "s"} to complete the session.`)}</p>
+      </div>
+    `;
+  }
+  if (coachState.lastCompleted?.status === "complete") {
+    return `
+      <div class="coach-callout reasoning-coach-tip" role="status" aria-live="polite">
+        <span>Coach tip</span>
+        <strong>Session complete</strong>
+        <p>Good work. Your Capacity and Reasoning targets are complete. Next session starts with a fresh Zone Check.</p>
+      </div>
+    `;
+  }
+  const family = session?.family || (reasoningState.settings.mode === "coach" ? reasoningFamilyForCoreSession(completedUnifiedCoreSessions() + 1) : reasoningState.settings.family);
   const title = rec.recommended
     ? "Test your zone / 3 min"
     : session
@@ -3176,10 +3636,12 @@ function renderReasoningPlayControls() {
   }
   const rec = reasoningZoneRecommendation();
   const session = reasoningState.currentSession;
+  const contract = currentCoachContract();
   return `
     <div class="response-row">
-      ${reasoningState.settings.mode === "coach" && rec.recommended ? `<button class="btn btn-primary" type="button" data-action="show-zone-pulse">Test your zone</button>` : ""}
-      ${reasoningState.settings.mode === "coach" && !session ? `<button class="btn ${rec.recommended ? "btn-dark" : "btn-primary"}" type="button" data-action="start-reasoning-session">${rec.recommended ? "Start anyway" : "Start reasoning session"}</button>` : ""}
+      ${reasoningState.settings.mode === "coach" && contract && capacityRemainingForContract(contract) > 0 ? `<button class="btn btn-primary" type="button" data-action="switch-to-capacity">Go to Capacity Gym</button>` : ""}
+      ${reasoningState.settings.mode === "coach" && rec.recommended && !contract ? `<button class="btn btn-primary" type="button" data-action="show-zone-pulse">Test your zone</button>` : ""}
+      ${reasoningState.settings.mode === "coach" && !session && ((!contract && !rec.recommended) || (contract && capacityRemainingForContract(contract) <= 0 && reasoningRemainingForContract(contract) > 0)) ? `<button class="btn btn-primary" type="button" data-action="start-reasoning-session">Start reasoning session</button>` : ""}
       ${reasoningState.settings.mode === "coach" && session ? `<button class="btn btn-primary" type="button" data-action="start-reasoning-block">Start reasoning block</button>` : ""}
       ${reasoningState.settings.mode === "manual" ? `<button class="btn btn-primary" type="button" data-action="start-reasoning-manual">Start manual reasoning</button>` : ""}
     </div>
@@ -3195,6 +3657,7 @@ function renderReasoningPlayCard() {
         <button class="btn btn-ghost" type="button" data-action="open-left">Coach</button>
         <button class="btn btn-ghost" type="button" data-action="open-right">Stats</button>
       </div>
+      ${showingStats ? "" : renderCoachSessionBar()}
       ${showingStats ? "" : renderHud()}
       <div class="play-body${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""} is-reasoning">
         <div class="arena-shell${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""} is-reasoning">
@@ -3335,6 +3798,7 @@ function renderRightStrip() {
 function renderPlayControls() {
   const coachSession = activeCoachSession();
   const recommendZonePreflight = shouldRecommendCoachZonePreflight();
+  const contract = currentCoachContract();
   if (viewState.centerMode === "zone") {
     if (zonePulseState.phase === "countdown") {
       return `
@@ -3349,6 +3813,14 @@ function renderPlayControls() {
           <button class="response-btn secondary" type="button" data-action="zone-left"><span class="keycap zone-keycap">←</span> Left</button>
           <button class="response-btn" type="button" data-action="zone-right">Right <span class="keycap zone-keycap">→</span></button>
           <button class="response-btn is-stop" type="button" data-action="stop-zone-pulse">Stop</button>
+        </div>
+      `;
+    }
+    if (contract) {
+      return `
+        <div class="response-row">
+          ${coachContractPrimaryActionMarkup(contract, { disabled: activeBlock })}
+          <button class="btn btn-ghost" type="button" data-action="show-play">Return to gameplay</button>
         </div>
       `;
     }
@@ -3395,11 +3867,11 @@ function renderPlayControls() {
   }
   return `
     <div class="response-row">
-      ${coachSession && recommendZonePreflight ? `<button class="btn btn-primary" type="button" data-action="show-zone-pulse" ${activeBlock ? "disabled" : ""}>Test your zone</button>` : ""}
-      ${coachSession ? `<button class="btn ${recommendZonePreflight ? "btn-dark" : "btn-primary"}" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>${recommendZonePreflight ? "Start anyway" : "Start next block"}</button>` : ""}
+      ${contract && capacityRemainingForContract(contract) <= 0 && reasoningRemainingForContract(contract) > 0 ? `<button class="btn btn-primary" type="button" data-action="switch-to-reasoning">Go to Reasoning Gym</button>` : ""}
+      ${coachSession ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start next block</button>` : ""}
       ${state.settings.mode === "manual" ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start manual block</button>` : ""}
-      ${state.settings.mode === "coach" && !state.currentSession && recommendZonePreflight ? `<button class="btn btn-primary" type="button" data-action="show-zone-pulse" ${activeBlock ? "disabled" : ""}>Test your zone</button>` : ""}
-      ${state.settings.mode === "coach" && !state.currentSession ? `<button class="btn btn-dark" type="button" data-action="start-coach-session" ${activeBlock ? "disabled" : ""}>${recommendZonePreflight ? "Start anyway" : "Start coach session"}</button>` : ""}
+      ${state.settings.mode === "coach" && !state.currentSession && !contract && recommendZonePreflight ? `<button class="btn btn-primary" type="button" data-action="show-zone-pulse" ${activeBlock ? "disabled" : ""}>Test your zone</button>` : ""}
+      ${state.settings.mode === "coach" && !state.currentSession && ((!contract && !recommendZonePreflight) || (contract && capacityRemainingForContract(contract) > 0)) ? `<button class="btn btn-primary" type="button" data-action="start-coach-session" ${activeBlock ? "disabled" : ""}>Start capacity session</button>` : ""}
     </div>
   `;
 }
@@ -3413,6 +3885,7 @@ function renderPlayCard() {
         <button class="btn btn-ghost" type="button" data-action="open-left">Coach</button>
         <button class="btn btn-ghost" type="button" data-action="open-right">Stats</button>
       </div>
+      ${showingStats ? "" : renderCoachSessionBar()}
       ${showingStats ? "" : renderHud()}
       <div class="play-body${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""}">
         <div class="arena-shell${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""}">
@@ -3486,6 +3959,8 @@ function resetSessions() {
     programmeCompletedAt: null
   };
   state.history = [];
+  coachState = createDefaultUnifiedCoachState();
+  saveUnifiedCoachState(coachState);
   saveState();
   viewState.centerMode = "play";
   viewState.message = "Session count and session stats reset. Wallet credits and settings are unchanged.";
@@ -3518,6 +3993,23 @@ document.addEventListener("click", (event) => {
     viewState.leftOpen = false;
     viewState.rightOpen = false;
     viewState.reasoningCloseSession = null;
+    triggerSfx("ui_tap_soft");
+    render();
+    return;
+  }
+  if (action === "switch-to-reasoning" || action === "switch-to-capacity") {
+    if (anyGameplayActive()) {
+      triggerSfx("invalid_action");
+      return;
+    }
+    saveActiveModule(action === "switch-to-reasoning" ? "reasoning" : "capacity");
+    viewState.centerMode = "play";
+    viewState.leftOpen = false;
+    viewState.rightOpen = false;
+    viewState.reasoningCloseSession = null;
+    viewState.message = action === "switch-to-reasoning"
+      ? "Reasoning Gym is ready. Finish the logic items to complete this session."
+      : "Capacity Gym is ready. Finish the remaining blocks to complete this session.";
     triggerSfx("ui_tap_soft");
     render();
     return;
@@ -3563,6 +4055,10 @@ document.addEventListener("click", (event) => {
       if (reasoningState.settings.subtype === "auto" || !familyMeta.subtypes[reasoningState.settings.subtype]) {
         reasoningState.settings.subtype = familyMeta.defaultSubtype;
       }
+      if (reasoningState.settings.tier === "auto") {
+        reasoningState.settings.tier = 1;
+      }
+      reasoningState.settings = normalizeReasoningManualSettings(reasoningState.settings);
     }
     reasoningState.currentSession = null;
     saveReasoningState();
@@ -3619,6 +4115,11 @@ document.addEventListener("click", (event) => {
     if (activeReasoningBlock) return;
     if (!window.confirm("Reset Reasoning Gym session count and reasoning history on this device? Wallet credits stay unchanged.")) return;
     reasoningState = createDefaultReasoningState();
+    coachState = createDefaultUnifiedCoachState();
+    state.programme.coreSessionNumber = 0;
+    state.currentSession = null;
+    saveUnifiedCoachState(coachState);
+    saveState();
     saveReasoningState(reasoningState);
     viewState.centerMode = "play";
     viewState.reasoningCloseSession = null;
@@ -3675,6 +4176,22 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "show-zone-pulse") {
+    showZonePulse();
+    return;
+  }
+  if (action === "recheck-replan-session") {
+    if (anyGameplayActive()) {
+      triggerSfx("invalid_action");
+      return;
+    }
+    if (!window.confirm("Re-check and set a new target for this coached session? Current unfinished coached progress will be replaced.")) return;
+    coachState.active = null;
+    state.currentSession = null;
+    reasoningState.currentSession = null;
+    saveUnifiedCoachState();
+    saveState();
+    saveReasoningState();
+    viewState.message = "Run a fresh Zone Check to set a new Capacity and Reasoning target.";
     showZonePulse();
     return;
   }
@@ -3754,17 +4271,15 @@ document.addEventListener("change", (event) => {
       settings.subtype = familyMeta.subtypes[target.value] && target.value !== "auto"
         ? target.value
         : familyMeta.defaultSubtype;
-    } else if (reasoningField === "wrapper") {
-      settings.wrapper = target.value === "mixed" || target.value === "nonsense" ? target.value : "real_world";
     } else if (reasoningField === "speed") {
       settings.speed = target.value === "untimed" ? "untimed" : target.value === "fast" ? "fast" : "normal";
     } else if (reasoningField === "tier") {
-      settings.tier = target.value === "auto" ? "auto" : clamp(Math.round(Number(target.value || 1)), 1, 5);
+      settings.tier = clamp(Math.round(Number(target.value || 1)), 1, 5);
     } else if (reasoningField === "itemsPerBlock") {
       const count = Math.round(Number(target.value || 5));
       settings.itemsPerBlock = REASONING_MANUAL_ITEM_OPTIONS.includes(count) ? count : 5;
     }
-    reasoningState.settings = settings;
+    reasoningState.settings = normalizeReasoningManualSettings(settings);
     saveReasoningState();
     unlockAudioGesture();
     triggerSfx("ui_tap_soft");

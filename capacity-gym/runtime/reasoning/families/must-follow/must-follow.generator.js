@@ -99,9 +99,9 @@ const REAL_CONDITIONALS = [
 ];
 
 const REAL_EXCLUSIONS = [
-  { entity: "Kemi", classA: "ravs", classB: "daxes", extra: "loms" },
-  { entity: "Mira", classA: "sealed files", classB: "public files", extra: "old files" },
-  { entity: "Token 7", classA: "blue tokens", classB: "red tokens", extra: "round tokens" }
+  { entity: "File K", classA: "sealed files", bridge: "restricted files", top: "secure records", classB: "public files", extra: "archived files" },
+  { entity: "Record M", classA: "confidential records", bridge: "protected records", top: "secure files", classB: "public records", extra: "reviewed records" },
+  { entity: "Token 7", classA: "priority tokens", bridge: "tracked tokens", top: "audit items", classB: "discard tokens", extra: "round tokens" }
 ];
 
 const NOUN_STEMS = ["Naro", "Sema", "Davin", "Kiro", "Luma", "Pelin", "Tavo", "Zerin", "Mira", "Boren", "Rika", "Velu", "Sorin", "Keda", "Falin", "Jora"];
@@ -298,8 +298,14 @@ function disjointStatement(lhs, rhs) {
   return statement(`No ${lhs.label} are ${rhs.label}.`, { relation: "disjoint_with", lhs: lhs.id, rhs: rhs.id, polarity: "positive" });
 }
 
+function classPhrase(cls) {
+  if (cls.kind === "property") return cls.singular;
+  const article = /^[aeiou]/i.test(String(cls.singular).trim()) ? "an" : "a";
+  return `${article} ${cls.singular}`;
+}
+
 function memberStatement(entity, cls, polarity = "positive") {
-  const text = polarity === "negative" ? `${entity.name} is not ${cls.singular}.` : `${entity.name} is ${cls.singular}.`;
+  const text = polarity === "negative" ? `${entity.name} is not ${classPhrase(cls)}.` : `${entity.name} is ${classPhrase(cls)}.`;
   return statement(text, { relation: "member_of", lhs: entity.id, rhs: cls.id, polarity });
 }
 
@@ -314,11 +320,11 @@ function unrelatedStatement(a, b) {
 function makeClass(label, index = 0) {
   const clean = String(label).replace(/\.$/, "");
   const singular = clean.endsWith("s") ? clean.slice(0, -1) : clean;
-  return { id: entityId(clean, index), label: clean, singular };
+  return { id: entityId(clean, index), label: clean, singular, kind: "class" };
 }
 
 function makeProperty(label, index = 0) {
-  return { id: entityId(label, index), label, singular: label };
+  return { id: entityId(label, index), label, singular: label, kind: "property" };
 }
 
 function closureMaps(premises = []) {
@@ -742,12 +748,14 @@ function buildConditionalItem({ wrapperType, tier, promptType, rng, itemOffset, 
 
 function exclusionPack(wrapperType, rng) {
   if (wrapperType === "nonsense") {
-    const [classA, classB, extra] = uniqueWords(3, generateClassWord, rng);
+    const [classA, classB, extra, bridge, top] = uniqueWords(5, generateClassWord, rng);
     return {
       entity: makeEntity(generatePronounceableWord(rng), 0),
       classA: makeClass(classA, 1),
       classB: makeClass(classB, 2),
-      extra: makeClass(extra, 3)
+      extra: makeClass(extra, 3),
+      bridge: makeClass(bridge, 4),
+      top: makeClass(top, 5)
     };
   }
   const picked = choice(REAL_EXCLUSIONS, rng);
@@ -755,14 +763,16 @@ function exclusionPack(wrapperType, rng) {
     entity: makeEntity(picked.entity, 0),
     classA: makeClass(picked.classA, 1),
     classB: makeClass(picked.classB, 2),
-    extra: makeClass(picked.extra, 3)
+    extra: makeClass(picked.extra, 3),
+    bridge: makeClass(picked.bridge || "restricted files", 4),
+    top: makeClass(picked.top || "secure records", 5)
   };
 }
 
 function buildSetExclusionItem({ wrapperType, tier, promptType, rng, itemOffset }) {
   const pack = exclusionPack(wrapperType, rng);
-  const bridge = makeClass(wrapperType === "nonsense" ? generateClassWord(rng) : "restricted files", 4);
-  const top = makeClass(wrapperType === "nonsense" ? generateClassWord(rng) : "secure records", 5);
+  const bridge = pack.bridge;
+  const top = pack.top;
   const premises = tier >= 5
     ? [subsetStatement(pack.classA, bridge), subsetStatement(bridge, top), disjointStatement(top, pack.classB), memberStatement(pack.entity, pack.classA)]
     : [disjointStatement(pack.classA, pack.classB), memberStatement(pack.entity, pack.classA)];
