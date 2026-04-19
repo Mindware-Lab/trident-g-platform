@@ -6,7 +6,7 @@ import {
   displayHubTargetLabel,
   isHubMatchAtIndex,
   summarizeHubBlock
-} from "./runtime/hub-engine.js?v=20260419-blockflow";
+} from "./runtime/hub-engine.js?v=20260419-feedbacksimple";
 import {
   initAudio,
   playSfx,
@@ -41,7 +41,7 @@ import {
   scoreReasoningResponse,
   summarizeReasoningBlock,
   updateReasoningFamilyState
-} from "./runtime/reasoning/engine.js?v=20260419-blockflow";
+} from "./runtime/reasoning/engine.js?v=20260419-feedbacksimple";
 
 const STORAGE_KEY = "tg_iq_live_capacity_v2";
 const ECONOMY_KEY = "tg_iq_live_economy_v1";
@@ -2991,97 +2991,6 @@ function renderReasoningOptionButton(item, option) {
   `;
 }
 
-function reasoningOptionById(item, id) {
-  return (item.options || []).find((option) => option.id === id) || null;
-}
-
-function formatReasoningAnswerSet(item, ids, emptyLabel = "No answer") {
-  const rows = (ids || [])
-    .map((id) => {
-      const option = reasoningOptionById(item, id);
-      return option ? `${id}: ${option.text}` : id;
-    })
-    .filter(Boolean);
-  return rows.length ? rows.join(" + ") : emptyLabel;
-}
-
-function relationExactRuleCopy(item) {
-  if (item?.semantic_v2) return "";
-  if (item?.subtype !== "select_all_valid" && item?.subtype !== "relation_satisfaction") return "";
-  return "Keep the shown relationship exactly; do not choose a sentence that changes who has the role.";
-}
-
-function optionFeedbackCopy(item, id) {
-  const option = reasoningOptionById(item, id);
-  if (!option) return "";
-  return option.explanation || "";
-}
-
-function semanticOutcomeCopy(item, outcome, baseFeedbackText, fallbackText) {
-  const selected = outcome?.selected || [];
-  const correct = outcome?.correct || [];
-  const extra = selected.filter((id) => !correct.includes(id));
-  const missed = correct.filter((id) => !selected.includes(id));
-  const parts = [];
-  extra.forEach((id) => {
-    const explanation = optionFeedbackCopy(item, id);
-    parts.push(`Extra pick ${formatReasoningAnswerSet(item, [id])}. ${explanation || "That choice does not fit the prompt."}`);
-  });
-  missed.forEach((id) => {
-    const explanation = optionFeedbackCopy(item, id);
-    parts.push(`Missing ${formatReasoningAnswerSet(item, [id])}. ${explanation || "That choice fits the prompt."}`);
-  });
-  parts.push(baseFeedbackText || item.feedback_text || fallbackText);
-  return parts.join(" ");
-}
-
-function relationOutcomeCopy(item, outcome, baseFeedbackText) {
-  const selected = outcome?.selected || [];
-  const correct = outcome?.correct || [];
-  const extra = selected.filter((id) => !correct.includes(id));
-  const missed = correct.filter((id) => !selected.includes(id));
-  const parts = [];
-  if (item?.semantic_v2) {
-    return semanticOutcomeCopy(item, outcome, baseFeedbackText, "Keep the same relationship pattern.");
-  } else {
-    if (extra.length) {
-      parts.push(`Extra pick ${formatReasoningAnswerSet(item, extra)} changes the relationship.`);
-    }
-    if (missed.length) {
-      parts.push(`Missing ${formatReasoningAnswerSet(item, missed)} keeps the relationship.`);
-    }
-  }
-  const exactCopy = relationExactRuleCopy(item);
-  if (exactCopy) parts.push(exactCopy);
-  parts.push(baseFeedbackText || item.feedback_text || "Keep the same relationship pattern.");
-  return parts.join(" ");
-}
-
-function familyReasoningExplanation(item, outcome, baseFeedbackText) {
-  if (item.family === "relation_fit") return relationOutcomeCopy(item, outcome, baseFeedbackText);
-  const explanation = item.explanation || baseFeedbackText || item.feedback_text || "Review the rule before the next item.";
-  if (item.family === "must_follow") {
-    if (item.semantic_v2) return semanticOutcomeCopy(item, outcome, baseFeedbackText, "Use only what the facts force.");
-    return `Use only the facts shown. ${explanation}`;
-  }
-  if (item.family === "best_rule_so_far") {
-    return `Use the rule that fits the whole pattern so far. ${explanation}`;
-  }
-  return explanation;
-}
-
-function detailedReasoningFeedback(item, outcome, baseFeedbackText) {
-  const correctAnswer = formatReasoningAnswerSet(item, outcome?.correct || [], "No listed correct answer");
-  const selectedAnswer = outcome?.timedOut
-    ? "No answer before time ran out"
-    : formatReasoningAnswerSet(item, outcome?.selected || [], "No answer selected");
-  const explanation = familyReasoningExplanation(item, outcome, baseFeedbackText);
-  if (outcome?.isCorrect) {
-    return `Correct answer: ${correctAnswer}. ${explanation}`;
-  }
-  return `Your answer: ${selectedAnswer}. Correct answer: ${correctAnswer}. ${explanation}`;
-}
-
 function renderReasoningItemCard() {
   const item = currentReasoningItem();
   if (!item || !activeReasoningBlock) return "";
@@ -3094,13 +3003,7 @@ function renderReasoningItemCard() {
   const premises = Array.isArray(item.display_premises) ? item.display_premises : (item.premises || []);
   const prompt = item.prompt_text || item.query || "Choose the best answer.";
   const hint = item.hint_text || item.helper_text || "";
-  const feedbackTitle = outcome?.isCorrect ? "Correct!" : outcome?.timedOut ? "Time ran out" : (item.feedback_title || "Check the rule");
-  const baseFeedbackText = outcome?.isCorrect
-    ? (item.feedback_correct || "That matches.")
-    : outcome?.timedOut
-      ? (item.feedback_timeout || item.feedback_text || "Review the rule before the next item.")
-      : (item.feedback_incorrect || item.feedback_text || "Review the rule before the next item.");
-  const feedbackText = detailedReasoningFeedback(item, outcome, baseFeedbackText);
+  const feedbackStatus = outcome?.isCorrect ? "Correct" : "Incorrect";
   return `
     <div class="reasoning-item-card">
       <div class="reasoning-item-topline">
@@ -3129,10 +3032,8 @@ function renderReasoningItemCard() {
         <button class="btn btn-primary reasoning-submit" type="button" data-action="reasoning-submit">Submit Answer</button>
       ` : ""}
       ${feedback ? `
-        <div class="coach-callout reasoning-feedback-tip" role="status" aria-live="polite">
-          <span>Puzzle cue</span>
-          <strong>${escapeHtml(feedbackTitle)}</strong>
-          <p>${escapeHtml(feedbackText)}</p>
+        <div class="reasoning-feedback-tip ${outcome?.isCorrect ? "is-correct" : "is-incorrect"}" role="status" aria-live="polite">
+          <strong>${escapeHtml(feedbackStatus)}</strong>
         </div>
       ` : ""}
     </div>

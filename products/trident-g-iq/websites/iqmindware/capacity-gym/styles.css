@@ -1548,10 +1548,31 @@ button {
 .reasoning-feedback-tip {
   width: min(100%, 620px);
   justify-self: center;
+  padding: 14px 16px;
+  border: 1px solid rgba(204, 255, 102, 0.54);
+  background: rgba(35, 65, 35, 0.46);
+  box-shadow: 0 0 18px rgba(204, 255, 102, 0.14);
+  text-align: center;
 }
 
-.reasoning-feedback-tip p {
-  max-width: 68ch;
+.reasoning-feedback-tip strong {
+  color: var(--transfer);
+  font-family: "Orbitron", monospace;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.reasoning-feedback-tip.is-incorrect {
+  border-color: rgba(255, 89, 89, 0.62);
+  background: rgba(88, 26, 36, 0.52);
+  box-shadow: 0 0 18px rgba(255, 89, 89, 0.14);
+}
+
+.reasoning-feedback-tip.is-incorrect strong {
+  color: #ff5959;
 }
 
 .reasoning-capture-grid {
