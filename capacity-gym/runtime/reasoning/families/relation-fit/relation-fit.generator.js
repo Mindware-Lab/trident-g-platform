@@ -179,7 +179,7 @@ function slotPromptTypeFor(tier, itemOffset = 0) {
 }
 
 function promptCopy(promptType) {
-  if (promptType === "same_relation_single") return "Select all statements that match the same relation.";
+  if (promptType === "same_relation_single") return "Select the statement that matches the same relation.";
   if (promptType === "same_relation_multi") return "Select all statements that match the same relation.";
   if (promptType === "choose_x") return "Who is X?";
   if (promptType === "choose_y") return "Who is Y?";
