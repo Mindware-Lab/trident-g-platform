@@ -6,7 +6,7 @@ import {
   displayHubTargetLabel,
   isHubMatchAtIndex,
   summarizeHubBlock
-} from "./runtime/hub-engine.js?v=20260419-relfamily45";
+} from "./runtime/hub-engine.js?v=20260419-reldiffmenu";
 import {
   initAudio,
   playSfx,
@@ -41,7 +41,7 @@ import {
   scoreReasoningResponse,
   summarizeReasoningBlock,
   updateReasoningFamilyState
-} from "./runtime/reasoning/engine.js?v=20260419-relfamily45";
+} from "./runtime/reasoning/engine.js?v=20260419-reldiffmenu";
 
 const STORAGE_KEY = "tg_iq_live_capacity_v2";
 const ECONOMY_KEY = "tg_iq_live_economy_v1";
@@ -1434,7 +1434,11 @@ async function startReasoningBlock({ manual = false } = {}) {
   render();
   try {
     const session = manual ? null : reasoningState.currentSession;
-    const manualSettings = manual ? reasoningState.settings : null;
+    const manualSettings = manual ? normalizeReasoningManualSettings(reasoningState.settings) : null;
+    if (manual) {
+      reasoningState.settings = manualSettings;
+      saveReasoningState();
+    }
     const block = await buildReasoningBlock({
       state: reasoningState,
       session,
@@ -2893,6 +2897,34 @@ function renderCoachCycle() {
   `;
 }
 
+function reasoningManualDifficultyOptions(familyId, subtype) {
+  if (familyId === "relation_fit") {
+    return subtype === "resolve_slots" ? [4, 5] : [1, 2, 3];
+  }
+  return [1, 2, 3, 4, 5];
+}
+
+function normalizeReasoningManualDifficulty(value, familyId, subtype) {
+  const options = reasoningManualDifficultyOptions(familyId, subtype);
+  const tier = value === "auto" ? options[0] : clamp(Math.round(Number(value || options[0])), options[0], options[options.length - 1]);
+  if (options.includes(tier)) return tier;
+  return options.reduce((best, option) => Math.abs(option - tier) < Math.abs(best - tier) ? option : best, options[0]);
+}
+
+function normalizeReasoningManualSettings(settings) {
+  const family = REASONING_FAMILIES[settings.family] ? settings.family : "relation_fit";
+  const familyMeta = REASONING_FAMILIES[family] || REASONING_FAMILIES.relation_fit;
+  const subtype = settings.subtype !== "auto" && familyMeta.subtypes[settings.subtype]
+    ? settings.subtype
+    : familyMeta.defaultSubtype;
+  return {
+    ...settings,
+    family,
+    subtype,
+    tier: normalizeReasoningManualDifficulty(settings.tier, family, subtype)
+  };
+}
+
 function renderReasoningTrainingPanel() {
   const settings = reasoningState.settings;
   const familyKeys = Object.keys(REASONING_FAMILIES);
@@ -2901,7 +2933,8 @@ function renderReasoningTrainingPanel() {
   const selectedSubtype = settings.subtype !== "auto" && familyMeta.subtypes[settings.subtype]
     ? settings.subtype
     : familyMeta.defaultSubtype;
-  const selectedDifficulty = settings.tier === "auto" ? 1 : settings.tier;
+  const difficultyOptions = reasoningManualDifficultyOptions(settings.family, selectedSubtype);
+  const selectedDifficulty = normalizeReasoningManualDifficulty(settings.tier, settings.family, selectedSubtype);
   const settingsLocked = anyGameplayActive() || viewState.reasoningBusy;
   const settingsLockAttr = settingsLocked ? "disabled" : "";
   return `
@@ -2939,7 +2972,7 @@ function renderReasoningTrainingPanel() {
           <div class="field">
             <label>Difficulty</label>
             <select data-reasoning-field="tier" ${settingsLockAttr}>
-              ${[1, 2, 3, 4, 5].map((tier) => `<option value="${tier}" ${selectedDifficulty === tier ? "selected" : ""}>${tier}</option>`).join("")}
+              ${difficultyOptions.map((tier) => `<option value="${tier}" ${selectedDifficulty === tier ? "selected" : ""}>${tier}</option>`).join("")}
             </select>
           </div>
           <div class="field">
@@ -3561,6 +3594,7 @@ document.addEventListener("click", (event) => {
       if (reasoningState.settings.tier === "auto") {
         reasoningState.settings.tier = 1;
       }
+      reasoningState.settings = normalizeReasoningManualSettings(reasoningState.settings);
     }
     reasoningState.currentSession = null;
     saveReasoningState();
@@ -3760,7 +3794,7 @@ document.addEventListener("change", (event) => {
       const count = Math.round(Number(target.value || 5));
       settings.itemsPerBlock = REASONING_MANUAL_ITEM_OPTIONS.includes(count) ? count : 5;
     }
-    reasoningState.settings = settings;
+    reasoningState.settings = normalizeReasoningManualSettings(settings);
     saveReasoningState();
     unlockAudioGesture();
     triggerSfx("ui_tap_soft");

@@ -1,6 +1,6 @@
 import { createSeededRng, reasoningSeed, shuffleWithRng } from "./random.js";
-import * as relationFitGenerator from "./families/relation-fit/relation-fit.generator.js?v=20260419-relfamily45";
-import * as mustFollowGenerator from "./families/must-follow/must-follow.generator.js?v=20260419-relfamily45";
+import * as relationFitGenerator from "./families/relation-fit/relation-fit.generator.js?v=20260419-reldiffmenu";
+import * as mustFollowGenerator from "./families/must-follow/must-follow.generator.js?v=20260419-reldiffmenu";
 
 export const REASONING_VERSION = 1;
 export const REASONING_STORAGE_KEY = "tg_iq_live_reasoning_v1";
