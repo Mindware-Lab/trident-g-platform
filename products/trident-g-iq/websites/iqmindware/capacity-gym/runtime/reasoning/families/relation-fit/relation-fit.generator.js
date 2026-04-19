@@ -6,7 +6,7 @@
 export const RELATION_FIT_VERSION = "2.0.0";
 
 export const SEMANTIC_LABELS = ["equivalent", "contradiction", "consistent", "forced", "irrelevant"];
-export const PROMPT_TYPES = ["same_relation_single", "same_relation_multi", "choose_x", "choose_y", "choose_z", "choose_assignment", "choose_not_enough_information"];
+export const PROMPT_TYPES = ["same_relation_single", "same_relation_multi", "choose_x", "choose_y", "choose_z", "choose_w", "choose_assignment", "choose_not_enough_information"];
 export const NEGATION_POLICY = {
   introducedAtTier: null,
   note: "Relation Fit V2 does not generate negated statements yet; polarity stays positive until a later negation-specific tier is added."
@@ -162,7 +162,7 @@ export function generateEntitySet(count = 6, rng = Math.random) {
 export function normalizeRelationSubtype(value, tier = 1) {
   const aliased = SUBTYPE_ALIASES[value] || value;
   if (aliased === "same_relation" || aliased === "resolve_slots") return aliased;
-  return tier >= 3 ? "resolve_slots" : "same_relation";
+  return tier >= 4 ? "resolve_slots" : "same_relation";
 }
 
 function promptTypeFor(tier, subtype, rng = Math.random) {
@@ -174,7 +174,7 @@ function promptTypeFor(tier, subtype, rng = Math.random) {
 }
 
 function slotPromptTypeFor(tier, itemOffset = 0) {
-  const cycle = tier >= 5 ? ["choose_x", "choose_y", "choose_z", "choose_assignment"] : ["choose_x", "choose_y", "choose_z"];
+  const cycle = tier >= 5 ? ["choose_x", "choose_y", "choose_z", "choose_w"] : ["choose_x", "choose_y", "choose_z"];
   return cycle[itemOffset % cycle.length];
 }
 
@@ -184,6 +184,7 @@ function promptCopy(promptType) {
   if (promptType === "choose_x") return "Who is X?";
   if (promptType === "choose_y") return "Who is Y?";
   if (promptType === "choose_z") return "Which item belongs in slot Z?";
+  if (promptType === "choose_w") return "Which item belongs in slot W?";
   if (promptType === "choose_assignment") return "Which full assignment fits the facts?";
   if (promptType === "choose_not_enough_information") return "Is there enough information to solve the slot?";
   return "Choose the best answer.";
@@ -191,7 +192,7 @@ function promptCopy(promptType) {
 
 function correctLabelsForPrompt(promptType) {
   if (promptType === "same_relation_single" || promptType === "same_relation_multi") return new Set(["equivalent"]);
-  if (promptType === "choose_x" || promptType === "choose_y" || promptType === "choose_z" || promptType === "choose_assignment" || promptType === "choose_not_enough_information") return new Set(["forced"]);
+  if (promptType === "choose_x" || promptType === "choose_y" || promptType === "choose_z" || promptType === "choose_w" || promptType === "choose_assignment" || promptType === "choose_not_enough_information") return new Set(["forced"]);
   return new Set(["forced"]);
 }
 
@@ -717,7 +718,7 @@ function complexityForTier(tier, promptType) {
     if (tier === 4) return { binding: 2, uncertainty: 2, control: 3 };
     return { binding: 2, uncertainty: 3, control: 3 };
   }
-  if (promptType === "choose_x" || promptType === "choose_y" || promptType === "choose_z") return { binding: Math.min(4, Math.max(2, tier)), uncertainty: tier >= 4 ? 3 : 2, control: tier >= 5 ? 4 : 3 };
+  if (promptType === "choose_x" || promptType === "choose_y" || promptType === "choose_z" || promptType === "choose_w") return { binding: Math.min(4, Math.max(2, tier)), uncertainty: tier >= 4 ? 3 : 2, control: tier >= 5 ? 4 : 3 };
   if (promptType === "choose_assignment") return { binding: 4, uncertainty: 4, control: 4 };
   return { binding: Math.min(4, tier), uncertainty: 4, control: 4 };
 }
@@ -753,7 +754,7 @@ function baseItem({ relation, wrapperType, tier, promptType, subtype, premises, 
     premises: premises.map((premise) => premise.text),
     query: prompt,
     prompt_text: prompt,
-    answer_type: promptType === "same_relation_single" || promptType === "choose_x" || promptType === "choose_y" || promptType === "choose_z" || promptType === "choose_assignment" || promptType === "choose_not_enough_information" ? "single_choice" : "multi_select",
+    answer_type: promptType === "same_relation_single" || promptType === "choose_x" || promptType === "choose_y" || promptType === "choose_z" || promptType === "choose_w" || promptType === "choose_assignment" || promptType === "choose_not_enough_information" ? "single_choice" : "multi_select",
     options: withIds,
     correct_answer: correctAnswerIds(withIds, promptType),
     explanation: itemExplanation(withIds, promptType),
@@ -1059,6 +1060,11 @@ function preFlightCheckSlotPuzzle({ rolePattern, clues, slots, values, askIndex 
   ].filter(Boolean).length;
   const requiredFeatureCount = tier <= 1 ? 1 : 2;
   return {
+    slot_count: slots.length,
+    clue_count: clues.length,
+    adjacent_clue_count: clues.filter((clue) => clue.clue_kind === "adjacent").length,
+    span_clue_count: clues.filter((clue) => clue.clue_kind === "span").length,
+    asked_slot: roleForIndex(askIndex),
     unique_solution: solutions.length === 1,
     solution_count: solutions.length,
     solution: solutions[0]?.assignment || null,
@@ -1082,6 +1088,7 @@ function slotIndexForPrompt(promptType, itemOffset, slotCount) {
   if (promptType === "choose_x") return 0;
   if (promptType === "choose_y") return 1;
   if (promptType === "choose_z") return Math.min(2, slotCount - 1);
+  if (promptType === "choose_w") return Math.min(3, slotCount - 1);
   return itemOffset % Math.min(3, slotCount);
 }
 
@@ -1097,22 +1104,30 @@ function swappedAssignmentRows(slots, values, leftIndex, rightIndex) {
 
 function buildSlotAssignmentItem({ relation, wrapperType = "real_world", tier = 3, promptType = "choose_x", rng = Math.random, itemOffset = 0 } = {}) {
   const lexicon = relationLexicon(relation, wrapperType, rng);
-  const slotCount = tier >= 4 ? 4 : 3;
+  const slotCount = tier >= 5 ? 4 : 3;
   const slots = Array.from({ length: slotCount }, (_, index) => makeEntity(`slot_${roleForIndex(index).toLowerCase()}`, roleForIndex(index)));
   const values = entitySequenceFor(relation, wrapperType, slotCount + 1, rng);
   const rolePattern = Array.from({ length: slotCount - 1 }, (_, index) => roleStatementFor(relation, slots, index, { wrapperType, lexicon, inverse: false }));
   const askIndex = slotIndexForPrompt(promptType, itemOffset, slotCount);
   const inverseEdgeIndex = Math.abs(itemOffset) % Math.max(1, slotCount - 1);
-  const clues = nonMirroringClueOrder([
+  const buildClues = (includeSpanClue = false) => nonMirroringClueOrder([
     ...Array.from({ length: slotCount - 1 }, (_, index) => {
       const useInverse = index === inverseEdgeIndex || (tier >= 4 && (itemOffset + index) % 3 === 1);
       return adjacentClueFor(relation, values, index, { wrapperType, lexicon, inverse: useInverse });
     }),
-    ...(slotCount === 3 && askIndex === 1
+    ...(slotCount === 3 && askIndex === 1 && includeSpanClue
       ? [endpointClueFor(relation, values, 2, { wrapperType, lexicon, inverse: (itemOffset + tier) % 2 === 0 })]
       : [])
   ], slotCount, rng);
-  const preFlight = preFlightCheckSlotPuzzle({ rolePattern, clues, slots, values, askIndex, tier });
+  let clues = buildClues(tier < 4);
+  let preFlight = preFlightCheckSlotPuzzle({ rolePattern, clues, slots, values, askIndex, tier });
+  if (!preFlight.valid && tier >= 4 && slotCount === 3 && askIndex === 1 && preFlight.no_trivial_positional_solve === false) {
+    clues = buildClues(true);
+    preFlight = {
+      ...preFlightCheckSlotPuzzle({ rolePattern, clues, slots, values, askIndex, tier }),
+      used_span_rescue: true
+    };
+  }
   if (!preFlight.valid) {
     throw new Error(`Relation Fit resolve_slots pre-flight failed: ${JSON.stringify(preFlight)}`);
   }
@@ -1195,7 +1210,7 @@ export function makeBlockPlan(state = {}) {
   const lateCollapse = state.late_collapse ?? false;
   const wrapperCost = state.recent_wrapper_cost ?? 0.0;
   const tier = Math.max(1, Math.min(5, Math.round(Number(state.current_tier ?? 1) || 1)));
-  const normalizedSubtype = normalizeRelationSubtype(state.focusSubtype || (tier >= 3 ? "resolve_slots" : "same_relation"), tier);
+  const normalizedSubtype = tier >= 4 ? "resolve_slots" : "same_relation";
   const next = {
     decision: "HOLD",
     nextTier: tier,
@@ -1206,31 +1221,39 @@ export function makeBlockPlan(state = {}) {
   if (accuracy >= 0.85 && !lateCollapse) {
     next.decision = "UP";
     if (normalizedSubtype === "same_relation") {
-      if (tier < 2) next.nextTier = 2;
-      else if ((state.wrapper_mode ?? "real_world") === "real_world") next.nextWrapperMode = "mixed";
-      else {
-        next.nextTier = 3;
+      if (tier < 3) {
+        next.nextTier = tier + 1;
         next.nextWrapperMode = "real_world";
+        next.focusSubtype = "same_relation";
+      } else {
+        next.nextTier = 4;
+        next.nextWrapperMode = "real_world";
+        next.nextSpeedMode = "normal";
         next.focusSubtype = "resolve_slots";
       }
+    } else if (tier < 5) {
+      next.nextTier = tier + 1;
+      next.nextWrapperMode = "real_world";
+      next.nextSpeedMode = "normal";
+      next.focusSubtype = "resolve_slots";
     } else if ((state.wrapper_mode ?? "real_world") === "real_world") {
       next.nextWrapperMode = "mixed";
-    } else if ((state.speed_mode ?? "normal") === "normal" && wrapperCost < 0.2 && tier >= 3) {
+    } else if ((state.speed_mode ?? "normal") === "normal" && wrapperCost < 0.2 && tier >= 4) {
       next.nextSpeedMode = "fast";
     } else {
       next.nextTier = Math.min(5, tier + 1);
     }
-    if (next.focusSubtype !== "resolve_slots") next.focusSubtype = next.nextTier >= 3 ? "resolve_slots" : "same_relation";
+    if (next.focusSubtype !== "resolve_slots") next.focusSubtype = next.nextTier >= 4 ? "resolve_slots" : "same_relation";
   } else if (accuracy < 0.7 || lateCollapse) {
     next.decision = "DOWN";
     next.nextSpeedMode = "normal";
     next.nextWrapperMode = "real_world";
-    if (normalizedSubtype === "resolve_slots" && tier <= 3) {
-      next.nextTier = 2;
+    if (normalizedSubtype === "resolve_slots" && tier <= 4) {
+      next.nextTier = 3;
       next.focusSubtype = "same_relation";
     } else {
       next.nextTier = Math.max(1, tier - 1);
-      next.focusSubtype = next.nextTier >= 3 ? "resolve_slots" : "same_relation";
+      next.focusSubtype = next.nextTier >= 4 ? "resolve_slots" : "same_relation";
     }
   }
   return next;
@@ -1240,7 +1263,7 @@ export function generateAdaptiveBlock(state = {}, rng = Math.random) {
   const plan = makeBlockPlan(state);
   const wrapperMode = state.wrapper_mode || plan.nextWrapperMode || "real_world";
   const tier = plan.nextTier;
-  const subtype = normalizeRelationSubtype(state.focusSubtype || plan.focusSubtype, tier);
+  const subtype = normalizeRelationSubtype(plan.focusSubtype || state.focusSubtype, tier);
   const formOffset = Math.floor(rng() * RELATIONS.length);
   const items = wrapperMode === "mixed"
     ? [

@@ -6,7 +6,7 @@ import {
   displayHubTargetLabel,
   isHubMatchAtIndex,
   summarizeHubBlock
-} from "./runtime/hub-engine.js?v=20260419-d45lures";
+} from "./runtime/hub-engine.js?v=20260419-relfamily45";
 import {
   initAudio,
   playSfx,
@@ -41,7 +41,7 @@ import {
   scoreReasoningResponse,
   summarizeReasoningBlock,
   updateReasoningFamilyState
-} from "./runtime/reasoning/engine.js?v=20260419-d45lures";
+} from "./runtime/reasoning/engine.js?v=20260419-relfamily45";
 
 const STORAGE_KEY = "tg_iq_live_capacity_v2";
 const ECONOMY_KEY = "tg_iq_live_economy_v1";

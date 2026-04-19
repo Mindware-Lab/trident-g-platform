@@ -1,6 +1,6 @@
 import { createSeededRng, reasoningSeed, shuffleWithRng } from "./random.js";
-import * as relationFitGenerator from "./families/relation-fit/relation-fit.generator.js?v=20260419-d45lures";
-import * as mustFollowGenerator from "./families/must-follow/must-follow.generator.js?v=20260419-d45lures";
+import * as relationFitGenerator from "./families/relation-fit/relation-fit.generator.js?v=20260419-relfamily45";
+import * as mustFollowGenerator from "./families/must-follow/must-follow.generator.js?v=20260419-relfamily45";
 
 export const REASONING_VERSION = 1;
 export const REASONING_STORAGE_KEY = "tg_iq_live_reasoning_v1";
@@ -313,7 +313,7 @@ function normalizeRelationFitCorrectAnswers(item) {
 }
 
 function semanticRelationHint(item) {
-  if (item?.prompt_type === "choose_x" || item?.prompt_type === "choose_y" || item?.prompt_type === "choose_z" || item?.prompt_type === "choose_assignment") {
+  if (item?.prompt_type === "choose_x" || item?.prompt_type === "choose_y" || item?.prompt_type === "choose_z" || item?.prompt_type === "choose_w" || item?.prompt_type === "choose_assignment") {
     return "Use the role pattern and the clues to work out which item fits the named role.";
   }
   if (item?.prompt_type === "select_consistent") {
@@ -1103,19 +1103,25 @@ export function updateReasoningFamilyState(state, summary) {
   const meta = REASONING_FAMILIES[familyId];
   const relationFit = familyId === "relation_fit";
   const mustFollow = familyId === "must_follow";
-  let focusSubtype = relationFit ? normalizeReasoningSubtype("relation_fit", current.focusSubtype, current.current_tier) : current.focusSubtype;
+  let focusSubtype = relationFit ? (current.current_tier >= 4 ? "resolve_slots" : "same_relation") : current.focusSubtype;
   if (relationFit && summary.decision === "UP") {
     if (focusSubtype === "same_relation") {
-      if (current.current_tier < 2) {
-        tier = 2;
-      } else if (current.wrapper_mode === "real_world") {
-        wrapper = "mixed";
+      if (current.current_tier < 3) {
+        tier = Math.min(3, current.current_tier + 1);
+        wrapper = "real_world";
+        speed = "normal";
+        focusSubtype = "same_relation";
       } else {
-        tier = 3;
+        tier = 4;
         wrapper = "real_world";
         speed = "normal";
         focusSubtype = "resolve_slots";
       }
+    } else if (current.current_tier < 5) {
+      tier = Math.min(5, current.current_tier + 1);
+      wrapper = "real_world";
+      speed = "normal";
+      focusSubtype = "resolve_slots";
     } else if (current.wrapper_mode === "real_world") {
       wrapper = "mixed";
     } else if (current.speed_mode === "normal" && summary.transferScore.stabilityEfficiency >= 16) {
@@ -1126,12 +1132,12 @@ export function updateReasoningFamilyState(state, summary) {
   } else if (relationFit && summary.decision === "DOWN") {
     wrapper = "real_world";
     speed = "normal";
-    if (focusSubtype === "resolve_slots" && current.current_tier <= 3) {
-      tier = 2;
+    if (focusSubtype === "resolve_slots" && current.current_tier <= 4) {
+      tier = 3;
       focusSubtype = "same_relation";
     } else {
       tier = Math.max(1, current.current_tier - 1);
-      focusSubtype = tier >= 3 ? "resolve_slots" : "same_relation";
+      focusSubtype = tier >= 4 ? "resolve_slots" : "same_relation";
     }
   } else if (summary.decision === "UP") {
     if (current.wrapper_mode === "real_world") {
