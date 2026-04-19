@@ -3661,13 +3661,14 @@ function renderReasoningPlayControls() {
 function renderReasoningPlayCard() {
   const showingStats = viewState.centerMode === "stats";
   const showingZone = viewState.centerMode === "zone";
+  const sessionBar = showingStats ? "" : renderCoachSessionBar();
   return `
-    <section class="play-card reasoning-play-card${showingStats ? " is-stats-view" : ""}" aria-label="Reasoning play surface">
+    <section class="play-card reasoning-play-card${showingStats ? " is-stats-view" : ""}${sessionBar ? " has-session-bar" : ""}" aria-label="Reasoning play surface">
       <div class="mobile-topbar">
         <button class="btn btn-ghost" type="button" data-action="open-left">Coach</button>
         <button class="btn btn-ghost" type="button" data-action="open-right">Stats</button>
       </div>
-      ${showingStats ? "" : renderCoachSessionBar()}
+      ${sessionBar}
       ${showingStats ? "" : renderHud()}
       <div class="play-body${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""} is-reasoning">
         <div class="arena-shell${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""} is-reasoning">
@@ -3890,13 +3891,14 @@ function renderPlayControls() {
 function renderPlayCard() {
   const showingStats = viewState.centerMode === "stats" && !activeBlock;
   const showingZone = viewState.centerMode === "zone";
+  const sessionBar = showingStats ? "" : renderCoachSessionBar();
   return `
-    <section class="play-card${showingStats ? " is-stats-view" : ""}" aria-label="Capacity play surface">
+    <section class="play-card${showingStats ? " is-stats-view" : ""}${sessionBar ? " has-session-bar" : ""}" aria-label="Capacity play surface">
       <div class="mobile-topbar">
         <button class="btn btn-ghost" type="button" data-action="open-left">Coach</button>
         <button class="btn btn-ghost" type="button" data-action="open-right">Stats</button>
       </div>
-      ${showingStats ? "" : renderCoachSessionBar()}
+      ${sessionBar}
       ${showingStats ? "" : renderHud()}
       <div class="play-body${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""}">
         <div class="arena-shell${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""}">
