@@ -41,7 +41,7 @@ import {
   scoreReasoningResponse,
   summarizeReasoningBlock,
   updateReasoningFamilyState
-} from "./runtime/reasoning/engine.js?v=20260419-mfprogress";
+} from "./runtime/reasoning/engine.js?v=20260419-mftighten";
 
 const STORAGE_KEY = "tg_iq_live_capacity_v2";
 const ECONOMY_KEY = "tg_iq_live_economy_v1";
