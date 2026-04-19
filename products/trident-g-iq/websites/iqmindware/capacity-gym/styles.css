@@ -1376,18 +1376,6 @@ button {
   color: var(--module-accent) !important;
 }
 
-.reasoning-item-topline {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  color: var(--module-accent);
-  font-family: "Orbitron", monospace;
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
 .reasoning-rule-card {
   display: grid;
   gap: 7px;
@@ -1396,15 +1384,6 @@ button {
   background:
     linear-gradient(90deg, rgba(84, 162, 255, 0.11), rgba(179, 91, 255, 0.08)),
     rgba(7, 13, 24, 0.76);
-}
-
-.reasoning-rule-card span {
-  color: var(--module-accent);
-  font-family: "Orbitron", monospace;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0;
-  text-transform: uppercase;
 }
 
 .reasoning-rule-card strong {

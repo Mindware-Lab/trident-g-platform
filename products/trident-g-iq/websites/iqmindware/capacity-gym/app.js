@@ -3026,7 +3026,6 @@ function renderReasoningItemCard() {
   if (!item || !activeReasoningBlock) return "";
   const outcome = activeReasoningBlock.lastOutcome;
   const feedback = activeReasoningBlock.status === "feedback";
-  const title = item.title_text || item.display_label || reasoningFamilyLabel(item.family);
   const ruleText = item.rule_text || item.display_rule || "";
   const premises = Array.isArray(item.display_premises) ? item.display_premises : (item.premises || []);
   const prompt = item.prompt_text || item.query || "Choose the best answer.";
@@ -3034,15 +3033,9 @@ function renderReasoningItemCard() {
   const feedbackStatus = outcome?.isCorrect ? "Correct" : "Incorrect";
   return `
     <div class="reasoning-item-card">
-      <div class="reasoning-item-topline">
-        <span>${escapeHtml(reasoningFamilyLabel(item.family))}</span>
-        <span>${escapeHtml(reasoningSubtypeLabel(item.family, item.subtype))}</span>
-        <span>${escapeHtml(`${activeReasoningBlock.itemIndex + 1}/${activeReasoningBlock.items.length}`)}</span>
-      </div>
-      <div class="reasoning-rule-card">
-        <span>${escapeHtml(title)}</span>
+      ${ruleText ? `<div class="reasoning-rule-card">
         ${ruleText ? `<strong>${escapeHtml(ruleText)}</strong>` : ""}
-      </div>
+      </div>` : ""}
       ${premises.length ? `<div class="reasoning-premises">
         ${premises.map((premise) => `<p>${escapeHtml(premise)}</p>`).join("")}
       </div>` : ""}
