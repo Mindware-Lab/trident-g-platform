@@ -28,10 +28,24 @@
     "subtype": {
       "type": "string",
       "enum": [
+        "choose_forced",
+        "select_forced",
+        "select_consistent_not_forced",
         "must_follow_tf",
         "best_conclusion_mcq",
         "select_all_must_follow",
         "cannot_follow_mcq"
+      ]
+    },
+    "semantic_v2": {
+      "type": "boolean"
+    },
+    "prompt_type": {
+      "type": "string",
+      "enum": [
+        "choose_forced",
+        "select_forced",
+        "select_consistent_not_forced"
       ]
     },
     "wrapper_type": {
@@ -67,6 +81,35 @@
     "target_relation_type": {
       "type": "string"
     },
+    "premise_semantics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/semanticStatement"
+      }
+    },
+    "pre_flight_check": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "forced_count": {
+          "type": "integer"
+        },
+        "equivalent_count": {
+          "type": "integer"
+        },
+        "correct_count": {
+          "type": "integer"
+        },
+        "rejects_premise_restatement_for_choose_forced": {
+          "type": "boolean"
+        }
+      }
+    },
     "premises": {
       "type": "array",
       "items": {
@@ -99,6 +142,22 @@
           },
           "text": {
             "type": "string"
+          },
+          "semantic_label": {
+            "type": "string",
+            "enum": [
+              "equivalent",
+              "forced",
+              "consistent",
+              "contradiction",
+              "irrelevant"
+            ]
+          },
+          "semantic": {
+            "$ref": "#/$defs/semanticStatement"
+          },
+          "explanation": {
+            "type": "string"
           }
         }
       }
@@ -117,6 +176,25 @@
       "type": "array",
       "items": {
         "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "semanticStatement": {
+      "type": "object",
+      "properties": {
+        "relation": {
+          "type": "string"
+        },
+        "lhs": {
+          "type": "string"
+        },
+        "rhs": {
+          "type": "string"
+        },
+        "polarity": {
+          "type": "string"
+        }
       }
     }
   }

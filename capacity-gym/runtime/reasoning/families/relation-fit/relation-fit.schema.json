@@ -28,10 +28,28 @@
     "subtype": {
       "type": "string",
       "enum": [
+        "same_relation",
+        "resolve_slots",
+        "consistent_with_facts",
         "same_relation_mcq",
         "select_all_valid",
         "relation_satisfaction",
         "multi_relation_validation"
+      ]
+    },
+    "semantic_v2": {
+      "type": "boolean"
+    },
+    "prompt_type": {
+      "type": "string",
+      "enum": [
+        "same_relation_single",
+        "same_relation_multi",
+        "choose_x",
+        "choose_y",
+        "choose_z",
+        "choose_assignment",
+        "choose_not_enough_information"
       ]
     },
     "wrapper_type": {
@@ -67,6 +85,35 @@
     "target_relation_type": {
       "type": "string"
     },
+    "target_semantic": {
+      "$ref": "#/$defs/semanticStatement"
+    },
+    "premise_semantics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/semanticStatement"
+      }
+    },
+    "pre_flight_check": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "unique_solution": {
+          "type": "boolean"
+        },
+        "solution_count": {
+          "type": "integer"
+        },
+        "solution": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    },
     "premises": {
       "type": "array",
       "items": {
@@ -99,6 +146,22 @@
           },
           "text": {
             "type": "string"
+          },
+          "semantic_label": {
+            "type": "string",
+            "enum": [
+              "equivalent",
+              "contradiction",
+              "consistent",
+              "forced",
+              "irrelevant"
+            ]
+          },
+          "semantic": {
+            "$ref": "#/$defs/semanticStatement"
+          },
+          "explanation": {
+            "type": "string"
           }
         }
       }
@@ -117,6 +180,25 @@
       "type": "array",
       "items": {
         "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "semanticStatement": {
+      "type": "object",
+      "properties": {
+        "relation": {
+          "type": "string"
+        },
+        "lhs": {
+          "type": "string"
+        },
+        "rhs": {
+          "type": "string"
+        },
+        "polarity": {
+          "type": "string"
+        }
       }
     }
   }

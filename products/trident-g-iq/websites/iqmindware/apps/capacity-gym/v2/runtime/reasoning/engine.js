@@ -1,7 +1,6 @@
 import { createSeededRng, reasoningSeed, shuffleWithRng } from "./random.js";
 import * as relationFitGenerator from "./families/relation-fit/relation-fit.generator.js";
 import * as mustFollowGenerator from "./families/must-follow/must-follow.generator.js";
-import * as bestRuleGenerator from "./families/best-rule-so-far/best-rule-so-far.generator.js";
 
 export const REASONING_VERSION = 1;
 export const REASONING_STORAGE_KEY = "tg_iq_live_reasoning_v1";
@@ -12,57 +11,60 @@ export const REASONING_CORE_BLOCKS = 2;
 export const REASONING_CORE_ITEMS = 5;
 export const REASONING_SUPPORT_ITEMS = 4;
 export const REASONING_MANUAL_ITEM_OPTIONS = [4, 5, 6];
-export const REASONING_FAMILY_CYCLE = ["relation_fit", "must_follow", "best_rule_so_far"];
+export const REASONING_FAMILY_CYCLE = ["relation_fit", "must_follow"];
 
 export const REASONING_FAMILIES = {
   relation_fit: {
     id: "relation_fit",
     label: "Relation Fit",
     shortLabel: "Fit",
-    defaultSubtype: "same_relation_mcq",
+    defaultSubtype: "same_relation",
     defaultSupport: true,
     bankUrl: new URL("./families/relation-fit/relation-fit.real-world.examples.json", import.meta.url),
     generator: relationFitGenerator,
     subtypes: {
       auto: "Auto",
-      same_relation_mcq: "Same Relation",
-      select_all_valid: "Select Valid",
-      relation_satisfaction: "Satisfy Relation",
-      multi_relation_validation: "Multi Relation"
+      same_relation: "Same Relation",
+      resolve_slots: "Resolve Slots"
     }
   },
   must_follow: {
     id: "must_follow",
     label: "Must Follow",
     shortLabel: "Follow",
-    defaultSubtype: "must_follow_tf",
+    defaultSubtype: "choose_forced",
     bankUrl: new URL("./families/must-follow/must-follow.real-world.examples.json", import.meta.url),
     generator: mustFollowGenerator,
     subtypes: {
       auto: "Auto",
-      must_follow_tf: "True / False",
-      best_conclusion_mcq: "Best Conclusion",
-      select_all_must_follow: "Select Must Follow"
-    }
-  },
-  best_rule_so_far: {
-    id: "best_rule_so_far",
-    label: "Best Rule",
-    shortLabel: "Rule",
-    defaultSubtype: "best_rule_so_far_mcq",
-    bankUrl: new URL("./families/best-rule-so-far/best-rule-so-far.real-world.examples.json", import.meta.url),
-    generator: bestRuleGenerator,
-    subtypes: {
-      auto: "Auto",
-      best_rule_so_far_mcq: "Best Rule",
-      confidence_update_tf: "Confidence Update",
-      select_all_consistent: "Live Rules"
+      choose_forced: "Choose Forced",
+      select_forced: "Select Forced"
     }
   }
 };
 
 const ANSWER_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const bankCache = new Map();
+
+const RELATION_SUBTYPE_LABELS = {
+  same_relation: "Same Relation",
+  resolve_slots: "Resolve Slots",
+  consistent_with_facts: "Resolve Slots",
+  same_relation_mcq: "Same Relation",
+  select_all_valid: "Same Relation",
+  relation_satisfaction: "Resolve Slots",
+  multi_relation_validation: "Resolve Slots"
+};
+
+const MUST_FOLLOW_SUBTYPE_LABELS = {
+  choose_forced: "Choose Forced",
+  select_forced: "Select Forced",
+  select_consistent_not_forced: "Possible",
+  must_follow_tf: "Choose Forced",
+  best_conclusion_mcq: "Choose Forced",
+  select_all_must_follow: "Select Forced",
+  cannot_follow_mcq: "Choose Forced"
+};
 
 const RELATION_UI_TEXT = {
   older_younger: {
@@ -144,10 +146,17 @@ const LOGICAL_RELATION_ALIASES = {
   taller_than: "taller_shorter",
   earlier_than: "earlier_later",
   before: "earlier_later",
+  after: "earlier_later",
+  right_of: "left_right",
   north_of: "north_south",
+  south_of: "north_south",
   left_of: "left_right",
   heavier_than: "heavier_lighter",
+  lighter_than: "heavier_lighter",
+  younger_than: "older_younger",
+  shorter_than: "taller_shorter",
   contains: "inside_contains",
+  inside: "inside_contains",
   same_route: "same_route",
   all_different: "all_different",
   rel_greater: "comparative",
@@ -171,6 +180,20 @@ function normalizeFamilyId(value) {
   return REASONING_FAMILIES[value] ? value : "relation_fit";
 }
 
+function normalizeReasoningSubtype(familyId, subtype, tier = 1) {
+  const value = typeof subtype === "string" && subtype ? subtype : "auto";
+  if (value === "auto") return "auto";
+  if (familyId === "relation_fit") {
+    const normalized = relationFitGenerator.normalizeRelationSubtype?.(value, tier);
+    return RELATION_SUBTYPE_LABELS[normalized] ? normalized : REASONING_FAMILIES.relation_fit.defaultSubtype;
+  }
+  if (familyId === "must_follow") {
+    const normalized = mustFollowGenerator.normalizeMustFollowSubtype?.(value, tier);
+    return MUST_FOLLOW_SUBTYPE_LABELS[normalized] ? normalized : REASONING_FAMILIES.must_follow.defaultSubtype;
+  }
+  return REASONING_FAMILIES[familyId]?.subtypes?.[value] ? value : REASONING_FAMILIES[familyId]?.defaultSubtype || "auto";
+}
+
 function normalizeWrapper(value) {
   return value === "mixed" || value === "nonsense" ? value : "real_world";
 }
@@ -192,6 +215,66 @@ function relationUiKey(item) {
   return LOGICAL_RELATION_ALIASES[match?.[1]] || direct || "relation";
 }
 
+function cleanRelationRole(value) {
+  return String(value || "").trim().replace(/[.?!]\s*$/, "");
+}
+
+function relationRoleNoun(key) {
+  if (key === "older_younger" || key === "taller_shorter") return "person";
+  if (key === "earlier_later") return "event";
+  if (key === "north_south" || key === "same_route") return "place";
+  if (key === "inside_contains" || key === "containment") return "object";
+  return "item";
+}
+
+function relationRoleAction(key) {
+  if (key === "older_younger") return "Keep the same older/younger relationship.";
+  if (key === "taller_shorter") return "Keep the same taller/shorter relationship.";
+  if (key === "earlier_later") return "Keep the same before/after relationship.";
+  if (key === "north_south") return "Keep the same north/south relationship.";
+  if (key === "left_right") return "Keep the same left/right relationship.";
+  if (key === "heavier_lighter") return "Keep the same heavier/lighter relationship.";
+  if (key === "inside_contains" || key === "containment") return "Keep the same contains/inside relationship.";
+  if (key === "same_route") return "Keep the route match the same.";
+  if (key === "all_different") return "All named items must be different.";
+  if (key === "comparative") return "Keep the same made-up comparison.";
+  if (key === "directional") return "Keep the same made-up direction.";
+  return "Keep the same relationship.";
+}
+
+function relationPairFromPremise(item, key) {
+  const premise = cleanRelationRole(Array.isArray(item?.premises) ? item.premises[0] : "");
+  if (!premise) return null;
+  const patterns = {
+    older_younger: [/^(.+?) is older than (.+)$/i],
+    taller_shorter: [/^(.+?) is taller than (.+)$/i],
+    earlier_later: [/^(.+?) happens earlier than (.+)$/i, /^(.+?) happens before (.+)$/i],
+    north_south: [/^(.+?) is north of (.+)$/i],
+    left_right: [/^(.+?) is to the left of (.+)$/i],
+    heavier_lighter: [/^(.+?) is heavier than (.+)$/i],
+    inside_contains: [/^(.+?) contains (.+)$/i],
+    comparative: [/^(.+?) is [a-z]+er than (.+)$/i],
+    directional: [/^(.+?) is to the .+ of (.+)$/i],
+    containment: [/^(.+?) contains (.+)$/i, /^(.+?) [a-z]+s (.+)$/i]
+  }[key] || [];
+  for (const pattern of patterns) {
+    const match = premise.match(pattern);
+    if (match?.[1] && match?.[2]) {
+      return { first: cleanRelationRole(match[1]), second: cleanRelationRole(match[2]) };
+    }
+  }
+  return null;
+}
+
+function relationCoachFeedback(item) {
+  const key = relationUiKey(item);
+  const action = relationRoleAction(key);
+  const pair = relationPairFromPremise(item, key);
+  if (pair) return `${pair.first} and ${pair.second} must keep the relationship shown in the rule. ${action}`;
+  if (key === "all_different") return action;
+  return action;
+}
+
 function relationOptionMatchesExactRule(item, option) {
   const key = relationUiKey(item);
   const text = String(option?.text || "").toLowerCase();
@@ -209,6 +292,7 @@ function relationOptionMatchesExactRule(item, option) {
 }
 
 function normalizeRelationFitCorrectAnswers(item) {
+  if (item?.semantic_v2) return item;
   if (item?.family !== "relation_fit" || item?.subtype !== "select_all_valid") return item;
   if (!Array.isArray(item.options)) return item;
   const key = relationUiKey(item);
@@ -220,8 +304,37 @@ function normalizeRelationFitCorrectAnswers(item) {
   return { ...item, correct_answer: exactIds };
 }
 
+function semanticRelationHint(item) {
+  if (item?.prompt_type === "choose_x" || item?.prompt_type === "choose_y" || item?.prompt_type === "choose_z" || item?.prompt_type === "choose_assignment") {
+    return "Use the role pattern and the clues to work out which item fits the named role.";
+  }
+  if (item?.prompt_type === "select_consistent") {
+    return "Pick statements that could be true without breaking the facts.";
+  }
+  if (item?.prompt_type === "choose_forced" || item?.prompt_type === "select_forced") {
+    return "Pick only what the facts make certain.";
+  }
+  return "Match what the sentence means, even when the wording is flipped around.";
+}
+
 function publicReasoningFields(item) {
   if (item?.family === "relation_fit") {
+    if (item.semantic_v2) {
+      const feedback = item.feedback_text || item.explanation || "Check the relationship and try the next one cleanly.";
+      return {
+        title_text: item.title_text || (item.prompt_type?.startsWith("same_relation") ? "Relationship to match" : "Facts"),
+        display_label: item.display_label || (item.prompt_type?.startsWith("same_relation") ? "Relationship to match" : "Facts"),
+        display_premises: Array.isArray(item.display_premises) ? item.display_premises : (item.premises || []),
+        prompt_text: item.prompt_text || item.query || "Choose the best answer.",
+        hint_text: item.hint_text || semanticRelationHint(item),
+        helper_text: item.helper_text || semanticRelationHint(item),
+        feedback_title: item.feedback_title || (item.prompt_type?.startsWith("same_relation") ? "Check the relationship" : "Check the facts"),
+        feedback_text: feedback,
+        feedback_correct: item.feedback_correct || feedback,
+        feedback_incorrect: item.feedback_incorrect || feedback,
+        feedback_timeout: item.feedback_timeout || feedback
+      };
+    }
     const key = relationUiKey(item);
     const relation = RELATION_UI_TEXT[key] || {
       ruleLabel: "the same relationship pattern",
@@ -229,6 +342,7 @@ function publicReasoningFields(item) {
       feedbackTitle: "Check the relationship",
       feedback: "The correct answer keeps the same relationship pattern."
     };
+    const coachFeedback = relationCoachFeedback(item);
     if (item.subtype === "select_all_valid") {
       return {
         title_text: "Rule to match",
@@ -240,10 +354,10 @@ function publicReasoningFields(item) {
         hint_text: relation.helper,
         helper_text: relation.helper,
         feedback_title: relation.feedbackTitle,
-        feedback_text: relation.feedback,
-        feedback_correct: "That matches the same rule.",
-        feedback_incorrect: "The relation sounds similar, but the pattern has changed.",
-        feedback_timeout: relation.feedback
+        feedback_text: coachFeedback,
+        feedback_correct: coachFeedback,
+        feedback_incorrect: coachFeedback,
+        feedback_timeout: coachFeedback
       };
     }
     if (item.subtype === "same_relation_mcq") {
@@ -254,11 +368,11 @@ function publicReasoningFields(item) {
         prompt_text: "Which option matches this exact rule?",
         hint_text: "Look for the same relation, not just similar words.",
         helper_text: "Look for the same relation, not just similar words.",
-        feedback_title: "Check the same meaning",
-        feedback_text: "The correct answer keeps the same relationship after the wording changes.",
-        feedback_correct: "That matches the same rule.",
-        feedback_incorrect: "This changes who does what in the rule.",
-        feedback_timeout: "Check who does what. The same words are not enough."
+        feedback_title: relation.feedbackTitle,
+        feedback_text: coachFeedback,
+        feedback_correct: coachFeedback,
+        feedback_incorrect: coachFeedback,
+        feedback_timeout: coachFeedback
       };
     }
     if (item.subtype === "multi_relation_validation") {
@@ -287,10 +401,10 @@ function publicReasoningFields(item) {
         hint_text: relation.helper,
         helper_text: relation.helper,
         feedback_title: relation.feedbackTitle,
-        feedback_text: relation.feedback,
-        feedback_correct: "That matches the same rule.",
-        feedback_incorrect: "This option breaks the rule.",
-        feedback_timeout: relation.feedback
+        feedback_text: coachFeedback,
+        feedback_correct: coachFeedback,
+        feedback_incorrect: coachFeedback,
+        feedback_timeout: coachFeedback
       };
     }
     return {
@@ -303,13 +417,29 @@ function publicReasoningFields(item) {
       hint_text: relation.helper,
       helper_text: relation.helper,
       feedback_title: relation.feedbackTitle,
-      feedback_text: relation.feedback,
-      feedback_correct: "That matches the same rule.",
-      feedback_incorrect: "This option breaks the rule.",
-      feedback_timeout: relation.feedback
+      feedback_text: coachFeedback,
+      feedback_correct: coachFeedback,
+      feedback_incorrect: coachFeedback,
+      feedback_timeout: coachFeedback
     };
   }
   if (item?.family === "must_follow") {
+    if (item.semantic_v2) {
+      const feedback = item.feedback_text || item.explanation || "Check only what the facts force.";
+      return {
+        title_text: item.title_text || "Facts",
+        display_label: item.display_label || "Facts",
+        display_premises: Array.isArray(item.display_premises) ? item.display_premises : (item.premises || []),
+        prompt_text: item.prompt_text || item.query || "Choose the statement that must be true.",
+        hint_text: item.hint_text || "Use only the facts shown. Do not choose what is merely possible.",
+        helper_text: item.helper_text || "Use only the facts shown. Do not choose what is merely possible.",
+        feedback_title: item.feedback_title || "Check what must follow",
+        feedback_text: feedback,
+        feedback_correct: item.feedback_correct || feedback,
+        feedback_incorrect: item.feedback_incorrect || feedback,
+        feedback_timeout: item.feedback_timeout || feedback
+      };
+    }
     return {
       title_text: "Facts",
       display_label: "Facts",
@@ -365,6 +495,12 @@ export function reasoningFamilyLabel(familyId) {
 }
 
 export function reasoningSubtypeLabel(familyId, subtype) {
+  if (familyId === "relation_fit") {
+    return RELATION_SUBTYPE_LABELS[subtype] || REASONING_FAMILIES.relation_fit.subtypes.auto;
+  }
+  if (familyId === "must_follow") {
+    return MUST_FOLLOW_SUBTYPE_LABELS[subtype] || REASONING_FAMILIES.must_follow.subtypes.auto;
+  }
   return REASONING_FAMILIES[familyId]?.subtypes?.[subtype] || REASONING_FAMILIES[familyId]?.subtypes?.auto || "Auto";
 }
 
@@ -391,7 +527,7 @@ function normalizeFamilyState(familyId, raw) {
     current_tier: clampTier(source.current_tier ?? source.currentTier ?? base.current_tier),
     wrapper_mode: normalizeWrapper(source.wrapper_mode ?? source.wrapperMode ?? base.wrapper_mode),
     speed_mode: normalizeSpeed(source.speed_mode ?? source.speedMode ?? base.speed_mode),
-    focusSubtype: typeof source.focusSubtype === "string" ? source.focusSubtype : base.focusSubtype,
+    focusSubtype: normalizeReasoningSubtype(familyId, source.focusSubtype ?? base.focusSubtype, source.current_tier ?? source.currentTier ?? base.current_tier),
     recent_accuracy: Number.isFinite(source.recent_accuracy) ? Number(source.recent_accuracy) : null,
     late_collapse: source.late_collapse === true,
     recent_wrapper_cost: clamp(numeric(source.recent_wrapper_cost, 0), 0, 1),
@@ -427,6 +563,7 @@ export function createDefaultReasoningState() {
 export function normalizeReasoningState(raw) {
   const source = raw && typeof raw === "object" ? raw : {};
   const settings = source.settings && typeof source.settings === "object" ? source.settings : {};
+  const settingsFamily = normalizeFamilyId(settings.family);
   const familyState = {};
   Object.keys(REASONING_FAMILIES).forEach((familyId) => {
     familyState[familyId] = normalizeFamilyState(familyId, source.familyState?.[familyId]);
@@ -436,8 +573,8 @@ export function normalizeReasoningState(raw) {
     version: REASONING_VERSION,
     settings: {
       mode: settings.mode === "manual" ? "manual" : "coach",
-      family: normalizeFamilyId(settings.family),
-      subtype: typeof settings.subtype === "string" ? settings.subtype : "auto",
+      family: settingsFamily,
+      subtype: normalizeReasoningSubtype(settingsFamily, settings.subtype, settings.tier === "auto" ? 1 : settings.tier),
       wrapper: normalizeWrapper(settings.wrapper),
       speed: normalizeSpeed(settings.speed),
       tier: settings.tier === "auto" ? "auto" : clampTier(settings.tier),
@@ -548,12 +685,16 @@ function selectReasoningPlanForFamily(familyId, familyState, overrides = {}) {
       ...familyState.metrics
     })
     : {};
+  const tier = clampTier(overrides.tier === "auto" || overrides.tier === undefined ? (genPlan.nextTier || familyState.current_tier) : overrides.tier);
+  const requestedSubtype = overrides.subtype && overrides.subtype !== "auto"
+    ? overrides.subtype
+    : (genPlan.focusSubtype || familyState.focusSubtype || meta.defaultSubtype);
   return {
     family: familyId,
-    tier: clampTier(overrides.tier === "auto" || overrides.tier === undefined ? (genPlan.nextTier || familyState.current_tier) : overrides.tier),
+    tier,
     wrapper: normalizeWrapper(overrides.wrapper || genPlan.nextWrapperMode || familyState.wrapper_mode),
     speed: normalizeSpeed(overrides.speed || genPlan.nextSpeedMode || familyState.speed_mode),
-    subtype: overrides.subtype && overrides.subtype !== "auto" ? overrides.subtype : (genPlan.focusSubtype || familyState.focusSubtype || meta.defaultSubtype),
+    subtype: normalizeReasoningSubtype(familyId, requestedSubtype, tier),
     priorDecision: genPlan.decision || "HOLD"
   };
 }
@@ -571,6 +712,14 @@ async function loadBank(familyId) {
 function normalizeAnswerIds(item, rng) {
   if (!Array.isArray(item.options)) return item;
   if (item.answer_type === "true_false") return item;
+  if (item.semantic_v2) {
+    const options = item.options.map((option, index) => ({
+      ...option,
+      id: option.id || ANSWER_LETTERS[index],
+      originalId: option.originalId || option.id || ANSWER_LETTERS[index]
+    }));
+    return { ...item, options };
+  }
   const originalOptions = item.options.map((option) => ({ ...option }));
   const shuffled = shuffleWithRng(originalOptions, rng);
   const correctOriginal = new Set(item.correct_answer || []);
@@ -578,7 +727,7 @@ function normalizeAnswerIds(item, rng) {
   const options = shuffled.map((option, index) => {
     const id = ANSWER_LETTERS[index];
     if (correctOriginal.has(option.id)) mappedCorrect.push(id);
-    return { id, text: option.text, originalId: option.id };
+    return { ...option, id, originalId: option.id };
   });
   return { ...item, options, correct_answer: mappedCorrect };
 }
@@ -604,7 +753,37 @@ function pickRealWorldItems(bank, plan, count, rng, blockId) {
   return shuffleWithRng(candidates, rng).slice(0, count).map((item, index) => prepareItem(item, rng, index, blockId));
 }
 
+function generateRelationFitItems(plan, count, rng, blockId, wrapperType, startIndex = 0) {
+  const rows = relationFitGenerator.generateItems({
+    wrapperType,
+    subtype: normalizeReasoningSubtype("relation_fit", plan.subtype, plan.tier),
+    difficultyTier: plan.tier,
+    count,
+    rng,
+    startIndex
+  });
+  return rows.slice(0, count).map((item, index) => prepareItem(item, rng, startIndex + index, blockId));
+}
+
+function generateMustFollowItems(plan, count, rng, blockId, wrapperType, startIndex = 0) {
+  const rows = mustFollowGenerator.generateItems({
+    wrapperType,
+    subtype: normalizeReasoningSubtype("must_follow", plan.subtype, plan.tier),
+    difficultyTier: plan.tier,
+    count,
+    rng,
+    startIndex
+  });
+  return rows.slice(0, count).map((item, index) => prepareItem(item, rng, startIndex + index, blockId));
+}
+
 function generateNonsenseItems(plan, count, rng, blockId) {
+  if (plan.family === "relation_fit") {
+    return generateRelationFitItems(plan, count, rng, blockId, "nonsense");
+  }
+  if (plan.family === "must_follow") {
+    return generateMustFollowItems(plan, count, rng, blockId, "nonsense");
+  }
   const meta = REASONING_FAMILIES[plan.family];
   const generated = meta.generator.generateAdaptiveBlock({
     current_tier: plan.tier,
@@ -630,7 +809,7 @@ export async function buildReasoningBlock({ state, session = null, mode = "coach
       tier: 1,
       wrapper: "real_world",
       speed: "normal",
-      subtype: family === "must_follow" ? "must_follow_tf" : "same_relation_mcq",
+      subtype: family === "must_follow" ? "choose_forced" : "same_relation",
       priorDecision: "HOLD"
     }
     : selectReasoningPlanForFamily(family, familyState, mode === "manual" ? manualSettings : {});
@@ -648,19 +827,33 @@ export async function buildReasoningBlock({ state, session = null, mode = "coach
   ]);
   const rng = createSeededRng(seed);
   const blockId = `reason_block_${Date.now()}_${blockIndex + 1}`;
-  const bank = await loadBank(family);
   let items;
-  if (plan.wrapper === "real_world") {
-    items = pickRealWorldItems(bank, plan, itemsPerBlock, rng, blockId);
-  } else if (plan.wrapper === "nonsense") {
-    items = generateNonsenseItems(plan, itemsPerBlock, rng, blockId);
+  if (family === "relation_fit" || family === "must_follow") {
+    const generator = family === "relation_fit" ? generateRelationFitItems : generateMustFollowItems;
+    if (plan.wrapper === "mixed") {
+      const realCount = Math.ceil(itemsPerBlock / 2);
+      const nonsenseCount = itemsPerBlock - realCount;
+      items = [
+        ...generator(plan, realCount, rng, blockId, "real_world", 0),
+        ...generator(plan, nonsenseCount, rng, blockId, "nonsense", realCount)
+      ];
+    } else {
+      items = generator(plan, itemsPerBlock, rng, blockId, plan.wrapper === "nonsense" ? "nonsense" : "real_world", 0);
+    }
   } else {
-    const realCount = Math.ceil(itemsPerBlock / 2);
-    const nonsenseCount = itemsPerBlock - realCount;
-    items = [
-      ...pickRealWorldItems(bank, plan, realCount, rng, blockId),
-      ...generateNonsenseItems(plan, nonsenseCount, rng, blockId)
-    ].map((item, index) => ({ ...item, item_index: index, runtime_id: `${blockId}_item_${index + 1}` }));
+    const bank = await loadBank(family);
+    if (plan.wrapper === "real_world") {
+      items = pickRealWorldItems(bank, plan, itemsPerBlock, rng, blockId);
+    } else if (plan.wrapper === "nonsense") {
+      items = generateNonsenseItems(plan, itemsPerBlock, rng, blockId);
+    } else {
+      const realCount = Math.ceil(itemsPerBlock / 2);
+      const nonsenseCount = itemsPerBlock - realCount;
+      items = [
+        ...pickRealWorldItems(bank, plan, realCount, rng, blockId),
+        ...generateNonsenseItems(plan, nonsenseCount, rng, blockId)
+      ].map((item, index) => ({ ...item, item_index: index, runtime_id: `${blockId}_item_${index + 1}` }));
+    }
   }
   return {
     id: blockId,
@@ -840,10 +1033,42 @@ export function updateReasoningFamilyState(state, summary) {
   let speed = current.speed_mode;
   let tier = current.current_tier;
   const meta = REASONING_FAMILIES[familyId];
-  if (summary.decision === "UP") {
+  const relationFit = familyId === "relation_fit";
+  const mustFollow = familyId === "must_follow";
+  let focusSubtype = relationFit ? normalizeReasoningSubtype("relation_fit", current.focusSubtype, current.current_tier) : current.focusSubtype;
+  if (relationFit && summary.decision === "UP") {
+    if (focusSubtype === "same_relation") {
+      if (current.current_tier < 2) {
+        tier = 2;
+      } else if (current.wrapper_mode === "real_world") {
+        wrapper = "mixed";
+      } else {
+        tier = 3;
+        wrapper = "real_world";
+        speed = "normal";
+        focusSubtype = "resolve_slots";
+      }
+    } else if (current.wrapper_mode === "real_world") {
+      wrapper = "mixed";
+    } else if (current.speed_mode === "normal" && summary.transferScore.stabilityEfficiency >= 16) {
+      speed = "fast";
+    } else {
+      tier = Math.min(5, current.current_tier + 1);
+    }
+  } else if (relationFit && summary.decision === "DOWN") {
+    wrapper = "real_world";
+    speed = "normal";
+    if (focusSubtype === "resolve_slots" && current.current_tier <= 3) {
+      tier = 2;
+      focusSubtype = "same_relation";
+    } else {
+      tier = Math.max(1, current.current_tier - 1);
+      focusSubtype = tier >= 3 ? "resolve_slots" : "same_relation";
+    }
+  } else if (summary.decision === "UP") {
     if (current.wrapper_mode === "real_world") {
       wrapper = "mixed";
-    } else if (current.wrapper_mode === "mixed" && exposure.nonsense < Math.max(1, Math.floor(exposure.real_world / 3))) {
+    } else if (!mustFollow && current.wrapper_mode === "mixed" && exposure.nonsense < Math.max(1, Math.floor(exposure.real_world / 3))) {
       wrapper = "nonsense";
     } else if (current.speed_mode === "normal" && summary.transferScore.stabilityEfficiency >= 16) {
       speed = "fast";
@@ -860,7 +1085,7 @@ export function updateReasoningFamilyState(state, summary) {
     current_tier: tier,
     wrapper_mode: wrapper,
     speed_mode: speed,
-    focusSubtype: summary.decision === "DOWN" ? meta.defaultSubtype : summary.subtype,
+    focusSubtype: relationFit ? focusSubtype : mustFollow ? (tier >= 3 ? "select_forced" : "choose_forced") : (summary.decision === "DOWN" ? meta.defaultSubtype : summary.subtype),
     recent_accuracy: summary.accuracy,
     late_collapse: summary.lateCollapse,
     recent_wrapper_cost: summary.wrapper === "real_world" ? current.recent_wrapper_cost : Math.max(0, 0.85 - summary.accuracy),

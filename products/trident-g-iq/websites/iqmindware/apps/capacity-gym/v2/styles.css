@@ -1288,6 +1288,10 @@ button {
   line-height: 1.35;
 }
 
+.reasoning-coach-tip {
+  align-self: center;
+}
+
 .arena-shell.is-stats {
   align-items: stretch;
   justify-items: stretch;
@@ -1319,7 +1323,6 @@ button {
   gap: 9px;
 }
 
-.reasoning-intro-card,
 .reasoning-item-card,
 .reasoning-summary-card {
   width: min(100%, 620px);
@@ -1336,7 +1339,6 @@ button {
     0 0 28px rgba(84, 162, 255, 0.14);
 }
 
-.reasoning-intro-card h2,
 .reasoning-summary-card h2 {
   margin: 0;
   color: var(--white);
@@ -1345,14 +1347,6 @@ button {
   letter-spacing: 0;
   text-transform: uppercase;
   text-shadow: 0 0 14px rgba(84, 162, 255, 0.38);
-}
-
-.reasoning-intro-card p {
-  margin: 0;
-  color: #dce8ff;
-  font-family: "Chakra Petch", sans-serif;
-  font-weight: 700;
-  line-height: 1.35;
 }
 
 .reasoning-speed-note {
@@ -1529,62 +1523,27 @@ button {
   min-width: 150px;
 }
 
-.reasoning-feedback {
-  display: grid;
-  gap: 5px;
-  padding: 12px;
-  border: 1px solid rgba(84, 162, 255, 0.22);
-  background: rgba(7, 13, 24, 0.78);
+.reasoning-feedback-tip {
+  width: min(100%, 620px);
+  justify-self: center;
 }
 
-.reasoning-feedback span,
-.reasoning-feedback strong {
-  font-family: "Orbitron", monospace;
-  font-weight: 900;
-  letter-spacing: 0;
-  text-transform: uppercase;
+.reasoning-feedback-tip p {
+  max-width: 68ch;
 }
 
-.reasoning-feedback.is-correct span,
-.reasoning-feedback.is-correct strong {
-  color: var(--credit);
-}
-
-.reasoning-feedback.is-wrong span,
-.reasoning-feedback.is-wrong strong {
-  color: var(--danger);
-}
-
-.reasoning-feedback p {
-  margin: 0;
-  color: #dce8ff;
-  font-family: "Chakra Petch", sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.35;
-}
-
-.reasoning-intro-grid,
 .reasoning-capture-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
-.reasoning-intro-grid div,
 .reasoning-capture-grid label {
   display: grid;
   gap: 5px;
   padding: 9px;
   border: 1px solid rgba(84, 162, 255, 0.16);
   background: rgba(7, 13, 24, 0.68);
-}
-
-.reasoning-intro-grid strong {
-  color: var(--white);
-  font-family: "Orbitron", monospace;
-  font-size: 16px;
-  font-weight: 900;
 }
 
 .reasoning-capture-grid label {
@@ -2539,7 +2498,6 @@ button {
 
   .reasoning-options,
   .reasoning-options.is-binary,
-  .reasoning-intro-grid,
   .reasoning-capture-grid {
     grid-template-columns: 1fr;
   }

@@ -1,18 +1,117 @@
-
 /**
- * Must Follow family generator
- * ES module for use in a Vite / plain HTML+JS webapp.
- * Version: 1.0.0
+ * Must Follow V2 semantic generator.
+ * Uses closure / entailment over small generated fact sets.
  */
-export const MUST_FOLLOW_VERSION = "1.0.0";
-export const PHONOTACTICS = {
-  onsets: ["b","d","f","g","h","k","l","m","n","p","r","s","t","v","z","br","dr","gl","kr","pl","tr","vr"],
-  vowels: ["a","e","i","o","u","ai","ea","io","oa","ui"],
-  codas: ["","n","l","r","m","s","t","k"],
-  patterns: ["CV","CVC","CVV","CV.CV","CVC.CV","CV.CVC"]
+export const MUST_FOLLOW_VERSION = "2.0.0";
+
+export const SEMANTIC_LABELS = ["equivalent", "forced", "consistent", "contradiction", "irrelevant"];
+export const PROMPT_TYPES = ["choose_forced", "select_forced", "select_consistent_not_forced"];
+export const NEGATION_POLICY = {
+  tier1to3: "positive statements only",
+  tier4: "simple negated conclusions from positive membership plus exclusion facts",
+  tier5: "broader mixed-polarity distractors only; no nested negation in MVP"
 };
-export const DIRECTION_PAIRS = [["nef","sov"],["zor","vem"],["pel","rud"],["kim","tav"]];
-export function choice(arr, rng = Math.random) { return arr[Math.floor(rng() * arr.length)]; }
+
+export const PHONOTACTICS = {
+  onsets: ["b", "d", "f", "g", "h", "k", "l", "m", "n", "p", "r", "s", "t", "v", "z", "br", "dr", "gl", "kr", "pl", "tr", "vr"],
+  vowels: ["a", "e", "i", "o", "u", "ai", "ea", "io", "oa", "ui"],
+  codas: ["", "n", "l", "r", "m", "s", "t", "k"],
+  patterns: ["CV", "CVC", "CVV", "CV.CV", "CVC.CV", "CV.CVC"]
+};
+
+const ANSWER_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+const SUBTYPE_ALIASES = {
+  must_follow_tf: "choose_forced",
+  best_conclusion_mcq: "choose_forced",
+  select_all_must_follow: "select_forced",
+  cannot_follow_mcq: "choose_forced"
+};
+
+const ORDER_RELATIONS = [
+  {
+    id: "before_after",
+    canonicalRelation: "before",
+    inverseRelation: "after",
+    directText: (a, b) => `${a} happens before ${b}.`,
+    inverseText: (a, b) => `${a} happens after ${b}.`,
+    relationNoun: "before/after chain",
+    pools: [["Check-in", "Boarding", "Takeoff", "Landing"], ["Warm-up", "Sprint", "Cooldown", "Stretch"], ["Draft review", "Final approval", "Launch", "Audit"]]
+  },
+  {
+    id: "right_left",
+    canonicalRelation: "right_of",
+    inverseRelation: "left_of",
+    directText: (a, b) => `${a} is to the right of ${b}.`,
+    inverseText: (a, b) => `${a} is to the left of ${b}.`,
+    relationNoun: "left/right chain",
+    pools: [["Panel 3", "Panel 2", "Panel 1", "Panel 0"], ["Folder C", "Folder B", "Folder A", "Folder Base"], ["Marker Blue", "Marker Green", "Marker Red", "Marker White"]]
+  },
+  {
+    id: "older_younger",
+    canonicalRelation: "older_than",
+    inverseRelation: "younger_than",
+    directText: (a, b) => `${a} is older than ${b}.`,
+    inverseText: (a, b) => `${a} is younger than ${b}.`,
+    relationNoun: "older/younger chain",
+    pools: [["Martha", "Lewis", "Jonah", "Priya"], ["Elena", "Marcus", "Nora", "Theo"], ["Victor", "Amina", "Iris", "Caleb"]]
+  },
+  {
+    id: "taller_shorter",
+    canonicalRelation: "taller_than",
+    inverseRelation: "shorter_than",
+    directText: (a, b) => `${a} is taller than ${b}.`,
+    inverseText: (a, b) => `${a} is shorter than ${b}.`,
+    relationNoun: "taller/shorter chain",
+    pools: [["Tower A", "Tower B", "Tower C", "Tower D"], ["Mast 7", "Mast 3", "Mast 1", "Mast 0"], ["Cedar tree", "Birch tree", "Elm tree", "Ash tree"]]
+  },
+  {
+    id: "heavier_lighter",
+    canonicalRelation: "heavier_than",
+    inverseRelation: "lighter_than",
+    directText: (a, b) => `${a} is heavier than ${b}.`,
+    inverseText: (a, b) => `${a} is lighter than ${b}.`,
+    relationNoun: "heavier/lighter chain",
+    pools: [["Iron block", "Stone block", "Wood block", "Foam block"], ["Loaded crate", "Half crate", "Empty crate", "Foam tray"], ["Steel tray", "Plastic tray", "Paper tray", "Cork tray"]]
+  },
+  {
+    id: "contains_inside",
+    canonicalRelation: "contains",
+    inverseRelation: "inside",
+    directText: (a, b) => `${a} contains ${b}.`,
+    inverseText: (a, b) => `${a} is inside ${b}.`,
+    relationNoun: "contains/inside chain",
+    pools: [["Archive bin", "Folder A", "File 7", "Note card"], ["Cabinet 1", "Tray 1", "Tube 4", "Valve 2"], ["Panel case", "Circuit card", "Chip tray", "Pin set"]]
+  }
+];
+
+const REAL_SET_CHAINS = [
+  ["cedar samples", "plant samples", "organic items", "lab records"],
+  ["archived invoices", "financial records", "audit files", "secure files"],
+  ["sealed trays", "labelled trays", "checked trays", "release trays"],
+  ["blue tokens", "priority tokens", "tracked tokens", "logged tokens"]
+];
+
+const REAL_CONDITIONALS = [
+  { entity: "Tray B", from: "sealed", to: "labelled", extra: "inspected" },
+  { entity: "Door 4", from: "locked", to: "alarm-ready", extra: "painted" },
+  { entity: "Sample K", from: "chilled", to: "logged", extra: "weighed" },
+  { entity: "Packet 9", from: "verified", to: "released", extra: "blue" }
+];
+
+const REAL_EXCLUSIONS = [
+  { entity: "Kemi", classA: "ravs", classB: "daxes", extra: "loms" },
+  { entity: "Mira", classA: "sealed files", classB: "public files", extra: "old files" },
+  { entity: "Token 7", classA: "blue tokens", classB: "red tokens", extra: "round tokens" }
+];
+
+const NOUN_STEMS = ["Naro", "Sema", "Davin", "Kiro", "Luma", "Pelin", "Tavo", "Zerin", "Mira", "Boren", "Rika", "Velu", "Sorin", "Keda", "Falin", "Jora"];
+const CLASS_ROOTS = ["rav", "dax", "lom", "pel", "sor", "vok", "tav", "miv", "zun", "kir"];
+const PROPERTY_ROOTS = ["plim", "doren", "satek", "vurin", "mevak", "talin", "lomed", "zarin"];
+
+export function choice(arr, rng = Math.random) {
+  return arr[Math.floor(rng() * arr.length)];
+}
+
 function realiseSyllable(pattern, rng = Math.random) {
   let out = "";
   for (const ch of pattern) {
@@ -22,208 +121,635 @@ function realiseSyllable(pattern, rng = Math.random) {
   if (!pattern.includes(".") && rng() < 0.6) out += choice(PHONOTACTICS.codas, rng);
   return out;
 }
+
 export function generatePronounceableWord(rng = Math.random) {
   const pattern = choice(PHONOTACTICS.patterns, rng);
-  const realised = pattern.split(".").map(p => realiseSyllable(p, rng)).join("");
+  const realised = pattern.split(".").map((part) => realiseSyllable(part, rng)).join("");
   return realised.charAt(0).toUpperCase() + realised.slice(1);
 }
+
 export function generateEntitySet(count = 6, rng = Math.random) {
   const used = new Set();
-  const entities = [];
-  while (entities.length < count) {
-    const w = generatePronounceableWord(rng);
-    if (!used.has(w)) { used.add(w); entities.push(w); }
-  }
-  return entities;
-}
-export function generateClassWord(rng = Math.random) {
-  const roots = ["lav","sor","pel","mor","ten","vak","rim","zal","dov","kir"];
-  const suffixes = ["en","ik","or","um","al","et"];
-  return `${choice(roots, rng)}${choice(suffixes, rng)}`;
-}
-export function generateLexicon(rng = Math.random) {
-  const comparativeRoot = choice(["dax","miv","lor","sap","ten","vok","ril","zan"], rng);
-  const directionPair = choice(DIRECTION_PAIRS, rng);
-  const states = ["plim","doren","satek","vurin","mevak","talin"];
-  return {
-    comparative: {
-      root: comparativeRoot,
-      direct: (a, b) => `${a} is ${comparativeRoot}er than ${b}.`,
-      reverse: (a, b) => `${b} is ${comparativeRoot}er than ${a}.`,
-      converse: (a, b) => `${b} is less ${comparativeRoot} than ${a}.`
-    },
-    directional: {
-      leftRoot: directionPair[0], rightRoot: directionPair[1],
-      direct: (a, b) => `${a} is to the ${directionPair[0]} of ${b}.`,
-      reverse: (a, b) => `${b} is to the ${directionPair[0]} of ${a}.`,
-      converse: (a, b) => `${b} is to the ${directionPair[1]} of ${a}.`
-    },
-    states: {
-      pickTriple: () => {
-        const pool = [...states].sort(() => rng() - 0.5);
-        return pool.slice(0, 3);
-      }
+  const names = [...NOUN_STEMS].sort(() => rng() - 0.5);
+  const out = [];
+  while (out.length < count) {
+    const name = names[out.length] || generatePronounceableWord(rng);
+    if (!used.has(name)) {
+      used.add(name);
+      out.push(name);
     }
-  };
+  }
+  return out;
 }
-export function buildNonsenseTransitiveTFItem({ relationMode = "comparative", difficultyTier = 1, rng = Math.random } = {}) {
-  const entities = generateEntitySet(4, rng);
-  const [A, B, C, D] = entities;
-  const lex = generateLexicon(rng)[relationMode];
-  const valid = rng() < 0.5;
-  const premises = [lex.direct(A, B), lex.direct(B, C)];
-  if (difficultyTier >= 2) premises.push(lex.direct(D, A));
-  const query = valid
-    ? `Does it have to follow that ${relationMode === "comparative" ? `${A} is ${lex.root}er than ${C}` : `${A} is to the ${lex.leftRoot} of ${C}`}?`
-    : `Does it have to follow that ${relationMode === "comparative" ? `${C} is ${lex.root}er than ${A}` : `${C} is to the ${lex.leftRoot} of ${A}`}?`;
+
+function generateClassWord(rng = Math.random) {
+  return `${choice(CLASS_ROOTS, rng)}${choice(["s", "es"], rng)}`;
+}
+
+function generatePropertyWord(rng = Math.random) {
+  return choice(PROPERTY_ROOTS, rng);
+}
+
+function uniqueWords(count, makeWord, rng = Math.random) {
+  const used = new Set();
+  const out = [];
+  let guard = 0;
+  while (out.length < count && guard < count * 20) {
+    guard += 1;
+    const word = makeWord(rng);
+    if (!used.has(word)) {
+      used.add(word);
+      out.push(word);
+    }
+  }
+  while (out.length < count) {
+    const fallback = generatePronounceableWord(rng).toLowerCase();
+    if (!used.has(fallback)) {
+      used.add(fallback);
+      out.push(fallback);
+    }
+  }
+  return out;
+}
+
+function entityId(name, index = 0) {
+  return `${String(name).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "item"}_${index}`;
+}
+
+function makeEntity(name, index = 0) {
+  return { id: entityId(name, index), name };
+}
+
+function normalizeSubtype(value, tier = 1) {
+  const aliased = SUBTYPE_ALIASES[value] || value;
+  if (aliased === "choose_forced" || aliased === "select_forced" || aliased === "select_consistent_not_forced") return aliased;
+  return tier >= 3 ? "select_forced" : "choose_forced";
+}
+
+export const normalizeMustFollowSubtype = normalizeSubtype;
+
+function promptTypeFor(tier, subtype = "choose_forced", itemOffset = 0) {
+  const normalized = normalizeSubtype(subtype, tier);
+  if (normalized === "select_forced" || normalized === "select_consistent_not_forced") return normalized;
+  if (tier >= 3 && itemOffset % 3 === 2) return "select_forced";
+  return "choose_forced";
+}
+
+function promptCopy(promptType) {
+  if (promptType === "select_forced") return "Select all statements that must be true.";
+  if (promptType === "select_consistent_not_forced") return "Select all statements that are possible but not guaranteed.";
+  return "Choose the statement that must be true.";
+}
+
+function correctLabelsForPrompt(promptType) {
+  if (promptType === "select_forced") return new Set(["equivalent", "forced"]);
+  if (promptType === "select_consistent_not_forced") return new Set(["consistent"]);
+  return new Set(["forced"]);
+}
+
+function relationBySemanticName(name) {
+  return ORDER_RELATIONS.find((relation) => relation.canonicalRelation === name || relation.inverseRelation === name) || null;
+}
+
+export function normalizeMustFollowStatement(statement) {
+  const source = statement?.semantic || statement || {};
+  const relation = relationBySemanticName(source.relation);
+  if (relation) {
+    if (source.relation === relation.inverseRelation) {
+      return {
+        relation: relation.canonicalRelation,
+        lhs: source.rhs,
+        rhs: source.lhs,
+        polarity: source.polarity || "positive"
+      };
+    }
+    return {
+      relation: relation.canonicalRelation,
+      lhs: source.lhs,
+      rhs: source.rhs,
+      polarity: source.polarity || "positive"
+    };
+  }
+  if (source.relation === "disjoint_with") {
+    const [lhs, rhs] = [source.lhs, source.rhs].sort();
+    return { relation: "disjoint_with", lhs, rhs, polarity: source.polarity || "positive" };
+  }
   return {
-    id: `mf_ns_${Date.now()}_${Math.floor(rng() * 1e6)}`,
-    family: "must_follow",
-    subtype: "must_follow_tf",
-    wrapper_type: "nonsense",
-    difficulty_tier: difficultyTier,
-    binding_load: difficultyTier >= 2 ? 2 : 1,
-    uncertainty_level: valid ? 1 : 2,
-    control_burden: Math.min(4, difficultyTier),
-    logical_form: relationMode === "comparative" ? "greater(A,B) & greater(B,C) => greater(A,C)" : "dirA(A,B) & dirA(B,C) => dirA(A,C)",
-    target_relation_type: relationMode,
-    premises,
-    query,
-    answer_type: "true_false",
-    options: [
-      { id: "T", text: "Must follow" },
-      { id: "F", text: "Does not have to follow" }
-    ],
-    correct_answer: [valid ? "T" : "F"],
-    explanation: valid
-      ? "The relation chains through the middle term."
-      : "The premises support the forward chain, not the reversed conclusion.",
-    skill_tags: ["deduction", "transitivity", "nonsense_wrapper"]
+    relation: source.relation || "unknown",
+    lhs: source.lhs || null,
+    rhs: source.rhs || null,
+    polarity: source.polarity || "positive"
   };
 }
-export function buildNonsenseSetMCQItem({ mode = "subset", difficultyTier = 2, rng = Math.random } = {}) {
-  const c1 = generateClassWord(rng);
-  const c2 = generateClassWord(rng);
-  const c3 = generateClassWord(rng);
-  const premises = mode === "subset"
-    ? [`All ${c1}s are ${c2}s.`, `All ${c2}s are ${c3}s.`]
-    : [`All ${c1}s are ${c2}s.`, `No ${c2}s are ${c3}s.`];
-  if (difficultyTier >= 3) premises.push(`Some ${c3}s are stored in a ${generateClassWord(rng)} hall.`);
-  const correct = mode === "subset" ? `All ${c1}s are ${c3}s.` : `No ${c1}s are ${c3}s.`;
-  const opts = mode === "subset"
-    ? [correct, `All ${c3}s are ${c1}s.`, `No ${c1}s are ${c3}s.`, `Some ${c1}s are not ${c3}s.`]
-    : [correct, `All ${c3}s are ${c1}s.`, `Some ${c1}s are ${c3}s.`, `All ${c1}s are ${c3}s.`];
+
+export const normaliseMustFollowStatement = normalizeMustFollowStatement;
+
+function semanticKey(semantic) {
+  const normalized = normalizeMustFollowStatement(semantic);
+  return `${normalized.relation}|${normalized.lhs}|${normalized.rhs}|${normalized.polarity || "positive"}`;
+}
+
+function statement(text, semantic) {
   return {
-    id: `mf_ns_${Date.now()}_${Math.floor(rng() * 1e6)}`,
-    family: "must_follow",
-    subtype: "best_conclusion_mcq",
-    wrapper_type: "nonsense",
-    difficulty_tier: difficultyTier,
-    binding_load: difficultyTier >= 3 ? 3 : 2,
-    uncertainty_level: difficultyTier >= 3 ? 3 : 2,
-    control_burden: Math.min(4, difficultyTier),
-    logical_form: mode === "subset" ? "all(X,Y) & all(Y,Z) => all(X,Z)" : "all(X,Y) & no(Y,Z) => no(X,Z)",
-    target_relation_type: mode === "subset" ? "set_inclusion" : "set_exclusion",
-    premises,
-    query: "Which conclusion must follow?",
-    answer_type: "single_choice",
-    options: opts.map((text, index) => ({ id: String.fromCharCode(65 + index), text })),
-    correct_answer: ["A"],
-    explanation: "Only one option is deductively forced by the quantifier chain.",
-    skill_tags: ["deduction", "quantifiers", "nonsense_wrapper"]
+    text,
+    semantic,
+    canonical: normalizeMustFollowStatement(semantic)
   };
 }
-export function buildNonsenseConditionalSelectAllItem({ difficultyTier = 4, rng = Math.random } = {}) {
-  const lex = generateLexicon(rng).states;
-  const [s1, s2, s3] = lex.pickTriple();
+
+function orderStatement(relation, lhs, rhs, { form = "direct", wrapperType = "real_world" } = {}) {
+  const inverse = form === "inverse";
+  const text = inverse ? relation.inverseText(lhs.name, rhs.name) : relation.directText(lhs.name, rhs.name);
+  return statement(text, {
+    relation: inverse ? relation.inverseRelation : relation.canonicalRelation,
+    lhs: lhs.id,
+    rhs: rhs.id,
+    polarity: "positive"
+  });
+}
+
+function equivalentOrderStatement(relation, lhs, rhs, { inverse = false, wrapperType = "real_world" } = {}) {
+  return inverse
+    ? orderStatement(relation, rhs, lhs, { form: "inverse", wrapperType })
+    : orderStatement(relation, lhs, rhs, { form: "direct", wrapperType });
+}
+
+function subsetStatement(lhs, rhs, variant = "all") {
+  const text = variant === "every"
+    ? `Every ${lhs.label} is a ${rhs.singular}.`
+    : `All ${lhs.label} are ${rhs.label}.`;
+  return statement(text, { relation: "subset_of", lhs: lhs.id, rhs: rhs.id, polarity: "positive" });
+}
+
+function disjointStatement(lhs, rhs) {
+  return statement(`No ${lhs.label} are ${rhs.label}.`, { relation: "disjoint_with", lhs: lhs.id, rhs: rhs.id, polarity: "positive" });
+}
+
+function memberStatement(entity, cls, polarity = "positive") {
+  const text = polarity === "negative" ? `${entity.name} is not ${cls.singular}.` : `${entity.name} is ${cls.singular}.`;
+  return statement(text, { relation: "member_of", lhs: entity.id, rhs: cls.id, polarity });
+}
+
+function conditionalStatement(from, to, subject = "item") {
+  return statement(`If an ${subject} is ${from.singular}, it is ${to.singular}.`, { relation: "subset_of", lhs: from.id, rhs: to.id, polarity: "positive" });
+}
+
+function unrelatedStatement(a, b) {
+  return statement(`${a.name} has the same colour as ${b.name}.`, { relation: "same_colour", lhs: a.id, rhs: b.id, polarity: "positive" });
+}
+
+function makeClass(label, index = 0) {
+  const clean = String(label).replace(/\.$/, "");
+  const singular = clean.endsWith("s") ? clean.slice(0, -1) : clean;
+  return { id: entityId(clean, index), label: clean, singular };
+}
+
+function makeProperty(label, index = 0) {
+  return { id: entityId(label, index), label, singular: label };
+}
+
+function closureMaps(premises = []) {
+  const factMap = new Map();
+  const closureMap = new Map();
+  premises.forEach((premise) => {
+    const canonical = normalizeMustFollowStatement(premise.canonical || premise.semantic || premise);
+    factMap.set(semanticKey(canonical), canonical);
+    closureMap.set(semanticKey(canonical), canonical);
+  });
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    const rows = [...closureMap.values()];
+    const add = (semantic) => {
+      const canonical = normalizeMustFollowStatement(semantic);
+      const key = semanticKey(canonical);
+      if (!closureMap.has(key)) {
+        closureMap.set(key, canonical);
+        changed = true;
+      }
+    };
+
+    rows.forEach((left) => {
+      rows.forEach((right) => {
+        if (left.polarity === "positive" && right.polarity === "positive" && left.relation === right.relation && left.rhs === right.lhs) {
+          if (["before", "right_of", "older_than", "taller_than", "heavier_than", "contains", "subset_of"].includes(left.relation)) {
+            add({ relation: left.relation, lhs: left.lhs, rhs: right.rhs, polarity: "positive" });
+          }
+        }
+        if (left.relation === "member_of" && left.polarity === "positive" && right.relation === "subset_of" && right.polarity === "positive" && left.rhs === right.lhs) {
+          add({ relation: "member_of", lhs: left.lhs, rhs: right.rhs, polarity: "positive" });
+        }
+        if (left.relation === "member_of" && left.polarity === "positive" && right.relation === "disjoint_with" && right.polarity === "positive") {
+          if (left.rhs === right.lhs) add({ relation: "member_of", lhs: left.lhs, rhs: right.rhs, polarity: "negative" });
+          if (left.rhs === right.rhs) add({ relation: "member_of", lhs: left.lhs, rhs: right.lhs, polarity: "negative" });
+        }
+        if (left.relation === "subset_of" && right.relation === "disjoint_with" && left.polarity === "positive" && right.polarity === "positive") {
+          if (left.rhs === right.lhs) add({ relation: "disjoint_with", lhs: left.lhs, rhs: right.rhs, polarity: "positive" });
+          if (left.rhs === right.rhs) add({ relation: "disjoint_with", lhs: left.lhs, rhs: right.lhs, polarity: "positive" });
+        }
+      });
+    });
+  }
+  return { factMap, closureMap };
+}
+
+export function computeMustFollowClosure(premises = []) {
+  return closureMaps(premises);
+}
+
+function isAsymmetricRelation(relation) {
+  return ["before", "right_of", "older_than", "taller_than", "heavier_than", "contains"].includes(relation);
+}
+
+function contradictionKeyFor(semantic) {
+  const normalized = normalizeMustFollowStatement(semantic);
+  if (normalized.relation === "member_of") {
+    return semanticKey({ ...normalized, polarity: normalized.polarity === "negative" ? "positive" : "negative" });
+  }
+  if (isAsymmetricRelation(normalized.relation)) {
+    return semanticKey({ ...normalized, lhs: normalized.rhs, rhs: normalized.lhs });
+  }
+  if (normalized.relation === "disjoint_with") {
+    return semanticKey({ relation: "subset_of", lhs: normalized.lhs, rhs: normalized.rhs, polarity: "positive" });
+  }
+  return null;
+}
+
+export function classifyMustFollowOption(premises = [], option) {
+  const semantic = normalizeMustFollowStatement(option?.canonical || option?.semantic || option);
+  const { factMap, closureMap } = closureMaps(premises);
+  const key = semanticKey(semantic);
+  if (factMap.has(key)) return "equivalent";
+  if (closureMap.has(key)) return "forced";
+  const contradictionKey = contradictionKeyFor(semantic);
+  if (contradictionKey && closureMap.has(contradictionKey)) return "contradiction";
+  if (semantic.relation === "same_colour" || semantic.relation === "irrelevant") return "irrelevant";
+  return "consistent";
+}
+
+function optionExplanation(label, text, promptType) {
+  const clean = text.replace(/[.?!]\s*$/, "");
+  if (label === "forced") return `${clean} must be true because it follows from the facts.`;
+  if (label === "equivalent") return `${clean} restates one of the facts, so it must be true.`;
+  if (label === "consistent") return `${clean} could be true, but the facts do not prove it.`;
+  if (label === "contradiction") return `${clean} conflicts with what the facts force.`;
+  return `${clean} is about something these facts do not settle.`;
+}
+
+function makeOption(candidate, premises, promptType, explanation = null) {
+  const label = classifyMustFollowOption(premises, candidate);
+  return {
+    id: null,
+    text: candidate.text,
+    semantic_label: label,
+    semantic: candidate.canonical,
+    explanation: explanation || optionExplanation(label, candidate.text, promptType)
+  };
+}
+
+function shuffleOptions(options, rng = Math.random) {
+  const copy = options.map((option) => ({ ...option }));
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(rng() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+  return copy;
+}
+
+function assignBalancedIds(options, promptType, itemOffset, rng) {
+  const correctLabels = correctLabelsForPrompt(promptType);
+  const shuffled = shuffleOptions(options, rng);
+  const correctIndexes = shuffled.map((option, index) => (correctLabels.has(option.semantic_label) ? index : -1)).filter((index) => index >= 0);
+  if (correctIndexes.length === 1 && shuffled.length) {
+    const desiredIndex = itemOffset % shuffled.length;
+    const currentIndex = correctIndexes[0];
+    [shuffled[currentIndex], shuffled[desiredIndex]] = [shuffled[desiredIndex], shuffled[currentIndex]];
+  } else if (shuffled.length) {
+    const shift = itemOffset % shuffled.length;
+    shuffled.push(...shuffled.splice(0, shift));
+  }
+  return shuffled.map((option, index) => ({ ...option, id: ANSWER_LETTERS[index] }));
+}
+
+function correctAnswerIds(options, promptType) {
+  const correctLabels = correctLabelsForPrompt(promptType);
+  return options.filter((option) => correctLabels.has(option.semantic_label)).map((option) => option.id);
+}
+
+function preFlightCheck(options, promptType) {
+  const forced = options.filter((option) => option.semantic_label === "forced");
+  const equivalent = options.filter((option) => option.semantic_label === "equivalent");
+  const correct = options.filter((option) => correctLabelsForPrompt(promptType).has(option.semantic_label));
+  const ok = promptType === "choose_forced"
+    ? forced.length === 1 && correct.length === 1
+    : promptType === "select_forced"
+      ? correct.length >= 1 && correct.length <= 3 && forced.length >= 1
+      : correct.length >= 1;
+  return {
+    ok,
+    forced_count: forced.length,
+    equivalent_count: equivalent.length,
+    correct_count: correct.length,
+    rejects_premise_restatement_for_choose_forced: promptType !== "choose_forced" || equivalent.length === 0 || correct.every((option) => option.semantic_label === "forced")
+  };
+}
+
+function complexityFor(tier, promptType, premiseCount) {
+  return {
+    binding_load: Math.min(5, Math.max(1, premiseCount)),
+    uncertainty_level: promptType === "select_forced" ? 3 : tier >= 4 ? 3 : 2,
+    control_burden: promptType === "select_forced" ? 3 : Math.min(4, tier)
+  };
+}
+
+function finaliseItem({ wrapperType, tier, promptType, subtype, targetRelationType, logicalForm, premises, displayPremises = null, candidates, rng, itemOffset, skillTags = [] }) {
+  const labelled = candidates.map((candidate) => makeOption(candidate, premises, promptType));
+  const unique = [];
+  const seen = new Set();
+  labelled.forEach((option) => {
+    const key = `${option.text}|${option.semantic_label}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      unique.push(option);
+    }
+  });
+  const withIds = assignBalancedIds(unique.slice(0, 4), promptType, itemOffset, rng);
+  const check = preFlightCheck(withIds, promptType);
+  if (!check.ok) throw new Error(`Must Follow pre-flight failed for ${promptType}`);
+  const correct = correctAnswerIds(withIds, promptType);
+  const explanation = withIds.find((option) => correct.includes(option.id))?.explanation || "The correct answer follows from the facts.";
+  const complexity = complexityFor(tier, promptType, premises.length);
+  return {
+    id: `mf_sem_${Date.now()}_${Math.floor(rng() * 1e6)}`,
+    family: "must_follow",
+    subtype,
+    prompt_type: promptType,
+    semantic_v2: true,
+    wrapper_type: wrapperType,
+    difficulty_tier: tier,
+    ...complexity,
+    logical_form: logicalForm,
+    target_relation_type: targetRelationType,
+    premise_semantics: premises.map((premise) => premise.canonical),
+    premises: displayPremises || premises.map((premise) => premise.text),
+    display_premises: displayPremises || premises.map((premise) => premise.text),
+    query: promptCopy(promptType),
+    prompt_text: promptCopy(promptType),
+    answer_type: promptType === "choose_forced" ? "single_choice" : "multi_select",
+    options: withIds,
+    correct_answer: correct,
+    explanation,
+    feedback_title: "Check what must follow",
+    feedback_text: explanation,
+    feedback_correct: explanation,
+    feedback_incorrect: explanation,
+    feedback_timeout: explanation,
+    pre_flight_check: check,
+    skill_tags: ["deduction", "closure_reasoning", ...skillTags, wrapperType === "nonsense" ? "nonsense_wrapper" : "real_world_wrapper"]
+  };
+}
+
+function sequenceForRelation(relation, wrapperType, count, rng) {
+  if (wrapperType === "nonsense") {
+    return generateEntitySet(count, rng).map((name, index) => makeEntity(name, index));
+  }
+  const pool = choice(relation.pools, rng);
+  return pool.slice(0, count).map((name, index) => makeEntity(name, index));
+}
+
+function buildOrderItem({ wrapperType, tier, promptType, rng, itemOffset }) {
+  const relation = choice(ORDER_RELATIONS, rng);
+  const length = tier >= 5 ? 4 : 3;
+  const values = sequenceForRelation(relation, wrapperType, length + 1, rng);
   const premises = [
-    `If something is ${s1}, it is ${s2}.`,
-    `If something is ${s2}, it is ${s3}.`,
-    `If something is ${s3}, it is ${generateClassWord(rng)}-marked.`
+    orderStatement(relation, values[0], values[1], { wrapperType }),
+    equivalentOrderStatement(relation, values[1], values[2], { wrapperType, inverse: tier >= 4 && itemOffset % 2 === 1 })
   ];
-  const correct1 = `If something is ${s1}, it is ${s3}.`;
-  const correct2 = `If something is ${s1}, it is ${generateClassWord(rng)}-marked.`;
-  const opts = [
-    correct1,
-    correct2,
-    `If something is ${s3}, it is ${s1}.`,
-    `If something is ${s2}, it is ${s1}.`
-  ];
-  return {
-    id: `mf_ns_${Date.now()}_${Math.floor(rng() * 1e6)}`,
-    family: "must_follow",
-    subtype: "select_all_must_follow",
-    wrapper_type: "nonsense",
-    difficulty_tier: difficultyTier,
-    binding_load: difficultyTier >= 5 ? 5 : 4,
-    uncertainty_level: 4,
-    control_burden: 4,
-    logical_form: "if(P,Q) & if(Q,R) & if(R,S) => if(P,R) & if(P,S)",
-    target_relation_type: "conditional_chain_multi",
+  if (tier >= 5) premises.push(orderStatement(relation, values[2], values[3], { wrapperType }));
+  const forced = equivalentOrderStatement(relation, values[0], values[tier >= 5 ? 3 : 2], { wrapperType, inverse: itemOffset % 2 === 1 });
+  const equivalent = equivalentOrderStatement(relation, values[0], values[1], { wrapperType, inverse: true });
+  const contradiction = orderStatement(relation, values[tier >= 5 ? 3 : 2], values[0], { wrapperType });
+  const consistent = orderStatement(relation, values[0], values[length], { wrapperType });
+  const irrelevant = unrelatedStatement(values[0], values[length]);
+  const candidates = promptType === "select_forced"
+    ? [forced, equivalent, contradiction, consistent]
+    : [forced, contradiction, consistent, irrelevant];
+  return finaliseItem({
+    wrapperType,
+    tier,
+    promptType,
+    subtype: promptType,
+    targetRelationType: relation.id,
+    logicalForm: `${relation.canonicalRelation}_closure`,
     premises,
-    query: "Select all conclusions that must follow.",
-    answer_type: "multi_select",
-    options: opts.map((text, index) => ({ id: String.fromCharCode(65 + index), text })),
-    correct_answer: ["A", "B"],
-    explanation: "The first state inherits both downstream consequences in the chain.",
-    skill_tags: ["deduction", "conditional_reasoning", "multi_select", "nonsense_wrapper"]
+    candidates,
+    rng,
+    itemOffset,
+    skillTags: ["transitivity", relation.id]
+  });
+}
+
+function classChain(wrapperType, rng, count = 4) {
+  if (wrapperType === "nonsense") {
+    return uniqueWords(count, generateClassWord, rng).map((label, index) => makeClass(label, index));
+  }
+  return choice(REAL_SET_CHAINS, rng).slice(0, count).map((label, index) => makeClass(label, index));
+}
+
+function buildSetInclusionItem({ wrapperType, tier, promptType, rng, itemOffset }) {
+  const [a, b, c, d] = classChain(wrapperType, rng, 4);
+  const premises = [subsetStatement(a, b), subsetStatement(b, c)];
+  if (tier >= 5) premises.push(subsetStatement(c, d));
+  const forced = subsetStatement(a, tier >= 5 ? d : c);
+  const equivalent = subsetStatement(a, b, "every");
+  const consistent = subsetStatement(c, a);
+  const contradiction = disjointStatement(a, tier >= 5 ? d : c);
+  const irrelevant = statement(`Some ${d.label} are stored in a side room.`, { relation: "irrelevant", lhs: d.id, rhs: "side_room", polarity: "positive" });
+  const candidates = promptType === "select_forced"
+    ? [forced, equivalent, consistent, contradiction]
+    : [forced, consistent, contradiction, irrelevant];
+  return finaliseItem({
+    wrapperType,
+    tier,
+    promptType,
+    subtype: promptType,
+    targetRelationType: tier >= 4 ? "set_inclusion" : "subset_chain",
+    logicalForm: "subset_closure",
+    premises,
+    candidates,
+    rng,
+    itemOffset,
+    skillTags: ["set_inclusion", "quantifier_light"]
+  });
+}
+
+function conditionalPack(wrapperType, rng) {
+  if (wrapperType === "nonsense") {
+    const [from, to, extra] = uniqueWords(3, generatePropertyWord, rng);
+    return {
+      entity: makeEntity(generatePronounceableWord(rng), 0),
+      from: makeProperty(from, 1),
+      to: makeProperty(to, 2),
+      extra: makeProperty(extra, 3)
+    };
+  }
+  const picked = choice(REAL_CONDITIONALS, rng);
+  return {
+    entity: makeEntity(picked.entity, 0),
+    from: makeProperty(picked.from, 1),
+    to: makeProperty(picked.to, 2),
+    extra: makeProperty(picked.extra, 3)
   };
 }
+
+function buildConditionalItem({ wrapperType, tier, promptType, rng, itemOffset }) {
+  const pack = conditionalPack(wrapperType, rng);
+  const rule = conditionalStatement(pack.from, pack.to, "item");
+  const fact = memberStatement(pack.entity, pack.from);
+  const premises = [rule, fact];
+  const displayPremises = tier === 1 ? [`${pack.entity.name} is ${pack.from.singular}, and ${pack.from.singular} items are ${pack.to.singular}.`] : null;
+  const forced = memberStatement(pack.entity, pack.to);
+  const equivalent = statement(`${pack.entity.name} remains ${pack.from.singular}.`, fact.semantic);
+  const consistent = memberStatement(makeEntity(`${pack.entity.name} Prime`, 9), pack.from);
+  const contradiction = memberStatement(pack.entity, pack.to, "negative");
+  const irrelevant = memberStatement(pack.entity, pack.extra);
+  const candidates = promptType === "select_forced"
+    ? [forced, equivalent, consistent, contradiction]
+    : [forced, consistent, contradiction, irrelevant];
+  return finaliseItem({
+    wrapperType,
+    tier,
+    promptType,
+    subtype: promptType,
+    targetRelationType: "simple_conditional",
+    logicalForm: "conditional_modus_ponens",
+    premises,
+    displayPremises,
+    candidates,
+    rng,
+    itemOffset,
+    skillTags: ["conditional_reasoning", "modus_ponens"]
+  });
+}
+
+function exclusionPack(wrapperType, rng) {
+  if (wrapperType === "nonsense") {
+    const [classA, classB, extra] = uniqueWords(3, generateClassWord, rng);
+    return {
+      entity: makeEntity(generatePronounceableWord(rng), 0),
+      classA: makeClass(classA, 1),
+      classB: makeClass(classB, 2),
+      extra: makeClass(extra, 3)
+    };
+  }
+  const picked = choice(REAL_EXCLUSIONS, rng);
+  return {
+    entity: makeEntity(picked.entity, 0),
+    classA: makeClass(picked.classA, 1),
+    classB: makeClass(picked.classB, 2),
+    extra: makeClass(picked.extra, 3)
+  };
+}
+
+function buildSetExclusionItem({ wrapperType, tier, promptType, rng, itemOffset }) {
+  const pack = exclusionPack(wrapperType, rng);
+  const premises = [disjointStatement(pack.classA, pack.classB), memberStatement(pack.entity, pack.classA)];
+  const forced = memberStatement(pack.entity, pack.classB, "negative");
+  const equivalent = statement(`${pack.entity.name} remains ${pack.classA.singular}.`, premises[1].semantic);
+  const consistent = memberStatement(pack.entity, pack.extra);
+  const contradiction = memberStatement(pack.entity, pack.classB);
+  const irrelevant = statement(`${pack.extra.label} are kept in drawer 4.`, { relation: "irrelevant", lhs: pack.extra.id, rhs: "drawer_4", polarity: "positive" });
+  const candidates = promptType === "select_forced"
+    ? [forced, equivalent, consistent, contradiction]
+    : [forced, consistent, contradiction, irrelevant];
+  return finaliseItem({
+    wrapperType,
+    tier,
+    promptType,
+    subtype: promptType,
+    targetRelationType: "set_exclusion",
+    logicalForm: "disjoint_membership_closure",
+    premises,
+    candidates,
+    rng,
+    itemOffset,
+    skillTags: ["simple_negation", "set_exclusion"]
+  });
+}
+
+function buildMustFollowItem({ wrapperType = "real_world", subtype = "choose_forced", difficultyTier = 1, rng = Math.random, itemOffset = 0 } = {}) {
+  const tier = Math.max(1, Math.min(5, Math.round(Number(difficultyTier) || 1)));
+  const promptType = promptTypeFor(tier, subtype, itemOffset);
+  const builders = tier >= 4
+    ? [buildOrderItem, buildSetInclusionItem, buildConditionalItem, buildSetExclusionItem]
+    : tier === 1
+      ? [buildConditionalItem]
+      : [buildOrderItem, buildSetInclusionItem, buildConditionalItem];
+  const builder = builders[itemOffset % builders.length];
+  return builder({ wrapperType, tier, promptType, rng, itemOffset });
+}
+
+export function generateItems({ wrapperType = "real_world", subtype = "choose_forced", difficultyTier = 1, count = 5, rng = Math.random, startIndex = 0 } = {}) {
+  const rows = [];
+  let attempts = 0;
+  while (rows.length < count && attempts < count * 20) {
+    attempts += 1;
+    try {
+      rows.push(buildMustFollowItem({
+        wrapperType,
+        subtype,
+        difficultyTier,
+        rng,
+        itemOffset: startIndex + rows.length
+      }));
+    } catch {
+      // Regenerate malformed or ambiguous items before they reach the player.
+    }
+  }
+  if (rows.length < count) throw new Error("Must Follow generator could not produce enough valid items");
+  return rows;
+}
+
 export function makeBlockPlan(state = {}) {
   const accuracy = state.recent_accuracy ?? 0.8;
   const lateCollapse = state.late_collapse ?? false;
   const wrapperCost = state.recent_wrapper_cost ?? 0.0;
-  const transitiveError = state.transitive_reversal_error_rate ?? 0.0;
-  const quantifierError = state.quantifier_scope_error_rate ?? 0.0;
-  const conditionalError = state.conditional_chain_error_rate ?? 0.0;
-  const overreach = state.multi_select_overreach ?? 0.0;
+  const tier = Math.max(1, Math.min(5, Math.round(Number(state.current_tier ?? 1) || 1)));
+  const focusSubtype = tier >= 3 ? "select_forced" : "choose_forced";
   const next = {
     decision: "HOLD",
-    nextTier: state.current_tier ?? 1,
+    nextTier: tier,
     nextWrapperMode: state.wrapper_mode ?? "real_world",
     nextSpeedMode: state.speed_mode ?? "normal",
-    focusSubtype: "best_conclusion_mcq"
+    focusSubtype
   };
-  if (transitiveError > 0.25) next.focusSubtype = "must_follow_tf";
-  else if (quantifierError > 0.2 || conditionalError > 0.2) next.focusSubtype = "best_conclusion_mcq";
-  else if (overreach > 0.2) next.focusSubtype = "select_all_must_follow";
-  else next.focusSubtype = "best_conclusion_mcq";
   if (accuracy >= 0.85 && !lateCollapse) {
     next.decision = "UP";
     if ((state.wrapper_mode ?? "real_world") === "real_world") next.nextWrapperMode = "mixed";
-    else if ((state.speed_mode ?? "normal") === "normal" && wrapperCost < 0.2) next.nextSpeedMode = "fast";
-    else next.nextTier = Math.min(5, (state.current_tier ?? 1) + 1);
+    else if ((state.speed_mode ?? "normal") === "normal" && wrapperCost < 0.2 && tier >= 4) next.nextSpeedMode = "fast";
+    else next.nextTier = Math.min(5, tier + 1);
+    next.focusSubtype = next.nextTier >= 3 ? "select_forced" : "choose_forced";
   } else if (accuracy < 0.7 || lateCollapse) {
     next.decision = "DOWN";
     next.nextSpeedMode = "normal";
     next.nextWrapperMode = "real_world";
-    next.nextTier = Math.max(1, (state.current_tier ?? 1) - 1);
-    next.focusSubtype = "must_follow_tf";
+    next.nextTier = Math.max(1, tier - 1);
+    next.focusSubtype = next.nextTier >= 3 ? "select_forced" : "choose_forced";
   }
   return next;
 }
+
 export function generateAdaptiveBlock(state = {}, rng = Math.random) {
   const plan = makeBlockPlan(state);
-  const items = [];
-  const wrapperMode = plan.nextWrapperMode;
+  const wrapperMode = state.wrapper_mode || plan.nextWrapperMode || "real_world";
   const tier = plan.nextTier;
-  for (let i = 0; i < 10; i++) {
-    const useNonsense = wrapperMode === "nonsense" || (wrapperMode === "mixed" && i >= 5);
-    if (useNonsense) {
-      if (plan.focusSubtype === "must_follow_tf") {
-        items.push(buildNonsenseTransitiveTFItem({ relationMode: choice(["comparative", "directional"], rng), difficultyTier: tier, rng }));
-      } else if (plan.focusSubtype === "select_all_must_follow") {
-        items.push(buildNonsenseConditionalSelectAllItem({ difficultyTier: Math.max(4, tier), rng }));
-      } else {
-        items.push(buildNonsenseSetMCQItem({ mode: choice(["subset", "exclusion"], rng), difficultyTier: Math.max(2, tier), rng }));
-      }
-    } else {
-      items.push({
-        placeholder: true,
-        wrapper_type: "real_world",
-        note: "Load a real-world item from must-follow.real-world.examples.json that matches tier/subtype."
-      });
-    }
-  }
+  const subtype = normalizeSubtype(state.focusSubtype || plan.focusSubtype, tier);
+  const items = wrapperMode === "mixed"
+    ? [
+      ...generateItems({ wrapperType: "real_world", subtype, difficultyTier: tier, count: 5, rng, startIndex: 0 }),
+      ...generateItems({ wrapperType: "nonsense", subtype, difficultyTier: tier, count: 5, rng, startIndex: 5 })
+    ]
+    : generateItems({ wrapperType: wrapperMode, subtype, difficultyTier: tier, count: 10, rng });
   return { family: "must_follow", plan, items };
 }
