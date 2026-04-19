@@ -1,6 +1,6 @@
 import { createSeededRng, reasoningSeed, shuffleWithRng } from "./random.js";
-import * as relationFitGenerator from "./families/relation-fit/relation-fit.generator.js?v=20260419-reldiffmenu";
-import * as mustFollowGenerator from "./families/must-follow/must-follow.generator.js?v=20260419-reldiffmenu";
+import * as relationFitGenerator from "./families/relation-fit/relation-fit.generator.js?v=20260419-mfprogress";
+import * as mustFollowGenerator from "./families/must-follow/must-follow.generator.js?v=20260419-mfprogress";
 
 export const REASONING_VERSION = 1;
 export const REASONING_STORAGE_KEY = "tg_iq_live_reasoning_v1";
@@ -1103,7 +1103,11 @@ export function updateReasoningFamilyState(state, summary) {
   const meta = REASONING_FAMILIES[familyId];
   const relationFit = familyId === "relation_fit";
   const mustFollow = familyId === "must_follow";
-  let focusSubtype = relationFit ? (current.current_tier >= 4 ? "resolve_slots" : "same_relation") : current.focusSubtype;
+  let focusSubtype = relationFit
+    ? (current.current_tier >= 4 ? "resolve_slots" : "same_relation")
+    : mustFollow
+      ? (current.current_tier >= 4 ? "select_forced" : "choose_forced")
+      : current.focusSubtype;
   if (relationFit && summary.decision === "UP") {
     if (focusSubtype === "same_relation") {
       if (current.current_tier < 3) {
@@ -1139,6 +1143,41 @@ export function updateReasoningFamilyState(state, summary) {
       tier = Math.max(1, current.current_tier - 1);
       focusSubtype = tier >= 4 ? "resolve_slots" : "same_relation";
     }
+  } else if (mustFollow && summary.decision === "UP") {
+    if (focusSubtype === "choose_forced") {
+      if (current.current_tier < 3) {
+        tier = Math.min(3, current.current_tier + 1);
+        wrapper = "real_world";
+        speed = "normal";
+        focusSubtype = "choose_forced";
+      } else {
+        tier = 4;
+        wrapper = "real_world";
+        speed = "normal";
+        focusSubtype = "select_forced";
+      }
+    } else if (current.current_tier < 5) {
+      tier = Math.min(5, current.current_tier + 1);
+      wrapper = "real_world";
+      speed = "normal";
+      focusSubtype = "select_forced";
+    } else if (current.wrapper_mode === "real_world") {
+      wrapper = "mixed";
+    } else if (current.speed_mode === "normal" && summary.transferScore.stabilityEfficiency >= 16) {
+      speed = "fast";
+    } else {
+      tier = Math.min(5, current.current_tier + 1);
+    }
+  } else if (mustFollow && summary.decision === "DOWN") {
+    wrapper = "real_world";
+    speed = "normal";
+    if (focusSubtype === "select_forced" && current.current_tier <= 4) {
+      tier = 3;
+      focusSubtype = "choose_forced";
+    } else {
+      tier = Math.max(1, current.current_tier - 1);
+      focusSubtype = tier >= 4 ? "select_forced" : "choose_forced";
+    }
   } else if (summary.decision === "UP") {
     if (current.wrapper_mode === "real_world") {
       wrapper = "mixed";
@@ -1159,7 +1198,7 @@ export function updateReasoningFamilyState(state, summary) {
     current_tier: tier,
     wrapper_mode: wrapper,
     speed_mode: speed,
-    focusSubtype: relationFit ? focusSubtype : mustFollow ? (tier >= 3 ? "select_forced" : "choose_forced") : (summary.decision === "DOWN" ? meta.defaultSubtype : summary.subtype),
+    focusSubtype: relationFit ? focusSubtype : mustFollow ? focusSubtype : (summary.decision === "DOWN" ? meta.defaultSubtype : summary.subtype),
     recent_accuracy: summary.accuracy,
     late_collapse: summary.lateCollapse,
     recent_wrapper_cost: summary.wrapper === "real_world" ? current.recent_wrapper_cost : Math.max(0, 0.85 - summary.accuracy),

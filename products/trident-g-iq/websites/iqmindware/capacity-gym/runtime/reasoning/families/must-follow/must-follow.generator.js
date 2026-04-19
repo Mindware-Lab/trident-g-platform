@@ -183,7 +183,7 @@ function makeEntity(name, index = 0) {
 function normalizeSubtype(value, tier = 1) {
   const aliased = SUBTYPE_ALIASES[value] || value;
   if (aliased === "choose_forced" || aliased === "select_forced" || aliased === "select_consistent_not_forced") return aliased;
-  return tier >= 3 ? "select_forced" : "choose_forced";
+  return tier >= 4 ? "select_forced" : "choose_forced";
 }
 
 export const normalizeMustFollowSubtype = normalizeSubtype;
@@ -191,7 +191,6 @@ export const normalizeMustFollowSubtype = normalizeSubtype;
 function promptTypeFor(tier, subtype = "choose_forced", itemOffset = 0) {
   const normalized = normalizeSubtype(subtype, tier);
   if (normalized === "select_forced" || normalized === "select_consistent_not_forced") return normalized;
-  if (tier >= 3 && itemOffset % 3 === 2) return "select_forced";
   return "choose_forced";
 }
 
@@ -205,6 +204,13 @@ function correctLabelsForPrompt(promptType) {
   if (promptType === "select_forced") return new Set(["equivalent", "forced"]);
   if (promptType === "select_consistent_not_forced") return new Set(["consistent"]);
   return new Set(["forced"]);
+}
+
+function deriveMustFollowProgression(tier, wrapperType = "real_world") {
+  const coreStage = Math.max(1, Math.min(5, Math.round(Number(tier) || 1)));
+  const wrapperStage = wrapperType === "nonsense" ? "nonsense" : "real_world";
+  const internalLevel = (coreStage - 1) * 2 + (wrapperStage === "real_world" ? 1 : 2);
+  return { coreStage, wrapperStage, internalLevel };
 }
 
 function relationBySemanticName(name) {
@@ -480,6 +486,7 @@ function finaliseItem({ wrapperType, tier, promptType, subtype, targetRelationTy
   const correct = correctAnswerIds(withIds, promptType);
   const explanation = withIds.find((option) => correct.includes(option.id))?.explanation || "The correct answer follows from the facts.";
   const complexity = complexityFor(tier, promptType, premises.length);
+  const progression = deriveMustFollowProgression(tier, wrapperType);
   return {
     id: `mf_sem_${Date.now()}_${Math.floor(rng() * 1e6)}`,
     family: "must_follow",
@@ -487,6 +494,9 @@ function finaliseItem({ wrapperType, tier, promptType, subtype, targetRelationTy
     prompt_type: promptType,
     semantic_v2: true,
     wrapper_type: wrapperType,
+    wrapper_stage: progression.wrapperStage,
+    core_stage: progression.coreStage,
+    internal_level: progression.internalLevel,
     difficulty_tier: tier,
     ...complexity,
     logical_form: logicalForm,
@@ -526,16 +536,17 @@ function sequenceForRelation(relation, wrapperType, count, rng) {
 
 function buildOrderItem({ wrapperType, tier, promptType, rng, itemOffset }) {
   const relation = choice(ORDER_RELATIONS, rng);
-  const length = tier >= 5 ? 4 : 3;
+  const edgeCount = tier === 3 || tier >= 5 ? 3 : 2;
+  const length = edgeCount + 1;
   const values = sequenceForRelation(relation, wrapperType, length + 1, rng);
   const premises = [
     orderStatement(relation, values[0], values[1], { wrapperType }),
     equivalentOrderStatement(relation, values[1], values[2], { wrapperType, inverse: tier >= 4 && itemOffset % 2 === 1 })
   ];
-  if (tier >= 5) premises.push(orderStatement(relation, values[2], values[3], { wrapperType }));
-  const forced = equivalentOrderStatement(relation, values[0], values[tier >= 5 ? 3 : 2], { wrapperType, inverse: itemOffset % 2 === 1 });
+  if (edgeCount >= 3) premises.push(orderStatement(relation, values[2], values[3], { wrapperType }));
+  const forced = equivalentOrderStatement(relation, values[0], values[edgeCount], { wrapperType, inverse: itemOffset % 2 === 1 });
   const equivalent = equivalentOrderStatement(relation, values[0], values[1], { wrapperType, inverse: true });
-  const contradiction = orderStatement(relation, values[tier >= 5 ? 3 : 2], values[0], { wrapperType });
+  const contradiction = orderStatement(relation, values[edgeCount], values[0], { wrapperType });
   const consistent = orderStatement(relation, values[0], values[length], { wrapperType });
   const irrelevant = unrelatedStatement(values[0], values[length]);
   const candidates = promptType === "select_forced"
@@ -565,12 +576,13 @@ function classChain(wrapperType, rng, count = 4) {
 
 function buildSetInclusionItem({ wrapperType, tier, promptType, rng, itemOffset }) {
   const [a, b, c, d] = classChain(wrapperType, rng, 4);
+  const deepClosure = tier === 3 || tier >= 5;
   const premises = [subsetStatement(a, b), subsetStatement(b, c)];
-  if (tier >= 5) premises.push(subsetStatement(c, d));
-  const forced = subsetStatement(a, tier >= 5 ? d : c);
+  if (deepClosure) premises.push(subsetStatement(c, d));
+  const forced = subsetStatement(a, deepClosure ? d : c);
   const equivalent = subsetStatement(a, b, "every");
   const consistent = subsetStatement(c, a);
-  const contradiction = disjointStatement(a, tier >= 5 ? d : c);
+  const contradiction = disjointStatement(a, deepClosure ? d : c);
   const irrelevant = statement(`Some ${d.label} are stored in a side room.`, { relation: "irrelevant", lhs: d.id, rhs: "side_room", polarity: "positive" });
   const candidates = promptType === "select_forced"
     ? [forced, equivalent, consistent, contradiction]
@@ -609,7 +621,56 @@ function conditionalPack(wrapperType, rng) {
   };
 }
 
+function chainedConditionalPack(wrapperType, rng) {
+  if (wrapperType === "nonsense") {
+    const [from, mid, to, extra] = uniqueWords(4, generatePropertyWord, rng);
+    return {
+      entity: makeEntity(generatePronounceableWord(rng), 0),
+      from: makeProperty(from, 1),
+      mid: makeProperty(mid, 2),
+      to: makeProperty(to, 3),
+      extra: makeProperty(extra, 4)
+    };
+  }
+  const picked = choice(REAL_CONDITIONALS, rng);
+  return {
+    entity: makeEntity(picked.entity, 0),
+    from: makeProperty(picked.from, 1),
+    mid: makeProperty(picked.to, 2),
+    to: makeProperty(picked.extra, 3),
+    extra: makeProperty("priority", 4)
+  };
+}
+
 function buildConditionalItem({ wrapperType, tier, promptType, rng, itemOffset, formOffset = 0 }) {
+  if (tier === 3 || tier >= 5) {
+    const pack = chainedConditionalPack(wrapperType, rng);
+    const premises = [
+      conditionalStatement(pack.from, pack.mid, "item"),
+      conditionalStatement(pack.mid, pack.to, "item"),
+      memberStatement(pack.entity, pack.from)
+    ];
+    const forced = memberStatement(pack.entity, pack.to);
+    const equivalent = statement(`${pack.entity.name} remains ${pack.from.singular}.`, premises[2].semantic);
+    const consistent = memberStatement(makeEntity(`${pack.entity.name} Prime`, 9), pack.from);
+    const contradiction = memberStatement(pack.entity, pack.to, "negative");
+    const candidates = promptType === "select_forced"
+      ? [forced, equivalent, consistent, contradiction]
+      : [forced, consistent, contradiction, memberStatement(pack.entity, pack.extra)];
+    return finaliseItem({
+      wrapperType,
+      tier,
+      promptType,
+      subtype: promptType,
+      targetRelationType: "chained_conditional",
+      logicalForm: "conditional_chain_closure",
+      premises,
+      candidates,
+      rng,
+      itemOffset,
+      skillTags: ["conditional_reasoning", "closure_depth_3", "consistent_not_forced_lure"]
+    });
+  }
   const pack = conditionalPack(wrapperType, rng);
   const rule = conditionalStatement(pack.from, pack.to, "item");
   const fact = memberStatement(pack.entity, pack.from);
@@ -665,9 +726,13 @@ function exclusionPack(wrapperType, rng) {
 
 function buildSetExclusionItem({ wrapperType, tier, promptType, rng, itemOffset }) {
   const pack = exclusionPack(wrapperType, rng);
-  const premises = [disjointStatement(pack.classA, pack.classB), memberStatement(pack.entity, pack.classA)];
+  const bridge = makeClass(wrapperType === "nonsense" ? generateClassWord(rng) : "restricted files", 4);
+  const premises = tier >= 5
+    ? [subsetStatement(pack.classA, bridge), disjointStatement(bridge, pack.classB), memberStatement(pack.entity, pack.classA)]
+    : [disjointStatement(pack.classA, pack.classB), memberStatement(pack.entity, pack.classA)];
   const forced = memberStatement(pack.entity, pack.classB, "negative");
-  const equivalent = statement(`${pack.entity.name} remains ${pack.classA.singular}.`, premises[1].semantic);
+  const memberPremise = premises[premises.length - 1];
+  const equivalent = statement(`${pack.entity.name} remains ${pack.classA.singular}.`, memberPremise.semantic);
   const consistent = memberStatement(pack.entity, pack.extra);
   const contradiction = memberStatement(pack.entity, pack.classB);
   const irrelevant = statement(`${pack.extra.label} are kept in drawer 4.`, { relation: "irrelevant", lhs: pack.extra.id, rhs: "drawer_4", polarity: "positive" });
@@ -730,7 +795,7 @@ export function makeBlockPlan(state = {}) {
   const lateCollapse = state.late_collapse ?? false;
   const wrapperCost = state.recent_wrapper_cost ?? 0.0;
   const tier = Math.max(1, Math.min(5, Math.round(Number(state.current_tier ?? 1) || 1)));
-  const focusSubtype = tier >= 3 ? "select_forced" : "choose_forced";
+  const focusSubtype = tier >= 4 ? "select_forced" : "choose_forced";
   const next = {
     decision: "HOLD",
     nextTier: tier,
@@ -740,16 +805,19 @@ export function makeBlockPlan(state = {}) {
   };
   if (accuracy >= 0.85 && !lateCollapse) {
     next.decision = "UP";
-    if ((state.wrapper_mode ?? "real_world") === "real_world") next.nextWrapperMode = "mixed";
-    else if ((state.speed_mode ?? "normal") === "normal" && wrapperCost < 0.2 && tier >= 4) next.nextSpeedMode = "fast";
-    else next.nextTier = Math.min(5, tier + 1);
-    next.focusSubtype = next.nextTier >= 3 ? "select_forced" : "choose_forced";
+    if (tier < 5) {
+      next.nextTier = Math.min(5, tier + 1);
+      next.nextWrapperMode = "real_world";
+      next.nextSpeedMode = "normal";
+    } else if ((state.wrapper_mode ?? "real_world") === "real_world") next.nextWrapperMode = "mixed";
+    else if ((state.speed_mode ?? "normal") === "normal" && wrapperCost < 0.2) next.nextSpeedMode = "fast";
+    next.focusSubtype = next.nextTier >= 4 ? "select_forced" : "choose_forced";
   } else if (accuracy < 0.7 || lateCollapse) {
     next.decision = "DOWN";
     next.nextSpeedMode = "normal";
     next.nextWrapperMode = "real_world";
     next.nextTier = Math.max(1, tier - 1);
-    next.focusSubtype = next.nextTier >= 3 ? "select_forced" : "choose_forced";
+    next.focusSubtype = next.nextTier >= 4 ? "select_forced" : "choose_forced";
   }
   return next;
 }

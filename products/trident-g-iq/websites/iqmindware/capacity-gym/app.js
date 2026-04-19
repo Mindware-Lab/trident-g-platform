@@ -6,7 +6,7 @@ import {
   displayHubTargetLabel,
   isHubMatchAtIndex,
   summarizeHubBlock
-} from "./runtime/hub-engine.js?v=20260419-reldiffmenu";
+} from "./runtime/hub-engine.js?v=20260419-mfprogress";
 import {
   initAudio,
   playSfx,
@@ -41,7 +41,7 @@ import {
   scoreReasoningResponse,
   summarizeReasoningBlock,
   updateReasoningFamilyState
-} from "./runtime/reasoning/engine.js?v=20260419-reldiffmenu";
+} from "./runtime/reasoning/engine.js?v=20260419-mfprogress";
 
 const STORAGE_KEY = "tg_iq_live_capacity_v2";
 const ECONOMY_KEY = "tg_iq_live_economy_v1";
@@ -2900,6 +2900,9 @@ function renderCoachCycle() {
 function reasoningManualDifficultyOptions(familyId, subtype) {
   if (familyId === "relation_fit") {
     return subtype === "resolve_slots" ? [4, 5] : [1, 2, 3];
+  }
+  if (familyId === "must_follow") {
+    return subtype === "select_forced" ? [4, 5] : [1, 2, 3];
   }
   return [1, 2, 3, 4, 5];
 }
