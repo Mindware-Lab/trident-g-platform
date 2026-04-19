@@ -3031,7 +3031,7 @@ function relationOutcomeCopy(item, outcome, baseFeedbackText) {
 
 function familyReasoningExplanation(item, outcome, baseFeedbackText) {
   if (item.family === "relation_fit") return relationOutcomeCopy(item, outcome, baseFeedbackText);
-  const explanation = item.explanation || baseFeedbackText || item.feedback_text || "Review the rule before the next signal.";
+  const explanation = item.explanation || baseFeedbackText || item.feedback_text || "Review the rule before the next item.";
   if (item.family === "must_follow") {
     if (item.semantic_v2) return semanticOutcomeCopy(item, outcome, baseFeedbackText, "Use only what the facts force.");
     return `Use only the facts shown. ${explanation}`;
@@ -3065,12 +3065,12 @@ function renderReasoningItemCard() {
   const premises = Array.isArray(item.display_premises) ? item.display_premises : (item.premises || []);
   const prompt = item.prompt_text || item.query || "Choose the best answer.";
   const hint = item.hint_text || item.helper_text || "";
-  const feedbackTitle = outcome?.isCorrect ? "Signal locked" : outcome?.timedOut ? "Time ran out" : (item.feedback_title || "Check the rule");
+  const feedbackTitle = outcome?.isCorrect ? "Correct!" : outcome?.timedOut ? "Time ran out" : (item.feedback_title || "Check the rule");
   const baseFeedbackText = outcome?.isCorrect
     ? (item.feedback_correct || "That matches.")
     : outcome?.timedOut
-      ? (item.feedback_timeout || item.feedback_text || "Review the rule before the next signal.")
-      : (item.feedback_incorrect || item.feedback_text || "Review the rule before the next signal.");
+      ? (item.feedback_timeout || item.feedback_text || "Review the rule before the next item.")
+      : (item.feedback_incorrect || item.feedback_text || "Review the rule before the next item.");
   const feedbackText = detailedReasoningFeedback(item, outcome, baseFeedbackText);
   return `
     <div class="reasoning-item-card">
@@ -3235,7 +3235,7 @@ function renderReasoningPlayControls() {
     return `<div class="response-row"><button class="response-btn is-stop" type="button" data-action="stop-reasoning-block">Stop</button></div>`;
   }
   if (activeReasoningBlock?.status === "feedback") {
-    return `<div class="response-row"><button class="response-btn" type="button" data-action="reasoning-next">${activeReasoningBlock.itemIndex < activeReasoningBlock.items.length - 1 ? "Next signal" : "Finish block"}</button><button class="response-btn is-stop" type="button" data-action="stop-reasoning-block">Stop</button></div>`;
+    return `<div class="response-row"><button class="response-btn" type="button" data-action="reasoning-next">${activeReasoningBlock.itemIndex < activeReasoningBlock.items.length - 1 ? "Next item" : "Finish block"}</button><button class="response-btn is-stop" type="button" data-action="stop-reasoning-block">Stop</button></div>`;
   }
   if (activeReasoningBlock?.status === "summary") {
     return `<div class="response-row"><button class="btn btn-primary" type="button" data-action="clear-reasoning-summary">Continue</button></div>`;

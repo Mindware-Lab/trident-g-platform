@@ -314,7 +314,7 @@ function semanticRelationHint(item) {
   if (item?.prompt_type === "choose_forced" || item?.prompt_type === "select_forced") {
     return "Pick only what the facts make certain.";
   }
-  return "Match what the sentence means, even when the wording is flipped around.";
+  return "";
 }
 
 function publicReasoningFields(item) {
@@ -486,7 +486,7 @@ function publicReasoningFields(item) {
     feedback_text: "Review the rule and try the next one cleanly.",
     feedback_correct: "Correct.",
     feedback_incorrect: "Not quite.",
-    feedback_timeout: "Time ran out. Review the rule before the next signal."
+    feedback_timeout: "Time ran out. Review the rule before the next item."
   };
 }
 
