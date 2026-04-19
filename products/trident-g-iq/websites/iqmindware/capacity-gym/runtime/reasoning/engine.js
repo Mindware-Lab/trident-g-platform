@@ -564,6 +564,11 @@ export function normalizeReasoningState(raw) {
   const source = raw && typeof raw === "object" ? raw : {};
   const settings = source.settings && typeof source.settings === "object" ? source.settings : {};
   const settingsFamily = normalizeFamilyId(settings.family);
+  const settingsMode = settings.mode === "manual" ? "manual" : "coach";
+  const settingsSubtype = normalizeReasoningSubtype(settingsFamily, settings.subtype, settings.tier === "auto" ? 1 : settings.tier);
+  const manualSubtype = settingsSubtype === "auto"
+    ? REASONING_FAMILIES[settingsFamily].defaultSubtype
+    : settingsSubtype;
   const familyState = {};
   Object.keys(REASONING_FAMILIES).forEach((familyId) => {
     familyState[familyId] = normalizeFamilyState(familyId, source.familyState?.[familyId]);
@@ -572,9 +577,9 @@ export function normalizeReasoningState(raw) {
   return {
     version: REASONING_VERSION,
     settings: {
-      mode: settings.mode === "manual" ? "manual" : "coach",
+      mode: settingsMode,
       family: settingsFamily,
-      subtype: normalizeReasoningSubtype(settingsFamily, settings.subtype, settings.tier === "auto" ? 1 : settings.tier),
+      subtype: settingsMode === "manual" ? manualSubtype : settingsSubtype,
       wrapper: normalizeWrapper(settings.wrapper),
       speed: normalizeSpeed(settings.speed),
       tier: settings.tier === "auto" ? "auto" : clampTier(settings.tier),

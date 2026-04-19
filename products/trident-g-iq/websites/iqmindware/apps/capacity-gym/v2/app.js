@@ -2868,6 +2868,10 @@ function renderReasoningTrainingPanel() {
   const settings = reasoningState.settings;
   const familyKeys = Object.keys(REASONING_FAMILIES);
   const familyMeta = REASONING_FAMILIES[settings.family] || REASONING_FAMILIES.relation_fit;
+  const subtypeEntries = Object.entries(familyMeta.subtypes).filter(([value]) => value !== "auto");
+  const selectedSubtype = settings.subtype !== "auto" && familyMeta.subtypes[settings.subtype]
+    ? settings.subtype
+    : familyMeta.defaultSubtype;
   const fastNote = settings.speed === "fast" ? "Efficiency mode" : "Normal reasoning pace";
   return `
     <section class="panel reasoning-training-panel">
@@ -2890,9 +2894,9 @@ function renderReasoningTrainingPanel() {
             </select>
           </div>
           <div class="field">
-            <label>Subtype</label>
+            <label>Subgame</label>
             <select data-reasoning-field="subtype">
-              ${Object.entries(familyMeta.subtypes).map(([value, label]) => `<option value="${value}" ${settings.subtype === value ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}
+              ${subtypeEntries.map(([value, label]) => `<option value="${value}" ${selectedSubtype === value ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}
             </select>
           </div>
           <div class="field">
@@ -3622,6 +3626,12 @@ document.addEventListener("click", (event) => {
   if (action === "set-reasoning-mode") {
     if (anyGameplayActive()) return;
     reasoningState.settings.mode = target.getAttribute("data-mode") === "manual" ? "manual" : "coach";
+    if (reasoningState.settings.mode === "manual") {
+      const familyMeta = REASONING_FAMILIES[reasoningState.settings.family] || REASONING_FAMILIES.relation_fit;
+      if (reasoningState.settings.subtype === "auto" || !familyMeta.subtypes[reasoningState.settings.subtype]) {
+        reasoningState.settings.subtype = familyMeta.defaultSubtype;
+      }
+    }
     reasoningState.currentSession = null;
     saveReasoningState();
     viewState.reasoningCloseSession = null;
@@ -3806,9 +3816,12 @@ document.addEventListener("change", (event) => {
     const settings = { ...reasoningState.settings };
     if (reasoningField === "family") {
       settings.family = REASONING_FAMILIES[target.value] ? target.value : "relation_fit";
-      settings.subtype = "auto";
+      settings.subtype = REASONING_FAMILIES[settings.family]?.defaultSubtype || "same_relation";
     } else if (reasoningField === "subtype") {
-      settings.subtype = target.value || "auto";
+      const familyMeta = REASONING_FAMILIES[settings.family] || REASONING_FAMILIES.relation_fit;
+      settings.subtype = familyMeta.subtypes[target.value] && target.value !== "auto"
+        ? target.value
+        : familyMeta.defaultSubtype;
     } else if (reasoningField === "wrapper") {
       settings.wrapper = target.value === "mixed" || target.value === "nonsense" ? target.value : "real_world";
     } else if (reasoningField === "speed") {
