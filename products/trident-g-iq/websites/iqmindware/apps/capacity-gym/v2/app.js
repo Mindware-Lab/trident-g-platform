@@ -60,6 +60,7 @@ const TRAINING_HELP_VIDEO_URL = "https://youtu.be/uOncXapT-j4?si=uJBBaXw7M1vtL2j
 const TRAINING_HELP_ICON_URL = "./assets/help/help-hex-blue.svg";
 const MODE_HELP_ICON_URL = "./assets/help/help-hex-purple.svg";
 const ZONE_HELP_ICON_URL = "./assets/help/help-hex-gold.svg";
+const IQMINDWARE_LOGO_URL = "./assets/brand/iqmindware-logo.png?v=20260420-iqlogo";
 const COACH_FAMILY_CYCLE = ["flex", "bind", "relate", "resist", "flex", "relate", "bind", "resist", "relate"];
 const RELATE_LADDER = ["relate_vectors", "relate_numbers", "relate_vectors_dual", "relate_numbers_dual"];
 const TRANSFER_SPRINT_BLOCKS = 3;
@@ -3584,6 +3585,15 @@ function reasoningFamilyChipLabel(familyId) {
   return reasoningFamilyLabel(familyId);
 }
 
+function renderIqMindwareFooter() {
+  return `
+    <a class="iqmindware-strip-link" href="https://iqmindware.com/" target="_blank" rel="noopener noreferrer" aria-label="Open IQMindware website">
+      <img src="${IQMINDWARE_LOGO_URL}" alt="" loading="lazy">
+      <span>IQMindware.com</span>
+    </a>
+  `;
+}
+
 function renderReasoningRightStrip() {
   const stats = reasoningSessionStats(reasoningState.history.filter((entry) => entry.type !== "session_abandoned"));
   const latest = stats.latest;
@@ -3626,6 +3636,7 @@ function renderReasoningRightStrip() {
           </div>
           <button class="btn btn-ghost right-stats-btn" type="button" data-action="reset-reasoning-sessions" ${activeReasoningBlock ? "disabled" : ""}>Reset reasoning</button>
         </section>
+        ${renderIqMindwareFooter()}
       </div>
     </aside>
   `;
@@ -3810,6 +3821,7 @@ function renderRightStrip() {
           </div>
           <button class="btn btn-ghost right-stats-btn" type="button" data-action="reset-sessions" ${activeBlock ? "disabled" : ""}>Reset sessions</button>
         </section>
+        ${renderIqMindwareFooter()}
       </div>
     </aside>
   `;

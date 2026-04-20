@@ -114,6 +114,14 @@ button {
   min-width: 0;
 }
 
+.capacity-v2-brand-actions {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  justify-content: flex-end;
+  transform: translateY(-50%);
+}
+
 .capacity-module-switch {
   position: absolute;
   left: 50%;
@@ -957,6 +965,54 @@ button {
     0 0 18px rgba(84, 162, 255, 0.34),
     0 0 28px rgba(204, 255, 102, 0.14);
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.32);
+}
+
+.iqmindware-strip-link {
+  width: 100%;
+  min-height: 46px;
+  margin-top: auto;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(84, 162, 255, 0.2);
+  background:
+    linear-gradient(135deg, rgba(84, 162, 255, 0.08), rgba(7, 13, 24, 0.9)),
+    rgba(7, 13, 24, 0.9);
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.iqmindware-strip-link img {
+  width: 34px;
+  height: 28px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.iqmindware-strip-link span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.iqmindware-strip-link:hover,
+.iqmindware-strip-link:focus-visible {
+  border-color: rgba(84, 162, 255, 0.48);
+  color: var(--white);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 18px rgba(84, 162, 255, 0.14);
+  outline: none;
 }
 
 .stat {
