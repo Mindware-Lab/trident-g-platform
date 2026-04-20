@@ -3892,8 +3892,9 @@ function renderPlayCard() {
   const showingStats = viewState.centerMode === "stats" && !activeBlock;
   const showingZone = viewState.centerMode === "zone";
   const sessionBar = showingStats ? "" : renderCoachSessionBar();
+  const manualCapacity = state.settings.mode === "manual" && !showingStats && !showingZone;
   return `
-    <section class="play-card${showingStats ? " is-stats-view" : ""}${sessionBar ? " has-session-bar" : ""}" aria-label="Capacity play surface">
+    <section class="play-card${showingStats ? " is-stats-view" : ""}${sessionBar ? " has-session-bar" : ""}${manualCapacity ? " is-manual-capacity" : ""}" aria-label="Capacity play surface">
       <div class="mobile-topbar">
         <button class="btn btn-ghost" type="button" data-action="open-left">Coach</button>
         <button class="btn btn-ghost" type="button" data-action="open-right">Stats</button>

@@ -1336,6 +1336,10 @@ button {
   padding: 28px 12px 2px;
 }
 
+.play-card.is-manual-capacity .arena-shell {
+  padding-top: 38px;
+}
+
 .arena-placeholder {
   width: min(44vh, 390px);
   aspect-ratio: 1;
