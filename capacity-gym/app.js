@@ -1673,7 +1673,7 @@ function reasoningZoneRecommendation() {
   if (!snapshot.fresh) {
     return {
       recommended: true,
-      copy: "Start with a Zone Check so the coach can set today's Capacity and Reasoning targets."
+      copy: "Start with a 'zone pulse' so the coach can set today's Capacity and Reasoning targets. It's also effective brain training for cognition."
     };
   }
   if (snapshot.routeState === "invalid") {
@@ -2838,7 +2838,7 @@ function coachCalloutModel() {
       ? "Your last Zone Check was before your last training session. Test your zone again so the coach can set today's target."
       : preflight.reason === "invalid"
         ? "Your last Zone Check did not validate. Run a clean 3-minute pulse before starting coach-led training."
-        : "Start with a 3-minute Zone Check. It sets a clear target for today's Capacity and Reasoning work.";
+        : "Start with a 'zone pulse' so the coach can set today's Capacity and Reasoning targets. It's also effective brain training for cognition.";
     return {
       kicker: "Coach tip",
       title: "Test your zone / 3 min",
