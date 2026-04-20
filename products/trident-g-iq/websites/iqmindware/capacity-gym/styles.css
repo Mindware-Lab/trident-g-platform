@@ -138,7 +138,7 @@ button {
 }
 
 .module-switch-btn {
-  min-width: 132px;
+  min-width: 108px;
   min-height: 28px;
   padding: 5px 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -602,6 +602,47 @@ button {
 .zone-help-close {
   border-color: rgba(255, 138, 22, 0.28);
   color: var(--iq-credit);
+}
+
+.tracker-help-dialog {
+  width: min(620px, calc(100vw - 36px));
+  max-height: min(720px, calc(100vh - 36px));
+  overflow-y: auto;
+  border-color: rgba(255, 138, 22, 0.68);
+  background:
+    linear-gradient(135deg, rgba(49, 30, 92, 0.76), rgba(11, 17, 32, 0.98)),
+    rgba(11, 17, 32, 0.98);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 34px rgba(255, 138, 22, 0.22);
+}
+
+.tracker-help-kicker,
+.tracker-help-section h3 {
+  color: var(--iq-credit);
+}
+
+.tracker-help-close {
+  border-color: rgba(255, 138, 22, 0.28);
+  color: var(--iq-credit);
+}
+
+.tracker-help-copy {
+  display: grid;
+  gap: 10px;
+}
+
+.tracker-help-copy p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.84);
+  font-family: "Exo 2", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.tracker-help-copy strong {
+  color: var(--white);
 }
 
 .coach-cycle-subtitle {
@@ -1510,6 +1551,354 @@ button {
   padding: 12px;
 }
 
+.play-body.is-tracker {
+  --coach-slot-height: 0px;
+}
+
+.play-body.is-tracker::before {
+  opacity: 0.28;
+}
+
+.arena-shell.is-tracker {
+  align-items: stretch;
+  justify-items: center;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.tracker-left-strip select {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.tracker-strip-guide {
+  margin: 7px 0 0;
+  color: var(--iq-credit);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+.tracker-panel,
+.tracker-test-note {
+  display: grid;
+  gap: 8px;
+}
+
+.tracker-test-note {
+  padding: 8px;
+  border: 1px solid rgba(84, 162, 255, 0.14);
+  background: rgba(17, 29, 48, 0.7);
+}
+
+.tracker-test-note strong {
+  color: var(--capacity);
+  font-family: "Orbitron", monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.tracker-test-note p,
+.tracker-test-note span {
+  margin: 0;
+  color: var(--white);
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.tracker-start-btn {
+  width: 100%;
+  border-color: rgba(255, 138, 22, 0.58);
+  color: var(--iq-credit);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 138, 22, 0.16),
+    0 0 18px rgba(255, 138, 22, 0.2);
+}
+
+.tracker-intro-card,
+.tracker-question-card,
+.tracker-result-card {
+  width: min(100%, 650px);
+  align-self: stretch;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(84, 162, 255, 0.2);
+  background:
+    linear-gradient(135deg, rgba(17, 29, 48, 0.94), rgba(7, 13, 24, 0.9)),
+    rgba(7, 13, 24, 0.94);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
+    0 0 24px rgba(84, 162, 255, 0.12);
+}
+
+.tracker-intro-card {
+  align-self: center;
+  position: relative;
+  padding-right: 52px;
+}
+
+.tracker-intro-kicker {
+  color: var(--iq-credit);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+}
+
+.tracker-intro-card .mini-label {
+  color: var(--iq-credit);
+}
+
+.tracker-intro-card h2,
+.tracker-question-card h2,
+.tracker-result-card h2 {
+  margin: 0;
+  color: var(--white);
+  font-family: "Orbitron", monospace;
+  font-size: 17px;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.tracker-intro-card h2 {
+  color: var(--capacity);
+}
+
+.tracker-help-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  place-items: center;
+}
+
+.tracker-help-btn img {
+  display: block;
+  width: 31px;
+  height: 31px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(255, 138, 22, 0.36));
+}
+
+.tracker-help-btn:hover img,
+.tracker-help-btn:focus-visible img {
+  filter: drop-shadow(0 0 12px rgba(255, 210, 70, 0.55));
+}
+
+.tracker-intro-card p,
+.tracker-result-card p,
+.tracker-question-card p {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.tracker-intro-grid,
+.tracker-result-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tracker-question-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tracker-question-head strong {
+  color: var(--credit);
+  font-family: "Orbitron", monospace;
+  font-size: 11px;
+}
+
+.tracker-stem-frame {
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+}
+
+.tracker-stem-frame img {
+  display: block;
+  max-width: 100%;
+  max-height: min(255px, 36vh);
+  background: #ffffff;
+  object-fit: contain;
+}
+
+.tracker-sgs-card.is-verbal h2,
+.tracker-sgs-card.is-series h2,
+.tracker-psi-card h2 {
+  font-family: "Exo 2", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.3;
+  text-transform: none;
+}
+
+.tracker-option-grid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tracker-option-grid-two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tracker-scale-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.tracker-option-btn {
+  min-height: 48px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 3px;
+  padding: 8px;
+  border: 1px solid rgba(84, 162, 255, 0.24);
+  background: rgba(17, 29, 48, 0.82);
+  color: var(--white);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  cursor: pointer;
+}
+
+.tracker-option-btn:hover,
+.tracker-option-btn:focus-visible {
+  border-color: rgba(204, 255, 102, 0.68);
+  background: rgba(36, 57, 38, 0.9);
+  outline: none;
+}
+
+.tracker-option-btn strong {
+  color: var(--credit);
+  font-family: "Orbitron", monospace;
+  font-size: 15px;
+}
+
+.tracker-subtest-list {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid rgba(84, 162, 255, 0.34);
+  border-radius: 7px;
+  background: rgba(17, 23, 34, 0.82);
+}
+
+.tracker-section-copy {
+  display: grid;
+  gap: 8px;
+  color: var(--text);
+}
+
+.tracker-section-copy p {
+  margin: 0;
+  color: #dce8ff;
+  font-family: "Exo 2", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.tracker-subtest-btn {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 3px;
+  background: rgba(35, 40, 51, 0.86);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.tracker-subtest-check {
+  width: 22px;
+  height: 22px;
+  display: block;
+  border: 2px solid rgba(255, 255, 255, 0.32);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tracker-subtest-btn strong {
+  color: var(--white);
+  font-family: "Exo 2", sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+}
+
+.tracker-subtest-btn em {
+  color: var(--text);
+  font-family: "Exo 2", sans-serif;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tracker-subtest-btn.is-selected {
+  border-color: transparent;
+  background: rgba(42, 48, 59, 0.92);
+  box-shadow: none;
+}
+
+.tracker-subtest-btn.is-selected strong {
+  color: var(--white);
+}
+
+.tracker-subtest-btn.is-selected .tracker-subtest-check {
+  position: relative;
+  border-color: transparent;
+  background: transparent;
+}
+
+.tracker-subtest-btn.is-selected .tracker-subtest-check::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 1px;
+  width: 17px;
+  height: 10px;
+  border-left: 2px solid #78c7ff;
+  border-bottom: 2px solid #78c7ff;
+  transform: rotate(-45deg);
+}
+
+.tracker-score-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tracker-stats-dashboard {
+  grid-template-rows: auto auto repeat(5, minmax(118px, 1fr));
+  overflow-y: auto;
+}
+
 .reasoning-training-panel {
   display: grid;
   gap: 9px;
@@ -1985,7 +2374,7 @@ button {
 .stats-bars {
   min-height: 86px;
   display: grid;
-  grid-template-columns: repeat(20, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--stats-bars-count, 20), minmax(0, 1fr));
   align-items: end;
   gap: 3px;
 }

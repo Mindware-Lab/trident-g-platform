@@ -42,6 +42,26 @@ import {
   summarizeReasoningBlock,
   updateReasoningFamilyState
 } from "./runtime/reasoning/engine.js?v=20260419-sessioncount";
+import {
+  TRACKER_LEGACY_STORAGE_KEY,
+  TRACKER_PSI_OPTIONS,
+  TRACKER_PSI_SECTIONS,
+  TRACKER_STORAGE_KEY,
+  TRACKER_TESTS,
+  TRACKER_TEST_BY_ID,
+  createDefaultTrackerState,
+  createTrackerEntry,
+  createTrackerSession,
+  latestTrackerEntry,
+  latestTrackerFieldEntry,
+  mergeLegacyTrackerState,
+  normalizeTrackerState,
+  parseTrackerJson,
+  psiQuestionList,
+  scoreTrackerSession,
+  trackerManifestFor,
+  trackerSeries
+} from "./runtime/tracker/engine.js?v=20260420-tracker";
 
 const STORAGE_KEY = "tg_iq_live_capacity_v2";
 const ECONOMY_KEY = "tg_iq_live_economy_v1";
@@ -60,6 +80,7 @@ const TRAINING_HELP_VIDEO_URL = "https://youtu.be/uOncXapT-j4?si=uJBBaXw7M1vtL2j
 const TRAINING_HELP_ICON_URL = "./assets/help/help-hex-blue.svg";
 const MODE_HELP_ICON_URL = "./assets/help/help-hex-purple.svg";
 const ZONE_HELP_ICON_URL = "./assets/help/help-hex-gold.svg";
+const TRACKER_HELP_ICON_URL = "./assets/help/help-hex-gold.svg";
 const IQMINDWARE_LOGO_URL = "./assets/brand/iqmindware-logo.png?v=20260420-iqlogo";
 const COACH_FAMILY_CYCLE = ["flex", "bind", "relate", "resist", "flex", "relate", "bind", "resist", "relate"];
 const RELATE_LADDER = ["relate_vectors", "relate_numbers", "relate_vectors_dual", "relate_numbers_dual"];
@@ -111,15 +132,18 @@ const appRoot = document.querySelector("#app");
 let state = loadState();
 let economy = loadEconomy();
 let reasoningState = loadReasoningState();
+let trackerState = loadTrackerState();
 let coachState = loadUnifiedCoachState();
 let zonePulseState = createZonePulseState();
 let activeBlock = null;
 let activeReasoningBlock = null;
+let activeTrackerSession = null;
 let viewState = {
   leftOpen: false,
   rightOpen: false,
   modeHelpOpen: false,
   zoneHelpOpen: false,
+  trackerHelpOpen: false,
   centerMode: "play",
   message: "Choose coached progression or manual play, then start a block.",
   activeModule: loadActiveModule(),
@@ -128,8 +152,56 @@ let viewState = {
 };
 const timers = { countdown: null, display: null, sequence: null, trial: null, zoneCountdown: null, reasoning: null };
 let touchStart = null;
+const trackerImagePreloadCache = new Map();
 
 initAudio({ enabled: state.settings.soundOn, preloadTier: "p0" });
+
+function trackerStemImageUrls(testId = null) {
+  const ids = testId ? [testId] : ["sgs12_pre", "sgs12_post"];
+  return ids.flatMap((id) => {
+    const manifest = trackerManifestFor(id);
+    return (manifest.items || []).map((item) => item.stemImageUrl).filter(Boolean);
+  });
+}
+
+function imageWithRetryUrl(url, token) {
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}img_retry=${encodeURIComponent(token)}`;
+}
+
+function preloadTrackerImage(url, retries = 1) {
+  if (!url || typeof Image === "undefined") return Promise.resolve(false);
+  if (trackerImagePreloadCache.has(url)) return trackerImagePreloadCache.get(url);
+  let attempt = 0;
+  const seed = Date.now();
+  const promise = new Promise((resolve) => {
+    const run = () => {
+      const img = new Image();
+      img.decoding = "async";
+      img.onload = () => resolve(true);
+      img.onerror = () => {
+        if (attempt < retries) {
+          attempt += 1;
+          img.src = imageWithRetryUrl(url, `${seed}_${attempt}`);
+        } else {
+          resolve(false);
+        }
+      };
+      img.src = attempt === 0 ? url : imageWithRetryUrl(url, `${seed}_${attempt}`);
+    };
+    run();
+  });
+  trackerImagePreloadCache.set(url, promise);
+  return promise;
+}
+
+function prewarmTrackerImages(testId = null) {
+  const urls = Array.from(new Set(trackerStemImageUrls(testId)));
+  if (!urls.length) return;
+  Promise.allSettled(urls.map((url) => preloadTrackerImage(url, 1))).catch(() => {});
+}
+
+prewarmTrackerImages();
 
 function isSoundOn() {
   return state.settings.soundOn !== false;
@@ -156,10 +228,11 @@ function ensureModuleSwitch() {
     switcher.setAttribute("data-module-switch", "");
     brand.insertBefore(switcher, actions);
   }
-  const active = viewState.activeModule === "reasoning" ? "reasoning" : "capacity";
+  const active = viewState.activeModule === "reasoning" || viewState.activeModule === "tracker" ? viewState.activeModule : "capacity";
   switcher.innerHTML = `
     <button class="module-switch-btn${active === "capacity" ? " is-active" : ""}" type="button" data-action="set-module" data-module="capacity" aria-pressed="${active === "capacity" ? "true" : "false"}">Capacity Gym</button>
     <button class="module-switch-btn${active === "reasoning" ? " is-active" : ""}" type="button" data-action="set-module" data-module="reasoning" aria-pressed="${active === "reasoning" ? "true" : "false"}">Reasoning Gym</button>
+    <button class="module-switch-btn${active === "tracker" ? " is-active" : ""}" type="button" data-action="set-module" data-module="tracker" aria-pressed="${active === "tracker" ? "true" : "false"}">Tracker</button>
   `;
 }
 
@@ -415,15 +488,33 @@ function saveState(nextState = state) {
 
 function loadActiveModule() {
   if (typeof localStorage === "undefined") return "capacity";
-  return localStorage.getItem(ACTIVE_MODULE_KEY) === "reasoning" ? "reasoning" : "capacity";
+  const stored = localStorage.getItem(ACTIVE_MODULE_KEY);
+  return stored === "reasoning" || stored === "tracker" ? stored : "capacity";
 }
 
 function saveActiveModule(moduleId) {
-  viewState.activeModule = moduleId === "reasoning" ? "reasoning" : "capacity";
+  viewState.activeModule = moduleId === "reasoning" || moduleId === "tracker" ? moduleId : "capacity";
   if (typeof localStorage !== "undefined") {
     localStorage.setItem(ACTIVE_MODULE_KEY, viewState.activeModule);
   }
   return viewState.activeModule;
+}
+
+function loadTrackerState() {
+  if (typeof localStorage === "undefined") return createDefaultTrackerState();
+  const rawState = parseTrackerJson(localStorage.getItem(TRACKER_STORAGE_KEY));
+  const rawLegacy = parseTrackerJson(localStorage.getItem(TRACKER_LEGACY_STORAGE_KEY));
+  const loaded = mergeLegacyTrackerState(normalizeTrackerState(rawState), rawLegacy);
+  localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(loaded));
+  return loaded;
+}
+
+function saveTrackerState(nextState = trackerState) {
+  trackerState = normalizeTrackerState(nextState);
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(TRACKER_STORAGE_KEY, JSON.stringify(trackerState));
+  }
+  return trackerState;
 }
 
 function loadReasoningState() {
@@ -967,8 +1058,12 @@ function reasoningBlockIsActive() {
   return Boolean(activeReasoningBlock && activeReasoningBlock.status !== "summary" && activeReasoningBlock.status !== "complete");
 }
 
+function trackerTestIsActive() {
+  return Boolean(activeTrackerSession && activeTrackerSession.status !== "results");
+}
+
 function anyGameplayActive() {
-  return Boolean(activeBlock || zonePulseIsRunning() || reasoningBlockIsActive() || viewState.reasoningBusy);
+  return Boolean(activeBlock || zonePulseIsRunning() || reasoningBlockIsActive() || trackerTestIsActive() || viewState.reasoningBusy);
 }
 
 function formatBitsPerSecond(value) {
@@ -2765,9 +2860,14 @@ function reasoningHudModel() {
 function renderHud() {
   const model = viewState.centerMode === "zone"
     ? zoneHudModel()
-    : viewState.activeModule === "reasoning" ? reasoningHudModel() : hudModel();
+    : viewState.activeModule === "reasoning" ? reasoningHudModel()
+      : viewState.activeModule === "tracker" ? trackerHudModel()
+        : hudModel();
+  const ariaLabel = viewState.activeModule === "reasoning"
+    ? "Reasoning block status"
+    : viewState.activeModule === "tracker" ? "Tracker status" : "Capacity block status";
   return `
-    <div class="hud" aria-label="${viewState.activeModule === "reasoning" ? "Reasoning block status" : "Capacity block status"}">
+    <div class="hud" aria-label="${ariaLabel}">
       <div class="hud-status">
         ${model.items.map(([label, value]) => `
           <div class="hud-item">
@@ -2884,7 +2984,7 @@ function renderSessionBarChart({ title, subtitle, valueKey, maxValue, unit = "",
           <p>${escapeHtml(subtitle)}</p>
         </div>
       </div>
-      <div class="stats-bars">
+      <div class="stats-bars" style="--stats-bars-count:${Math.max(1, model.slots.length)};">
         ${model.slots.map((slot) => {
           const value = Number(slot[valueKey]);
           const hasValue = !slot.empty && Number.isFinite(value);
@@ -3055,6 +3155,137 @@ function renderReasoningStatsDashboard() {
         maxValue: 100,
         unit: "%",
         model
+      })}
+    </div>
+  `;
+}
+
+function trackerSelectedTest() {
+  return TRACKER_TEST_BY_ID[trackerState.settings.selectedTest] || TRACKER_TEST_BY_ID.sgs12_pre;
+}
+
+function formatTrackerScore(value, digits = 1) {
+  return Number.isFinite(Number(value)) ? Number(value).toFixed(digits).replace(/\.0$/, "") : "--";
+}
+
+function trackerLatestSummary() {
+  const pre = latestTrackerEntry(trackerState, "sgs12_pre");
+  const post = latestTrackerEntry(trackerState, "sgs12_post");
+  const psi = latestTrackerEntry(trackerState, "psi_cbs");
+  const psiCore = latestTrackerFieldEntry(trackerState, "psi_cbs", "core");
+  const psiAd = latestTrackerFieldEntry(trackerState, "psi_cbs", "ad");
+  const psiAi = latestTrackerFieldEntry(trackerState, "psi_cbs", "ai");
+  const preIq = Number(pre?.result?.rsIq);
+  const postIq = Number(post?.result?.rsIq);
+  const delta = Number.isFinite(preIq) && Number.isFinite(postIq) ? postIq - preIq : null;
+  return { pre, post, psi, psiCore, psiAd, psiAi, preIq, postIq, delta };
+}
+
+function trackerHudModel() {
+  const selected = trackerSelectedTest();
+  if (activeTrackerSession?.status === "question") {
+    const done = Number(activeTrackerSession.index || 0) + 1;
+    const total = Number(activeTrackerSession.totalItems || 1);
+    return {
+      items: [
+        ["Test", activeTrackerSession.label],
+        ["Progress", `${Math.min(done, total)}/${total}`],
+        ["Score", "Pending"]
+      ]
+    };
+  }
+  const latest = trackerLatestSummary();
+  return {
+    items: [
+      ["Tracker", selected.shortLabel],
+      ["SgS pre", Number.isFinite(latest.preIq) ? `${latest.preIq}` : "--"],
+      ["Psi Core", formatTrackerScore(latest.psiCore?.result?.core)]
+    ]
+  };
+}
+
+function trackerSeriesModel(testId, field, count = 10) {
+  const rows = trackerSeries(trackerState, testId, field, count);
+  const slots = Array.from({ length: count }, (_, index) => {
+    const row = rows[index] || null;
+    return row ? { ...row, slot: index + 1 } : { slot: index + 1, label: `${index + 1}`, empty: true };
+  });
+  const maxValue = Math.max(5, ...rows.map((row) => Number(row.value)).filter(Number.isFinite));
+  return { slots, maxValue };
+}
+
+function trackerSgsOutcomeModel() {
+  const latest = trackerLatestSummary();
+  const values = [
+    { label: "Pre", value: latest.preIq },
+    { label: "Post", value: latest.postIq }
+  ];
+  const maxValue = Math.max(160, ...values.map((item) => Number(item.value)).filter(Number.isFinite));
+  return {
+    slots: values.map((item, index) => Number.isFinite(item.value)
+      ? { slot: index + 1, label: item.label, value: item.value }
+      : { slot: index + 1, label: item.label, empty: true }),
+    maxValue
+  };
+}
+
+function renderTrackerStatsDashboard() {
+  const latest = trackerLatestSummary();
+  const zoneBitsModel = zoneBitsStatsModel();
+  return `
+    <div class="center-stats-dashboard tracker-stats-dashboard">
+      <div class="center-stats-head">
+        <div>
+          <span class="stats-kicker">Assessment tracker</span>
+          <h2>Tracker Progress</h2>
+        </div>
+        <button class="btn btn-ghost" type="button" data-action="show-play">Return to tracker</button>
+      </div>
+      <div class="center-stats-summary">
+        <div class="stat"><span class="mini-label">SgS Pre</span><strong>${Number.isFinite(latest.preIq) ? latest.preIq : "--"}</strong></div>
+        <div class="stat"><span class="mini-label">SgS Post</span><strong>${Number.isFinite(latest.postIq) ? latest.postIq : "--"}</strong></div>
+        <div class="stat"><span class="mini-label">IQ Delta</span><strong>${Number.isFinite(latest.delta) ? `${latest.delta >= 0 ? "+" : ""}${latest.delta}` : "--"}</strong></div>
+        <div class="stat"><span class="mini-label">Psi Core</span><strong>${formatTrackerScore(latest.psiCore?.result?.core)}</strong></div>
+      </div>
+      ${renderSessionBarChart({
+        title: "SgS pre/post RS-IQ",
+        subtitle: "Internal reasoning snapshot score. Not a clinical IQ score.",
+        valueKey: "value",
+        maxValue: trackerSgsOutcomeModel().maxValue,
+        model: trackerSgsOutcomeModel()
+      })}
+      ${renderSessionBarChart({
+        title: "Psi-CBS Core last 10",
+        subtitle: "Higher means stronger applied focus and processing.",
+        valueKey: "value",
+        maxValue: 5,
+        digits: 1,
+        model: trackerSeriesModel("psi_cbs", "core", 10)
+      })}
+      ${renderSessionBarChart({
+        title: "Psi-CBS AD last 10",
+        subtitle: "Higher means more dysregulation/load.",
+        valueKey: "value",
+        maxValue: 5,
+        digits: 1,
+        model: trackerSeriesModel("psi_cbs", "ad", 10)
+      })}
+      ${renderSessionBarChart({
+        title: "Psi-CBS AI last 10",
+        subtitle: "Higher means better AI multiplier effect.",
+        valueKey: "value",
+        maxValue: 5,
+        digits: 1,
+        model: trackerSeriesModel("psi_cbs", "ai", 10)
+      })}
+      ${renderSessionBarChart({
+        title: "Zone Check bits/sec",
+        subtitle: "Same valid 3-minute zone pulse recordings used in Capacity stats.",
+        valueKey: "bitsPerSecond",
+        maxValue: zoneBitsModel.maxValue,
+        unit: "",
+        digits: 2,
+        model: zoneBitsModel
       })}
     </div>
   `;
@@ -3260,6 +3491,84 @@ function renderZoneHelpModal() {
         <div class="mode-help-section zone-help-section">
           <h3>Training signal</h3>
           <p>Evidence from this task family says it can help train selective attention, verbal learning, working memory, and flexibility.</p>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function trackerHelpContentFor(test) {
+  if (test?.id === "psi_cbs") {
+    return {
+      title: "Psi-Band Cognitive Bandwidth Scale (Psi-CBS)",
+      html: `
+        <p><strong>What it is:</strong> A brief self-report measure for tracking everyday cognitive performance over the past two weeks.</p>
+        <section class="mode-help-section tracker-help-section">
+          <h3>What the sections measure</h3>
+          <p><strong>Psi-CBS Core - Applied General Intelligence (G):</strong> Focus stability, error resistance, active processing, and learning/transfer in everyday work/study/project contexts.</p>
+          <p><strong>Psi-CBS-AD - Cognitive Health &amp; Resilience:</strong> Supplementary items tracking allostatic dysregulation / state-instability patterns.</p>
+          <p><strong>Psi-CBS-AI - AI-Use Intelligence:</strong> Supplementary items tracking how AI tool use helps or hinders cognitive performance and workflow quality.</p>
+        </section>
+        <section class="mode-help-section tracker-help-section">
+          <h3>How it works</h3>
+          <p>Responses use a 5-point frequency scale (Never to Very often).</p>
+          <p>The Core score is summarised from focus and processing subscales.</p>
+          <p>Some Core items are reverse-scored internally to maintain correct score direction.</p>
+          <p>Optional AD and AI sections provide additional pattern information rather than a diagnosis.</p>
+        </section>
+        <section class="mode-help-section tracker-help-section">
+          <h3>Current validation status</h3>
+          <p>Pilot evidence supports the intended structure and internal consistency of Psi-CBS, but current evidence is still limited (including smaller samples). Treat it as a practical tracking tool while further validation studies are ongoing.</p>
+        </section>
+        <section class="mode-help-section tracker-help-section">
+          <h3>Intended use</h3>
+          <p>Self-tracking and product/research use.</p>
+          <p>Tracking change over time, especially with consistent testing conditions.</p>
+          <p>Not a clinical or diagnostic assessment.</p>
+        </section>
+      `
+    };
+  }
+  return {
+    title: "Short g Scale (SgS-12)",
+    html: `
+      <p><strong>What it is:</strong> A brief reasoning check that looks at how well you solve unfamiliar problems using patterns and simple rules.</p>
+      <section class="mode-help-section tracker-help-section">
+        <h3>What it measures</h3>
+        <p>SgS-12 is designed to capture fluid reasoning. That is your ability to spot patterns, infer rules, and work things out when you have not seen the problem before.</p>
+      </section>
+      <section class="mode-help-section tracker-help-section">
+        <h3>How it works</h3>
+        <p>You answer 12 multiple-choice questions. Items include things like pattern matrices, letter-number sequences, mental rotation, and a few short verbal reasoning questions. There are two versions (Form A and Form B) so you can repeat it later without seeing the exact same items.</p>
+      </section>
+      <section class="mode-help-section tracker-help-section">
+        <h3>Taking the test</h3>
+        <p>There is no time limit, so it is about careful thinking rather than rushing. Most people finish in just a few minutes, but you can take a little longer if you need to.</p>
+      </section>
+      <section class="mode-help-section tracker-help-section">
+        <h3>Current validation status</h3>
+        <p>SgS-12 is built from public-domain items drawn from the International Cognitive Ability Resource (ICAR) test bank - specifically ICAR Matrix Reasoning items, plus the same ICAR family of Verbal Reasoning and Letter-Number Series item types, alongside ICAR's Three-Dimensional Rotation (R3D) items. These ICAR/R3D item sets have published psychometrics and large-sample norms, so the questions are not home-made puzzles but established item types with known difficulty and reliability characteristics. Because SgS-12 uses only 12 items, it is best treated as a practical reasoning snapshot and for tracking change over time, rather than as a definitive IQ test.</p>
+      </section>
+      <section class="mode-help-section tracker-help-section">
+        <h3>Intended use</h3>
+        <p><strong>Good for:</strong> self-tracking, baseline vs follow-up measurement in Trident G - IQ training, and product/research use.</p>
+        <p><strong>Not for:</strong> clinical diagnosis or high-stakes decisions.</p>
+      </section>
+    `
+  };
+}
+
+function renderTrackerHelpModal() {
+  if (!viewState.trackerHelpOpen) return "";
+  const help = trackerHelpContentFor(trackerSelectedTest());
+  return `
+    <div class="mode-help-backdrop tracker-help-backdrop" data-action="close-tracker-help">
+      <section class="mode-help-dialog tracker-help-dialog" role="dialog" aria-modal="true" aria-labelledby="trackerHelpTitle" data-dialog-panel>
+        <button class="mode-help-close tracker-help-close" type="button" data-action="close-tracker-help" aria-label="Close Tracker help">x</button>
+        <span class="mode-help-kicker tracker-help-kicker">Tracker info</span>
+        <h2 id="trackerHelpTitle">${escapeHtml(help.title)}</h2>
+        <div class="tracker-help-copy">
+          ${help.html}
         </div>
       </section>
     </div>
@@ -3591,6 +3900,254 @@ function renderIqMindwareFooter() {
       <img src="${IQMINDWARE_LOGO_URL}" alt="" loading="lazy">
       <span>IQMindware.com</span>
     </a>
+  `;
+}
+
+function currentTrackerQuestion() {
+  if (!activeTrackerSession || activeTrackerSession.status !== "question") return null;
+  if (activeTrackerSession.type === "sgs") {
+    const manifest = trackerManifestFor(activeTrackerSession.testId);
+    return manifest.items[activeTrackerSession.index] || null;
+  }
+  const questions = psiQuestionList({ includeAi: true, sections: activeTrackerSession.selectedPsiSections });
+  return questions[activeTrackerSession.index] || null;
+}
+
+function trackerPsiQuestionList() {
+  return psiQuestionList({ includeAi: true, sections: activeTrackerSession?.selectedPsiSections || { core: true } });
+}
+
+function trackerSelectedPsiCount() {
+  return Object.values(activeTrackerSession?.selectedPsiSections || {}).filter(Boolean).length;
+}
+
+function renderTrackerLeftStrip() {
+  const selected = trackerSelectedTest();
+  const disabled = trackerTestIsActive() ? "disabled" : "";
+  return `
+    <aside class="strip strip-left tracker-left-strip" aria-label="Tracker setup strip">
+      <div class="strip-inner">
+        <div class="strip-head">
+          <div>
+            <h2 class="strip-title">Tracker</h2>
+            <p class="tracker-strip-guide">Choose a short validated test as evidence for your training gains. The Psi-CBS can be taken each week to track progress.</p>
+          </div>
+          <button class="sheet-close" type="button" data-action="close-sheets" aria-label="Close sheet">x</button>
+        </div>
+        <section class="panel tracker-panel">
+          <label class="mini-label" for="trackerTestSelect">Test</label>
+          <select id="trackerTestSelect" data-tracker-field="selectedTest" ${disabled}>
+            ${TRACKER_TESTS.map((test) => `<option value="${test.id}" ${selected.id === test.id ? "selected" : ""}>${escapeHtml(test.label)}</option>`).join("")}
+          </select>
+          <div class="tracker-test-note">
+            <strong>${escapeHtml(selected.shortLabel)}</strong>
+            <p>${escapeHtml(selected.note)}</p>
+            <span>${escapeHtml(`${selected.estimateMinutes} min estimate`)}</span>
+          </div>
+          <button class="btn btn-primary tracker-start-btn" type="button" data-action="start-tracker-test" ${disabled}>Start test</button>
+        </section>
+      </div>
+    </aside>
+  `;
+}
+
+function renderTrackerIntro() {
+  const selected = trackerSelectedTest();
+  const helpLabel = selected.id === "psi_cbs" ? "Open Psi-CBS help" : "Open SgS-12 help";
+  const helpButton = selected.type === "sgs" || selected.id === "psi_cbs"
+    ? `<button class="tracker-help-btn" type="button" data-action="toggle-tracker-help" aria-label="${helpLabel}" title="${helpLabel}">
+        <img src="${TRACKER_HELP_ICON_URL}" alt="" aria-hidden="true">
+      </button>`
+    : "";
+  return `
+    <div class="tracker-intro-card">
+      ${helpButton}
+      <span class="stats-kicker tracker-intro-kicker">Training evidence</span>
+      <h2>${escapeHtml(selected.label)}</h2>
+      <p>${escapeHtml(selected.note)}</p>
+      <div class="tracker-intro-grid">
+        <div class="stat"><span class="mini-label">Time</span><strong>${escapeHtml(String(selected.estimateMinutes))}m</strong></div>
+        <div class="stat"><span class="mini-label">Mode</span><strong>${selected.type === "sgs" ? "IQ" : "Psi"}</strong></div>
+        <div class="stat"><span class="mini-label">Records</span><strong>${trackerState.entries.filter((entry) => entry.testId === selected.id).length}</strong></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderTrackerSgsQuestion() {
+  const manifest = trackerManifestFor(activeTrackerSession.testId);
+  const item = currentTrackerQuestion();
+  const index = Number(activeTrackerSession.index || 0);
+  if (!item) return "";
+  return `
+    <div class="tracker-question-card tracker-sgs-card is-${escapeHtml(item.kind || "item")}">
+      <div class="tracker-question-head">
+        <span class="stats-kicker">${escapeHtml(activeTrackerSession.label)}</span>
+        <strong>${index + 1}/${manifest.items.length}</strong>
+      </div>
+      <h2>${escapeHtml(item.prompt)}</h2>
+      ${item.stemImageUrl ? `<div class="tracker-stem-frame"><img src="${escapeHtml(item.stemImageUrl)}" alt="Reasoning item ${escapeHtml(item.id)}" loading="eager" decoding="async" fetchpriority="high"></div>` : ""}
+      <div class="tracker-option-grid">
+        ${(item.responseOptions || []).map((option, optionIndex) => `
+          <button class="tracker-option-btn" type="button" data-action="tracker-answer" data-value="${optionIndex}">
+            <span>${escapeHtml(String(option))}</span>
+          </button>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderTrackerPsiSectionSelect() {
+  const selected = activeTrackerSession?.selectedPsiSections || {};
+  return `
+    <div class="tracker-question-card tracker-psi-card tracker-section-select">
+      <span class="stats-kicker">Psi-CBS setup</span>
+      <h2>Select which sections to complete:</h2>
+      <div class="tracker-section-copy">
+        <p>The Ψ-CBS is a brief self-report measure for tracking everyday cognitive performance over the past two weeks. The Core scale measures focus stability, error resistance, active processing, and learning/transfer.</p>
+        <p>Optional supplementary tests assess allostatic dysregulation patterns (Ψ-CBS-AD) and AI tool multiplier effects (Ψ-CBS-AI).</p>
+      </div>
+      <div class="tracker-subtest-list">
+        ${TRACKER_PSI_SECTIONS.map((section) => `
+          <button class="tracker-subtest-btn${selected[section.id] ? " is-selected" : ""}" type="button" data-action="toggle-tracker-psi-section" data-section="${escapeHtml(section.id)}" aria-pressed="${selected[section.id] ? "true" : "false"}">
+            <span class="tracker-subtest-check" aria-hidden="true"></span>
+            <strong>${escapeHtml(section.label)}</strong>
+            <em>${escapeHtml(section.duration)}</em>
+          </button>
+        `).join("")}
+      </div>
+      <button class="btn btn-primary tracker-start-btn" type="button" data-action="begin-tracker-psi-sections" ${trackerSelectedPsiCount() ? "" : "disabled"}>Begin selected subtests</button>
+    </div>
+  `;
+}
+
+function renderTrackerPsiQuestion() {
+  const questions = trackerPsiQuestionList();
+  const question = currentTrackerQuestion();
+  const index = Number(activeTrackerSession.index || 0);
+  if (!question) return "";
+  return `
+    <div class="tracker-question-card tracker-psi-card">
+      <div class="tracker-question-head">
+        <span class="stats-kicker">${escapeHtml(question.label)}</span>
+        <strong>${index + 1}/${questions.length}</strong>
+      </div>
+      <h2>${escapeHtml(question.text)}</h2>
+      <div class="tracker-option-grid tracker-scale-grid">
+        ${TRACKER_PSI_OPTIONS.map((option) => `
+          <button class="tracker-option-btn" type="button" data-action="tracker-answer" data-value="${option.value}">
+            <strong>${option.value}</strong>
+            <span>${escapeHtml(option.label)}</span>
+          </button>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderTrackerResult() {
+  const session = activeTrackerSession;
+  const result = session?.result || null;
+  if (!session || !result) return renderTrackerIntro();
+  if (session.type === "sgs") {
+    return `
+      <div class="tracker-result-card">
+        <span class="stats-kicker">Saved result</span>
+        <h2>${escapeHtml(session.label)}</h2>
+        <div class="center-stats-summary tracker-result-summary">
+          <div class="stat"><span class="mini-label">Raw</span><strong>${escapeHtml(`${result.raw}/${result.maxRaw}`)}</strong></div>
+          <div class="stat"><span class="mini-label">RS-IQ</span><strong>${escapeHtml(String(result.rsIq))}</strong></div>
+          <div class="stat"><span class="mini-label">Type</span><strong>Snapshot</strong></div>
+          <div class="stat"><span class="mini-label">Saved</span><strong>Yes</strong></div>
+        </div>
+        <p>RS-IQ is an internal reasoning snapshot score for tracking change, not a clinical IQ score.</p>
+      </div>
+    `;
+  }
+  return `
+    <div class="tracker-result-card">
+      <span class="stats-kicker">Saved result</span>
+      <h2>Psi-CBS</h2>
+      <div class="center-stats-summary tracker-result-summary">
+        <div class="stat"><span class="mini-label">Core</span><strong>${formatTrackerScore(result.core)}</strong></div>
+        <div class="stat"><span class="mini-label">AD</span><strong>${formatTrackerScore(result.ad)}</strong></div>
+        <div class="stat"><span class="mini-label">AI</span><strong>${result.aiApplicable ? formatTrackerScore(result.ai) : "N/A"}</strong></div>
+        <div class="stat"><span class="mini-label">Saved</span><strong>Yes</strong></div>
+      </div>
+      <p>Core tracks applied focus and processing. AD is load/dysregulation. AI tracks whether AI tools helped or hindered cognitive work.</p>
+    </div>
+  `;
+}
+
+function renderTrackerArena() {
+  if (activeTrackerSession?.status === "results") return renderTrackerResult();
+  if (activeTrackerSession?.status === "section_select") return renderTrackerPsiSectionSelect();
+  if (activeTrackerSession?.status === "question") {
+    return activeTrackerSession.type === "sgs" ? renderTrackerSgsQuestion() : renderTrackerPsiQuestion();
+  }
+  return renderTrackerIntro();
+}
+
+function renderTrackerPlayControls() {
+  if (viewState.centerMode === "stats") {
+    return `<div class="response-row"><button class="btn btn-primary" type="button" data-action="show-play">Return to tracker</button></div>`;
+  }
+  if (activeTrackerSession?.status === "section_select") {
+    return `<div class="response-row"><button class="response-btn is-stop" type="button" data-action="stop-tracker-test">Stop test</button></div>`;
+  }
+  if (activeTrackerSession?.status === "question") {
+    return `<div class="response-row"><button class="response-btn is-stop" type="button" data-action="stop-tracker-test">Stop test</button></div>`;
+  }
+  if (activeTrackerSession?.status === "results") {
+    return `<div class="response-row"><button class="btn btn-primary" type="button" data-action="clear-tracker-result">Continue</button></div>`;
+  }
+  return `<div class="response-row"><button class="btn btn-primary tracker-start-btn" type="button" data-action="start-tracker-test">Start test</button></div>`;
+}
+
+function renderTrackerPlayCard() {
+  const showingStats = viewState.centerMode === "stats";
+  return `
+    <section class="play-card tracker-play-card${showingStats ? " is-stats-view" : ""}" aria-label="Tracker play surface">
+      <div class="mobile-topbar">
+        <button class="btn btn-ghost" type="button" data-action="open-left">Tests</button>
+        <button class="btn btn-ghost" type="button" data-action="open-right">Scores</button>
+      </div>
+      ${showingStats ? "" : renderHud()}
+      <div class="play-body${showingStats ? " is-stats" : ""} is-tracker">
+        <div class="arena-shell${showingStats ? " is-stats" : ""} is-tracker">
+          ${showingStats ? renderTrackerStatsDashboard() : renderTrackerArena()}
+        </div>
+        <div class="play-coach-slot"></div>
+        <div class="play-controls">${renderTrackerPlayControls()}</div>
+      </div>
+    </section>
+  `;
+}
+
+function renderTrackerRightStrip() {
+  const latest = trackerLatestSummary();
+  return `
+    <aside class="strip strip-right tracker-right-strip" aria-label="Tracker scores strip">
+      <div class="strip-inner">
+        <div class="strip-head strip-head-close">
+          <button class="sheet-close" type="button" data-action="close-sheets" aria-label="Close sheet">x</button>
+        </div>
+        <section class="panel score-panel">
+          <h2 class="strip-title panel-strip-title">SCORES</h2>
+          <div class="stat-grid tracker-score-grid">
+            <div class="stat"><span class="mini-label">SgS Pre</span><strong>${Number.isFinite(latest.preIq) ? latest.preIq : "--"}</strong></div>
+            <div class="stat"><span class="mini-label">SgS Post</span><strong>${Number.isFinite(latest.postIq) ? latest.postIq : "--"}</strong></div>
+            <div class="stat"><span class="mini-label">Delta</span><strong>${Number.isFinite(latest.delta) ? `${latest.delta >= 0 ? "+" : ""}${latest.delta}` : "--"}</strong></div>
+        <div class="stat"><span class="mini-label">Psi Core</span><strong>${formatTrackerScore(latest.psiCore?.result?.core)}</strong></div>
+        <div class="stat"><span class="mini-label">Psi AD</span><strong>${formatTrackerScore(latest.psiAd?.result?.ad)}</strong></div>
+        <div class="stat"><span class="mini-label">Psi AI</span><strong>${formatTrackerScore(latest.psiAi?.result?.ai)}</strong></div>
+          </div>
+          <button class="btn btn-ghost right-stats-btn${viewState.centerMode === "stats" ? " is-selected" : ""}" type="button" data-action="show-stats" aria-pressed="${viewState.centerMode === "stats" ? "true" : "false"}" ${trackerTestIsActive() ? "disabled" : ""}>Stats</button>
+        </section>
+        ${renderIqMindwareFooter()}
+      </div>
+    </aside>
   `;
 }
 
@@ -3934,15 +4491,22 @@ function renderPlayCard() {
 
 function render() {
   const classes = ["gym-layout", viewState.leftOpen ? "is-left-open" : "", viewState.rightOpen ? "is-right-open" : ""].filter(Boolean).join(" ");
+  const leftStrip = viewState.activeModule === "tracker" ? renderTrackerLeftStrip()
+    : viewState.activeModule === "reasoning" ? renderReasoningLeftStrip() : renderLeftStrip();
+  const playCard = viewState.activeModule === "tracker" ? renderTrackerPlayCard()
+    : viewState.activeModule === "reasoning" ? renderReasoningPlayCard() : renderPlayCard();
+  const rightStrip = viewState.activeModule === "tracker" ? renderTrackerRightStrip()
+    : viewState.activeModule === "reasoning" ? renderReasoningRightStrip() : renderRightStrip();
   appRoot.innerHTML = `
     <div class="${classes}">
       <button class="sheet-backdrop" type="button" data-action="close-sheets" aria-label="Close sheet"></button>
-      ${viewState.activeModule === "reasoning" ? renderReasoningLeftStrip() : renderLeftStrip()}
-      ${viewState.activeModule === "reasoning" ? renderReasoningPlayCard() : renderPlayCard()}
-      ${viewState.activeModule === "reasoning" ? renderReasoningRightStrip() : renderRightStrip()}
+      ${leftStrip}
+      ${playCard}
+      ${rightStrip}
     </div>
     ${renderModeHelpModal()}
     ${renderZoneHelpModal()}
+    ${renderTrackerHelpModal()}
   `;
   ensureModuleSwitch();
 }
@@ -4003,6 +4567,92 @@ function resetSessions() {
   render();
 }
 
+function startTrackerTest() {
+  if (anyGameplayActive()) {
+    triggerSfx("invalid_action");
+    return;
+  }
+  prewarmTrackerImages(trackerSelectedTest().id);
+  activeTrackerSession = createTrackerSession(trackerSelectedTest().id);
+  viewState.centerMode = "play";
+  viewState.leftOpen = false;
+  viewState.rightOpen = false;
+  viewState.message = `${activeTrackerSession.label} started.`;
+  triggerSfx("ui_tap_soft");
+  render();
+}
+
+function saveCompletedTrackerSession() {
+  if (!activeTrackerSession) return;
+  const entry = createTrackerEntry(activeTrackerSession);
+  activeTrackerSession.result = entry.result;
+  activeTrackerSession.status = "results";
+  trackerState.entries = [...trackerState.entries, entry].slice(-160);
+  saveTrackerState();
+  viewState.message = `${activeTrackerSession.label} result saved.`;
+  triggerSfx("block_complete");
+}
+
+function answerTrackerQuestion(value) {
+  if (!activeTrackerSession || activeTrackerSession.status !== "question") return;
+  if (activeTrackerSession.type === "sgs") {
+    const manifest = trackerManifestFor(activeTrackerSession.testId);
+    activeTrackerSession.answers[activeTrackerSession.index] = Number(value);
+    if (activeTrackerSession.index >= manifest.items.length - 1) {
+      saveCompletedTrackerSession();
+    } else {
+      activeTrackerSession.index += 1;
+      triggerSfx("ui_tap_soft");
+    }
+    render();
+    return;
+  }
+
+  const questions = trackerPsiQuestionList();
+  const question = questions[activeTrackerSession.index];
+  if (!question) return;
+  activeTrackerSession.answers[question.id] = Number(value);
+  if (activeTrackerSession.index >= questions.length - 1) {
+    saveCompletedTrackerSession();
+  } else {
+    activeTrackerSession.index += 1;
+    triggerSfx("ui_tap_soft");
+  }
+  render();
+}
+
+function toggleTrackerPsiSection(sectionId) {
+  if (!activeTrackerSession || activeTrackerSession.status !== "section_select") return;
+  if (!TRACKER_PSI_SECTIONS.some((section) => section.id === sectionId)) return;
+  activeTrackerSession.selectedPsiSections = {
+    ...(activeTrackerSession.selectedPsiSections || { core: true }),
+    [sectionId]: !activeTrackerSession.selectedPsiSections?.[sectionId]
+  };
+  triggerSfx("ui_tap_soft");
+  render();
+}
+
+function beginTrackerPsiSections() {
+  if (!activeTrackerSession || activeTrackerSession.status !== "section_select") return;
+  const questions = trackerPsiQuestionList();
+  if (!questions.length) {
+    triggerSfx("invalid_action");
+    return;
+  }
+  activeTrackerSession.index = 0;
+  activeTrackerSession.totalItems = questions.length;
+  activeTrackerSession.status = "question";
+  render();
+}
+
+function stopTrackerTest() {
+  if (!activeTrackerSession) return;
+  activeTrackerSession = null;
+  viewState.message = "Tracker test stopped. No score was saved.";
+  triggerSfx("ui_tap_soft");
+  render();
+}
+
 document.addEventListener("pointerdown", () => {
   unlockAudioGesture();
 }, { passive: true });
@@ -4017,7 +4667,8 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "set-module") {
-    const moduleId = target.getAttribute("data-module") === "reasoning" ? "reasoning" : "capacity";
+    const requestedModule = target.getAttribute("data-module");
+    const moduleId = requestedModule === "reasoning" || requestedModule === "tracker" ? requestedModule : "capacity";
     if (moduleId === viewState.activeModule) return;
     if (anyGameplayActive()) {
       triggerSfx("invalid_action");
@@ -4028,6 +4679,9 @@ document.addEventListener("click", (event) => {
     viewState.leftOpen = false;
     viewState.rightOpen = false;
     viewState.reasoningCloseSession = null;
+    viewState.modeHelpOpen = false;
+    viewState.zoneHelpOpen = false;
+    viewState.trackerHelpOpen = false;
     triggerSfx("ui_tap_soft");
     render();
     return;
@@ -4050,7 +4704,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "open-left") {
-    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning() || activeReasoningBlock) return;
+    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning() || activeReasoningBlock || trackerTestIsActive()) return;
     triggerSfx("ui_tap_soft");
     viewState.leftOpen = true;
     viewState.rightOpen = false;
@@ -4058,7 +4712,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "open-right") {
-    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning() || activeReasoningBlock) return;
+    if (activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning() || activeReasoningBlock || trackerTestIsActive()) return;
     triggerSfx("ui_tap_soft");
     viewState.rightOpen = true;
     viewState.leftOpen = false;
@@ -4066,7 +4720,7 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "show-stats") {
-    if (activeBlock || zonePulseIsRunning() || activeReasoningBlock) return;
+    if (activeBlock || zonePulseIsRunning() || activeReasoningBlock || trackerTestIsActive()) return;
     triggerSfx("ui_tap_soft");
     viewState.centerMode = "stats";
     viewState.leftOpen = false;
@@ -4162,6 +4816,32 @@ document.addEventListener("click", (event) => {
     render();
     return;
   }
+  if (action === "start-tracker-test") {
+    startTrackerTest();
+    return;
+  }
+  if (action === "tracker-answer") {
+    answerTrackerQuestion(target.getAttribute("data-value"));
+    return;
+  }
+  if (action === "toggle-tracker-psi-section") {
+    toggleTrackerPsiSection(target.getAttribute("data-section"));
+    return;
+  }
+  if (action === "begin-tracker-psi-sections") {
+    beginTrackerPsiSections();
+    return;
+  }
+  if (action === "stop-tracker-test") {
+    stopTrackerTest();
+    return;
+  }
+  if (action === "clear-tracker-result") {
+    activeTrackerSession = null;
+    triggerSfx("ui_tap_soft");
+    render();
+    return;
+  }
   if (action === "close-sheets") {
     triggerSfx("ui_tap_soft");
     viewState.leftOpen = false;
@@ -4172,6 +4852,8 @@ document.addEventListener("click", (event) => {
   if (action === "toggle-mode-help") {
     triggerSfx("ui_tap_soft");
     viewState.modeHelpOpen = !viewState.modeHelpOpen;
+    viewState.zoneHelpOpen = false;
+    viewState.trackerHelpOpen = false;
     render();
     return;
   }
@@ -4179,6 +4861,15 @@ document.addEventListener("click", (event) => {
     triggerSfx("ui_tap_soft");
     viewState.zoneHelpOpen = !viewState.zoneHelpOpen;
     viewState.modeHelpOpen = false;
+    viewState.trackerHelpOpen = false;
+    render();
+    return;
+  }
+  if (action === "toggle-tracker-help") {
+    triggerSfx("ui_tap_soft");
+    viewState.trackerHelpOpen = !viewState.trackerHelpOpen;
+    viewState.modeHelpOpen = false;
+    viewState.zoneHelpOpen = false;
     render();
     return;
   }
@@ -4196,12 +4887,20 @@ document.addEventListener("click", (event) => {
     render();
     return;
   }
+  if (action === "close-tracker-help") {
+    if (event.target.closest("[data-dialog-panel]") && !event.target.closest(".tracker-help-close")) return;
+    triggerSfx("ui_tap_soft");
+    viewState.trackerHelpOpen = false;
+    render();
+    return;
+  }
   if (action === "set-mode") {
     if (zonePulseIsRunning()) return;
     triggerSfx("ui_tap_soft");
     state.settings.mode = target.getAttribute("data-mode") === "manual" ? "manual" : "coach";
     viewState.modeHelpOpen = false;
     viewState.zoneHelpOpen = false;
+    viewState.trackerHelpOpen = false;
     saveState();
     render();
     return;
@@ -4294,6 +4993,19 @@ document.addEventListener("click", (event) => {
 document.addEventListener("change", (event) => {
   const target = event.target;
   if (!(target instanceof HTMLSelectElement || target instanceof HTMLInputElement)) return;
+  const trackerField = target.getAttribute("data-tracker-field");
+  if (trackerField) {
+    if (anyGameplayActive()) return;
+    if (trackerField === "selectedTest") {
+      trackerState.settings.selectedTest = TRACKER_TEST_BY_ID[target.value] ? target.value : "sgs12_pre";
+      activeTrackerSession = null;
+      saveTrackerState();
+      unlockAudioGesture();
+      triggerSfx("ui_tap_soft");
+      render();
+    }
+    return;
+  }
   const reasoningField = target.getAttribute("data-reasoning-field");
   if (reasoningField) {
     if (anyGameplayActive()) return;
@@ -4322,7 +5034,7 @@ document.addEventListener("change", (event) => {
     return;
   }
   const field = target.getAttribute("data-field");
-  if (!field || activeBlock || zonePulseIsRunning() || activeReasoningBlock) return;
+  if (!field || activeBlock || zonePulseIsRunning() || activeReasoningBlock || trackerTestIsActive()) return;
   unlockAudioGesture();
   triggerSfx("ui_tap_soft");
   updateSettingsField(field, target.value);
@@ -4347,6 +5059,26 @@ document.addEventListener("keydown", (event) => {
       return;
     }
     return;
+  }
+  if (activeTrackerSession?.status === "question") {
+    if (activeTrackerSession.type === "psi") {
+      const value = Number(event.key);
+      if (value >= 1 && value <= 5) {
+        answerTrackerQuestion(value);
+        event.preventDefault();
+      }
+      return;
+    }
+    if (activeTrackerSession.type === "sgs") {
+      const item = currentTrackerQuestion();
+      const key = event.key.toUpperCase();
+      const optionIndex = (item?.responseOptions || []).findIndex((option) => String(option).toUpperCase() === key);
+      if (optionIndex >= 0) {
+        answerTrackerQuestion(optionIndex);
+        event.preventDefault();
+      }
+      return;
+    }
   }
   if (activeReasoningBlock?.status === "question") {
     const item = currentReasoningItem();
@@ -4410,7 +5142,7 @@ document.addEventListener("touchstart", (event) => {
 }, { passive: true });
 
 document.addEventListener("touchend", (event) => {
-  if (!touchStart || activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning() || activeReasoningBlock) {
+  if (!touchStart || activeBlock?.status === "trial" || activeBlock?.status === "countdown" || zonePulseIsRunning() || activeReasoningBlock || trackerTestIsActive()) {
     touchStart = null;
     return;
   }
