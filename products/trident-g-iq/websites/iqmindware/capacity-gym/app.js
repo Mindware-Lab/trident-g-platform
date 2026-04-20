@@ -3578,9 +3578,17 @@ function renderReasoningCoachSlot() {
   return renderReasoningIntro();
 }
 
+function reasoningFamilyChipLabel(familyId) {
+  if (familyId === "relation_fit") return "Rel Fit";
+  if (familyId === "must_follow") return "Follow";
+  return reasoningFamilyLabel(familyId);
+}
+
 function renderReasoningRightStrip() {
   const stats = reasoningSessionStats(reasoningState.history.filter((entry) => entry.type !== "session_abandoned"));
   const latest = stats.latest;
+  const latestFamilyLabel = latest ? reasoningFamilyLabel(latest.family) : "--";
+  const latestFamilyChip = latest ? reasoningFamilyChipLabel(latest.family) : "--";
   return `
     <aside class="strip strip-right" aria-label="Reasoning stats and wallet strip">
       <div class="strip-inner">
@@ -3601,9 +3609,9 @@ function renderReasoningRightStrip() {
               <span class="coin-label">IQ point credit</span>
             </div>
           </div>
-          <h3>Reasoning</h3>
+          <h3 class="reasoning-strip-heading">Reasoning</h3>
           <div class="stat-grid">
-            <div class="stat"><span class="mini-label">Family</span><strong>${escapeHtml(latest ? reasoningFamilyLabel(latest.family) : "--")}</strong></div>
+            <div class="stat"><span class="mini-label">Family</span><strong class="reasoning-family-chip" title="${escapeHtml(latestFamilyLabel)}">${escapeHtml(latestFamilyChip)}</strong></div>
             <div class="stat"><span class="mini-label">Tier</span><strong>${escapeHtml(latest ? String(latest.tier) : "--")}</strong></div>
             <div class="stat"><span class="mini-label">Accuracy</span><strong>${latest ? percent(latest.accuracy) : "--"}</strong></div>
             <div class="stat"><span class="mini-label">Transfer</span><strong>${latest ? formatScorePercent(latest.transferScore?.total) : "--"}</strong></div>

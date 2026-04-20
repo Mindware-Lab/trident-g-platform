@@ -985,6 +985,15 @@ button {
   text-overflow: clip;
 }
 
+.score-panel .reasoning-strip-heading {
+  margin-top: 10px;
+}
+
+.reasoning-family-chip {
+  font-size: 12px !important;
+  letter-spacing: 0.02em;
+}
+
 .gameplay-panel .mini-label {
   display: block;
   line-height: 0.88;
