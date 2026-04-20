@@ -3286,9 +3286,64 @@ function trackerSgsOutcomeModel() {
   };
 }
 
+function renderTrackerLineChart({ title, subtitle, field }) {
+  const model = trackerSeriesModel("psi_cbs", field, 10);
+  const minValue = 1;
+  const maxValue = 5;
+  const left = 10;
+  const right = 4;
+  const top = 5;
+  const bottom = 37;
+  const plotWidth = 100 - left - right;
+  const plotHeight = bottom - top;
+  const points = model.slots
+    .filter((slot) => !slot.empty && Number.isFinite(Number(slot.value)))
+    .map((slot) => {
+      const value = clamp(Number(slot.value), minValue, maxValue);
+      const x = left + ((Number(slot.slot || 1) - 1) / Math.max(1, model.slots.length - 1)) * plotWidth;
+      const y = bottom - ((value - minValue) / (maxValue - minValue)) * plotHeight;
+      return { x, y, value, label: slot.label };
+    });
+  const pathPoints = points.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(" ");
+  const latest = points.length ? points[points.length - 1].value : null;
+  const first = points.length ? points[0].value : null;
+  const delta = Number.isFinite(latest) && Number.isFinite(first) ? latest - first : null;
+  const deltaLabel = Number.isFinite(delta) ? `${delta >= 0 ? "+" : ""}${formatGraphValue(delta, 1)}` : "--";
+  return `
+    <section class="stats-graph tracker-line-chart" aria-label="${escapeHtml(title)}">
+      <div class="stats-graph-head">
+        <div>
+          <h3>${escapeHtml(title)}</h3>
+          <p>${escapeHtml(subtitle)}</p>
+        </div>
+        <strong>${escapeHtml(deltaLabel)}</strong>
+      </div>
+      <div class="tracker-line-plot">
+        <svg viewBox="0 0 100 44" role="img" aria-label="${escapeHtml(`${title} trend over the last 10 scores`)}">
+          <line class="tracker-line-axis" x1="${left}" y1="${top}" x2="${left}" y2="${bottom}"></line>
+          <line class="tracker-line-axis" x1="${left}" y1="${bottom}" x2="${100 - right}" y2="${bottom}"></line>
+          ${[1, 2, 3, 4, 5].map((value) => {
+            const y = bottom - ((value - minValue) / (maxValue - minValue)) * plotHeight;
+            return `<line class="tracker-line-grid" x1="${left}" y1="${y.toFixed(2)}" x2="${100 - right}" y2="${y.toFixed(2)}"></line>`;
+          }).join("")}
+          ${model.slots.map((slot) => {
+            const x = left + ((Number(slot.slot || 1) - 1) / Math.max(1, model.slots.length - 1)) * plotWidth;
+            return `<line class="tracker-line-tick" x1="${x.toFixed(2)}" y1="${bottom}" x2="${x.toFixed(2)}" y2="${(bottom + 2.2).toFixed(2)}"></line>`;
+          }).join("")}
+          ${pathPoints ? `<polyline class="tracker-line-series" points="${pathPoints}"></polyline>` : ""}
+          ${points.map((point) => `<circle class="tracker-line-point" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="1.45"><title>${escapeHtml(`Run ${point.label}: ${formatGraphValue(point.value, 1)}`)}</title></circle>`).join("")}
+        </svg>
+        ${points.length ? "" : `<span class="tracker-line-empty">No data yet</span>`}
+        <div class="tracker-line-labels" aria-hidden="true">
+          ${model.slots.map((slot) => `<span>${escapeHtml(slot.label)}</span>`).join("")}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function renderTrackerStatsDashboard() {
   const latest = trackerLatestSummary();
-  const zoneBitsModel = zoneBitsStatsModel();
   return `
     <div class="center-stats-dashboard tracker-stats-dashboard">
       <div class="center-stats-head">
@@ -3296,53 +3351,25 @@ function renderTrackerStatsDashboard() {
           <span class="stats-kicker">Assessment tracker</span>
           <h2>Tracker Progress</h2>
         </div>
-        <button class="btn btn-ghost" type="button" data-action="show-play">Return to tracker</button>
       </div>
-      <div class="center-stats-summary">
-        <div class="stat"><span class="mini-label">SgS Pre</span><strong>${Number.isFinite(latest.preIq) ? latest.preIq : "--"}</strong></div>
-        <div class="stat"><span class="mini-label">SgS Post</span><strong>${Number.isFinite(latest.postIq) ? latest.postIq : "--"}</strong></div>
-        <div class="stat"><span class="mini-label">IQ Delta</span><strong>${Number.isFinite(latest.delta) ? `${latest.delta >= 0 ? "+" : ""}${latest.delta}` : "--"}</strong></div>
-        <div class="stat"><span class="mini-label">Psi Core</span><strong>${formatTrackerScore(latest.psiCore?.result?.core)}</strong></div>
+      <div class="center-stats-summary tracker-iq-summary">
+        <div class="stat"><span class="mini-label">IQ test pre training</span><strong>${Number.isFinite(latest.preIq) ? latest.preIq : "--"}</strong></div>
+        <div class="stat"><span class="mini-label">IQ test post training</span><strong>${Number.isFinite(latest.postIq) ? latest.postIq : "--"}</strong></div>
       </div>
-      ${renderSessionBarChart({
-        title: "SgS pre/post RS-IQ",
-        subtitle: "Internal reasoning snapshot score. Not a clinical IQ score.",
-        valueKey: "value",
-        maxValue: trackerSgsOutcomeModel().maxValue,
-        model: trackerSgsOutcomeModel()
-      })}
-      ${renderSessionBarChart({
+      ${renderTrackerLineChart({
         title: "Psi-CBS Core last 10",
         subtitle: "Higher means stronger applied focus and processing.",
-        valueKey: "value",
-        maxValue: 5,
-        digits: 1,
-        model: trackerSeriesModel("psi_cbs", "core", 10)
+        field: "core"
       })}
-      ${renderSessionBarChart({
+      ${renderTrackerLineChart({
         title: "Psi-CBS AD last 10",
         subtitle: "Higher means more dysregulation/load.",
-        valueKey: "value",
-        maxValue: 5,
-        digits: 1,
-        model: trackerSeriesModel("psi_cbs", "ad", 10)
+        field: "ad"
       })}
-      ${renderSessionBarChart({
+      ${renderTrackerLineChart({
         title: "Psi-CBS AI last 10",
         subtitle: "Higher means better AI multiplier effect.",
-        valueKey: "value",
-        maxValue: 5,
-        digits: 1,
-        model: trackerSeriesModel("psi_cbs", "ai", 10)
-      })}
-      ${renderSessionBarChart({
-        title: "Zone Check bits/sec",
-        subtitle: "Same valid 3-minute zone pulse recordings used in Capacity stats.",
-        valueKey: "bitsPerSecond",
-        maxValue: zoneBitsModel.maxValue,
-        unit: "",
-        digits: 2,
-        model: zoneBitsModel
+        field: "ai"
       })}
     </div>
   `;
@@ -4151,7 +4178,7 @@ function renderTrackerArena() {
 
 function renderTrackerPlayControls() {
   if (viewState.centerMode === "stats") {
-    return `<div class="response-row"><button class="btn btn-primary" type="button" data-action="show-play">Return to tracker</button></div>`;
+    return `<div class="response-row"><button class="btn btn-primary tracker-return-btn" type="button" data-action="show-play">Return to tracker</button></div>`;
   }
   if (activeTrackerSession?.status === "section_select") {
     return `<div class="response-row"><button class="response-btn is-stop" type="button" data-action="stop-tracker-test">Stop test</button></div>`;
@@ -4198,7 +4225,7 @@ function renderTrackerRightStrip() {
           <div class="stat-grid tracker-score-grid">
             <div class="stat"><span class="mini-label">SgS Pre</span><strong>${Number.isFinite(latest.preIq) ? latest.preIq : "--"}</strong></div>
             <div class="stat"><span class="mini-label">SgS Post</span><strong>${Number.isFinite(latest.postIq) ? latest.postIq : "--"}</strong></div>
-            <div class="stat"><span class="mini-label">Delta</span><strong>${Number.isFinite(latest.delta) ? `${latest.delta >= 0 ? "+" : ""}${latest.delta}` : "--"}</strong></div>
+            <div class="stat"><span class="mini-label">Change</span><strong>${Number.isFinite(latest.delta) ? `${latest.delta >= 0 ? "+" : ""}${latest.delta}` : "--"}</strong></div>
         <div class="stat"><span class="mini-label">Psi Core</span><strong>${formatTrackerScore(latest.psiCore?.result?.core)}</strong></div>
         <div class="stat"><span class="mini-label">Psi AD</span><strong>${formatTrackerScore(latest.psiAd?.result?.ad)}</strong></div>
         <div class="stat"><span class="mini-label">Psi AI</span><strong>${formatTrackerScore(latest.psiAi?.result?.ai)}</strong></div>

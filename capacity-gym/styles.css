@@ -1901,8 +1901,125 @@ button {
 }
 
 .tracker-stats-dashboard {
-  grid-template-rows: auto auto repeat(5, minmax(118px, 1fr));
+  grid-template-rows: auto auto repeat(3, minmax(130px, 1fr));
   overflow-y: auto;
+}
+
+.tracker-stats-dashboard .stats-graph h3,
+.tracker-stats-dashboard .mini-label {
+  color: var(--iq-credit);
+}
+
+.tracker-stats-dashboard .stats-kicker {
+  color: var(--transfer);
+}
+
+.tracker-stats-dashboard .center-stats-head h2 {
+  color: var(--capacity);
+}
+
+.tracker-stats-dashboard .stats-graph p,
+.tracker-stats-dashboard .stat strong,
+.tracker-line-labels {
+  color: var(--white);
+}
+
+.tracker-iq-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tracker-line-chart {
+  min-height: 130px;
+}
+
+.tracker-line-chart .stats-graph-head strong {
+  color: var(--credit);
+  font-family: "Orbitron", monospace;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.tracker-line-plot {
+  position: relative;
+  min-height: 78px;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 3px;
+}
+
+.tracker-line-plot svg {
+  width: 100%;
+  height: 100%;
+  min-height: 60px;
+  overflow: visible;
+}
+
+.tracker-line-axis {
+  stroke: rgba(255, 255, 255, 0.32);
+  stroke-width: 0.7;
+  vector-effect: non-scaling-stroke;
+}
+
+.tracker-line-grid {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 0.45;
+  vector-effect: non-scaling-stroke;
+}
+
+.tracker-line-tick {
+  stroke: rgba(255, 255, 255, 0.28);
+  stroke-width: 0.6;
+  vector-effect: non-scaling-stroke;
+}
+
+.tracker-line-series {
+  fill: none;
+  stroke: var(--capacity);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 4px rgba(84, 162, 255, 0.52));
+  vector-effect: non-scaling-stroke;
+}
+
+.tracker-line-point {
+  fill: var(--credit);
+  stroke: rgba(7, 13, 24, 0.96);
+  stroke-width: 0.6;
+  filter: drop-shadow(0 0 4px rgba(204, 255, 102, 0.42));
+  vector-effect: non-scaling-stroke;
+}
+
+.tracker-line-empty {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  color: rgba(255, 255, 255, 0.32);
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transform: translate(-50%, -50%);
+}
+
+.tracker-line-labels {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  padding-left: 8%;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 7px;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+}
+
+.tracker-return-btn {
+  border-color: rgba(255, 138, 22, 0.58);
+  color: var(--iq-credit);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 138, 22, 0.16),
+    0 0 18px rgba(255, 138, 22, 0.2);
 }
 
 .reasoning-training-panel {
