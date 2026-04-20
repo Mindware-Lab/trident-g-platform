@@ -340,7 +340,7 @@ function blockTipRule(plan) {
 function blockTipModel(plan) {
   return {
     kicker: "Coach tip",
-    title: `${wrapperLabel(plan.wrapper)} / ${displayHubTargetLabel(plan.targetModality, plan.wrapper)} / N-${plan.n}`,
+    title: `YOUR N-BACK LEVEL IS N-${plan.n}`,
     body: `Compare each cue with the one from ${turnsBackLabel(plan.n)}. ${blockTipRule(plan)}`
   };
 }

@@ -972,19 +972,19 @@ button {
   min-height: 46px;
   margin-top: auto;
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-columns: 30px minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
-  padding: 8px;
+  gap: 6px;
+  padding: 7px;
   border: 1px solid rgba(84, 162, 255, 0.2);
   background:
     linear-gradient(135deg, rgba(84, 162, 255, 0.08), rgba(7, 13, 24, 0.9)),
     rgba(7, 13, 24, 0.9);
   color: var(--white);
   font-family: "Orbitron", monospace;
-  font-size: 10px;
+  font-size: 8.5px;
   font-weight: 900;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.03em;
   line-height: 1;
   text-decoration: none;
   text-transform: uppercase;
@@ -992,8 +992,8 @@ button {
 }
 
 .iqmindware-strip-link img {
-  width: 34px;
-  height: 28px;
+  width: 30px;
+  height: 26px;
   object-fit: contain;
   object-position: center;
 }
