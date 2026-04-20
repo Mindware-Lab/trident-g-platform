@@ -161,6 +161,16 @@ button {
   box-shadow: 0 0 18px rgba(204, 255, 102, 0.16);
 }
 
+.module-help-btn,
+.module-help-btn:not(.is-active) {
+  border-color: rgba(255, 138, 22, 0.58);
+  color: var(--white);
+  background:
+    linear-gradient(180deg, rgba(255, 138, 22, 0.24), rgba(255, 138, 22, 0.08)),
+    rgba(7, 13, 24, 0.94);
+  box-shadow: 0 0 16px rgba(255, 138, 22, 0.2);
+}
+
 .capacity-v2-logo {
   width: 28px;
   height: 28px;
@@ -645,6 +655,101 @@ button {
   color: var(--white);
 }
 
+.app-help-dialog {
+  width: min(760px, calc(100vw - 36px));
+  max-height: min(760px, calc(100vh - 36px));
+  overflow-y: auto;
+  border-color: rgba(173, 92, 255, 0.68);
+  background:
+    linear-gradient(135deg, rgba(45, 31, 89, 0.86), rgba(11, 17, 32, 0.98)),
+    rgba(11, 17, 32, 0.98);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 40px rgba(173, 92, 255, 0.28);
+}
+
+.app-help-kicker,
+.app-help-section h3 {
+  color: var(--transfer);
+}
+
+.app-help-section h3 {
+  color: #78c7ff;
+  font-size: 12px;
+}
+
+.app-help-close {
+  border-color: rgba(173, 92, 255, 0.36);
+  color: var(--transfer);
+}
+
+.app-help-copy {
+  display: grid;
+  gap: 10px;
+}
+
+.app-help-section p,
+.app-help-section li {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-family: "Exo 2", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.46;
+}
+
+.app-help-section p + p {
+  margin-top: 8px;
+}
+
+.app-help-section ul {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.app-help-section strong {
+  color: var(--white);
+}
+
+.privacy-help-dialog {
+  width: min(520px, calc(100vw - 36px));
+  max-height: min(680px, calc(100vh - 36px));
+  overflow-y: auto;
+  border-color: rgba(255, 61, 84, 0.58);
+  background:
+    linear-gradient(135deg, rgba(92, 24, 45, 0.74), rgba(11, 17, 32, 0.98)),
+    rgba(11, 17, 32, 0.98);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 34px rgba(255, 61, 84, 0.22);
+}
+
+.privacy-help-kicker,
+.privacy-help-section h3 {
+  color: var(--danger);
+}
+
+.privacy-help-close {
+  border-color: rgba(255, 61, 84, 0.34);
+  color: var(--danger);
+}
+
+.privacy-help-copy {
+  display: grid;
+  gap: 10px;
+}
+
+.privacy-help-section p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-family: "Exo 2", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.46;
+}
+
 .coach-cycle-subtitle {
   margin: -2px 0 6px;
   font-size: 8px;
@@ -1014,10 +1119,16 @@ button {
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.32);
 }
 
+.iqmindware-footer {
+  width: 100%;
+  margin-top: auto;
+  display: grid;
+  gap: 5px;
+}
+
 .iqmindware-strip-link {
   width: 100%;
   min-height: 46px;
-  margin-top: auto;
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr);
   align-items: center;
@@ -1060,6 +1171,29 @@ button {
     inset 0 0 0 1px rgba(255, 255, 255, 0.04),
     0 0 18px rgba(84, 162, 255, 0.14);
   outline: none;
+}
+
+.iqmindware-privacy-link {
+  justify-self: center;
+  padding: 0 3px;
+  border: 0;
+  background: transparent;
+  color: var(--danger);
+  cursor: pointer;
+  font-family: "Chakra Petch", sans-serif;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(255, 61, 84, 0.34);
+}
+
+.iqmindware-privacy-link:hover,
+.iqmindware-privacy-link:focus-visible {
+  color: #ff7777;
+  outline: none;
+  text-shadow: 0 0 12px rgba(255, 61, 84, 0.52);
 }
 
 .stat {

@@ -144,6 +144,8 @@ let viewState = {
   modeHelpOpen: false,
   zoneHelpOpen: false,
   trackerHelpOpen: false,
+  appHelpOpen: false,
+  privacyHelpOpen: false,
   centerMode: "play",
   message: "Choose coached progression or manual play, then start a block.",
   activeModule: loadActiveModule(),
@@ -229,10 +231,12 @@ function ensureModuleSwitch() {
     brand.insertBefore(switcher, actions);
   }
   const active = viewState.activeModule === "reasoning" || viewState.activeModule === "tracker" ? viewState.activeModule : "capacity";
+  const helpDisabled = anyGameplayActive();
   switcher.innerHTML = `
     <button class="module-switch-btn${active === "capacity" ? " is-active" : ""}" type="button" data-action="set-module" data-module="capacity" aria-pressed="${active === "capacity" ? "true" : "false"}">Capacity Gym</button>
     <button class="module-switch-btn${active === "reasoning" ? " is-active" : ""}" type="button" data-action="set-module" data-module="reasoning" aria-pressed="${active === "reasoning" ? "true" : "false"}">Reasoning Gym</button>
     <button class="module-switch-btn${active === "tracker" ? " is-active" : ""}" type="button" data-action="set-module" data-module="tracker" aria-pressed="${active === "tracker" ? "true" : "false"}">Tracker</button>
+    <button class="module-switch-btn module-help-btn" type="button" data-action="toggle-app-help" aria-haspopup="dialog" aria-expanded="${viewState.appHelpOpen ? "true" : "false"}" ${helpDisabled ? "disabled" : ""}>Help</button>
   `;
 }
 
@@ -3662,6 +3666,100 @@ function renderTrackerHelpModal() {
   `;
 }
 
+function renderAppHelpModal() {
+  if (!viewState.appHelpOpen) return "";
+  return `
+    <div class="mode-help-backdrop app-help-backdrop" data-action="close-app-help">
+      <section class="mode-help-dialog app-help-dialog" role="dialog" aria-modal="true" aria-labelledby="appHelpTitle" data-dialog-panel>
+        <button class="mode-help-close app-help-close" type="button" data-action="close-app-help" aria-label="Close app help">x</button>
+        <span class="mode-help-kicker app-help-kicker">Trident G IQ - Pro Help</span>
+        <h2 id="appHelpTitle">How The Programme Works</h2>
+        <div class="app-help-copy">
+          <section class="mode-help-section app-help-section">
+            <h3>1. Coach-led programme</h3>
+            <p>Trident G IQ - Pro is built around a Coach-led training programme designed to improve general intelligence through a far-transfer protocol. The coach chooses the next training route for you, sets the workload, and guides you across Capacity Gym, Reasoning Gym, and Tracker.</p>
+            <p>The programme uses two kinds of progression.</p>
+            <p><strong>Horizontal transfer</strong> means practising the same underlying mental skill across different surface forms. For example, the app may train the same working-memory control demand with letters, locations, objects, relations, real-world meanings, and nonsense meanings. The goal is to stop the skill being tied to one familiar game format.</p>
+            <p><strong>Vertical transfer</strong> means gradually increasing the level of reasoning demand. The coach moves from easier recognition and control tasks toward deeper relational binding, rule use, inference, and fluid reasoning challenges.</p>
+            <p>Together, the horizontal and vertical protocol is intended to make training less like memorising one game and more like building flexible thinking capacity.</p>
+          </section>
+          <section class="mode-help-section app-help-section">
+            <h3>2. The 20-day training structure</h3>
+            <p>The Coach-led programme is organised as a 20-day training pathway. The programme starts and ends with short cognitive tests in the Tracker so you can compare baseline and post-training scores.</p>
+            <p>Use the pre-training SgS-12 test before the programme begins. Use the post-training SgS-12 test after completing the programme. The Tracker also includes Psi-CBS scales for tracking everyday cognitive performance, resilience, and AI-use effects over time. It is recommended to take Psi-CBS every 5 sessions so you can see gains and state changes across the programme.</p>
+          </section>
+          <section class="mode-help-section app-help-section">
+            <h3>3. Zone Pulse before training</h3>
+            <p>Before each day's training, it is recommended to complete the 3-minute Zone Pulse task. This task is the Majority Function Task.</p>
+            <p>In each trial, you respond to the direction most arrows are pointing. The task estimates your cognitive control capacity in bits per second. This gives the coach an objective signal about whether today should be a full training day, a reduced route, or a lighter stabilising session.</p>
+            <p>There is evidence that this kind of cognitive control task can itself act as brain training. In Trident G IQ - Pro, it also helps set the right training dose for the day.</p>
+            <p>You can skip Zone Pulse if needed, but the best Coach-led experience comes from taking it regularly.</p>
+          </section>
+          <section class="mode-help-section app-help-section">
+            <h3>4. Capacity Gym</h3>
+            <p>Capacity Gym trains the run-time efficiency of thinking. It uses N-back tasks, including novel relational N-back tasks, to train working memory, attention control, binding, and flexible updating.</p>
+            <p>The key idea is that reasoning depends not only on knowing rules, but on holding the right information active while ignoring what does not matter. Capacity Gym trains that mental workspace under controlled pressure.</p>
+            <p>As you improve, the coach can adjust N-back level, speed, wrapper type, and task family.</p>
+          </section>
+          <section class="mode-help-section app-help-section">
+            <h3>5. Reasoning Gym</h3>
+            <p>Reasoning Gym trains inference and fluid reasoning more directly. It uses tasks such as relation matching, constraint solving, and must-follow reasoning.</p>
+            <p>Capacity Gym prepares the run-time control system. Reasoning Gym then asks you to use that control for rule-based thinking, slot resolution, and logical inference.</p>
+            <p>The coach alternates real-world and nonsense forms so the skill is not dependent on familiar meanings alone.</p>
+          </section>
+          <section class="mode-help-section app-help-section">
+            <h3>6. Tracker</h3>
+            <p>Tracker is where you collect evidence of progress.</p>
+            <ul>
+              <li><strong>SgS-12 Pre</strong> is for a baseline fluid reasoning snapshot before training.</li>
+              <li><strong>SgS-12 Post</strong> is for a follow-up snapshot after training.</li>
+              <li><strong>Psi-CBS</strong> is recommended every 5 sessions to track applied cognition, resilience/load, and AI-use effects over time.</li>
+            </ul>
+            <p>Tracker scores do not award training credit and do not change the coach route. They are there to measure progress.</p>
+          </section>
+          <section class="mode-help-section app-help-section">
+            <h3>7. Manual mode</h3>
+            <p>Manual mode lets you explore the games yourself. You can choose any available Capacity or Reasoning game, adjust difficulty or speed where available, and experiment with training according to your own preference.</p>
+            <p>Manual mode is useful for review, practice, and curiosity. Coach-led mode is recommended when you want the structured 20-day far-transfer programme.</p>
+          </section>
+          <section class="mode-help-section app-help-section">
+            <h3>Best use</h3>
+            <p>Take the pre-training Tracker test, train in Coach-led mode, use Zone Pulse before each daily session when possible, complete both Capacity and Reasoning targets, take Psi-CBS every 5 sessions, and take the post-training Tracker test at the end.</p>
+          </section>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function renderPrivacyHelpModal() {
+  if (!viewState.privacyHelpOpen) return "";
+  return `
+    <div class="mode-help-backdrop privacy-help-backdrop" data-action="close-privacy-help">
+      <section class="mode-help-dialog privacy-help-dialog" role="dialog" aria-modal="true" aria-labelledby="privacyHelpTitle" data-dialog-panel>
+        <button class="mode-help-close privacy-help-close" type="button" data-action="close-privacy-help" aria-label="Close privacy help">x</button>
+        <span class="mode-help-kicker privacy-help-kicker">Privacy</span>
+        <h2 id="privacyHelpTitle">Your Data Stays Local</h2>
+        <div class="privacy-help-copy">
+          <section class="mode-help-section privacy-help-section">
+            <h3>Local storage</h3>
+            <p>Trident G IQ - Pro stores your training scores, Tracker results, settings, and progress locally in this browser on this device. The app does not need an account or server upload for these scores to work.</p>
+          </section>
+          <section class="mode-help-section privacy-help-section">
+            <h3>Protection</h3>
+            <p>Your data is protected by keeping it on your own device rather than sending it to a central database. Anyone with access to this browser profile may still be able to see local progress, so use your normal device security and browser profile controls.</p>
+          </section>
+          <section class="mode-help-section privacy-help-section">
+            <h3>Compliance</h3>
+            <p>The app is designed to support GDPR-aligned and ethically responsible use: data minimisation, local control, clear purpose, and no hidden scoring upload from this app interface.</p>
+            <p>Clearing browser storage or using another device/browser may remove or hide local progress data.</p>
+          </section>
+        </div>
+      </section>
+    </div>
+  `;
+}
+
 function renderManualPanel() {
   const wrapper = state.settings.wrapper;
   return `
@@ -3983,10 +4081,13 @@ function reasoningFamilyChipLabel(familyId) {
 
 function renderIqMindwareFooter() {
   return `
-    <a class="iqmindware-strip-link" href="https://iqmindware.com/" target="_blank" rel="noopener noreferrer" aria-label="Open IQMindware website">
-      <img src="${IQMINDWARE_LOGO_URL}" alt="" loading="lazy">
-      <span>IQMindware.com</span>
-    </a>
+    <div class="iqmindware-footer">
+      <a class="iqmindware-strip-link" href="https://iqmindware.com/" target="_blank" rel="noopener noreferrer" aria-label="Open IQMindware website">
+        <img src="${IQMINDWARE_LOGO_URL}" alt="" loading="lazy">
+        <span>IQMindware.com</span>
+      </a>
+      <button class="iqmindware-privacy-link" type="button" data-action="toggle-privacy-help">Privacy</button>
+    </div>
   `;
 }
 
@@ -4598,6 +4699,8 @@ function render() {
     ${renderModeHelpModal()}
     ${renderZoneHelpModal()}
     ${renderTrackerHelpModal()}
+    ${renderAppHelpModal()}
+    ${renderPrivacyHelpModal()}
   `;
   ensureModuleSwitch();
 }
@@ -4773,6 +4876,8 @@ document.addEventListener("click", (event) => {
     viewState.modeHelpOpen = false;
     viewState.zoneHelpOpen = false;
     viewState.trackerHelpOpen = false;
+    viewState.appHelpOpen = false;
+    viewState.privacyHelpOpen = false;
     triggerSfx("ui_tap_soft");
     render();
     return;
@@ -4787,6 +4892,8 @@ document.addEventListener("click", (event) => {
     viewState.leftOpen = false;
     viewState.rightOpen = false;
     viewState.reasoningCloseSession = null;
+    viewState.appHelpOpen = false;
+    viewState.privacyHelpOpen = false;
     viewState.message = action === "switch-to-reasoning"
       ? "Reasoning Gym is ready. Finish the logic items to complete this session."
       : "Capacity Gym is ready. Finish the remaining blocks to complete this session.";
@@ -4945,6 +5052,8 @@ document.addEventListener("click", (event) => {
     viewState.modeHelpOpen = !viewState.modeHelpOpen;
     viewState.zoneHelpOpen = false;
     viewState.trackerHelpOpen = false;
+    viewState.appHelpOpen = false;
+    viewState.privacyHelpOpen = false;
     render();
     return;
   }
@@ -4953,6 +5062,8 @@ document.addEventListener("click", (event) => {
     viewState.zoneHelpOpen = !viewState.zoneHelpOpen;
     viewState.modeHelpOpen = false;
     viewState.trackerHelpOpen = false;
+    viewState.appHelpOpen = false;
+    viewState.privacyHelpOpen = false;
     render();
     return;
   }
@@ -4961,6 +5072,32 @@ document.addEventListener("click", (event) => {
     viewState.trackerHelpOpen = !viewState.trackerHelpOpen;
     viewState.modeHelpOpen = false;
     viewState.zoneHelpOpen = false;
+    viewState.appHelpOpen = false;
+    viewState.privacyHelpOpen = false;
+    render();
+    return;
+  }
+  if (action === "toggle-app-help") {
+    if (anyGameplayActive()) {
+      triggerSfx("invalid_action");
+      return;
+    }
+    triggerSfx("ui_tap_soft");
+    viewState.appHelpOpen = !viewState.appHelpOpen;
+    viewState.modeHelpOpen = false;
+    viewState.zoneHelpOpen = false;
+    viewState.trackerHelpOpen = false;
+    viewState.privacyHelpOpen = false;
+    render();
+    return;
+  }
+  if (action === "toggle-privacy-help") {
+    triggerSfx("ui_tap_soft");
+    viewState.privacyHelpOpen = !viewState.privacyHelpOpen;
+    viewState.modeHelpOpen = false;
+    viewState.zoneHelpOpen = false;
+    viewState.trackerHelpOpen = false;
+    viewState.appHelpOpen = false;
     render();
     return;
   }
@@ -4985,6 +5122,20 @@ document.addEventListener("click", (event) => {
     render();
     return;
   }
+  if (action === "close-app-help") {
+    if (event.target.closest("[data-dialog-panel]") && !event.target.closest(".app-help-close")) return;
+    triggerSfx("ui_tap_soft");
+    viewState.appHelpOpen = false;
+    render();
+    return;
+  }
+  if (action === "close-privacy-help") {
+    if (event.target.closest("[data-dialog-panel]") && !event.target.closest(".privacy-help-close")) return;
+    triggerSfx("ui_tap_soft");
+    viewState.privacyHelpOpen = false;
+    render();
+    return;
+  }
   if (action === "set-mode") {
     if (zonePulseIsRunning()) return;
     triggerSfx("ui_tap_soft");
@@ -4992,6 +5143,8 @@ document.addEventListener("click", (event) => {
     viewState.modeHelpOpen = false;
     viewState.zoneHelpOpen = false;
     viewState.trackerHelpOpen = false;
+    viewState.appHelpOpen = false;
+    viewState.privacyHelpOpen = false;
     saveState();
     render();
     return;
