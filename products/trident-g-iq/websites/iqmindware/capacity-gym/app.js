@@ -82,6 +82,7 @@ const MODE_HELP_ICON_URL = "./assets/help/help-hex-purple.svg";
 const ZONE_HELP_ICON_URL = "./assets/help/help-hex-gold.svg";
 const TRACKER_HELP_ICON_URL = "./assets/help/help-hex-gold.svg";
 const IQMINDWARE_LOGO_URL = "./assets/brand/iqmindware-logo.png?v=20260420-iqlogo";
+const DISCORD_INVITE_URL = "https://discord.gg/bF8qcM8pkE";
 const COACH_FAMILY_CYCLE = ["flex", "bind", "relate", "resist", "flex", "relate", "bind", "resist", "relate"];
 const RELATE_LADDER = ["relate_vectors", "relate_numbers", "relate_vectors_dual", "relate_numbers_dual"];
 const TRANSFER_SPRINT_BLOCKS = 3;
@@ -4083,6 +4084,13 @@ function reasoningFamilyChipLabel(familyId) {
 function renderIqMindwareFooter() {
   return `
     <div class="iqmindware-footer">
+      <a class="discord-strip-link" href="${DISCORD_INVITE_URL}" target="_blank" rel="noopener noreferrer" aria-label="Join the IQMindware Discord community">
+        <svg class="discord-strip-icon" viewBox="0 0 32 24" aria-hidden="true" focusable="false">
+          <path d="M11.2 10.1c-1.1 0-1.9.9-1.9 2.1s.9 2.1 1.9 2.1c1.1 0 1.9-.9 1.9-2.1s-.8-2.1-1.9-2.1Zm9.6 0c-1.1 0-1.9.9-1.9 2.1s.9 2.1 1.9 2.1 1.9-.9 1.9-2.1-.8-2.1-1.9-2.1Z"/>
+          <path d="M27.1 2.6A25.8 25.8 0 0 0 20.7.7l-.3.6c2.3.7 3.4 1.7 3.4 1.7a22.5 22.5 0 0 0-15.6 0S9.3 2 11.6 1.3l-.3-.6c-2.2.4-4.4 1-6.4 1.9C.9 8.5-.2 14.2.3 19.8c2.7 2 5.3 3.2 7.9 4.1l1.7-2.8c-1-.4-2-.9-2.9-1.5l.7-.5c5.6 2.6 11.4 2.6 17 0l.7.5c-.9.6-1.9 1.1-2.9 1.5l1.7 2.8c2.6-.9 5.2-2.1 7.9-4.1.6-6.5-1-12.1-4.9-17.2Zm-16 13.6c-2.1 0-3.9-1.8-3.9-4s1.7-4 3.9-4c2.2 0 4 1.8 3.9 4 0 2.2-1.7 4-3.9 4Zm9.8 0c-2.1 0-3.9-1.8-3.9-4s1.7-4 3.9-4c2.2 0 3.9 1.8 3.9 4s-1.7 4-3.9 4Z"/>
+        </svg>
+        <span>Train with others</span>
+      </a>
       <a class="iqmindware-strip-link" href="https://iqmindware.com/" target="_blank" rel="noopener noreferrer" aria-label="Open IQMindware website">
         <img src="${IQMINDWARE_LOGO_URL}" alt="" loading="lazy">
         <span>IQMindware.com</span>
