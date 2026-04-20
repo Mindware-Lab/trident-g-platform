@@ -3917,6 +3917,7 @@ function renderReasoningLeftStrip() {
         </div>
         ${renderZoneCheckPanel()}
         ${renderReasoningTrainingPanel()}
+        ${renderLiveCoachingLink()}
       </div>
     </aside>
   `;
@@ -4109,6 +4110,14 @@ function trackerSelectedPsiCount() {
   return Object.values(activeTrackerSession?.selectedPsiSections || {}).filter(Boolean).length;
 }
 
+function renderLiveCoachingLink() {
+  return `
+    <a class="live-coaching-link" href="https://www.iqmindware.com/coaching/" target="_blank" rel="noopener noreferrer">
+      Book live coaching
+    </a>
+  `;
+}
+
 function renderTrackerLeftStrip() {
   const selected = trackerSelectedTest();
   const disabled = trackerTestIsActive() ? "disabled" : "";
@@ -4134,6 +4143,7 @@ function renderTrackerLeftStrip() {
           </div>
           <button class="btn btn-primary tracker-start-btn" type="button" data-action="start-tracker-test" ${disabled}>Start test</button>
         </section>
+        ${renderLiveCoachingLink()}
       </div>
     </aside>
   `;
@@ -4460,6 +4470,7 @@ function renderLeftStrip() {
         ${renderZoneCheckPanel()}
         ${renderModePanel()}
         ${state.settings.mode === "manual" ? renderManualPanel() : ""}
+        ${renderLiveCoachingLink()}
       </div>
     </aside>
   `;
