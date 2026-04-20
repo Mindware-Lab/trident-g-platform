@@ -981,6 +981,34 @@ function createUnifiedCoachContract(snapshot = zoneDisplaySnapshot()) {
   return { ok: true, contract };
 }
 
+function createSkippedZoneSnapshot() {
+  return {
+    fresh: true,
+    valid: true,
+    routeState: "in_zone",
+    state: "in_zone",
+    routeClass: "core",
+    label: "Zone skipped",
+    confidence: "Skipped",
+    timestamp: Date.now(),
+    source: "zone_skipped"
+  };
+}
+
+function ensureSkippedCoachContract() {
+  const current = currentCoachContract();
+  if (current) return { ok: true, contract: current };
+  const result = createUnifiedCoachContract(createSkippedZoneSnapshot());
+  if (result.ok) {
+    result.contract.routeLabel = "Zone skipped";
+    result.contract.zoneSource = "zone_skipped";
+    result.contract.zoneSkipped = true;
+    result.contract.updatedAt = Date.now();
+    saveUnifiedCoachState();
+  }
+  return result;
+}
+
 function ensureUnifiedCoachContract() {
   const current = currentCoachContract();
   if (current) return { ok: true, contract: current };
@@ -1357,6 +1385,35 @@ function beginCoachSession() {
     ? `Session ${sessionNumber} capacity route: ${familyLabel(familyId)}. Complete ${plannedBlocks} block${plannedBlocks === 1 ? "" : "s"}, then switch to Reasoning Gym.`
     : `Support capacity route: ${plannedBlocks} stabilising block${plannedBlocks === 1 ? "" : "s"}.`;
   triggerSfx("session_start");
+  render();
+}
+
+function skipZonePulseAndStartCoachRoute() {
+  if (anyGameplayActive()) {
+    triggerSfx("invalid_action");
+    return;
+  }
+  const contractResult = ensureSkippedCoachContract();
+  if (!contractResult.ok) {
+    viewState.message = contractResult.message || "Could not skip Zone Pulse.";
+    triggerSfx("invalid_action");
+    render();
+    return;
+  }
+  viewState.centerMode = "play";
+  state.settings.mode = "coach";
+  reasoningState.settings.mode = "coach";
+  saveState();
+  saveReasoningState();
+  if (viewState.activeModule === "reasoning" && capacityRemainingForContract(contractResult.contract) > 0) {
+    saveActiveModule("capacity");
+  }
+  viewState.message = "Zone Pulse skipped for this session. Your standard coach-led route is ready.";
+  triggerSfx("ui_tap_soft");
+  if (viewState.activeModule === "capacity" && !state.currentSession) {
+    beginCoachSession();
+    return;
+  }
   render();
 }
 
@@ -3378,9 +3435,12 @@ function renderZoneCheckPanel() {
       <div class="notice">${escapeHtml(routeLabel)}</div>
       ${renderZoneCheckGraphic(snapshot)}
       <div class="zone-pulse-action-row">
-        ${contract
-          ? `<button class="btn btn-primary zone-pulse-launch" type="button" data-action="toggle-zone-help" ${controlsDisabled ? "disabled" : ""}>Trident G Zones Info</button>`
-          : `<button class="btn btn-primary zone-pulse-launch" type="button" data-action="show-zone-pulse" ${controlsDisabled ? "disabled" : ""}>Test your zone</button>`}
+        <div class="zone-pulse-main-actions">
+          ${contract
+            ? `<button class="btn btn-primary zone-pulse-launch" type="button" data-action="toggle-zone-help" ${controlsDisabled ? "disabled" : ""}>Trident G Zones Info</button>`
+            : `<button class="btn btn-primary zone-pulse-launch" type="button" data-action="show-zone-pulse" ${controlsDisabled ? "disabled" : ""}>Test your zone</button>`}
+          ${!contract && state.settings.mode === "coach" ? `<button class="btn btn-ghost zone-pulse-launch" type="button" data-action="skip-zone-pulse" ${controlsDisabled ? "disabled" : ""}>Skip zone pulse</button>` : ""}
+        </div>
         <button class="zone-pulse-help-btn" type="button" data-action="toggle-zone-help" aria-label="Open Zone Check help" title="Open Zone Check help">
           <img src="${ZONE_HELP_ICON_URL}" alt="" aria-hidden="true">
         </button>
@@ -4227,8 +4287,10 @@ function renderReasoningPlayControls() {
     <div class="response-row">
       ${reasoningState.settings.mode === "coach" && contract && capacityRemainingForContract(contract) > 0 ? `<button class="btn btn-primary" type="button" data-action="switch-to-capacity">Go to Capacity Gym</button>` : ""}
       ${reasoningState.settings.mode === "coach" && rec.recommended && !contract ? `<button class="btn btn-primary" type="button" data-action="show-zone-pulse">Test your zone</button>` : ""}
+      ${reasoningState.settings.mode === "coach" && rec.recommended && !contract ? `<button class="btn btn-ghost" type="button" data-action="skip-zone-pulse">Skip zone pulse</button>` : ""}
       ${reasoningState.settings.mode === "coach" && !session && ((!contract && !rec.recommended) || (contract && capacityRemainingForContract(contract) <= 0 && reasoningRemainingForContract(contract) > 0)) ? `<button class="btn btn-primary" type="button" data-action="start-reasoning-session">Start reasoning session</button>` : ""}
       ${reasoningState.settings.mode === "coach" && session ? `<button class="btn btn-primary" type="button" data-action="start-reasoning-block">Start reasoning block</button>` : ""}
+      ${reasoningState.settings.mode === "coach" && session ? `<button class="btn btn-ghost" type="button" data-action="show-zone-pulse">Test your zone</button>` : ""}
       ${reasoningState.settings.mode === "manual" ? `<button class="btn btn-primary" type="button" data-action="start-reasoning-manual">Start manual reasoning</button>` : ""}
     </div>
   `;
@@ -4458,8 +4520,10 @@ function renderPlayControls() {
     <div class="response-row">
       ${contract && capacityRemainingForContract(contract) <= 0 && reasoningRemainingForContract(contract) > 0 ? `<button class="btn btn-primary" type="button" data-action="switch-to-reasoning">Go to Reasoning Gym</button>` : ""}
       ${coachSession ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start next block</button>` : ""}
+      ${coachSession && state.settings.mode === "coach" ? `<button class="btn btn-ghost" type="button" data-action="show-zone-pulse" ${activeBlock ? "disabled" : ""}>Test your zone</button>` : ""}
       ${state.settings.mode === "manual" ? `<button class="btn btn-primary" type="button" data-action="start-block" ${activeBlock ? "disabled" : ""}>Start manual block</button>` : ""}
       ${state.settings.mode === "coach" && !state.currentSession && !contract && recommendZonePreflight ? `<button class="btn btn-primary" type="button" data-action="show-zone-pulse" ${activeBlock ? "disabled" : ""}>Test your zone</button>` : ""}
+      ${state.settings.mode === "coach" && !state.currentSession && !contract && recommendZonePreflight ? `<button class="btn btn-ghost" type="button" data-action="skip-zone-pulse" ${activeBlock ? "disabled" : ""}>Skip zone pulse</button>` : ""}
       ${state.settings.mode === "coach" && !state.currentSession && ((!contract && !recommendZonePreflight) || (contract && capacityRemainingForContract(contract) > 0)) ? `<button class="btn btn-primary" type="button" data-action="start-coach-session" ${activeBlock ? "disabled" : ""}>Start capacity session</button>` : ""}
     </div>
   `;
@@ -4911,6 +4975,10 @@ document.addEventListener("click", (event) => {
   }
   if (action === "show-zone-pulse") {
     showZonePulse();
+    return;
+  }
+  if (action === "skip-zone-pulse") {
+    skipZonePulseAndStartCoachRoute();
     return;
   }
   if (action === "recheck-replan-session") {
