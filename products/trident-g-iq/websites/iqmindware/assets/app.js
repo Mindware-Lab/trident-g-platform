@@ -1012,24 +1012,6 @@ function injectSignupPrompts() {
     }
   }
 
-  if (document.body.classList.contains("home")) {
-    const anchor = document.querySelector(".home-cta-band") || footer
-    if (anchor && !document.querySelector(".iqm-signup-section--home")) {
-      anchor.insertAdjacentHTML(
-        "beforebegin",
-        buildSignupEmbedSection({
-          sectionClass: "iqm-signup-section--home",
-          eyebrow: "Get updates",
-          title: "Get intelligence training content and launch updates",
-          text:
-            "Subscribe for new research notes, protocol updates, and occasional offers as IQMindware evolves.",
-          frameTitle: "IQMindware homepage signup form",
-          buttonLabel: "Open hosted signup form",
-        })
-      )
-    }
-  }
-
   if (document.body.classList.contains("proof")) {
     const anchor = footer
     if (anchor && !document.querySelector(".iqm-signup-section--proof")) {
