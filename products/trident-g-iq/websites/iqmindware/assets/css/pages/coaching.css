@@ -378,6 +378,16 @@ body.coaching          { background: var(--co-surface); }
   gap: 22px;
   margin-bottom: 14px;
 }
+.co-packages-note {
+  margin-top: 18px;
+  font-size: 0.88rem;
+  color: var(--color-text-muted, #888);
+  text-align: center;
+}
+.co-packages-note a {
+  color: inherit;
+  text-decoration: underline;
+}
 .co-pkg-card {
   background: var(--co-card-bg);
   border: 1.5px solid var(--co-card-bdr);
