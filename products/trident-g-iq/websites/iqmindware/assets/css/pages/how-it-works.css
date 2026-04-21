@@ -235,7 +235,7 @@ body.how  { background: var(--how-surface); }
 .how-rail {
   display: grid;
   grid-template-columns: 1fr 40px 1fr 40px 1fr 40px 1fr;
-  align-items: start;
+  align-items: stretch;
   gap: 0;
   margin-bottom: 48px;
 }
@@ -268,6 +268,7 @@ body.how  { background: var(--how-surface); }
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: 70px;
 }
 .how-node-num {
   width: 30px; height: 30px;
@@ -330,6 +331,7 @@ body.how  { background: var(--how-surface); }
   padding: 10px 14px;
   border-top: 1px solid rgba(255,255,255,.06);
   background: rgba(0,0,0,.10);
+  margin-top: auto;
 }
 .how-node-cta {
   display: block; width: 100%; text-align: center;
