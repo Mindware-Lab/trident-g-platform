@@ -560,7 +560,7 @@ body.tools { background: var(--tools-surface); }
   font-size: 9.5px;
   letter-spacing: .12em;
   text-transform: uppercase;
-  color: var(--tcf);
+  color: var(--cyan);
   margin-bottom: 4px;
 }
 .tools-step-action {
@@ -574,7 +574,7 @@ body.tools { background: var(--tools-surface); }
   font-family: 'DM Mono', monospace;
   font-size: 10px;
   letter-spacing: .06em;
-  color: var(--tcf);
+  color: var(--cyan);
 }
 
 
