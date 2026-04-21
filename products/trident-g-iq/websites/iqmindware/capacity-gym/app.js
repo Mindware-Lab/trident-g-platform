@@ -4267,7 +4267,6 @@ function renderTrackerResult() {
           <div class="stat"><span class="mini-label">Type</span><strong>Snapshot</strong></div>
           <div class="stat"><span class="mini-label">Saved</span><strong>Yes</strong></div>
         </div>
-        <p>RS-IQ is an internal reasoning snapshot score for tracking change, not a clinical IQ score.</p>
       </div>
     `;
   }

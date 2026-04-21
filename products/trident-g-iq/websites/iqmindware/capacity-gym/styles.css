@@ -1931,6 +1931,12 @@ button {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.tracker-result-summary .mini-label {
+  color: var(--iq-credit);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+}
+
 .tracker-question-head {
   display: flex;
   align-items: center;
