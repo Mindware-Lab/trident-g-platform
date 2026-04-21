@@ -279,6 +279,34 @@ body.pricing  { background: var(--pricing-surface); }
 /* ============================================================
    6. PLAN CARDS
    ============================================================ */
+.plan-app-showcase {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+  margin-bottom: 16px;
+}
+.plan-app-showcase .plan-grid {
+  flex: 0 0 380px;
+  margin-bottom: 0;
+}
+.plan-screenshots {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: flex-start;
+  min-width: 0;
+}
+.plan-screenshot {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0,0,0,.18);
+  object-fit: cover;
+  display: block;
+}
+
 .plan-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -978,6 +1006,8 @@ body.pricing  { background: var(--pricing-surface); }
    ============================================================ */
 @media (max-width: 1100px) {
   .plan-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  .plan-app-showcase      { gap: 20px; }
+  .plan-app-showcase .plan-grid { flex: 0 0 320px; }
 }
 @media (max-width: 900px) {
   .pricing-hero-inner     { grid-template-columns: 1fr; }
@@ -986,6 +1016,9 @@ body.pricing  { background: var(--pricing-surface); }
   .coaching-grid          { grid-template-columns: 1fr; }
   .billing-grid           { grid-template-columns: 1fr 1fr; }
   .proof-posture-items    { grid-template-columns: 1fr; }
+  .plan-app-showcase      { flex-direction: column; }
+  .plan-app-showcase .plan-grid { flex: none; width: 100%; }
+  .plan-screenshots       { width: 100%; }
 }
 @media (max-width: 600px) {
   .pricing-hero           { padding: 72px var(--gutter) 44px; }
