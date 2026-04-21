@@ -38,14 +38,6 @@
   --ab-train:     #a78bfa;
   --ab-recheck:   #2764B7;
 
-  /* Roadmap status */
-  --ab-live-bg:    rgba(46,125,50,.07);
-  --ab-live-bdr:   rgba(46,125,50,.22);
-  --ab-soon-bg:    rgba(245,158,11,.06);
-  --ab-soon-bdr:   rgba(245,158,11,.22);
-  --ab-ongoing-bg: rgba(34,170,255,.06);
-  --ab-ongoing-bdr:rgba(34,170,255,.20);
-
   /* Boundary */
   --ab-boundary-bg:  rgba(180,83,9,.06);
   --ab-boundary-bdr: rgba(180,83,9,.28);
@@ -601,117 +593,7 @@ body.about   { background: var(--ab-surface); }
 
 
 /* ============================================================
-   11. DATA AND PRIVACY BLOCK
-   ============================================================ */
-.ab-privacy-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-.ab-privacy-card {
-  background: var(--ab-card-bg);
-  border: 1.5px solid var(--ab-card-bdr);
-  border-radius: var(--r-xl);
-  overflow: hidden;
-}
-.ab-privacy-hd {
-  padding: 16px 22px;
-  border-bottom: 1px solid var(--ab-rule);
-  display: flex; align-items: center; gap: 10px;
-  background: rgba(0,0,0,.02);
-}
-.ab-privacy-hd-icon { font-size: 17px; flex-shrink: 0; }
-.ab-privacy-hd-title {
-  font-size: 14px; font-weight: 800;
-  color: var(--tl); letter-spacing: -.01em;
-}
-.ab-privacy-items { padding: 14px 0 6px; }
-.ab-privacy-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 8px 22px;
-  font-size: 14px; color: var(--tlm); line-height: 1.62;
-  border-bottom: 1px solid rgba(0,0,0,.04);
-}
-.ab-privacy-item:last-child { border-bottom: none; }
-.ab-privacy-item-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
-.ab-privacy-item strong { color: var(--tl); }
-.ab-privacy-links {
-  padding: 10px 22px 16px;
-  border-top: 1px solid var(--ab-rule);
-  display: flex; gap: 12px; flex-wrap: wrap;
-}
-.ab-privacy-link {
-  font-size: 12.5px; font-weight: 700;
-  color: var(--blue-dp); text-decoration: none;
-  display: flex; align-items: center; gap: 4px;
-  border-bottom: 1px solid rgba(39,100,183,.22);
-  transition: border-color var(--t-fast);
-}
-.ab-privacy-link::before { content: '->'; font-size: 11px; }
-.ab-privacy-link:hover { border-bottom-color: var(--blue-dp); }
-.ab-privacy-link:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 2px; }
-
-
-/* ============================================================
-   12. ROADMAP CARDS
-   ============================================================ */
-.ab-roadmap-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-.ab-roadmap-card {
-  background: var(--ab-card-bg);
-  border: 1.5px solid var(--ab-card-bdr);
-  border-radius: var(--r-xl);
-  overflow: hidden;
-  display: flex; flex-direction: column;
-}
-.ab-roadmap-card--live    { border-top: 3px solid #2e7d32; }
-.ab-roadmap-card--soon    { border-top: 3px solid #f59e0b; }
-.ab-roadmap-card--ongoing { border-top: 3px solid var(--cyan); }
-
-.ab-roadmap-hd {
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--ab-rule);
-  display: flex; align-items: center; gap: 10px;
-}
-.ab-roadmap-card--live    .ab-roadmap-hd { background: var(--ab-live-bg); }
-.ab-roadmap-card--soon    .ab-roadmap-hd { background: var(--ab-soon-bg); }
-.ab-roadmap-card--ongoing .ab-roadmap-hd { background: var(--ab-ongoing-bg); }
-
-.ab-roadmap-badge {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; letter-spacing: .10em; text-transform: uppercase;
-  padding: 2px 8px; border-radius: 3px; font-weight: 700;
-}
-.ab-roadmap-card--live    .ab-roadmap-badge { background: var(--ab-live-bg);    border: 1px solid var(--ab-live-bdr);    color: #2e7d32; }
-.ab-roadmap-card--soon    .ab-roadmap-badge { background: var(--ab-soon-bg);    border: 1px solid var(--ab-soon-bdr);    color: #92400e; }
-.ab-roadmap-card--ongoing .ab-roadmap-badge { background: var(--ab-ongoing-bg); border: 1px solid var(--ab-ongoing-bdr); color: #1d4ed8; }
-
-.ab-roadmap-body { padding: 16px 20px 18px; flex: 1; }
-.ab-roadmap-title {
-  font-size: 14px; font-weight: 800;
-  color: var(--tl); letter-spacing: -.01em; margin-bottom: 8px;
-}
-.ab-roadmap-items {
-  display: flex; flex-direction: column; gap: 5px;
-}
-.ab-roadmap-item {
-  display: flex; align-items: flex-start; gap: 7px;
-  font-size: 14px; color: var(--tlm); line-height: 1.58;
-}
-.ab-roadmap-item-icon { font-size: 12px; flex-shrink: 0; margin-top: 1px; color: var(--tlf); }
-.ab-roadmap-note {
-  font-family: 'DM Mono', monospace;
-  font-size: 11px; letter-spacing: .03em;
-  color: var(--tlf); margin-top: 10px; line-height: 1.6;
-  padding-top: 9px; border-top: 1px solid var(--ab-rule);
-}
-
-
-/* ============================================================
-   13. FINAL CTA BAND
+   11. FINAL CTA BAND
    ============================================================ */
 .ab-cta-band {
   background: var(--card-deep);
@@ -776,12 +658,11 @@ body.about   { background: var(--ab-surface); }
 
 
 /* ============================================================
-   14. RESPONSIVE
+   12. RESPONSIVE
    ============================================================ */
 @media (max-width: 1050px) {
   .ab-principles-grid  { grid-template-columns: 1fr 1fr; }
   .ab-evidence-grid    { grid-template-columns: 1fr; }
-  .ab-roadmap-grid     { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 900px) {
   .ab-hero-inner       { grid-template-columns: 1fr; }
@@ -792,7 +673,6 @@ body.about   { background: var(--ab-surface); }
   .ab-compare-grid     { grid-template-columns: 1fr; }
   .ab-method-rail      { grid-template-columns: 1fr 1fr; gap: 16px; }
   .ab-method-arrow     { display: none; }
-  .ab-privacy-grid     { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
   .ab-hero             { padding: 96px var(--gutter) 44px; }
@@ -801,7 +681,6 @@ body.about   { background: var(--ab-surface); }
   .ab-founder-card     { padding: 20px 18px 16px; }
   .ab-principles-grid  { grid-template-columns: 1fr; }
   .ab-method-rail      { grid-template-columns: 1fr; gap: 12px; }
-  .ab-roadmap-grid     { grid-template-columns: 1fr; }
   .ab-boundary         { flex-direction: column; gap: 10px; }
   .ab-cta-links        { flex-wrap: wrap; gap: 8px; }
 }
