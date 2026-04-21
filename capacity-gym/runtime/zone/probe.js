@@ -278,7 +278,7 @@ export function createZoneProbeController({
       progressPct: 0,
       trialCount: 0,
       refreshHz: null,
-      qualityText: "Calibrating display timing"
+      qualityText: ""
     });
 
     const validityRef = { valid: true };
@@ -326,7 +326,7 @@ export function createZoneProbeController({
         progressPct: 0,
         trialCount: 0,
         refreshHz,
-        qualityText: `Refresh ${refreshHz} Hz`
+        qualityText: ""
       });
 
       const minFrames = Math.max(2, Math.round(ZONE_PROBE_CONFIG.minStimMs / frameMs));
@@ -511,7 +511,7 @@ export function createZoneProbeController({
           trialCount,
           counts: { ...planState.counts },
           refreshHz,
-          qualityText: validityRef.valid ? "Stay on one screen; invalid runs do not gate training." : "Probe invalidated"
+          qualityText: ""
         });
       }
 
@@ -585,7 +585,7 @@ export function createZoneProbeController({
       progressPct: 100,
       trialCount: summary.counts?.totalTrials || 0,
       refreshHz: summary.timing?.hz || null,
-      qualityText: summary.valid ? "Probe complete" : "Probe invalid"
+      qualityText: ""
     });
     return summary;
   }

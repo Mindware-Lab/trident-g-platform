@@ -14,7 +14,7 @@ import {
   unlockAudioContextFromUserGesture
 } from "./runtime/audio.js";
 import { hash32 } from "./runtime/rng.js";
-import { createZoneProbeController } from "./runtime/zone/probe.js";
+import { createZoneProbeController } from "./runtime/zone/probe.js?v=20260421-zone-progress-lower";
 import { buildZoneHandoff } from "./runtime/zone/handoff.js";
 import { loadZoneRuntimeState, saveZoneRun } from "./runtime/zone/storage.js";
 import {
@@ -733,7 +733,7 @@ function createZonePulseState() {
       progressPct: 0,
       trialCount: 0,
       counts: { stair: 0, probe: 0, catch: 0 },
-      qualityText: "Ready"
+      qualityText: ""
     },
     controller: null,
     activeRunId: null,
@@ -1607,7 +1607,7 @@ function updateZonePulseLiveDom() {
   const counts = document.querySelector("[data-zone-pulse-counts]");
   if (progressFill) progressFill.style.width = `${clamp(progress, 0, 100)}%`;
   if (progressLabel) progressLabel.textContent = `${clamp(progress, 0, 100)}% complete`;
-  if (quality) quality.textContent = zonePulseState.live.qualityText || "Stay on one screen";
+  if (quality) quality.textContent = zonePulseState.live.qualityText || "";
   if (counts) {
     const liveCounts = zonePulseState.live.counts || {};
     counts.textContent = `Trials ${zonePulseState.live.trialCount || 0} | S:${liveCounts.stair || 0} P:${liveCounts.probe || 0} C:${liveCounts.catch || 0}`;
@@ -1625,7 +1625,7 @@ function ensureZonePulseController() {
         progressPct: Number.isFinite(status.progressPct) ? status.progressPct : zonePulseState.live.progressPct,
         trialCount: Number.isFinite(status.trialCount) ? status.trialCount : zonePulseState.live.trialCount,
         counts: status.counts || zonePulseState.live.counts || { stair: 0, probe: 0, catch: 0 },
-        qualityText: status.qualityText || zonePulseState.live.qualityText || "Stay on one screen"
+        qualityText: status.qualityText || zonePulseState.live.qualityText || ""
       };
       updateZonePulseLiveDom();
     },
@@ -1694,7 +1694,7 @@ function beginZonePulseCountdown(stepIndex = 0) {
     progressPct: 0,
     trialCount: 0,
     counts: { stair: 0, probe: 0, catch: 0 },
-    qualityText: `Starting in ${COUNTDOWN_STEPS[zonePulseState.countdownStep]}`
+    qualityText: ""
   };
   viewState.centerMode = "zone";
   viewState.leftOpen = false;
@@ -1725,7 +1725,7 @@ function startZonePulseRuntime() {
     progressPct: 0,
     trialCount: 0,
     counts: { stair: 0, probe: 0, catch: 0 },
-    qualityText: "Calibrating display timing"
+    qualityText: ""
   };
   viewState.centerMode = "zone";
   viewState.leftOpen = false;
@@ -1782,7 +1782,7 @@ function stopZonePulse() {
     progressPct: 0,
     trialCount: 0,
     counts: { stair: 0, probe: 0, catch: 0 },
-    qualityText: "Stopped"
+    qualityText: ""
   };
   viewState.centerMode = "zone";
   viewState.message = "Zone pulse stopped. No route was saved.";
@@ -3425,25 +3425,7 @@ function renderZonePulseTask() {
         <canvas class="zone-pulse-canvas" data-zone-pulse-canvas aria-label="Masked majority arrow task"></canvas>
         ${countdown ? `<div class="capacity-countdown zone-pulse-countdown" aria-live="assertive">${escapeHtml(countdownValue)}</div>` : ""}
       </div>
-      ${running ? `
-        <div class="zone-pulse-progress">
-          <div class="zone-pulse-progress-bar"><span data-zone-pulse-progress-fill style="width:${Math.round(zonePulseState.live.progressPct || 0)}%;"></span></div>
-          <div class="zone-pulse-progress-copy">
-            <span data-zone-pulse-progress-label>${Math.round(zonePulseState.live.progressPct || 0)}% complete</span>
-            <span data-zone-pulse-counts>Trials ${zonePulseState.live.trialCount || 0} | S:${zonePulseState.live.counts?.stair || 0} P:${zonePulseState.live.counts?.probe || 0} C:${zonePulseState.live.counts?.catch || 0}</span>
-          </div>
-          <p data-zone-pulse-quality>${escapeHtml(zonePulseState.live.qualityText || "Stay on one screen")}</p>
-        </div>
-      ` : countdown ? `
-        <div class="zone-pulse-progress">
-          <div class="zone-pulse-progress-bar"><span data-zone-pulse-progress-fill style="width:0%;"></span></div>
-          <div class="zone-pulse-progress-copy">
-            <span>Starting</span>
-            <span>Get ready</span>
-          </div>
-          <p>${escapeHtml(zonePulseState.live.qualityText || "Starting")}</p>
-        </div>
-      ` : `
+      ${running || countdown ? "" : `
         <div class="coach-callout zone-pulse-tip" role="status" aria-live="polite">
           <span>Coach tip</span>
           <strong>Zone Check / 3 min</strong>
@@ -3587,6 +3569,34 @@ function renderZoneHelpModal() {
       </section>
     </div>
   `;
+}
+
+function renderZonePulseProgress() {
+  const running = zonePulseIsLive();
+  const countdown = zonePulseState.phase === "countdown";
+  if (running) {
+    return `
+      <div class="zone-pulse-progress">
+        <div class="zone-pulse-progress-bar"><span data-zone-pulse-progress-fill style="width:${Math.round(zonePulseState.live.progressPct || 0)}%;"></span></div>
+        <div class="zone-pulse-progress-copy">
+          <span data-zone-pulse-progress-label>${Math.round(zonePulseState.live.progressPct || 0)}% complete</span>
+          <span data-zone-pulse-counts>Trials ${zonePulseState.live.trialCount || 0} | S:${zonePulseState.live.counts?.stair || 0} P:${zonePulseState.live.counts?.probe || 0} C:${zonePulseState.live.counts?.catch || 0}</span>
+        </div>
+      </div>
+    `;
+  }
+  if (countdown) {
+    return `
+      <div class="zone-pulse-progress">
+        <div class="zone-pulse-progress-bar"><span data-zone-pulse-progress-fill style="width:0%;"></span></div>
+        <div class="zone-pulse-progress-copy">
+          <span>Starting</span>
+          <span>Get ready</span>
+        </div>
+      </div>
+    `;
+  }
+  return "";
 }
 
 function trackerHelpContentFor(test) {
@@ -4457,7 +4467,7 @@ function renderReasoningPlayCard() {
         <div class="arena-shell${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""} is-reasoning">
           ${showingStats ? renderReasoningStatsDashboard() : showingZone ? renderZonePulseTask() : renderReasoningArena()}
         </div>
-        <div class="play-coach-slot">${renderReasoningCoachSlot()}</div>
+        <div class="play-coach-slot">${showingZone ? renderZonePulseProgress() : renderReasoningCoachSlot()}</div>
         <div class="play-controls">${renderReasoningPlayControls()}</div>
       </div>
     </section>
@@ -4692,7 +4702,7 @@ function renderPlayCard() {
         <div class="arena-shell${showingStats ? " is-stats" : ""}${showingZone ? " is-zone" : ""}">
           ${showingStats ? renderCenterStatsDashboard() : showingZone ? renderZonePulseTask() : arenaMarkup()}
         </div>
-        <div class="play-coach-slot">${showingStats || showingZone ? "" : renderCoachCallout()}</div>
+        <div class="play-coach-slot">${showingStats ? "" : showingZone ? renderZonePulseProgress() : renderCoachCallout()}</div>
         <div class="play-controls">${renderPlayControls()}</div>
       </div>
     </section>

@@ -1757,6 +1757,10 @@ button {
   opacity: 0.22;
 }
 
+.play-body.is-zone {
+  --coach-slot-height: 112px;
+}
+
 .play-body.is-reasoning::before {
   opacity: 0.34;
 }
@@ -1765,6 +1769,7 @@ button {
   align-items: stretch;
   justify-items: center;
   padding: 10px 12px 8px;
+  overflow: hidden;
 }
 
 .arena-shell.is-reasoning {
@@ -2494,12 +2499,24 @@ button {
   gap: 24px;
 }
 
+.arena-shell.is-zone .zone-pulse-stage.is-running,
+.arena-shell.is-zone .zone-pulse-stage.is-countdown {
+  height: 100%;
+  align-content: center;
+}
+
 .zone-pulse-canvas-wrap {
   position: relative;
   width: min(100%, 520px);
   aspect-ratio: 1.18;
   min-height: 260px;
   display: grid;
+}
+
+.arena-shell.is-zone .zone-pulse-stage.is-running .zone-pulse-canvas-wrap,
+.arena-shell.is-zone .zone-pulse-stage.is-countdown .zone-pulse-canvas-wrap {
+  min-height: 0;
+  max-height: 100%;
 }
 
 .zone-pulse-canvas {
