@@ -183,7 +183,7 @@ body.home  { background: var(--home-surface); }
   font-family: 'DM Mono', monospace;
   font-size: 10px;
   letter-spacing: .08em;
-  color: var(--tcf);
+  color: #fff;
   white-space: nowrap;
 }
 .home-trust-chip-dot {
@@ -212,7 +212,7 @@ body.home  { background: var(--home-surface); }
   font-size: 9.5px;
   letter-spacing: .16em;
   text-transform: uppercase;
-  color: var(--tcf);
+  color: #fff;
   margin-bottom: 4px;
 }
 .home-panel-diagram-caption {
