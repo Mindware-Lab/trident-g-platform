@@ -215,16 +215,8 @@ body.home  { background: var(--home-surface); }
   color: var(--tcf);
   margin-bottom: 4px;
 }
-.home-panel-diagram {
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
-  display: block;
-  margin-bottom: 6px;
-  flex-shrink: 0;
-}
 .home-panel-diagram-caption {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   color: var(--tcm);
   font-size: 13.5px;
   line-height: 1.55;
@@ -255,6 +247,7 @@ body.home  { background: var(--home-surface); }
 .home-panel-step--assess   .home-panel-step-num { border-color: var(--cyan);   color: var(--cyan); }
 .home-panel-step--regulate .home-panel-step-num { border-color: #7ecf00;      color: #a3e635; }
 .home-panel-step--train    .home-panel-step-num { border-color: #a78bfa;      color: #c4b5fd; }
+.home-panel-step--recheck  .home-panel-step-num { border-color: #f59e0b;      color: #fcd34d; }
 
 .home-panel-step-body { flex: 1; }
 .home-panel-step-name {
@@ -445,6 +438,13 @@ body.home  { background: var(--home-surface); }
   font-weight: 800; letter-spacing: -.02em;
   color: var(--tl); line-height: 1.1;
 }
+.home-section-sub {
+  max-width: 68ch;
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.68;
+  color: var(--tlm);
+}
 .home-diff-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -575,6 +575,52 @@ body.home  { background: var(--home-surface); }
 
 
 /* ============================================================
+   6b. BEST USE NOTE
+   ============================================================ */
+.home-best-use-section {
+  background: var(--pg);
+  padding: 42px var(--gutter);
+  border-bottom: 1px solid var(--home-rule);
+}
+.home-best-use-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 34px;
+  align-items: start;
+}
+.home-best-use-copy {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.72;
+  color: var(--tlm);
+}
+.home-best-use-screens {
+  max-width: var(--max-w);
+  margin: 30px auto 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.home-best-use-screen {
+  margin: 0;
+  background: var(--card-deep);
+  border: 1px solid rgba(0,0,0,.12);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: 0 10px 26px rgba(0,0,0,.12);
+}
+.home-best-use-screen img {
+  width: 100%;
+  aspect-ratio: 1294 / 829;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+
+/* ============================================================
    7. TOOLS SNAPSHOT
    ============================================================ */
 .home-tools-section {
@@ -617,6 +663,7 @@ body.home  { background: var(--home-surface); }
 .home-tool-card--gt   { border-top: 3px solid var(--snap-gt); }
 .home-tool-card--zc   { border-top: 3px solid var(--snap-zc); }
 .home-tool-card--cg   { border-top: 3px solid var(--snap-cg); }
+.home-tool-card--rg   { border-top: 3px solid var(--plan-core-amber); }
 .home-tool-card--mg   { border-top: 3px solid rgba(0,0,0,.12); border-style: dashed; opacity: .72; }
 .home-tool-card--mg:hover { transform: none; box-shadow: none; }
 
@@ -637,6 +684,12 @@ body.home  { background: var(--home-surface); }
 
 .home-tool-snap-name { font-size: 14px; font-weight: 800; color: var(--tl); letter-spacing: -.01em; }
 .home-tool-snap-for  { font-size: 13.5px; color: var(--tlm); line-height: 1.45; }
+.home-tool-snap-role {
+  font-size: 14px;
+  color: var(--tlm);
+  line-height: 1.62;
+}
+.home-tool-snap-role strong { color: var(--tl); }
 
 .home-tool-snap-meta {
   padding: 12px 18px;
@@ -673,6 +726,7 @@ body.home  { background: var(--home-surface); }
 .home-tool-card--gt .home-tool-snap-cta { background: var(--cyan);   color: #fff; }
 .home-tool-card--zc .home-tool-snap-cta { background: #7ecf00;       color: #1a2000; }
 .home-tool-card--cg .home-tool-snap-cta { background: #a78bfa;       color: #fff; }
+.home-tool-card--rg .home-tool-snap-cta { background: var(--plan-core-amber); color: #221400; }
 .home-tool-card--mg .home-tool-snap-cta {
   background: rgba(0,0,0,.06); color: var(--tlf);
   cursor: default; pointer-events: none;
@@ -686,6 +740,17 @@ body.home  { background: var(--home-surface); }
   border: 1px solid rgba(0,0,0,.12);
   color: var(--tlf); margin-left: 6px; vertical-align: middle;
 }
+.home-programme-modes {
+  margin-top: 18px;
+  padding: 14px 18px;
+  border: 1px solid rgba(39,100,183,.18);
+  background: rgba(39,100,183,.06);
+  border-radius: var(--r-lg);
+  color: var(--tlm);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.home-programme-modes strong { color: var(--tl); }
 
 
 /* ============================================================
@@ -772,6 +837,71 @@ body.home  { background: var(--home-surface); }
   color: var(--tlf);
 }
 
+.home-route-options-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.home-route-option {
+  background: var(--home-card-bg);
+  border: 1.5px solid var(--home-card-bdr);
+  border-radius: var(--r-xl);
+  padding: 22px 20px 18px;
+  border-top: 3px solid transparent;
+  display: flex;
+  flex-direction: column;
+  min-height: 230px;
+  transition: box-shadow var(--t-fast), transform var(--t-fast);
+}
+.home-route-option:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,.09);
+  transform: translateY(-2px);
+}
+.home-route-option--app { border-top-color: var(--plan-core-amber); }
+.home-route-option--setup { border-top-color: var(--snap-zc); }
+.home-route-option--cohort { border-top-color: var(--snap-gt); }
+.home-route-option--premium { border-top-color: var(--snap-cg); }
+.home-route-option-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--tl);
+  letter-spacing: -.01em;
+  margin-bottom: 8px;
+}
+.home-route-option-desc,
+.home-route-option-includes {
+  font-size: 13.7px;
+  color: var(--tlm);
+  line-height: 1.58;
+}
+.home-route-option-desc { margin-bottom: 10px; }
+.home-route-option-includes {
+  padding-top: 10px;
+  border-top: 1px solid var(--home-rule);
+}
+.home-route-option-cta {
+  margin-top: auto;
+  display: block;
+  text-align: center;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  background: var(--card-deep);
+  color: var(--tc);
+  transition: filter var(--t-fast), transform var(--t-fast);
+}
+.home-route-option-cta:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.home-route-option-cta:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 2px;
+}
+
 .home-plans-strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -833,7 +963,48 @@ body.home  { background: var(--home-surface); }
 
 
 /* ============================================================
-   10. FINAL CTA BAND
+   10. UPDATES SIGNUP
+   ============================================================ */
+.home-updates-section {
+  background: var(--pg);
+  padding: 58px var(--gutter);
+  border-bottom: 1px solid var(--home-rule);
+}
+.home-updates-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 28px;
+  align-items: center;
+}
+.home-updates-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--blue-dp);
+  margin-bottom: 8px;
+  display: block;
+}
+.home-updates-title {
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--tl);
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+.home-updates-copy {
+  max-width: 70ch;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--tlm);
+}
+
+
+/* ============================================================
+   11. FINAL CTA BAND
    ============================================================ */
 .home-cta-band {
   background: var(--card-deep);
@@ -882,6 +1053,7 @@ body.home  { background: var(--home-surface); }
   .home-diff-grid         { grid-template-columns: 1fr 1fr; }
   .home-tools-grid        { grid-template-columns: 1fr 1fr; }
   .home-plans-strip       { grid-template-columns: 1fr 1fr; }
+  .home-route-options-grid { grid-template-columns: 1fr 1fr; }
   .home-flow-track        {
     grid-template-columns: 1fr 1fr;
     gap: 16px;
@@ -896,6 +1068,9 @@ body.home  { background: var(--home-surface); }
   .home-routes-inner      { grid-template-columns: 1fr; gap: 12px; }
   .home-proof-inner       { grid-template-columns: 1fr; gap: 28px; }
   .home-proof-rhs         { grid-template-columns: 1fr 1fr; }
+  .home-best-use-inner    { grid-template-columns: 1fr; gap: 14px; }
+  .home-best-use-screens  { grid-template-columns: 1fr; }
+  .home-updates-inner     { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
   .home-hero              { padding: 96px var(--gutter) 48px; }
@@ -905,6 +1080,7 @@ body.home  { background: var(--home-surface); }
   .home-diff-grid         { grid-template-columns: 1fr; }
   .home-tools-grid        { grid-template-columns: 1fr; }
   .home-plans-strip       { grid-template-columns: 1fr; }
+  .home-route-options-grid { grid-template-columns: 1fr; }
   .home-flow-track        { grid-template-columns: 1fr; gap: 14px; }
   .home-proof-rhs         { grid-template-columns: 1fr; }
   .home-trust-chips       { gap: 6px; }
