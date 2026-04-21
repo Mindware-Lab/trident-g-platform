@@ -2538,7 +2538,8 @@ button {
   z-index: 1;
   width: min(100%, 560px);
   display: grid;
-  gap: 5px;
+  grid-template-rows: 8px auto auto;
+  row-gap: 10px;
   color: var(--text);
   font-family: "Chakra Petch", sans-serif;
   font-size: 10px;
@@ -2564,9 +2565,15 @@ button {
 
 .zone-pulse-progress-copy {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
   color: var(--module-accent);
+  line-height: 1.25;
+}
+
+.zone-pulse-progress-copy span {
+  display: block;
 }
 
 .zone-pulse-progress p {
@@ -2574,6 +2581,7 @@ button {
   color: var(--muted);
   font-size: 10px;
   letter-spacing: 0;
+  line-height: 1.25;
   text-transform: none;
 }
 
