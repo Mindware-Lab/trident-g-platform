@@ -302,6 +302,13 @@ body.pricing  { background: var(--pricing-surface); }
   box-shadow: 0 4px 18px rgba(0,0,0,.22);
   display: block;
 }
+.plan-screenshots-caption {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted, #888);
+  text-align: center;
+  letter-spacing: .02em;
+}
 
 .plan-grid {
   display: grid;
