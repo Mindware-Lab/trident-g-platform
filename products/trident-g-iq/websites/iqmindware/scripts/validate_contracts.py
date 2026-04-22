@@ -48,6 +48,17 @@ page_contracts = {
         "Coaching requires Trident G IQ Pro",
         "Click any screenshot to enlarge",
     ],
+    ROOT / "coaching" / "index.html": [
+        "All coaching requires Trident G IQ Pro",
+        "Set-up Session",
+        "Live Cohort",
+        "1:1 Premium",
+        "Optional review of baseline cognitive tests from the app",
+        "Map personal training objectives and friction patterns",
+        "Zone Pulse history and Psi-CBS trends",
+        "Applied transfer review",
+        "Are sessions recorded?",
+    ],
 }
 
 for page, required_strings in page_contracts.items():
@@ -71,6 +82,10 @@ for item in pricing_forbidden:
 
 if '<span>The app</span>' in pricing_text or '<div class="footer-col-title">The app</div>' in pricing_text:
     errors.append("Pricing page shell should label /tools/ as Programme, not The app")
+
+coaching_text = (ROOT / "coaching" / "index.html").read_text(encoding="utf-8")
+if '<span>The app</span>' in coaching_text or '<div class="footer-col-title">The app</div>' in coaching_text:
+    errors.append("Coaching page shell should label /tools/ as Programme, not The app")
 
 claims = json.loads((ROOT / "claims-ladder.json").read_text(encoding="utf-8"))
 forbidden = claims.get("banned_verbs_sitewide", [])
