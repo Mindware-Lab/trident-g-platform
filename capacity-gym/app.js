@@ -1246,6 +1246,19 @@ function recommendedNForWrapper(wrapper, routeClass) {
   return clampN(last.recommendedN || last.block?.nEnd || 1);
 }
 
+function latestCapacityEntryForSession(sessionId) {
+  if (!sessionId) return null;
+  return latest((entry) => entry.sessionId === sessionId && entry.rewardMode !== "manual");
+}
+
+function recommendedNForCoachSession(session, wrapper) {
+  if (!session) return recommendedNForWrapper(wrapper, "core");
+  if (session.routeClass !== "core") return 1;
+  const lastInSession = latestCapacityEntryForSession(session.id);
+  if (lastInSession) return blockEndN(lastInSession);
+  return recommendedNForWrapper(wrapper, session.routeClass);
+}
+
 function recommendedManualN(wrapper, targetModality) {
   const lastForTarget = latest((entry) => entry.wrapper === wrapper && entry.targetModality === targetModality);
   const lastForWrapper = latest((entry) => entry.wrapper === wrapper);
@@ -1273,7 +1286,7 @@ function resolveNextBlockSettings() {
     return {
       wrapper,
       targetModality: pickFamilyTarget(wrapper),
-      n: recommendedNForWrapper(wrapper, session.routeClass),
+      n: recommendedNForCoachSession(session, wrapper),
       speed: recommendedSpeedForWrapper(wrapper, session.routeClass),
       rewardMode: session.routeClass === "core" ? "core" : "support"
     };
@@ -1299,7 +1312,7 @@ function resolveCoachBlockSettings() {
   return {
     wrapper,
     targetModality: pickFamilyTarget(wrapper),
-    n: recommendedNForWrapper(wrapper, routeClass),
+    n: recommendedNForCoachSession(session, wrapper),
     speed: recommendedSpeedForWrapper(wrapper, routeClass),
     rewardMode: routeClass === "core" ? "core" : "support"
   };
@@ -4535,8 +4548,25 @@ function gameplayStatsModel() {
     lastNBack: last ? `N-${blockEndN(last)}` : "--",
     nextNBack: `N-${projectedNextN(plan)}`,
     currentSession: currentSessionDisplay(),
-    sessionsToGo: sessionsToGoDisplay()
+    sessionsToGo: sessionsToGoDisplay(),
+    capacityBlocks: capacityBlockProgressDisplay()
   };
+}
+
+function capacityBlockProgressDisplay() {
+  const session = activeCoachSession();
+  if (session) {
+    const planned = Math.max(1, Math.round(Number(session.plannedBlocks || 1)));
+    const completed = clamp(Math.round(Number(session.blocksCompleted || 0)), 0, planned);
+    return `${completed}/${planned}`;
+  }
+  const contract = coachContractForDisplay();
+  if (state.settings.mode === "coach" && contract && Number(contract.capacityTargetBlocks || 0) > 0) {
+    const target = Math.max(1, Math.round(Number(contract.capacityTargetBlocks || 1)));
+    const completed = clamp(Math.round(Number(contract.capacityCompletedBlocks || 0)), 0, target);
+    return `${completed}/${target}`;
+  }
+  return "--";
 }
 
 function renderRightStrip() {
@@ -4591,6 +4621,7 @@ function renderRightStrip() {
           <div class="stat-grid">
             <div class="stat"><span class="mini-label">Last N-Back</span><strong>${gameplayStats.lastNBack}</strong></div>
             <div class="stat"><span class="mini-label">Next N-back</span><strong>${gameplayStats.nextNBack}</strong></div>
+            <div class="stat"><span class="mini-label">Cap Blocks</span><strong>${gameplayStats.capacityBlocks}</strong></div>
             <div class="stat"><span class="mini-label">Current Session</span><strong>${gameplayStats.currentSession}</strong></div>
             <div class="stat"><span class="mini-label">Sessions To Go</span><strong>${gameplayStats.sessionsToGo}</strong></div>
           </div>
