@@ -195,60 +195,6 @@ body.coaching          { background: var(--co-surface); }
 
 
 /* ============================================================
-   5. FIT / NOT-FIT CARDS
-   ============================================================ */
-.co-fit-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-.co-fit-card {
-  background: var(--co-card-bg);
-  border: 1.5px solid var(--co-card-bdr);
-  border-radius: var(--r-xl);
-  overflow: hidden;
-}
-.co-fit-card--good { border-top: 3px solid var(--fit-good); }
-.co-fit-card--bad  { border-top: 3px solid var(--fit-bad); }
-
-.co-fit-hd {
-  padding: 18px 22px 14px;
-  border-bottom: 1px solid var(--co-rule);
-  display: flex; align-items: center; gap: 10px;
-}
-.co-fit-icon { font-size: 18px; flex-shrink: 0; }
-.co-fit-title {
-  font-size: 15px; font-weight: 800;
-  color: var(--tl); letter-spacing: -.01em;
-}
-.co-fit-card--good .co-fit-title { color: var(--fit-good); }
-.co-fit-card--bad  .co-fit-title { color: var(--fit-bad); }
-
-.co-fit-list {
-  list-style: none; padding: 16px 22px 20px;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.co-fit-item {
-  display: flex; align-items: flex-start; gap: 10px;
-  font-size: 14px; color: var(--tlm); line-height: 1.6;
-}
-.co-fit-marker {
-  width: 18px; height: 18px; border-radius: 50%;
-  display: grid; place-items: center;
-  font-size: 9px; font-weight: 800;
-  flex-shrink: 0; margin-top: 1px;
-  border: 1.5px solid transparent;
-}
-.co-fit-card--good .co-fit-marker {
-  background: var(--fit-good-bg); border-color: var(--fit-good-bdr); color: var(--fit-good);
-}
-.co-fit-card--bad .co-fit-marker {
-  background: var(--fit-bad-bg); border-color: var(--fit-bad-bdr); color: var(--fit-bad);
-}
-.co-fit-item strong { color: var(--tl); }
-
-
-/* ============================================================
    6. USE-CASE GRID
    ============================================================ */
 .co-usecase-grid {
@@ -849,7 +795,6 @@ body.coaching          { background: var(--co-surface); }
   .co-hero-inner          { grid-template-columns: 1fr; }
   .co-hero-outcomes       { flex-direction: row; flex-wrap: wrap; }
   .co-outcome-chip        { min-width: 0; flex: 1 1 160px; }
-  .co-fit-grid            { grid-template-columns: 1fr; }
   .co-method-rail         { grid-template-columns: 1fr; gap: 14px; }
   .co-method-arrow        { display: none; }
   .co-packages-grid       { grid-template-columns: 1fr; }
@@ -870,4 +815,3 @@ body.coaching          { background: var(--co-surface); }
   .co-faq-a               { padding: 0 18px 16px; }
   .co-faq-item.open .co-faq-a { padding-top: 12px; }
 }
-
