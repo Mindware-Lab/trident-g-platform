@@ -615,6 +615,40 @@ body.pricing  { background: var(--pricing-surface); }
 
 
 /* ============================================================
+   7b. COACHING INTRO BLOCK
+   ============================================================ */
+.pricing-coaching-intro {
+  margin-bottom: 40px;
+}
+.pricing-coaching-intro-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 28px;
+}
+.pricing-coaching-intro-col p {
+  color: var(--tcm);
+  font-size: 14px;
+  line-height: 1.68;
+  margin: 0;
+}
+.pricing-coaching-intro-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 10px;
+}
+.pricing-coaching-intro-link {
+  color: var(--cyan-lt);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(142,212,255,.28);
+}
+.pricing-coaching-intro-link:hover {
+  border-bottom-color: var(--cyan-lt);
+}
+
+/* ============================================================
    8. COACHING ADD-ON CARDS
    ============================================================ */
 .coaching-grid {
@@ -1013,15 +1047,16 @@ body.pricing  { background: var(--pricing-surface); }
   .plan-screenshots       { flex: 0 0 180px; }
 }
 @media (max-width: 900px) {
-  .pricing-hero-inner     { grid-template-columns: 1fr; }
-  .pricing-hero-meta      { flex-direction: row; flex-wrap: wrap; }
-  .pricing-meta-chip      { min-width: 0; flex: 1 1 140px; }
-  .coaching-grid          { grid-template-columns: 1fr; }
-  .billing-grid           { grid-template-columns: 1fr 1fr; }
-  .proof-posture-items    { grid-template-columns: 1fr; }
-  .plan-app-showcase      { flex-direction: column; }
-  .plan-screenshots       { flex-direction: row; flex: none; width: 100%; }
-  .plan-screenshot        { flex: 1; }
+  .pricing-hero-inner            { grid-template-columns: 1fr; }
+  .pricing-hero-meta             { flex-direction: row; flex-wrap: wrap; }
+  .pricing-meta-chip             { min-width: 0; flex: 1 1 140px; }
+  .coaching-grid                 { grid-template-columns: 1fr; }
+  .billing-grid                  { grid-template-columns: 1fr 1fr; }
+  .proof-posture-items           { grid-template-columns: 1fr; }
+  .plan-app-showcase             { flex-direction: column; }
+  .plan-screenshots              { flex-direction: row; flex: none; width: 100%; }
+  .plan-screenshot               { flex: 1; }
+  .pricing-coaching-intro-cols   { grid-template-columns: 1fr; gap: 20px; }
 }
 @media (max-width: 600px) {
   .plan-screenshots       { display: none; }
