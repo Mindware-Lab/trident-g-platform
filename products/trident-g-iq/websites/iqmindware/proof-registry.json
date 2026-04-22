@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-03-04",
+  "as_of": "2026-04-22",
   "items": [
     {
       "measure_name": "SgS-12 A/B",
@@ -22,24 +22,14 @@
       "last_updated": "2026-03-04"
     },
     {
-      "measure_name": "CRS-10",
-      "construct_label": "Cognitive resilience under pressure",
-      "what_it_is": "Repeatable self-report signal for cognitive functioning under stress.",
-      "how_it_is_measured": "10-item scale with periodic repeats.",
-      "status": "published_summary",
-      "link_to_summary": "/proof/g-tracker/",
-      "caveats": "Self-report context effects are expected; not clinical diagnosis.",
-      "last_updated": "2026-03-04"
-    },
-    {
-      "measure_name": "EDHS",
-      "construct_label": "Everyday decision habits",
-      "what_it_is": "Behaviour-oriented decision habit snapshot for baseline/post comparison.",
-      "how_it_is_measured": "Scenario-based form A/B self-report.",
-      "status": "in_testing",
-      "link_to_summary": "",
-      "caveats": "Use as practical habit-trend indicator.",
-      "last_updated": "2026-03-04"
+      "measure_name": "MFT-m / CCC",
+      "construct_label": "Cognitive control capacity in bits/second",
+      "what_it_is": "Behavioural throughput signal used for readiness and route setting.",
+      "how_it_is_measured": "Multiple Function Task (masked), or MFT-m, using brief masked trials and throughput estimation.",
+      "status": "in_app_measure",
+      "link_to_summary": "/docs/protocols/mft-m-zone-check.md",
+      "caveats": "Practical readiness and dose signal, not an IQ score or diagnostic measure.",
+      "last_updated": "2026-04-22"
     }
   ]
 }

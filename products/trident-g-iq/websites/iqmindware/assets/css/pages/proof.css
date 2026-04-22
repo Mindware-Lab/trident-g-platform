@@ -150,8 +150,8 @@ body.proof { background: var(--proof-surface); }
 }
 .proof-transfer-grid { grid-template-columns: repeat(3, 1fr); }
 .proof-overview-grid,
-.measure-grid,
 .layer-grid { grid-template-columns: repeat(4, 1fr); }
+.measure-grid { grid-template-columns: repeat(3, 1fr); }
 .limits-grid { grid-template-columns: repeat(5, 1fr); }
 
 .proof-transfer-card,
@@ -177,14 +177,19 @@ body.proof { background: var(--proof-surface); }
 }
 .proof-transfer-label,
 .proof-overview-label,
-.layer-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  letter-spacing: .13em;
-  text-transform: uppercase;
-  color: var(--blue-dp);
-  margin-bottom: 9px;
-  font-weight: 700;
+.layer-label,
+.claim-panel-title,
+.data-policy-hd-title,
+.data-cadence-hd-title,
+.cadence h3 {
+  font-family: inherit;
+  font-size: 16px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--tl);
+  margin-bottom: 10px;
+  font-weight: 800;
+  line-height: 1.25;
 }
 .proof-transfer-card p,
 .proof-overview-card p,
@@ -216,7 +221,7 @@ body.proof { background: var(--proof-surface); }
   margin-bottom: 12px;
 }
 .measure-name {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 800;
   color: var(--tl);
   line-height: 1.2;
@@ -411,9 +416,7 @@ body.proof { background: var(--proof-surface); }
 .claim-panel-icon { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; flex-shrink: 0; }
 .claim-panel--ok .claim-panel-icon { background: var(--proof-ok-bg); border: 1px solid var(--proof-ok-bdr); }
 .claim-panel--no .claim-panel-icon { background: var(--proof-no-bg); border: 1px solid var(--proof-no-bdr); }
-.claim-panel-title { font-size: 13px; font-weight: 800; letter-spacing: .01em; text-transform: uppercase; }
-.claim-panel--ok .claim-panel-title { color: var(--proof-ok); }
-.claim-panel--no .claim-panel-title { color: var(--proof-no); }
+.claim-panel-title { display: inline-block; margin-bottom: 0; }
 .claim-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
 .claim-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; line-height: 1.55; color: var(--tlm); }
 .claim-marker { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 800; margin-top: 1px; }
@@ -524,7 +527,7 @@ body.proof { background: var(--proof-surface); }
 .data-policy-panel { background: #fff; border: 1px solid var(--proof-card-bdr); border-radius: var(--r-xl); overflow: hidden; }
 .data-policy-hd { padding: 18px 24px 16px; background: var(--proof-code-bg); border-bottom: 1px solid rgba(39,100,183,.12); display: flex; align-items: center; gap: 9px; }
 .data-policy-hd-icon  { font-size: 15px; }
-.data-policy-hd-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--proof-code-c); font-weight: 700; }
+.data-policy-hd-title { display: inline-block; margin-bottom: 0; }
 .data-policy-rows { padding: 0; }
 .data-policy-row { display: grid; grid-template-columns: 120px 1fr; border-bottom: 1px solid var(--proof-rule); }
 .data-policy-row:last-child { border-bottom: none; }
@@ -536,7 +539,7 @@ body.proof { background: var(--proof-surface); }
 .data-cadence-panel { background: #fff; border: 1px solid var(--proof-card-bdr); border-radius: var(--r-xl); overflow: hidden; }
 .data-cadence-hd { padding: 18px 24px 16px; border-bottom: 1px solid var(--proof-rule); display: flex; align-items: center; gap: 9px; }
 .data-cadence-hd-icon  { font-size: 15px; }
-.data-cadence-hd-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--tlm); font-weight: 700; }
+.data-cadence-hd-title { display: inline-block; margin-bottom: 0; }
 .data-cadence-table { width: 100%; border-collapse: collapse; }
 .data-cadence-table th { font-family: 'DM Mono', monospace; font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--tlf); text-align: left; padding: 10px 20px; border-bottom: 1px solid var(--proof-rule); background: rgba(0,0,0,.02); font-weight: 500; }
 .data-cadence-table td { padding: 11px 20px; font-size: 14px; color: var(--tlm); border-bottom: 1px solid var(--proof-rule); vertical-align: middle; }
@@ -553,9 +556,6 @@ body.proof { background: var(--proof-surface); }
 
 .cadence h3 {
   margin: 0 0 8px;
-  font-size: 12px;
-  color: var(--tlm);
-  letter-spacing: 0.03em;
 }
 
 .cadence ul {
