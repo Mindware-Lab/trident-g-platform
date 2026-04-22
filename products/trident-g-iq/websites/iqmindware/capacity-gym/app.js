@@ -41,7 +41,7 @@ import {
   scoreReasoningResponse,
   summarizeReasoningBlock,
   updateReasoningFamilyState
-} from "./runtime/reasoning/engine.js?v=20260419-sessioncount";
+} from "./runtime/reasoning/engine.js?v=20260422-reasoning-progression";
 import {
   TRACKER_LEGACY_STORAGE_KEY,
   TRACKER_PSI_OPTIONS,
@@ -1823,7 +1823,7 @@ function clearReasoningTimer() {
 
 function currentReasoningSessionDisplay() {
   return reasoningState.settings.mode === "coach"
-    ? `${Math.min(REASONING_SESSION_TARGET, completedUnifiedCoreSessions())}/${REASONING_SESSION_TARGET}`
+    ? nextCoachSessionDisplay()
     : `${Math.max(1, Number(reasoningState.programme.manualSessionNumber || 0) + 1)}`;
 }
 
@@ -1831,6 +1831,26 @@ function reasoningSessionToGoDisplay() {
   return reasoningState.settings.mode === "coach"
     ? `${Math.max(0, REASONING_SESSION_TARGET - Math.min(REASONING_SESSION_TARGET, completedUnifiedCoreSessions()))}`
     : "-";
+}
+
+function reasoningItemProgressDisplay() {
+  const contract = coachContractForDisplay();
+  if (reasoningState.settings.mode === "coach" && contract && Number(contract.reasoningTargetItems || 0) > 0) {
+    const target = Math.max(1, Math.round(Number(contract.reasoningTargetItems || 1)));
+    const completed = clamp(Math.round(Number(contract.reasoningCompletedItems || 0)), 0, target);
+    return `${completed}/${target}`;
+  }
+  return "--";
+}
+
+function reasoningBlockProgressDisplay() {
+  const session = reasoningState.settings.mode === "coach" ? reasoningState.currentSession : null;
+  if (session) {
+    const planned = Math.max(1, Math.round(Number(session.plannedBlocks || 1)));
+    const completed = clamp(Math.round(Number(session.blocksCompleted || 0)), 0, planned);
+    return `${completed}/${planned}`;
+  }
+  return "--";
 }
 
 function reasoningZoneRecommendation() {
@@ -4416,6 +4436,8 @@ function renderReasoningRightStrip() {
         <section class="panel">
           <h2 class="strip-title panel-strip-title">GAME PLAY</h2>
           <div class="stat-grid">
+            <div class="stat"><span class="mini-label">Reason Items</span><strong>${escapeHtml(reasoningItemProgressDisplay())}</strong></div>
+            <div class="stat"><span class="mini-label">Reason Blocks</span><strong>${escapeHtml(reasoningBlockProgressDisplay())}</strong></div>
             <div class="stat"><span class="mini-label">Current Session</span><strong>${escapeHtml(currentReasoningSessionDisplay())}</strong></div>
             <div class="stat"><span class="mini-label">Sessions To Go</span><strong>${escapeHtml(reasoningSessionToGoDisplay())}</strong></div>
           </div>

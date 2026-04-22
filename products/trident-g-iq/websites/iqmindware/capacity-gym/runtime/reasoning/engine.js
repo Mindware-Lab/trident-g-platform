@@ -687,28 +687,17 @@ export function planReasoningSession(state, zoneSnapshot = {}) {
 
 function selectReasoningPlanForFamily(familyId, familyState, overrides = {}) {
   const meta = REASONING_FAMILIES[familyId];
-  const genPlan = typeof meta.generator?.makeBlockPlan === "function"
-    ? meta.generator.makeBlockPlan({
-      current_tier: familyState.current_tier,
-      wrapper_mode: familyState.wrapper_mode,
-      speed_mode: familyState.speed_mode,
-      recent_accuracy: familyState.recent_accuracy ?? 0.8,
-      late_collapse: familyState.late_collapse,
-      recent_wrapper_cost: familyState.recent_wrapper_cost,
-      ...familyState.metrics
-    })
-    : {};
-  const tier = clampTier(overrides.tier === "auto" || overrides.tier === undefined ? (genPlan.nextTier || familyState.current_tier) : overrides.tier);
+  const tier = clampTier(overrides.tier === "auto" || overrides.tier === undefined ? familyState.current_tier : overrides.tier);
   const requestedSubtype = overrides.subtype && overrides.subtype !== "auto"
     ? overrides.subtype
-    : (genPlan.focusSubtype || familyState.focusSubtype || meta.defaultSubtype);
+    : (familyState.focusSubtype || meta.defaultSubtype);
   return {
     family: familyId,
     tier,
-    wrapper: normalizeWrapper(overrides.wrapper || genPlan.nextWrapperMode || familyState.wrapper_mode),
-    speed: normalizeSpeed(overrides.speed || genPlan.nextSpeedMode || familyState.speed_mode),
+    wrapper: normalizeWrapper(overrides.wrapper || familyState.wrapper_mode),
+    speed: normalizeSpeed(overrides.speed || familyState.speed_mode),
     subtype: normalizeReasoningSubtype(familyId, requestedSubtype, tier),
-    priorDecision: genPlan.decision || "HOLD"
+    priorDecision: "HOLD"
   };
 }
 
