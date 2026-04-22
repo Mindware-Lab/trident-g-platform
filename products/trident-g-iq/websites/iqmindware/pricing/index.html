@@ -98,7 +98,7 @@
                   <li><span class="plan-include-check">&#10003;</span><strong>Capacity Gym</strong> — N-back training, horizontal transfer protocol</li>
                   <li><span class="plan-include-check">&#10003;</span><strong>Reasoning Gym</strong> — Inference, constraint solving, vertical transfer protocol</li>
                   <li><span class="plan-include-check">&#10003;</span><strong>Tracker</strong> — Pre/Post training short valid IQ tests, applied intelligence progress checks</li>
-                  <li><span class="plan-include-check">&#10003;</span><strong>Coach-led mode</strong> — 20-day structured pathway</li>
+                  <li><span class="plan-include-check">&#10003;</span><strong>Coach-led in-app mode</strong> — 20-day structured pathway</li>
                   <li><span class="plan-include-check">&#10003;</span><strong>Manual mode</strong> — self-directed access to all modules</li>
                   <li><span class="plan-include-check">&#10003;</span><strong>Desktop &amp; mobile</strong> — works across all devices</li>
                 </ul>
@@ -107,11 +107,25 @@
             </article>
           </div>
           <div class="plan-screenshots">
-            <img src="/assets/img/tools/screenshots/screenshot-1-capacity-gym.png" alt="Capacity Gym — relational N-back spatial training" class="plan-screenshot" loading="lazy">
-            <img src="/assets/img/tools/screenshots/screenshot-2-reasoning-gym.png" alt="Reasoning Gym — relation fit task" class="plan-screenshot" loading="lazy">
-            <img src="/assets/img/tools/screenshots/screenshot-3-tracker.png" alt="Tracker — SGS-12 fluid reasoning test" class="plan-screenshot" loading="lazy">
+            <button class="plan-screenshot-trigger" type="button" data-full-src="/assets/img/tools/screenshots/screenshot-1-capacity-gym.png" data-caption="Capacity Gym — relational N-back spatial training" aria-label="Expand Capacity Gym screenshot">
+              <img src="/assets/img/tools/screenshots/screenshot-1-capacity-gym.png" alt="Capacity Gym — relational N-back spatial training" class="plan-screenshot" loading="lazy">
+            </button>
+            <button class="plan-screenshot-trigger" type="button" data-full-src="/assets/img/tools/screenshots/screenshot-2-reasoning-gym.png" data-caption="Reasoning Gym — relation fit task" aria-label="Expand Reasoning Gym screenshot">
+              <img src="/assets/img/tools/screenshots/screenshot-2-reasoning-gym.png" alt="Reasoning Gym — relation fit task" class="plan-screenshot" loading="lazy">
+            </button>
+            <button class="plan-screenshot-trigger" type="button" data-full-src="/assets/img/tools/screenshots/screenshot-3-tracker.png" data-caption="Tracker — SGS-12 fluid reasoning test" aria-label="Expand Tracker screenshot">
+              <img src="/assets/img/tools/screenshots/screenshot-3-tracker.png" alt="Tracker — SGS-12 fluid reasoning test" class="plan-screenshot" loading="lazy">
+            </button>
             <p class="plan-screenshots-caption">Available on desktop and mobile</p>
           </div>
+        </div>
+
+        <div class="plan-screenshot-modal" id="planScreenshotModal" role="dialog" aria-modal="true" aria-label="Expanded app screenshot" aria-hidden="true" hidden>
+          <button class="plan-screenshot-close" type="button" aria-label="Close expanded screenshot">&times;</button>
+          <figure class="plan-screenshot-figure">
+            <img id="planScreenshotFull" class="plan-screenshot-full" src="" alt="">
+            <figcaption id="planScreenshotCaption" class="plan-screenshot-modal-caption"></figcaption>
+          </figure>
         </div>
 
         <p class="plan-upgrade-note">14-day money-back window. No auto-renewal.</p>
@@ -130,7 +144,7 @@
           <div class="pricing-coaching-intro-cols">
             <div class="pricing-coaching-intro-col">
               <div class="pricing-coaching-intro-label">What coaching adds</div>
-              <p>The app's Coach-led mode routes you automatically. Live coaching adds a human expert who reviews your actual data, adjusts your approach, identifies friction points you may not notice yourself, and helps you transfer gains into real-world contexts.</p>
+              <p>The app's Coach-led in-app mode routes you automatically. Live coaching adds a human expert who reviews your actual data, adjusts your approach, identifies friction points you may not notice yourself, and helps you transfer gains into real-world contexts.</p>
             </div>
             <div class="pricing-coaching-intro-col">
               <div class="pricing-coaching-intro-label">Three coaching phases</div>
@@ -284,11 +298,11 @@
         <div class="faq-list">
           <div class="faq-item" id="faq-1">
             <button class="faq-question" type="button" aria-expanded="false" data-faq-target="faq-1">What does Trident G IQ Pro include?<svg class="faq-chevron" viewBox="0 0 13 13" fill="none"><path d="M2.5 4.5L6.5 8.5L10.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-            <div class="faq-answer">All four modules in one app: Zone Pulse, Capacity Gym, Reasoning Gym, and Tracker. Coach-led mode runs the full 20-day programme. Manual mode gives you free access to all modules independently.</div>
+            <div class="faq-answer">All four modules in one app: Zone Pulse, Capacity Gym, Reasoning Gym, and Tracker. Coach-led in-app mode runs the full 20-day programme. Manual mode gives you free access to all modules independently.</div>
           </div>
           <div class="faq-item" id="faq-2">
             <button class="faq-question" type="button" aria-expanded="false" data-faq-target="faq-2">Is coaching required?<svg class="faq-chevron" viewBox="0 0 13 13" fill="none"><path d="M2.5 4.5L6.5 8.5L10.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-            <div class="faq-answer">No. The app includes a Coach-led mode that routes you automatically through the 20-day programme. Live coaching is an optional add-on for those who want expert review, personalised adjustments, or accountability support.</div>
+            <div class="faq-answer">No. The app includes a Coach-led in-app mode that routes you automatically through the 20-day programme. Live coaching is an optional add-on for those who want expert review, personalised adjustments, or accountability support.</div>
           </div>
           <div class="faq-item" id="faq-3">
             <button class="faq-question" type="button" aria-expanded="false" data-faq-target="faq-3">Which coaching tier should I choose?<svg class="faq-chevron" viewBox="0 0 13 13" fill="none"><path d="M2.5 4.5L6.5 8.5L10.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -471,6 +485,62 @@
             this.setAttribute("aria-expanded", "true");
           }
         });
+      });
+
+      const screenshotModal = document.getElementById("planScreenshotModal");
+      const screenshotFull = document.getElementById("planScreenshotFull");
+      const screenshotCaption = document.getElementById("planScreenshotCaption");
+      const screenshotClose = screenshotModal ? screenshotModal.querySelector(".plan-screenshot-close") : null;
+      const screenshotTriggers = Array.from(document.querySelectorAll(".plan-screenshot-trigger"));
+      let lastScreenshotTrigger = null;
+
+      function closeScreenshotModal() {
+        if (!screenshotModal) return;
+        screenshotModal.hidden = true;
+        screenshotModal.setAttribute("aria-hidden", "true");
+        screenshotFull.removeAttribute("src");
+        screenshotFull.setAttribute("alt", "");
+        if (screenshotCaption) screenshotCaption.textContent = "";
+        document.body.classList.remove("plan-screenshot-modal-open");
+        if (lastScreenshotTrigger) lastScreenshotTrigger.focus();
+      }
+
+      function openScreenshotModal(trigger) {
+        if (!screenshotModal || !screenshotFull) return;
+        const image = trigger.querySelector("img");
+        const fullSrc = trigger.dataset.fullSrc || image?.getAttribute("src") || "";
+        const caption = trigger.dataset.caption || image?.getAttribute("alt") || "Expanded app screenshot";
+
+        lastScreenshotTrigger = trigger;
+        screenshotFull.src = fullSrc;
+        screenshotFull.alt = caption;
+        if (screenshotCaption) screenshotCaption.textContent = caption;
+        screenshotModal.hidden = false;
+        screenshotModal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("plan-screenshot-modal-open");
+        if (screenshotClose) screenshotClose.focus();
+      }
+
+      screenshotTriggers.forEach((trigger) => {
+        trigger.addEventListener("click", function () {
+          openScreenshotModal(this);
+        });
+      });
+
+      if (screenshotClose) {
+        screenshotClose.addEventListener("click", closeScreenshotModal);
+      }
+
+      if (screenshotModal) {
+        screenshotModal.addEventListener("click", function (event) {
+          if (event.target === screenshotModal) closeScreenshotModal();
+        });
+      }
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && screenshotModal && !screenshotModal.hidden) {
+          closeScreenshotModal();
+        }
       });
     })();
   </script>

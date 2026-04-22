@@ -296,11 +296,30 @@ body.pricing  { background: var(--pricing-surface); }
   flex-direction: column;
   gap: 10px;
 }
+.plan-screenshot-trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  cursor: zoom-in;
+  text-align: left;
+}
+.plan-screenshot-trigger:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 3px;
+}
 .plan-screenshot {
   width: 100%;
   border-radius: 10px;
   box-shadow: 0 4px 18px rgba(0,0,0,.22);
   display: block;
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+.plan-screenshot-trigger:hover .plan-screenshot {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.28);
 }
 .plan-screenshots-caption {
   margin-top: 6px;
@@ -308,6 +327,62 @@ body.pricing  { background: var(--pricing-surface); }
   color: var(--color-text-muted, #888);
   text-align: center;
   letter-spacing: .02em;
+}
+.plan-screenshot-modal[hidden] {
+  display: none;
+}
+.plan-screenshot-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgba(5, 10, 22, .86);
+}
+.plan-screenshot-figure {
+  width: min(1120px, 94vw);
+  margin: 0;
+}
+.plan-screenshot-full {
+  display: block;
+  width: 100%;
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: var(--r-lg);
+  background: #050a16;
+  box-shadow: 0 22px 70px rgba(0,0,0,.45);
+}
+.plan-screenshot-modal-caption {
+  margin-top: 12px;
+  color: var(--tc);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+.plan-screenshot-close {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-full);
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(255,255,255,.10);
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+.plan-screenshot-close:hover {
+  background: rgba(255,255,255,.18);
+}
+.plan-screenshot-close:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 2px;
+}
+body.plan-screenshot-modal-open {
+  overflow: hidden;
 }
 
 .plan-grid {
@@ -1055,7 +1130,7 @@ body.pricing  { background: var(--pricing-surface); }
   .proof-posture-items           { grid-template-columns: 1fr; }
   .plan-app-showcase             { flex-direction: column; }
   .plan-screenshots              { flex-direction: row; flex: none; width: 100%; }
-  .plan-screenshot               { flex: 1; }
+  .plan-screenshot-trigger       { flex: 1; }
   .pricing-coaching-intro-cols   { grid-template-columns: 1fr; gap: 20px; }
 }
 @media (max-width: 600px) {
