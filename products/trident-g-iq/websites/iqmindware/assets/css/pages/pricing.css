@@ -948,80 +948,7 @@ body.plan-screenshot-modal-open {
 
 
 /* ============================================================
-   11. PROOF POSTURE (collapsible)
-   ============================================================ */
-.proof-posture-toggle {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 22px;
-  background: rgba(39,100,183,.06);
-  border: 1px solid rgba(39,100,183,.16);
-  border-radius: var(--r-lg);
-  cursor: pointer;
-  font-family: inherit;
-  gap: 12px;
-  transition: background var(--t-fast);
-  text-align: left;
-}
-.proof-posture-toggle:hover { background: rgba(39,100,183,.10); }
-.proof-posture-toggle:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
-.proof-posture-toggle-left {
-  display: flex; align-items: center; gap: 10px;
-}
-.proof-posture-toggle-icon { font-size: 15px; flex-shrink: 0; }
-.proof-posture-toggle-label {
-  font-size: 13px; font-weight: 700;
-  color: var(--blue-dp); letter-spacing: -.01em;
-}
-.proof-posture-toggle-sub {
-  font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .08em;
-  color: var(--tlf); margin-top: 1px;
-}
-.proof-posture-chevron {
-  width: 14px; height: 14px; flex-shrink: 0;
-  color: var(--blue-dp);
-  transition: transform 200ms ease;
-}
-.proof-posture-toggle[aria-expanded="true"] .proof-posture-chevron { transform: rotate(180deg); }
-
-.proof-posture-body {
-  display: none;
-  margin-top: 2px;
-  padding: 20px 22px;
-  background: #fff;
-  border: 1px solid rgba(39,100,183,.12);
-  border-top: none;
-  border-radius: 0 0 var(--r-lg) var(--r-lg);
-}
-.proof-posture-toggle[aria-expanded="true"] + .proof-posture-body { display: block; }
-.proof-posture-items {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-}
-.proof-posture-item {
-  padding: 14px 16px;
-  border-radius: var(--r-md);
-  background: var(--pricing-surface);
-  border: 1px solid var(--pricing-rule);
-  border-left: 3px solid transparent;
-}
-.proof-posture-item--design       { border-left-color: #a78bfa; }
-.proof-posture-item--check        { border-left-color: var(--cyan); }
-.proof-posture-item--transparency { border-left-color: var(--plan-zc); }
-.proof-posture-item--boundary     { border-left-color: #b45309; }
-.proof-posture-item-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
-  color: var(--tlf); margin-bottom: 5px;
-}
-.proof-posture-item-text { font-size: 14px; color: var(--tlm); line-height: 1.6; }
-.proof-posture-item-text strong { color: var(--tl); }
-
-
-/* ============================================================
-   12. FAQ MINI-BLOCK
+   11. FAQ MINI-BLOCK
    ============================================================ */
 .faq-list {
   display: flex; flex-direction: column; gap: 0;
@@ -1127,7 +1054,6 @@ body.plan-screenshot-modal-open {
   .pricing-meta-chip             { min-width: 0; flex: 1 1 140px; }
   .coaching-grid                 { grid-template-columns: 1fr; }
   .billing-grid                  { grid-template-columns: 1fr 1fr; }
-  .proof-posture-items           { grid-template-columns: 1fr; }
   .plan-app-showcase             { flex-direction: column; }
   .plan-screenshots              { flex-direction: row; flex: none; width: 100%; }
   .plan-screenshot-trigger       { flex: 1; }
