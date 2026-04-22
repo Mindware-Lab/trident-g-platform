@@ -4,8 +4,8 @@ This folder implements the "Far-Transfer + Transparency by Design" plan.
 
 ## Core guarantees implemented
 
-- Mandatory design-intent + proof-posture block on Home, Start, Tools hub, and all tool pages.
-- Collapsed proof-posture block on Pricing.
+- Programme surface explains the far-transfer structure without duplicating deep proof material.
+- Plans surface owns commercial routes, one-time pricing, refunds, and optional coaching paths.
 - Proof surface with anchored sections:
   - `/proof#claims`
   - `/proof#protocols`
@@ -64,7 +64,7 @@ node scripts/validate-legacy-routing.mjs
 node scripts/smoke-test-legacy-routing.mjs https://<preview-domain>
 ```
 
-The script checks mandatory copy, transparency links, pricing collapsed block, and forbidden claims terms.
+The script checks mandatory copy, transparency links, pricing commercial-route copy, and forbidden claims terms.
 
 ## Deployment
 

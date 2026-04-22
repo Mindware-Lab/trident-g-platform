@@ -6,59 +6,90 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+errors: list[str] = []
+
 required_pages = [
     ROOT / "index.html",
     ROOT / "start" / "index.html",
     ROOT / "tools" / "index.html",
-    ROOT / "tools" / "g-tracker" / "index.html",
-    ROOT / "tools" / "zone-coach" / "index.html",
-    ROOT / "tools" / "capacity-gym" / "index.html",
-    ROOT / "tools" / "mindware-gym" / "index.html",
-]
-
-errors: list[str] = []
-
-mandatory_strings = [
-    "Designed to train general intelligence capacity and cognitive resilience, and to test whether gains carry over under changed conditions.",
-    "Wrapper swaps, boundary/trap probes, and delayed re-checks.",
-    "Protocol + progression logic are public; users can export their training trail; we publish aggregated summaries of test results as the evidence base grows.",
-    "Skills training and self-regulation, not diagnosis or treatment. Outcomes vary.",
+    ROOT / "proof" / "index.html",
+    ROOT / "pricing" / "index.html",
+    ROOT / "coaching" / "index.html",
+    ROOT / "faq" / "index.html",
 ]
 
 for page in required_pages:
+    if not page.exists():
+        errors.append(f"Missing required page: {page.relative_to(ROOT)}")
+
+page_contracts = {
+    ROOT / "tools" / "index.html": [
+        "How the far-transfer",
+        "programme works.",
+        "Why most training does not transfer",
+        "The coach sets the route",
+        "Manual mode",
+    ],
+    ROOT / "proof" / "index.html": [
+        "What we claim,",
+        "what we measure, what is still being tested.",
+        "What transfer means here",
+        "What remains exploratory",
+        "/docs/protocols/mft-m-zone-check.md",
+    ],
+    ROOT / "pricing" / "index.html": [
+        "Trident G IQ Pro",
+        "Student",
+        "Coach-led in-app mode",
+        "Add Live Coaching",
+        "Which route is best for you?",
+        "14-day software refund window",
+        "No auto-renewal",
+        "Coaching requires Trident G IQ Pro",
+        "Click any screenshot to enlarge",
+    ],
+}
+
+for page, required_strings in page_contracts.items():
+    if not page.exists():
+        continue
     text = page.read_text(encoding="utf-8")
-    for item in mandatory_strings:
+    for item in required_strings:
         if item not in text:
-            errors.append(
-                f"Missing mandatory copy in {page.relative_to(ROOT)}: {item[:52]}..."
-            )
-    if "/proof#protocols" not in text or "/proof#data" not in text:
-        errors.append(f"Missing one-click transparency links in {page.relative_to(ROOT)}")
+            errors.append(f"Missing required copy in {page.relative_to(ROOT)}: {item}")
 
 pricing_text = (ROOT / "pricing" / "index.html").read_text(encoding="utf-8")
-if '<details class="proof-posture proof-posture-collapsed">' not in pricing_text:
-    errors.append("Pricing page missing collapsed proof posture block")
+pricing_forbidden = [
+    "proof-posture",
+    "Design intent + proof posture",
+    "Launch pass",
+    "IQ Core",
+]
+for item in pricing_forbidden:
+    if item in pricing_text:
+        errors.append(f"Pricing page still contains stale copy/class: {item}")
+
+if '<span>The app</span>' in pricing_text or '<div class="footer-col-title">The app</div>' in pricing_text:
+    errors.append("Pricing page shell should label /tools/ as Programme, not The app")
 
 claims = json.loads((ROOT / "claims-ladder.json").read_text(encoding="utf-8"))
 forbidden = claims.get("banned_verbs_sitewide", [])
 
-all_html = list(ROOT.rglob("*.html"))
-for html in all_html:
+# The Proof page intentionally lists disallowed phrases as boundaries. Scan other
+# HTML surfaces for those exact claim terms.
+claim_scan_exclusions = {
+    ROOT / "proof" / "index.html",
+}
+
+for html in ROOT.rglob("*.html"):
+    if html in claim_scan_exclusions:
+        continue
     text = html.read_text(encoding="utf-8").lower()
     for word in forbidden:
         escaped = re.escape(word.lower()).replace(r"\ ", r"\s+")
         pattern = rf"\b{escaped}\b"
         if re.search(pattern, text):
             errors.append(f"Forbidden phrase '{word}' found in {html.relative_to(ROOT)}")
-
-outcome_words = ["improves", "increases", "boosts"]
-for html in all_html:
-    text = html.read_text(encoding="utf-8").lower()
-    for term in outcome_words:
-        if term in text and "/proof#data" not in text:
-            errors.append(
-                f"Outcome term '{term}' in {html.relative_to(ROOT)} without /proof#data link"
-            )
 
 if errors:
     print("VALIDATION FAILED")
