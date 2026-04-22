@@ -1,6 +1,6 @@
 /* ============================================================
    IQ MINDWARE - tools.css  v1.0
-   Scope: /tools hub page - choose your tool.
+   Scope: /tools programme page.
    Requires: brand.css loaded first.
    Design goal: instant comprehension, one decision in <30s.
    ============================================================ */
@@ -24,7 +24,7 @@
   --tool-cg-bg:    rgba(167,139,250,.10);
   --tool-cg-bdr:   rgba(167,139,250,.28);
 
-  --tool-mg:       rgba(255,255,255,.18); /* Mindware Gym - muted (coming soon) */
+  --tool-mg:       #f59e0b;          /* Reasoning Gym - amber */
 
   /* Status tag colours */
   --tag-live:      #1a5fa8;
@@ -229,6 +229,104 @@ body.tools { background: var(--tools-surface); }
 /* ============================================================
    5. TOOLS GRID SECTION
    ============================================================ */
+.tools-programme-section {
+  padding: 60px var(--gutter);
+  background: var(--tools-surface);
+  border-bottom: 1px solid var(--tools-rule);
+}
+.tools-programme-section--alt {
+  background: var(--pg-alt);
+}
+.tools-programme-section--manual {
+  background: #fff;
+}
+.tools-programme-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+.tools-principle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.tools-principle-card,
+.tools-structure-step,
+.tools-count-card {
+  background: #fff;
+  border: 1.5px solid var(--tools-card-bdr);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+}
+.tools-principle-card {
+  border-top: 3px solid var(--blue-dp);
+}
+.tools-principle-label,
+.tools-structure-label,
+.tools-count-label,
+.tools-link-group-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--blue-dp);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.tools-principle-card p,
+.tools-structure-step p,
+.tools-count-card p,
+.tools-manual-copy {
+  font-size: 14px;
+  color: var(--tlm);
+  line-height: 1.65;
+}
+.tools-answer-line {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-left: 3px solid var(--lime);
+  background: rgba(204,255,102,.12);
+  color: var(--tl);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+.tools-structure-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.tools-structure-step {
+  position: relative;
+  min-height: 158px;
+}
+.tools-structure-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--blue-dp);
+  margin-bottom: 14px;
+}
+.tools-count-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 18px;
+}
+.tools-count-card--core { border-left: 3px solid var(--lime); }
+.tools-count-card--support { border-left: 3px solid var(--cyan); }
+.tools-manual-inner {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 44px;
+  align-items: center;
+}
+
 .tools-grid-section {
   padding: 64px var(--gutter) 72px;
   background: var(--tools-surface);
@@ -298,7 +396,7 @@ body.tools { background: var(--tools-surface); }
 .tool-card--gt  { border-top: 3px solid var(--tool-gt); }
 .tool-card--zc  { border-top: 3px solid #7ecf00; }
 .tool-card--cg  { border-top: 3px solid #a78bfa; }
-.tool-card--mg  { border-top: 3px solid rgba(255,255,255,.18); }
+.tool-card--mg  { border-top: 3px solid var(--tool-mg); }
 
 /* Card header */
 .tool-card-hd {
@@ -327,7 +425,7 @@ body.tools { background: var(--tools-surface); }
 .tool-card--gt .tool-icon { background: var(--tool-gt-bg);  border-color: var(--tool-gt-bdr); }
 .tool-card--zc .tool-icon { background: var(--tool-zc-bg);  border-color: var(--tool-zc-bdr); }
 .tool-card--cg .tool-icon { background: var(--tool-cg-bg);  border-color: var(--tool-cg-bdr); }
-.tool-card--mg .tool-icon { background: rgba(0,0,0,.04);    border-color: rgba(0,0,0,.08); }
+.tool-card--mg .tool-icon { background: rgba(245,158,11,.08); border-color: rgba(245,158,11,.24); }
 
 .tool-name {
   font-size: 17px;
@@ -444,7 +542,7 @@ body.tools { background: var(--tools-surface); }
 .tool-card--gt  .tool-cta-primary { background: var(--cyan);   color: #fff; }
 .tool-card--zc  .tool-cta-primary { background: #7ecf00;       color: #1a2000; }
 .tool-card--cg  .tool-cta-primary { background: #a78bfa;       color: #fff; }
-.tool-card--mg  .tool-cta-primary { background: rgba(0,0,0,.07); color: var(--tlf); cursor: default; pointer-events: none; }
+.tool-card--mg  .tool-cta-primary { background: var(--tool-mg); color: #1f1300; }
 
 .tool-cta-secondary {
   display: inline-flex;
@@ -517,6 +615,10 @@ body.tools { background: var(--tools-surface); }
   gap: 0;
   position: relative;
 }
+.tools-today-steps--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+}
 /* Connecting line between steps */
 .tools-today-steps::before {
   content: '';
@@ -527,6 +629,10 @@ body.tools { background: var(--tools-surface); }
   height: 1px;
   background: linear-gradient(90deg, rgba(34,170,255,.3), rgba(204,255,102,.3));
   z-index: 0;
+}
+.tools-today-steps--two::before {
+  left: calc(25% + 10px);
+  right: calc(25% + 10px);
 }
 .tools-today-step {
   display: flex;
@@ -652,6 +758,31 @@ body.tools { background: var(--tools-surface); }
   line-height: 1.6;
 }
 .tools-posture-item-text strong { color: var(--tl); }
+.tools-link-groups {
+  display: grid;
+  grid-template-columns: 1.35fr .9fr;
+  gap: 16px;
+}
+.tools-link-group {
+  background: #fff;
+  border: 1px solid var(--tools-card-bdr);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.tools-link-group a {
+  color: var(--blue-dp);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  border-bottom: 1px solid rgba(39,100,183,.18);
+  width: fit-content;
+}
+.tools-link-group a:hover { border-bottom-color: var(--blue-dp); }
+.tools-link-group a:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; border-radius: 2px; }
 
 
 /* ============================================================
@@ -728,6 +859,11 @@ body.tools { background: var(--tools-surface); }
   .tools-hero-inner         { grid-template-columns: 1fr; }
   .tools-hero-meta          { flex-direction: row; flex-wrap: wrap; }
   .tools-meta-chip          { min-width: 0; flex: 1 1 140px; }
+  .tools-principle-grid,
+  .tools-structure-grid     { grid-template-columns: 1fr 1fr; }
+  .tools-count-grid,
+  .tools-manual-inner,
+  .tools-link-groups        { grid-template-columns: 1fr; }
   .tools-grid               { grid-template-columns: 1fr 1fr; }
   .tools-today-steps        { grid-template-columns: 1fr 1fr; gap: 24px; }
   .tools-today-steps::before { display: none; }
@@ -736,6 +872,8 @@ body.tools { background: var(--tools-surface); }
 }
 @media (max-width: 600px) {
   .tools-hero               { padding: 72px var(--gutter) 44px; }
+  .tools-principle-grid,
+  .tools-structure-grid     { grid-template-columns: 1fr; }
   .tools-grid               { grid-template-columns: 1fr; }
   .tools-today-steps        { grid-template-columns: 1fr; gap: 20px; }
   .tools-posture-rhs        { grid-template-columns: 1fr; }
