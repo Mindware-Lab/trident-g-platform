@@ -20,7 +20,7 @@
       ],
       "export_path": "app-level local export controls",
       "limits": "Coaching/readiness only, not diagnosis.",
-      "changelog_link": "/proof/protocols/zone-coach/",
+      "changelog_link": "/docs/protocols/mft-m-zone-check/",
       "source_link": "https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/protocols/iq/zone-coach-v1.1.md"
     },
     {
@@ -43,7 +43,7 @@
       ],
       "export_path": "app-level local export controls",
       "limits": "Designed to increase probability of carryover, not guarantee.",
-      "changelog_link": "/proof/protocols/capacity-gym/",
+      "changelog_link": "/docs/protocols/n-back-progression/",
       "source_link": "https://github.com/Mindware-Lab/trident-g-open-methods-and-ethics/blob/main/protocols/iq/capacity-gym-v1.1.md"
     },
     {

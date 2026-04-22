@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/branding/Trident-G-Icon-green.svg" type="image/svg+xml">
+  <link rel="shortcut icon" href="/branding/Trident-G-Icon-green.svg" type="image/svg+xml">
+  <title>Reasoning Tasks Progression Protocol | IQMindware</title>
+  <meta name="description" content="Reasoning Gym task progression protocol for relation matching, constraint solving, and inference.">
+  <link rel="canonical" href="https://www.iqmindware.com/docs/protocols/reasoning-tasks-progression/">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","@id":"https://www.iqmindware.com/docs/protocols/reasoning-tasks-progression/#article","url":"https://www.iqmindware.com/docs/protocols/reasoning-tasks-progression/","headline":"Reasoning Tasks Progression Protocol","description":"Reasoning Gym task progression protocol for relation matching, constraint solving, and inference.","inLanguage":"en-GB","dateModified":"2026-04-22","publisher":{"@type":"Organization","name":"IQMindware","url":"https://www.iqmindware.com"}},{"@type":"BreadcrumbList","@id":"https://www.iqmindware.com/docs/protocols/reasoning-tasks-progression/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.iqmindware.com/"},{"@type":"ListItem","position":2,"name":"Proof","item":"https://www.iqmindware.com/proof/"},{"@type":"ListItem","position":3,"name":"Protocol docs","item":"https://www.iqmindware.com/docs/protocols/"},{"@type":"ListItem","position":4,"name":"Reasoning Tasks Progression Protocol","item":"https://www.iqmindware.com/docs/protocols/reasoning-tasks-progression/"}]}]}</script>
+  <link rel="stylesheet" href="/assets/css/brand.css">
+  <link rel="stylesheet" href="/assets/css/templates.css">
+  <link rel="stylesheet" href="/assets/css/pages/protocol-docs.css">
+</head>
+<body class="protocol-doc-page">
+  <header class="site-header">
+    <a class="brand" href="/">IQMindware</a>
+    <p class="tagline">Train general intelligence, then prove carryover.</p>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a class="nav-link" href="/about/"><span>About</span></a>
+      <a class="nav-link" href="/start/"><span>Start here</span></a>
+      <a class="nav-link" href="/tools/"><span>Programme</span><small>Modules and protocol</small></a>
+      <a class="nav-link" href="/proof/"><span>Proof</span><small>Protocols + data + transfer checks</small></a>
+      <a class="nav-link" href="/pricing/"><span>Plans</span></a>
+      <a class="nav-link" href="/coaching/"><span>Coaching</span></a>
+      <a class="nav-link" href="/learn/"><span>Learn</span></a>
+      <a class="nav-link" href="/faq/"><span>FAQ</span></a>
+    </nav>
+  </header>
+  <main>
+    <section class="protocol-doc-hero">
+      <div class="protocol-doc-hero-inner">
+        <span class="protocol-doc-kicker">Protocol and theory document</span>
+        <h1 class="protocol-doc-title">Reasoning Tasks Progression Protocol</h1>
+        <p class="protocol-doc-subtitle">Reasoning Gym task progression protocol for relation matching, constraint solving, and inference.</p>
+        <div class="protocol-doc-actions">
+          <a href="/proof/#protocols">Back to Proof</a>
+          <a href="/tools/#protocol-links">Back to Programme</a>
+          <a href="/docs/protocols/reasoning-tasks-progression.md">View Markdown source</a>
+        </div>
+      </div>
+    </section>
+    <div class="protocol-doc-shell">
+      <article class="protocol-doc-card protocol-doc-content" id="document">
+<h1 id="reasoning-tasks-progression-protocol">Reasoning Tasks Progression Protocol</h1>
+<p>This document contains the current Reasoning Gym MVP family progression notes from the uploaded family-pack markdown documents.</p>
+<h2 id="initial-3-family-recommendation">Initial 3-Family Recommendation</h2>
+<ol>
+<li><strong>Relation Fit</strong> - relation validation / relation instantiation / same deep relation</li>
+<li><strong>Must Follow</strong> - deduction / necessary consequence / constraint propagation</li>
+<li><strong>Best Rule So Far</strong> - induction / updating / rival-rule tracking</li>
+</ol>
+<h2 id="family-1-relation-fit">Family 1: Relation Fit</h2>
+<p>This pack contains the first fluid-reasoning family for the Reasoning Gym MVP.</p>
+<p>This pack implements <strong>Family 1 only</strong>.</p>
+<h2 id="included-files">Included Files</h2>
+<ul>
+<li><code>relation-fit.real-world.examples.json</code> - 264 authored real-world items</li>
+<li><code>relation-fit.nonsense-grammar.spec.json</code> - pronounceable nonsense generation rules, morphology, answer types, complexity rules, and adaptive rules</li>
+<li><code>relation-fit.generator.js</code> - ES module to generate nonsense items and adaptive block plans</li>
+<li><code>relation-fit.schema.json</code> - JSON schema for item objects</li>
+</ul>
+<h2 id="family-definition">Family Definition</h2>
+<p>Core task:</p>
+<p>&gt; Identify whether one or more options instantiate a target abstract relation.</p>
+<p>Supported subtypes:</p>
+<ul>
+<li><code>same_relation_mcq</code></li>
+<li><code>select_all_valid</code></li>
+<li><code>relation_satisfaction</code></li>
+<li><code>multi_relation_validation</code></li>
+</ul>
+<h2 id="answer-types">Answer Types</h2>
+<ul>
+<li><code>single_choice</code></li>
+<li><code>multi_select</code></li>
+<li>optional later: <code>true_false</code></li>
+</ul>
+<h2 id="complexity-axes">Complexity Axes</h2>
+<ul>
+<li><code>binding_load</code></li>
+<li><code>uncertainty_level</code></li>
+<li><code>control_burden</code></li>
+</ul>
+<h2 id="adaptive-rule">Adaptive Rule</h2>
+<p>Use a block-level UP / HOLD / DOWN decision, mirroring the broader integrated-game logic:</p>
+<ol>
+<li>stabilise first</li>
+<li>swap wrapper</li>
+<li>go faster</li>
+<li>then increase load / relation complexity</li>
+</ol>
+<p>That means the family should keep the same deep kernel while varying the wrapper before pushing tier.</p>
+<h2 id="suggested-webapp-use">Suggested Webapp Use</h2>
+<ul>
+<li>Load real-world items from the JSON file for familiar-wrapper blocks</li>
+<li>Use <code>relation-fit.generator.js</code> for nonsense / abstract-wrapper blocks</li>
+<li>Persist block state with:</li>
+<li>current tier</li>
+<li>wrapper mode</li>
+<li>speed mode</li>
+<li>recent accuracy</li>
+<li>role-reversal error rate</li>
+<li>wrapper cost</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>Tier 1-2 = binary relation validation</li>
+<li>Tier 3 = wrapper swap and multi-select pressure</li>
+<li>Tier 4 = chained or 3-argument relations</li>
+<li>Tier 5 = graph-role / structural isomorphism later</li>
+</ul>
+<h2 id="family-2-must-follow">Family 2: Must Follow</h2>
+<p>This pack contains the second fluid-reasoning family for the Reasoning Gym MVP.</p>
+<p>This pack implements <strong>Family 2 only</strong>.</p>
+<h2 id="included-files-2">Included Files</h2>
+<ul>
+<li><code>must-follow.real-world.examples.json</code> - 360 authored real-world items</li>
+<li><code>must-follow.nonsense-grammar.spec.json</code> - pronounceable nonsense generation rules, morphology, answer types, complexity rules, and adaptive rules</li>
+<li><code>must-follow.generator.js</code> - ES module to generate nonsense items and adaptive block plans</li>
+<li><code>must-follow.schema.json</code> - JSON schema for item objects</li>
+<li><code>must-follow.generator.txt</code> - plain-text copy of the JS module</li>
+</ul>
+<h2 id="family-definition-2">Family Definition</h2>
+<p>Core task:</p>
+<p>&gt; Decide which conclusion must follow from the premises.</p>
+<p>Supported subtypes:</p>
+<ul>
+<li><code>must_follow_tf</code></li>
+<li><code>best_conclusion_mcq</code></li>
+<li><code>select_all_must_follow</code></li>
+<li>optional later: <code>cannot_follow_mcq</code></li>
+</ul>
+<h2 id="answer-types-2">Answer Types</h2>
+<ul>
+<li><code>true_false</code></li>
+<li><code>single_choice</code></li>
+<li><code>multi_select</code></li>
+</ul>
+<h2 id="complexity-axes-2">Complexity Axes</h2>
+<ul>
+<li><code>binding_load</code></li>
+<li><code>uncertainty_level</code></li>
+<li><code>control_burden</code></li>
+</ul>
+<h2 id="complexity-progression">Complexity Progression</h2>
+<ul>
+<li>Tier 1-2 = short transitive chains and simple quantifier chains</li>
+<li>Tier 3 = longer chains, extra premises, stronger distractors, wrapper swap</li>
+<li>Tier 4 = mixed positive and negative constraints, multi-select pressure</li>
+<li>Tier 5 = multi-conclusion chains with high control burden</li>
+</ul>
+<h2 id="adaptive-rule-2">Adaptive Rule</h2>
+<p>Use a block-level UP / HOLD / DOWN decision, mirroring the broader integrated-game logic:</p>
+<ol>
+<li>stabilise first</li>
+<li>swap wrapper</li>
+<li>go faster</li>
+<li>then increase load / relation complexity</li>
+</ol>
+<p>That means the family should keep the same deep deduction kernel while varying the wrapper before pushing tier.</p>
+<h2 id="suggested-webapp-use-2">Suggested Webapp Use</h2>
+<ul>
+<li>Load real-world items from the JSON file for familiar-wrapper blocks</li>
+<li>Use <code>must-follow.generator.js</code> for nonsense / abstract-wrapper blocks</li>
+<li>Persist block state with:</li>
+<li>current tier</li>
+<li>wrapper mode</li>
+<li>speed mode</li>
+<li>recent accuracy</li>
+<li>transitive-reversal error rate</li>
+<li>quantifier-scope error rate</li>
+<li>conditional-chain error rate</li>
+<li>wrapper cost</li>
+</ul>
+<h2 id="notes-2">Notes</h2>
+<ul>
+<li>The real-world file includes order, set-inclusion, set-exclusion, conditional-chain, and multi-select chain items.</li>
+<li>The nonsense generator currently supports transitive, quantifier, and conditional chain items.</li>
+<li>The family is designed to expand later into richer syllogistic or relational-constraint variants.</li>
+</ul>
+<h2 id="family-3-best-rule-so-far">Family 3: Best Rule So Far</h2>
+<p>This pack contains the third fluid-reasoning family for the Reasoning Gym MVP.</p>
+<p>This pack implements <strong>Family 3 only</strong>.</p>
+<h2 id="included-files-3">Included Files</h2>
+<ul>
+<li><code>best-rule-so-far.real-world.examples.json</code> - 360 authored real-world items</li>
+<li><code>best-rule-so-far.nonsense-grammar.spec.json</code> - pronounceable nonsense generation rules, morphology, answer types, complexity rules, and adaptive rules</li>
+<li><code>best-rule-so-far.generator.js</code> - ES module to generate nonsense items and adaptive block plans</li>
+<li><code>best-rule-so-far.schema.json</code> - JSON schema for item objects</li>
+<li><code>best-rule-so-far.generator.txt</code> - plain-text copy of the JS module</li>
+</ul>
+<h2 id="family-definition-3">Family Definition</h2>
+<p>Core task:</p>
+<p>&gt; Decide which rule currently best explains the observations, which rules remain live, or whether confidence in a current best rule should rise.</p>
+<p>Supported subtypes:</p>
+<ul>
+<li><code>best_rule_so_far_mcq</code></li>
+<li><code>confidence_update_tf</code></li>
+<li><code>select_all_consistent</code></li>
+<li>optional later: <code>rule_ranking_later</code></li>
+</ul>
+<h2 id="answer-types-3">Answer Types</h2>
+<ul>
+<li><code>single_choice</code></li>
+<li><code>true_false</code></li>
+<li><code>multi_select</code></li>
+</ul>
+<h2 id="complexity-axes-3">Complexity Axes</h2>
+<ul>
+<li><code>binding_load</code></li>
+<li><code>uncertainty_level</code></li>
+<li><code>control_burden</code></li>
+</ul>
+<h2 id="complexity-progression-2">Complexity Progression</h2>
+<ul>
+<li>Tier 1 = simple one-dimensional alternation or +1 ladder rules</li>
+<li>Tier 2 = cycle-of-3 and +2 ladder rules with stronger distractors</li>
+<li>Tier 3 = pair-repeat and longer sequences, plus more rival rules</li>
+<li>Tier 4 = two-feature rules and more confidence-update items</li>
+<li>Tier 5 = high-load feature rules, noisy updates, and multi-select filtering</li>
+</ul>
+<h2 id="adaptive-rule-3">Adaptive Rule</h2>
+<p>Use a block-level UP / HOLD / DOWN decision, mirroring the broader integrated-game logic:</p>
+<ol>
+<li>stabilise first</li>
+<li>swap wrapper</li>
+<li>go faster</li>
+<li>then increase load / rule complexity</li>
+</ol>
+<p>That means the family should keep the same deep induction kernel while varying wrapper before pushing tier.</p>
+<h2 id="suggested-webapp-use-3">Suggested Webapp Use</h2>
+<ul>
+<li>Load real-world items from the JSON file for familiar-wrapper blocks</li>
+<li>Use <code>best-rule-so-far.generator.js</code> for nonsense / abstract-wrapper blocks</li>
+<li>Persist block state with:</li>
+<li>current tier</li>
+<li>wrapper mode</li>
+<li>speed mode</li>
+<li>recent accuracy</li>
+<li>alternation confusion rate</li>
+<li>cycle confusion rate</li>
+<li>feature-rule error rate</li>
+<li>overcommitment rate</li>
+<li>multi-select overreach</li>
+<li>wrapper cost</li>
+</ul>
+<h2 id="notes-3">Notes</h2>
+<ul>
+<li>The real-world file includes one-dimensional sequence rules, confidence-update items, and multi-select consistency items.</li>
+<li>The nonsense generator supports alternation, cycle, ladder-step, pair-repeat, and two-feature items.</li>
+<li>The family is designed to expand later into richer causal-model, matrix-rule, and verbal-category induction variants.</li>
+</ul>
+        <div class="protocol-doc-footer">
+          <a href="/proof/#protocols">Back to protocol index</a>
+          <a href="/docs/protocols/reasoning-tasks-progression.md">View Markdown source</a>
+        </div>
+      </article>
+      <aside class="protocol-doc-sidebar" aria-label="Document navigation">
+        <nav class="protocol-doc-toc" aria-label="Document sections"><div class="protocol-doc-toc-title">Sections</div><ul><li><a href="#initial-3-family-recommendation">Initial 3-Family Recommendation</a></li><li><a href="#family-1-relation-fit">Family 1: Relation Fit</a></li><li><a href="#included-files">Included Files</a></li><li><a href="#family-definition">Family Definition</a></li><li><a href="#answer-types">Answer Types</a></li><li><a href="#complexity-axes">Complexity Axes</a></li><li><a href="#adaptive-rule">Adaptive Rule</a></li><li><a href="#suggested-webapp-use">Suggested Webapp Use</a></li><li><a href="#notes">Notes</a></li><li><a href="#family-2-must-follow">Family 2: Must Follow</a></li><li><a href="#included-files-2">Included Files</a></li><li><a href="#family-definition-2">Family Definition</a></li><li><a href="#answer-types-2">Answer Types</a></li><li><a href="#complexity-axes-2">Complexity Axes</a></li><li><a href="#complexity-progression">Complexity Progression</a></li><li><a href="#adaptive-rule-2">Adaptive Rule</a></li><li><a href="#suggested-webapp-use-2">Suggested Webapp Use</a></li><li><a href="#notes-2">Notes</a></li><li><a href="#family-3-best-rule-so-far">Family 3: Best Rule So Far</a></li><li><a href="#included-files-3">Included Files</a></li><li><a href="#family-definition-3">Family Definition</a></li><li><a href="#answer-types-3">Answer Types</a></li><li><a href="#complexity-axes-3">Complexity Axes</a></li><li><a href="#complexity-progression-2">Complexity Progression</a></li><li><a href="#adaptive-rule-3">Adaptive Rule</a></li><li><a href="#suggested-webapp-use-3">Suggested Webapp Use</a></li><li><a href="#notes-3">Notes</a></li></ul></nav>
+        <div class="protocol-doc-source">
+          <div class="protocol-doc-source-label">Source</div>
+          <p>This HTML page is rendered from the current Markdown source document.</p>
+          <p><a href="/docs/protocols/reasoning-tasks-progression.md">Open Markdown source</a></p>
+        </div>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

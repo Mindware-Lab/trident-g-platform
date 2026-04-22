@@ -44,7 +44,7 @@
       ]
     },
     "/tools/": {
-      "title": "Apps",
+      "title": "Programme",
       "canonical": "https://www.iqmindware.com/tools/",
       "schema": [
         "CollectionPage"
@@ -177,6 +177,62 @@
       "canonical": "https://www.iqmindware.com/learn/wiki/what-is-trident-g/",
       "schema": [
         "WebPage"
+      ]
+    },
+    "/docs/protocols/": {
+      "title": "Protocol And Theory Documents",
+      "canonical": "https://www.iqmindware.com/docs/protocols/",
+      "schema": [
+        "CollectionPage"
+      ]
+    },
+    "/docs/protocols/mft-m-zone-check/": {
+      "title": "MFT-m Zone Check Protocol",
+      "canonical": "https://www.iqmindware.com/docs/protocols/mft-m-zone-check/",
+      "schema": [
+        "TechArticle"
+      ]
+    },
+    "/docs/protocols/n-back-progression/": {
+      "title": "N-back Progression Protocol",
+      "canonical": "https://www.iqmindware.com/docs/protocols/n-back-progression/",
+      "schema": [
+        "TechArticle"
+      ]
+    },
+    "/docs/protocols/reasoning-tasks-progression/": {
+      "title": "Reasoning Tasks Progression Protocol",
+      "canonical": "https://www.iqmindware.com/docs/protocols/reasoning-tasks-progression/",
+      "schema": [
+        "TechArticle"
+      ]
+    },
+    "/docs/protocols/horizontal-vertical-far-transfer/": {
+      "title": "Horizontal and Vertical Far Transfer Protocol",
+      "canonical": "https://www.iqmindware.com/docs/protocols/horizontal-vertical-far-transfer/",
+      "schema": [
+        "TechArticle"
+      ]
+    },
+    "/docs/protocols/short-iq-test-validation/": {
+      "title": "Brief Reasoning Measure Validation",
+      "canonical": "https://www.iqmindware.com/docs/protocols/short-iq-test-validation/",
+      "schema": [
+        "TechArticle"
+      ]
+    },
+    "/docs/protocols/applied-intelligence-test-validation/": {
+      "title": "Applied Intelligence Test Validation",
+      "canonical": "https://www.iqmindware.com/docs/protocols/applied-intelligence-test-validation/",
+      "schema": [
+        "TechArticle"
+      ]
+    },
+    "/docs/protocols/trident-g-deep-theory/": {
+      "title": "Deep Theory: Trident G",
+      "canonical": "https://www.iqmindware.com/docs/protocols/trident-g-deep-theory/",
+      "schema": [
+        "Article"
       ]
     }
   }

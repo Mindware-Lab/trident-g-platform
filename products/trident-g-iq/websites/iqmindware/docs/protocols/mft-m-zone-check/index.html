@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/branding/Trident-G-Icon-green.svg" type="image/svg+xml">
+  <link rel="shortcut icon" href="/branding/Trident-G-Icon-green.svg" type="image/svg+xml">
+  <title>MFT-m Zone Check Protocol | IQMindware</title>
+  <meta name="description" content="MFT-m Zone Check protocol for readiness gating and cognitive control capacity route setting.">
+  <link rel="canonical" href="https://www.iqmindware.com/docs/protocols/mft-m-zone-check/">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","@id":"https://www.iqmindware.com/docs/protocols/mft-m-zone-check/#article","url":"https://www.iqmindware.com/docs/protocols/mft-m-zone-check/","headline":"MFT-m Zone Check Protocol","description":"MFT-m Zone Check protocol for readiness gating and cognitive control capacity route setting.","inLanguage":"en-GB","dateModified":"2026-04-22","publisher":{"@type":"Organization","name":"IQMindware","url":"https://www.iqmindware.com"}},{"@type":"BreadcrumbList","@id":"https://www.iqmindware.com/docs/protocols/mft-m-zone-check/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.iqmindware.com/"},{"@type":"ListItem","position":2,"name":"Proof","item":"https://www.iqmindware.com/proof/"},{"@type":"ListItem","position":3,"name":"Protocol docs","item":"https://www.iqmindware.com/docs/protocols/"},{"@type":"ListItem","position":4,"name":"MFT-m Zone Check Protocol","item":"https://www.iqmindware.com/docs/protocols/mft-m-zone-check/"}]}]}</script>
+  <link rel="stylesheet" href="/assets/css/brand.css">
+  <link rel="stylesheet" href="/assets/css/templates.css">
+  <link rel="stylesheet" href="/assets/css/pages/protocol-docs.css">
+</head>
+<body class="protocol-doc-page">
+  <header class="site-header">
+    <a class="brand" href="/">IQMindware</a>
+    <p class="tagline">Train general intelligence, then prove carryover.</p>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a class="nav-link" href="/about/"><span>About</span></a>
+      <a class="nav-link" href="/start/"><span>Start here</span></a>
+      <a class="nav-link" href="/tools/"><span>Programme</span><small>Modules and protocol</small></a>
+      <a class="nav-link" href="/proof/"><span>Proof</span><small>Protocols + data + transfer checks</small></a>
+      <a class="nav-link" href="/pricing/"><span>Plans</span></a>
+      <a class="nav-link" href="/coaching/"><span>Coaching</span></a>
+      <a class="nav-link" href="/learn/"><span>Learn</span></a>
+      <a class="nav-link" href="/faq/"><span>FAQ</span></a>
+    </nav>
+  </header>
+  <main>
+    <section class="protocol-doc-hero">
+      <div class="protocol-doc-hero-inner">
+        <span class="protocol-doc-kicker">Protocol and theory document</span>
+        <h1 class="protocol-doc-title">MFT-m Zone Check Protocol</h1>
+        <p class="protocol-doc-subtitle">MFT-m Zone Check protocol for readiness gating and cognitive control capacity route setting.</p>
+        <div class="protocol-doc-actions">
+          <a href="/proof/#protocols">Back to Proof</a>
+          <a href="/tools/#protocol-links">Back to Programme</a>
+          <a href="/docs/protocols/mft-m-zone-check.md">View Markdown source</a>
+        </div>
+      </div>
+    </section>
+    <div class="protocol-doc-shell">
+      <article class="protocol-doc-card protocol-doc-content" id="document">
+<h1 id="mft-m-zone-check-protocol">MFT-m Zone Check Protocol</h1>
+<h2 id="purpose">Purpose</h2>
+<p>Zone Pulse is the daily readiness and dose-setting check for the IQMindware Coach-led programme.</p>
+<p>It uses a browser implementation of the masked Majority Function Task (MFT-m / MFT-M) to estimate current cognitive control throughput under uncertainty. The result is used to decide whether the day should be a full training route, a reduced route, a support route, or a repeat/invalid check.</p>
+<p>The practical question is:</p>
+<p>&gt; Is today&#39;s state good enough for high-quality capacity and reasoning training?</p>
+<h2 id="what-the-task-measures">What the task measures</h2>
+<p>The MFT-m asks the user to decide which direction most arrows are pointing under brief exposure and masking.</p>
+<p>The task is useful for training guidance because it combines:</p>
+<ul>
+<li>controlled uncertainty;</li>
+<li>time pressure;</li>
+<li>perceptual conflict;</li>
+<li>accuracy demands;</li>
+<li>response-timing stability;</li>
+<li>lapse and error-pattern signals.</li>
+</ul>
+<p>The intended construct is cognitive control capacity (CCC): a behavioural estimate of how much task-relevant information can be brought under control per unit time in this paradigm.</p>
+<p>IQMindware reports this as bits per second, alongside state and confidence labels.</p>
+<h2 id="source-task-foundation">Source task foundation</h2>
+<p>Wu, Dufford, Mackie, Egan, and Fan (2016) introduced the backward masking Majority Function Task as a way to estimate cognitive control capacity from a perceptual decision-making task.</p>
+<p>In the original task:</p>
+<ul>
+<li>arrow sets were briefly shown and then masked;</li>
+<li>participants judged the majority arrow direction;</li>
+<li>set size and majority/minority ratio manipulated information entropy;</li>
+<li>exposure time manipulated available processing time;</li>
+<li>accuracy was modelled as a function of information rate;</li>
+<li>the resulting CCC estimate was expressed in bits per second.</li>
+</ul>
+<p>The original adult sample produced a mean estimated CCC of about 3.45 bps, with a 95% CI of 3.12 to 3.70 bps, and split-half reliability of 0.86 across two sessions. This supports the use of MFT-M as a repeatable behavioural measure of cognitive control throughput under uncertainty.</p>
+<h2 id="current-iqmindware-implementation">Current IQMindware implementation</h2>
+<p>The IQMindware Zone Pulse is a shortened training-readiness implementation, not a 43-minute laboratory replication.</p>
+<p>Current app parameters:</p>
+<ul>
+<li>full check: about 180 seconds;</li>
+<li>quick re-check: about 75 seconds;</li>
+<li>five-arrow displays;</li>
+<li>easy majority condition: 4:1;</li>
+<li>hard majority condition: 3:2;</li>
+<li>catch condition: 5:0;</li>
+<li>backward masking after each display;</li>
+<li>adaptive exposure duration;</li>
+<li>response timeout and browser timing-quality checks;</li>
+<li>local history used to improve personal baseline interpretation over time.</li>
+</ul>
+<p>The app preserves the core logic of the MFT-M:</p>
+<ul>
+<li>majority-direction decision;</li>
+<li>masking;</li>
+<li>uncertainty and exposure-time pressure;</li>
+<li>accuracy and lapse sensitivity;</li>
+<li>behavioural throughput estimate in bits per second.</li>
+</ul>
+<p>It adds training-router features:</p>
+<ul>
+<li>reaction-time variability;</li>
+<li>timeout rate;</li>
+<li>fast-error pattern;</li>
+<li>post-error slowing;</li>
+<li>catch failures;</li>
+<li>bursty error patterns;</li>
+<li>focus-loss and browser-timing invalidation;</li>
+<li>confidence level for the state classification.</li>
+</ul>
+<h2 id="reasonable-conclusions-for-training-guidance">Reasonable conclusions for training guidance</h2>
+<p>The evidence supports these practical conclusions.</p>
+<h3 id="1-mft-m-is-a-meaningful-cognitive-control-probe">1. MFT-m is a meaningful cognitive-control probe</h3>
+<p>The MFT-M has a clear information-processing rationale. It increases uncertainty and reduces available exposure time, then estimates how well the user can resolve the majority direction under those constraints.</p>
+<p>For IQMindware, that makes it a better pre-training readiness signal than a mood check alone.</p>
+<h3 id="2-bits-sec-can-guide-dose-not-diagnose-ability">2. Bits/sec can guide dose, not diagnose ability</h3>
+<p>The bits/sec estimate is useful as a current-state and trend signal. It should be used to guide training dose and timing, especially when compared with the user&#39;s own recent valid checks.</p>
+<p>It should not be used as:</p>
+<ul>
+<li>a diagnosis;</li>
+<li>a clinical marker;</li>
+<li>a standalone IQ score;</li>
+<li>a fixed trait label;</li>
+<li>proof that a given day will or will not transfer.</li>
+</ul>
+<h3 id="3-mft-m-can-also-act-as-light-attention-control-training">3. MFT-m can also act as light attention-control training</h3>
+<p>Zhang et al. (2024) trained healthy young adults with MFT-M for seven consecutive days and compared them with a sham-control group.</p>
+<p>The MFT-M training group showed better performance on selected ANT-R flanker/location conditions and learning trials in a verbal memory test, plus ERP changes during 2-back and task-switching tasks consistent with altered attentional processing.</p>
+<p>For IQMindware, this supports a reasonable operational stance:</p>
+<ul>
+<li>the Zone Pulse is not just a passive questionnaire;</li>
+<li>it is a short attention-control challenge;</li>
+<li>it can warm up the control system before training;</li>
+<li>it can help route the user into a better-matched training dose.</li>
+</ul>
+<p>It does not mean a single Zone Pulse is sufficient training by itself.</p>
+<h3 id="4-state-quality-matters-for-far-transfer">4. State quality matters for far transfer</h3>
+<p>The IQMindware programme aims for transfer beyond one-game practice. That requires clean learning, controlled effort, and enough state stability to avoid building brittle, surface-specific habits.</p>
+<p>Zone Pulse is therefore used before Coach-led training to reduce the chance of training hard when the user is flat, noisy, rigid, distracted, or browser/timing compromised.</p>
+<h2 id="zone-states-and-route-decisions">Zone states and route decisions</h2>
+<p>The app classifies a valid result into one of four public state labels.</p>
+<p>| Zone state | Interpretation | Training route | |---|---|---| | In Zone | Stable, efficient, flexible control | Full core route | | Flat | Lower activation, slower/lapse-prone control | Reduced core route | | Locked In | Rigid, over-controlled, exploit-heavy pattern | Support route | | Spun Out | Variable, noisy, over-exploratory pattern | Support route | | Invalid | Focus loss, browser timing issue, or incomplete run | Repeat check / no route |</p>
+<p>Current Coach-led route mapping:</p>
+<p>| Zone state | Capacity target | Reasoning target | Counts toward 20-session programme | |---|---:|---:|---| | In Zone | 10 blocks | 10 items | yes | | Flat | 5 blocks | 8 items | yes | | Locked In | 4 blocks | 4 items | no | | Spun Out | 3 blocks | 4 items | no | | Invalid | 0 | 0 | no |</p>
+<p>Support routes are real training. They are used to stabilise or rebuild control, but they do not advance the core 20-session programme count.</p>
+<h2 id="validity-and-quality-rules">Validity and quality rules</h2>
+<p>A Zone Pulse should be treated as usable only when:</p>
+<ul>
+<li>the run completes;</li>
+<li>the tab/window remains active;</li>
+<li>browser timing is stable enough;</li>
+<li>response data are sufficient;</li>
+<li>catch and probe data are not dominated by lapses or timing failure.</li>
+</ul>
+<p>Invalid runs should not set the training route. The user should repeat the check later or use light manual practice.</p>
+<p>Low-confidence results should be handled conservatively:</p>
+<ul>
+<li>use the lower-risk route;</li>
+<li>avoid unnecessary difficulty escalation;</li>
+<li>consider a quick re-check after a short stabilisation block.</li>
+</ul>
+<h2 id="how-to-use-zone-pulse-in-the-20-day-programme">How to use Zone Pulse in the 20-day programme</h2>
+<p>Recommended sequence:</p>
+<ol>
+<li>Run SgS-12 Pre before the programme begins.</li>
+<li>Before each Coach-led training day, run Zone Pulse.</li>
+<li>Use the Zone result to set the day&#39;s route and dose.</li>
+<li>Complete both Capacity Gym and Reasoning Gym targets for the route.</li>
+<li>Use support routes when state is not suitable for core progress.</li>
+<li>Use Tracker interval checks as scheduled.</li>
+<li>Run SgS-12 Post after the programme.</li>
+</ol>
+<p>The key training rule is:</p>
+<p>&gt; A valid Zone Pulse sets the route. A core session advances only when both Capacity Gym and Reasoning Gym targets are complete.</p>
+<h2 id="interpretation-boundaries">Interpretation boundaries</h2>
+<p>Allowed claims:</p>
+<ul>
+<li>MFT-m provides a research-grounded behavioural estimate of cognitive control throughput under uncertainty.</li>
+<li>Zone Pulse is designed to guide training readiness and dose.</li>
+<li>MFT-m training has evidence of transfer to selected executive-function, memory-learning, and neural-processing outcomes in healthy young adults.</li>
+<li>Repeated valid checks can improve personal baseline interpretation.</li>
+<li>Out-of-zone results are useful reasons to reduce load, stabilise, or re-check before deep training.</li>
+</ul>
+<p>Not allowed:</p>
+<ul>
+<li>Zone Pulse diagnoses cognitive, medical, or psychiatric status.</li>
+<li>A single bits/sec score proves intelligence level.</li>
+<li>A single high Zone Pulse guarantees transfer.</li>
+<li>A single low Zone Pulse proves the user cannot train or learn.</li>
+<li>MFT-m alone replaces the full Capacity Gym, Reasoning Gym, and Tracker loop.</li>
+</ul>
+<h2 id="source-references">Source references</h2>
+<ul>
+<li>Wu, T., Dufford, A. J., Mackie, M. A., Egan, L. J., &amp; Fan, J. (2016). The capacity of cognitive control estimated from a perceptual decision making task. Scientific Reports, 6, Article 34025. <a href="https://doi.org/10.1038/srep34025">https://doi.org/10.1038/srep34025</a></li>
+<li>Zhang, H., Fan, S., Yang, J., Yi, J., Guan, L., He, H., Zhang, X., Luo, Y., &amp; Guan, Q. (2024). Attention control training and transfer effects on cognitive tasks. Neuropsychologia, 200, 108910. <a href="https://doi.org/10.1016/j.neuropsychologia.2024.108910">https://doi.org/10.1016/j.neuropsychologia.2024.108910</a></li>
+<li>Chen, Y., Spagna, A., Wu, T., Kim, T. H., Wu, Q., Chen, C., Wu, Y., &amp; Fan, J. (2019). Testing a cognitive control model of human intelligence. Scientific Reports, 9, Article 2898. <a href="https://doi.org/10.1038/s41598-019-39685-2">https://doi.org/10.1038/s41598-019-39685-2</a></li>
+</ul>
+        <div class="protocol-doc-footer">
+          <a href="/proof/#protocols">Back to protocol index</a>
+          <a href="/docs/protocols/mft-m-zone-check.md">View Markdown source</a>
+        </div>
+      </article>
+      <aside class="protocol-doc-sidebar" aria-label="Document navigation">
+        <nav class="protocol-doc-toc" aria-label="Document sections"><div class="protocol-doc-toc-title">Sections</div><ul><li><a href="#purpose">Purpose</a></li><li><a href="#what-the-task-measures">What the task measures</a></li><li><a href="#source-task-foundation">Source task foundation</a></li><li><a href="#current-iqmindware-implementation">Current IQMindware implementation</a></li><li><a href="#reasonable-conclusions-for-training-guidance">Reasonable conclusions for training guidance</a></li><li><a href="#1-mft-m-is-a-meaningful-cognitive-control-probe">1. MFT-m is a meaningful cognitive-control probe</a></li><li><a href="#2-bits-sec-can-guide-dose-not-diagnose-ability">2. Bits/sec can guide dose, not diagnose ability</a></li><li><a href="#3-mft-m-can-also-act-as-light-attention-control-training">3. MFT-m can also act as light attention-control training</a></li><li><a href="#4-state-quality-matters-for-far-transfer">4. State quality matters for far transfer</a></li><li><a href="#zone-states-and-route-decisions">Zone states and route decisions</a></li><li><a href="#validity-and-quality-rules">Validity and quality rules</a></li><li><a href="#how-to-use-zone-pulse-in-the-20-day-programme">How to use Zone Pulse in the 20-day programme</a></li><li><a href="#interpretation-boundaries">Interpretation boundaries</a></li><li><a href="#source-references">Source references</a></li></ul></nav>
+        <div class="protocol-doc-source">
+          <div class="protocol-doc-source-label">Source</div>
+          <p>This HTML page is rendered from the current Markdown source document.</p>
+          <p><a href="/docs/protocols/mft-m-zone-check.md">Open Markdown source</a></p>
+        </div>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

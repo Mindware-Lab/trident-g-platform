@@ -1,11 +1,33 @@
 /capacity-gym/
   Cache-Control: no-cache
+  X-Robots-Tag: noindex, nofollow
 
 /capacity-gym/*
   Cache-Control: no-cache
+  X-Robots-Tag: noindex, nofollow
+
+/apps/
+  X-Robots-Tag: noindex, nofollow
+
+/apps/*
+  X-Robots-Tag: noindex, nofollow
+
+/go/
+  X-Robots-Tag: noindex, nofollow
+
+/go/*
+  X-Robots-Tag: noindex, nofollow
+
+/login/
+  X-Robots-Tag: noindex, nofollow
+
+/docs/protocols/*.md
+  X-Robots-Tag: noindex
 
 /apps/capacity-gym/v2/
   Cache-Control: no-cache
+  X-Robots-Tag: noindex, nofollow
 
 /apps/capacity-gym/v2/*
   Cache-Control: no-cache
+  X-Robots-Tag: noindex, nofollow

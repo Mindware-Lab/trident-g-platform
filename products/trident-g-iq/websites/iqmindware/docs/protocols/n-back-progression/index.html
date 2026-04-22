@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/branding/Trident-G-Icon-green.svg" type="image/svg+xml">
+  <link rel="shortcut icon" href="/branding/Trident-G-Icon-green.svg" type="image/svg+xml">
+  <title>Coach-Led Capacity Gym Transfer Protocols | IQMindware</title>
+  <meta name="description" content="Capacity Gym N-back progression protocol for adaptive working-memory and attention training.">
+  <link rel="canonical" href="https://www.iqmindware.com/docs/protocols/n-back-progression/">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"TechArticle","@id":"https://www.iqmindware.com/docs/protocols/n-back-progression/#article","url":"https://www.iqmindware.com/docs/protocols/n-back-progression/","headline":"Coach-Led Capacity Gym Transfer Protocols","description":"Capacity Gym N-back progression protocol for adaptive working-memory and attention training.","inLanguage":"en-GB","dateModified":"2026-04-22","publisher":{"@type":"Organization","name":"IQMindware","url":"https://www.iqmindware.com"}},{"@type":"BreadcrumbList","@id":"https://www.iqmindware.com/docs/protocols/n-back-progression/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.iqmindware.com/"},{"@type":"ListItem","position":2,"name":"Proof","item":"https://www.iqmindware.com/proof/"},{"@type":"ListItem","position":3,"name":"Protocol docs","item":"https://www.iqmindware.com/docs/protocols/"},{"@type":"ListItem","position":4,"name":"Coach-Led Capacity Gym Transfer Protocols","item":"https://www.iqmindware.com/docs/protocols/n-back-progression/"}]}]}</script>
+  <link rel="stylesheet" href="/assets/css/brand.css">
+  <link rel="stylesheet" href="/assets/css/templates.css">
+  <link rel="stylesheet" href="/assets/css/pages/protocol-docs.css">
+</head>
+<body class="protocol-doc-page">
+  <header class="site-header">
+    <a class="brand" href="/">IQMindware</a>
+    <p class="tagline">Train general intelligence, then prove carryover.</p>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a class="nav-link" href="/about/"><span>About</span></a>
+      <a class="nav-link" href="/start/"><span>Start here</span></a>
+      <a class="nav-link" href="/tools/"><span>Programme</span><small>Modules and protocol</small></a>
+      <a class="nav-link" href="/proof/"><span>Proof</span><small>Protocols + data + transfer checks</small></a>
+      <a class="nav-link" href="/pricing/"><span>Plans</span></a>
+      <a class="nav-link" href="/coaching/"><span>Coaching</span></a>
+      <a class="nav-link" href="/learn/"><span>Learn</span></a>
+      <a class="nav-link" href="/faq/"><span>FAQ</span></a>
+    </nav>
+  </header>
+  <main>
+    <section class="protocol-doc-hero">
+      <div class="protocol-doc-hero-inner">
+        <span class="protocol-doc-kicker">Protocol and theory document</span>
+        <h1 class="protocol-doc-title">Coach-Led Capacity Gym Transfer Protocols</h1>
+        <p class="protocol-doc-subtitle">Capacity Gym N-back progression protocol for adaptive working-memory and attention training.</p>
+        <div class="protocol-doc-actions">
+          <a href="/proof/#protocols">Back to Proof</a>
+          <a href="/tools/#protocol-links">Back to Programme</a>
+          <a href="/docs/protocols/n-back-progression.md">View Markdown source</a>
+        </div>
+      </div>
+    </section>
+    <div class="protocol-doc-shell">
+      <article class="protocol-doc-card protocol-doc-content" id="document">
+<h1 id="coach-led-capacity-gym-transfer-protocols">Coach-Led Capacity Gym Transfer Protocols</h1>
+<p>This document describes how Coach-led Capacity Gym progression works in the current shipped code over the 20-session programme. It is based on the implementation in <code>capacity-gym/app.js</code> and <code>capacity-gym/runtime/hub-engine.js</code>.</p>
+<h2 id="high-level-rule">High-Level Rule</h2>
+<p>Coach-led Capacity Gym is a 20 core-session programme, but a &quot;core session&quot; is not counted complete when Capacity blocks alone are finished. The app creates a unified coach contract with:</p>
+<ul>
+<li>Capacity target blocks</li>
+<li>Reasoning target items</li>
+<li>Session number</li>
+<li>Capacity family</li>
+<li>Reasoning family</li>
+<li>Whether the session counts toward the core 20</li>
+</ul>
+<p>The 20-session counter advances only when both Capacity and Reasoning targets are complete.</p>
+<h2 id="session-contract">Session Contract</h2>
+<p>A fresh valid Zone Check, or &quot;skip zone pulse&quot;, creates the session contract.</p>
+<p>The current route targets are:</p>
+<p>| Zone state | Route | Capacity | Reasoning | Counts toward 20 | |---|---:|---:|---:|---| | <code>in_zone</code> | core | 10 blocks | 10 items | yes | | <code>flat</code> | core | 5 blocks | 8 items | yes | | <code>overloaded_exploit</code> / Locked In | support | 4 blocks | 4 items | no | | <code>overloaded_explore</code> / Spun Out | support | 3 blocks | 4 items | no | | <code>invalid</code> | recovery | 0 | 0 | no |</p>
+<p>Over the 20-session programme, only <code>in_zone</code> and <code>flat</code> routes advance the core session count. Support routes are real coach-led training, but they do not move the 20-session programme forward.</p>
+<h2 id="20-session-family-cycle">20-Session Family Cycle</h2>
+<p>For core sessions, the Capacity family is chosen from this cycle:</p>
+<pre><code>[&quot;flex&quot;, &quot;bind&quot;, &quot;relate&quot;, &quot;resist&quot;, &quot;flex&quot;, &quot;relate&quot;, &quot;bind&quot;, &quot;resist&quot;, &quot;relate&quot;]</code></pre>
+<p>That 9-session cycle repeats across 20 sessions:</p>
+<p>| Session | Phase | Family | |---:|---|---| | 1 | Foundation | Flex | | 2 | Foundation | Bind | | 3 | Foundation | Relate | | 4 | Foundation | Resist | | 5 | Foundation | Flex | | 6 | Portability | Relate | | 7 | Portability | Bind | | 8 | Portability | Resist | | 9 | Portability | Relate | | 10 | Portability | Flex | | 11 | Integration | Bind | | 12 | Integration | Relate | | 13 | Integration | Resist | | 14 | Integration | Flex | | 15 | Integration | Relate | | 16 | Transfer | Bind | | 17 | Transfer | Resist | | 18 | Transfer | Relate | | 19 | Transfer | Flex | | 20 | Transfer | Bind |</p>
+<p>The phase labels are:</p>
+<ul>
+<li>Sessions 1-5: Foundation</li>
+<li>Sessions 6-10: Portability</li>
+<li>Sessions 11-15: Integration</li>
+<li>Sessions 16-20: Transfer</li>
+</ul>
+<h2 id="capacity-families-and-wrappers">Capacity Families And Wrappers</h2>
+<p>The family-to-wrapper mapping is:</p>
+<ul>
+<li><code>flex</code>: <code>hub_cat</code>, <code>hub_noncat</code>, <code>hub_concept</code></li>
+<li><code>bind</code>: <code>and_cat</code>, <code>and_noncat</code></li>
+<li><code>resist</code>: <code>resist_vectors</code>, <code>resist_words</code>, <code>resist_concept</code></li>
+<li><code>relate</code>: <code>relate_vectors</code>, <code>relate_numbers</code>, <code>relate_vectors_dual</code>, <code>relate_numbers_dual</code></li>
+</ul>
+<p>The <code>emotion</code> family exists in code, but it is not part of the current 20-session coach cycle.</p>
+<p>For non-relate families, the next wrapper is selected by counting completed core blocks in that family and taking modulo the wrapper list. This means the wrapper sequence is continuous across the user&#39;s history, not reset cleanly at each session.</p>
+<p>For <code>relate</code>, the coach uses a ladder:</p>
+<ol>
+<li>Stabilise <code>relate_vectors</code> relation target and symbol target.</li>
+<li>Stabilise <code>relate_numbers</code> relation target and symbol target.</li>
+<li>Move to <code>relate_vectors_dual</code>.</li>
+<li>Move to <code>relate_numbers_dual</code>.</li>
+</ol>
+<p>A wrapper/target is considered stable when the last 3 matching entries are all at least 75% accurate and end at <code>N &gt;= 2</code>.</p>
+<h2 id="target-selection">Target Selection</h2>
+<p>Within a wrapper, the coach cycles the target modality.</p>
+<p>Examples:</p>
+<ul>
+<li>Flex wrappers use <code>loc</code>, <code>col</code>, <code>sym</code>.</li>
+<li>Bind wrappers use paired targets like <code>loc_sym</code>, <code>loc_col</code>, <code>sym_col</code>.</li>
+<li>Resist wrappers use their available target dimensions.</li>
+<li>Relate mono wrappers use <code>rel</code> and <code>sym</code>.</li>
+<li>Relate dual wrappers use <code>dual</code>.</li>
+</ul>
+<p>The target picker looks at the latest completed block for that wrapper and advances to the next target option.</p>
+<h2 id="n-back-progression">N-Back Progression</h2>
+<p>Capacity Gym uses <code>HUB_N_MAX = 7</code>.</p>
+<p>For core coach sessions:</p>
+<ul>
+<li>If this is the first block of the active session, N starts from prior history for that wrapper, or <code>N-1</code> if there is no history.</li>
+<li>Once a coached session is active, N carries forward from the latest completed block in that same session.</li>
+<li>That means N continues across wrapper and target changes inside the session.</li>
+</ul>
+<p>For support routes, N is forced to <code>N-1</code>.</p>
+<p>After each block, N changes by at most one level:</p>
+<ul>
+<li>Accuracy <code>&gt;= 90%</code>: <code>N + 1</code></li>
+<li>Accuracy <code>&lt; 75%</code>: <code>N - 1</code></li>
+<li>Otherwise: hold N</li>
+</ul>
+<p>For standard single-target blocks, this is implemented by <code>summarizeHubBlock</code>.</p>
+<p>For dual relate blocks, the rule is stricter:</p>
+<ul>
+<li>UP requires relation accuracy <code>&gt;= 80%</code>, surface/symbol accuracy <code>&gt;= 80%</code>, and average accuracy <code>&gt;= 90%</code>.</li>
+<li>DOWN if either stream is <code>&lt; 75%</code>, or average accuracy is <code>&lt; 75%</code>.</li>
+</ul>
+<h2 id="speed-progression">Speed Progression</h2>
+<p>Speed is selected per wrapper, not globally.</p>
+<p>For core routes:</p>
+<ul>
+<li>Default is slow.</li>
+<li>If the recent history for that wrapper has at least 2 blocks, and all recent checked blocks are <code>&gt;= 90%</code> accurate and ended at <code>N &gt;= 2</code>, speed becomes fast.</li>
+<li>Otherwise speed remains slow.</li>
+</ul>
+<p>For support routes, speed is always slow.</p>
+<h2 id="what-happens-when-a-capacity-block-finishes">What Happens When A Capacity Block Finishes</h2>
+<p>When a block finishes:</p>
+<ol>
+<li>The block is summarized by <code>summarizeHubBlock</code>.</li>
+<li>The block result is stored in <code>state.history</code>.</li>
+<li>The recommended next N is stored as <code>recommendedN</code>.</li>
+<li>If this is an active coached Capacity session, <code>capacityCompletedBlocks</code> is incremented on the unified coach contract.</li>
+<li>The local Capacity session&#39;s <code>blocksCompleted</code> is incremented.</li>
+<li>If all planned Capacity blocks are complete, the Capacity session is closed.</li>
+<li>If Reasoning remains, the UI directs the user to Reasoning Gym.</li>
+<li>The 20-session counter does not advance until Reasoning is complete too.</li>
+</ol>
+<h2 id="important-user-facing-consequence">Important User-Facing Consequence</h2>
+<p>If a customer completes all Capacity blocks but does not complete the Reasoning target, the app will still show the same core session number. That is intentional in the current code: the unified session is not complete until both parts are done.</p>
+<p>The correct customer explanation is:</p>
+<p>&gt; In Coach-led mode, a session consists of Capacity Gym plus Reasoning Gym. Capacity block progress should advance continuously within the session, and N-back should carry forward block to block. The programme session count advances only after both Capacity and Reasoning targets are complete.</p>
+<h2 id="current-code-caveats">Current Code Caveats</h2>
+<ul>
+<li>The coach does not precompute a fixed 10-block schedule. It selects the next Capacity block at start time from current history.</li>
+<li>Wrapper progression uses lifetime/core history for that family, so a session may start at a different wrapper depending on prior play.</li>
+<li>The phase labels are stored and displayed, but they do not currently change the selection algorithm directly.</li>
+<li>The older design docs talk about richer Spike-Tune rules, recovery blocks, perturbation windows, and consolidation sessions. The shipped Capacity Gym code currently uses the simpler wrapper/target/N/speed rules described above.</li>
+</ul>
+        <div class="protocol-doc-footer">
+          <a href="/proof/#protocols">Back to protocol index</a>
+          <a href="/docs/protocols/n-back-progression.md">View Markdown source</a>
+        </div>
+      </article>
+      <aside class="protocol-doc-sidebar" aria-label="Document navigation">
+        <nav class="protocol-doc-toc" aria-label="Document sections"><div class="protocol-doc-toc-title">Sections</div><ul><li><a href="#high-level-rule">High-Level Rule</a></li><li><a href="#session-contract">Session Contract</a></li><li><a href="#20-session-family-cycle">20-Session Family Cycle</a></li><li><a href="#capacity-families-and-wrappers">Capacity Families And Wrappers</a></li><li><a href="#target-selection">Target Selection</a></li><li><a href="#n-back-progression">N-Back Progression</a></li><li><a href="#speed-progression">Speed Progression</a></li><li><a href="#what-happens-when-a-capacity-block-finishes">What Happens When A Capacity Block Finishes</a></li><li><a href="#important-user-facing-consequence">Important User-Facing Consequence</a></li><li><a href="#current-code-caveats">Current Code Caveats</a></li></ul></nav>
+        <div class="protocol-doc-source">
+          <div class="protocol-doc-source-label">Source</div>
+          <p>This HTML page is rendered from the current Markdown source document.</p>
+          <p><a href="/docs/protocols/n-back-progression.md">Open Markdown source</a></p>
+        </div>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

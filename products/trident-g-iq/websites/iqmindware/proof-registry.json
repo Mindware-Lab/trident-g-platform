@@ -27,7 +27,7 @@
       "what_it_is": "Behavioural throughput signal used for readiness and route setting.",
       "how_it_is_measured": "Multiple Function Task (masked), or MFT-m, using brief masked trials and throughput estimation.",
       "status": "in_app_measure",
-      "link_to_summary": "/docs/protocols/mft-m-zone-check.md",
+      "link_to_summary": "/docs/protocols/mft-m-zone-check/",
       "caveats": "Practical readiness and dose signal, not an IQ score or diagnostic measure.",
       "last_updated": "2026-04-22"
     }

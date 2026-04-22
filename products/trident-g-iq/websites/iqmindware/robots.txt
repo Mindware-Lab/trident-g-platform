@@ -6,5 +6,8 @@ Disallow: /scripts/
 Disallow: /branding/
 Disallow: /g-tracker-validation/
 Disallow: /login/
+Disallow: /capacity-gym/
+Disallow: /apps/
+Disallow: /go/
 
 Sitemap: https://www.iqmindware.com/sitemap.xml
