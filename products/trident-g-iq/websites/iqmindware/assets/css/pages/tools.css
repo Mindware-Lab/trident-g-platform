@@ -263,14 +263,16 @@ body.tools { background: var(--tools-surface); }
 .tools-principle-label,
 .tools-structure-label,
 .tools-count-label,
-.tools-link-group-title {
-  font-family: 'DM Mono', monospace;
-  font-size: 9.5px;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--blue-dp);
-  margin-bottom: 8px;
-  font-weight: 700;
+.tools-link-group-title,
+.tools-posture-item-label {
+  font-family: inherit;
+  font-size: 16px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--tl);
+  margin-bottom: 10px;
+  font-weight: 800;
+  line-height: 1.25;
 }
 .tools-principle-card p,
 .tools-structure-step p,
@@ -744,14 +746,7 @@ body.tools { background: var(--tools-surface); }
 .tools-posture-item--transparency { border-left-color: var(--lime); }
 .tools-posture-item--boundary { border-left-color: var(--proof-warn, #b45309); }
 
-.tools-posture-item-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--tlf);
-  margin-bottom: 6px;
-}
+.tools-posture-item-label { display: block; }
 .tools-posture-item-text {
   font-size: 12.5px;
   color: var(--tlm);
