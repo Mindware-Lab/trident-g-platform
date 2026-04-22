@@ -621,6 +621,41 @@ body.home  { background: var(--home-surface); }
 
 
 /* ============================================================
+   6c. HOW FAR TRANSFER WORKS
+   ============================================================ */
+.home-transfer-section {
+  background: var(--home-surface);
+  padding: 72px var(--gutter);
+  border-bottom: 1px solid var(--home-rule);
+}
+.home-transfer-inner { max-width: var(--max-w); margin: 0 auto; }
+.home-transfer-hd { margin-bottom: 40px; }
+.home-transfer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.home-transfer-item {
+  background: var(--home-card-bg);
+  border: 1.5px solid var(--home-card-bdr);
+  border-radius: var(--r-xl);
+  padding: 26px 24px;
+  border-top: 3px solid transparent;
+}
+.home-transfer-item:nth-child(1) { border-top-color: var(--diff-loop); }
+.home-transfer-item:nth-child(2) { border-top-color: var(--diff-transfer); }
+.home-transfer-item:nth-child(3) { border-top-color: var(--diff-evidence); }
+.home-transfer-label {
+  font-size: 14px; font-weight: 800;
+  color: var(--tl); letter-spacing: -.01em;
+  margin-bottom: 9px; line-height: 1.2;
+}
+.home-transfer-desc {
+  font-size: 14px; color: var(--tlm); line-height: 1.65;
+}
+
+
+/* ============================================================
    7. TOOLS SNAPSHOT
    ============================================================ */
 .home-tools-section {
@@ -1051,6 +1086,7 @@ body.home  { background: var(--home-surface); }
    ============================================================ */
 @media (max-width: 1050px) {
   .home-diff-grid         { grid-template-columns: 1fr 1fr; }
+  .home-transfer-grid     { grid-template-columns: 1fr 1fr; }
   .home-tools-grid        { grid-template-columns: 1fr 1fr; }
   .home-plans-strip       { grid-template-columns: 1fr 1fr; }
   .home-route-options-grid { grid-template-columns: 1fr 1fr; }
@@ -1078,6 +1114,7 @@ body.home  { background: var(--home-surface); }
   .home-founder-inner     { grid-template-columns: 1fr; gap: 16px; }
   .home-founder-photo-wrap { width: 86px; height: 86px; }
   .home-diff-grid         { grid-template-columns: 1fr; }
+  .home-transfer-grid     { grid-template-columns: 1fr; }
   .home-tools-grid        { grid-template-columns: 1fr; }
   .home-plans-strip       { grid-template-columns: 1fr; }
   .home-route-options-grid { grid-template-columns: 1fr; }
