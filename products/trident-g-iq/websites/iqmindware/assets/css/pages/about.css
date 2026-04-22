@@ -306,6 +306,74 @@ body.about   { background: var(--ab-surface); }
 
 
 /* ============================================================
+   5b. WHO THIS IS FOR
+   ============================================================ */
+.ab-for-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.ab-for-card {
+  background: var(--ab-card-bg);
+  border: 1.5px solid var(--ab-card-bdr);
+  border-radius: var(--r-xl);
+  padding: 22px 20px;
+  border-top: 3px solid var(--blue-dp);
+}
+.ab-for-label {
+  font-size: 14px; font-weight: 800;
+  color: var(--tl); letter-spacing: -.01em;
+  line-height: 1.2; margin-bottom: 9px;
+}
+.ab-for-desc {
+  font-size: 14px; color: var(--tlm); line-height: 1.68;
+}
+
+
+/* ============================================================
+   5c. TRIDENT G FRAMEWORK
+   ============================================================ */
+.ab-trident-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.ab-trident-item {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: var(--r-xl);
+  padding: 26px 24px;
+  border-top: 3px solid var(--cyan);
+}
+.ab-trident-item:nth-child(2) { border-top-color: var(--lime); }
+.ab-trident-item:nth-child(3) { border-top-color: #a78bfa; }
+.ab-trident-item-label {
+  font-size: 14px; font-weight: 800;
+  color: var(--tc); letter-spacing: -.01em;
+  margin-bottom: 9px; line-height: 1.2;
+}
+.ab-trident-item-desc {
+  font-size: 14px; color: var(--tcm); line-height: 1.68;
+}
+
+
+/* ============================================================
+   5d. PROGRAMME LINK ROW
+   ============================================================ */
+.ab-programme-link-row {
+  font-size: 15px; color: var(--tlm); line-height: 1.72;
+  max-width: 70ch;
+}
+.ab-programme-link {
+  color: var(--blue-dp); font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(39,100,183,.25);
+  transition: border-color var(--t-fast);
+}
+.ab-programme-link:hover { border-bottom-color: var(--blue-dp); }
+
+
+/* ============================================================
    6. PRINCIPLES GRID
    ============================================================ */
 .ab-principles-grid {
@@ -663,6 +731,7 @@ body.about   { background: var(--ab-surface); }
 @media (max-width: 1050px) {
   .ab-principles-grid  { grid-template-columns: 1fr 1fr; }
   .ab-evidence-grid    { grid-template-columns: 1fr; }
+  .ab-for-grid         { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 900px) {
   .ab-hero-inner       { grid-template-columns: 1fr; }
@@ -671,8 +740,7 @@ body.about   { background: var(--ab-surface); }
   .ab-founder-photo-wrap { width: 120px; height: 120px; }
   .ab-identity-grid    { grid-template-columns: 1fr; }
   .ab-compare-grid     { grid-template-columns: 1fr; }
-  .ab-method-rail      { grid-template-columns: 1fr 1fr; gap: 16px; }
-  .ab-method-arrow     { display: none; }
+  .ab-trident-grid     { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
   .ab-hero             { padding: 96px var(--gutter) 44px; }
@@ -680,7 +748,7 @@ body.about   { background: var(--ab-surface); }
   .ab-founder-photo-wrap { width: 96px; height: 96px; border-radius: 50%; }
   .ab-founder-card     { padding: 20px 18px 16px; }
   .ab-principles-grid  { grid-template-columns: 1fr; }
-  .ab-method-rail      { grid-template-columns: 1fr; gap: 12px; }
+  .ab-for-grid         { grid-template-columns: 1fr; }
   .ab-boundary         { flex-direction: column; gap: 10px; }
   .ab-cta-links        { flex-wrap: wrap; gap: 8px; }
 }
