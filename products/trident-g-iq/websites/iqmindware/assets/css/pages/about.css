@@ -99,6 +99,22 @@ body.about   { background: var(--ab-surface); }
 .ab-section--alt   .ab-section-sub { color: var(--tlm); }
 .ab-section--dark  .ab-section-sub { color: var(--tcm); }
 
+.about-page #identity.ab-section--light {
+  background:
+    radial-gradient(ellipse 720px 360px at 12% 18%, rgba(34,170,255,.18), transparent 58%),
+    radial-gradient(ellipse 620px 320px at 88% 82%, rgba(204,255,102,.10), transparent 56%),
+    var(--blue-dp, #2764B7);
+  border-top: 1px solid rgba(255,255,255,.14);
+  border-bottom: 1px solid rgba(255,255,255,.14);
+}
+.about-page #identity .ab-eyebrow { color: var(--lime); }
+.about-page #identity .ab-section-title { color: var(--tc); }
+.about-page #identity .ab-identity-card {
+  background: rgba(255,255,255,.96);
+  border-color: rgba(255,255,255,.42);
+  box-shadow: 0 18px 45px rgba(0,0,0,.16);
+}
+
 
 /* ============================================================
    4. HERO
