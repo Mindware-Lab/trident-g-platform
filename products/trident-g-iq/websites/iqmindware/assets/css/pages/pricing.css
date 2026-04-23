@@ -425,6 +425,7 @@ body.plan-screenshot-modal-open {
 .plan-card--cg   { border-top: 3px solid var(--plan-cg); }
 .plan-card--core {
   border-top: 3px solid var(--plan-core);
+  border-color: rgba(245,158,11,.55);
   background: linear-gradient(160deg, #fffbf0, #fff 40%);
 }
 
@@ -488,6 +489,10 @@ body.plan-screenshot-modal-open {
   letter-spacing: -.03em;
   color: var(--tl);
   line-height: 1;
+}
+.plan-card--core .plan-currency,
+.plan-card--core .plan-amount {
+  color: #d97706;
 }
 .plan-period {
   font-family: 'DM Mono', monospace;
