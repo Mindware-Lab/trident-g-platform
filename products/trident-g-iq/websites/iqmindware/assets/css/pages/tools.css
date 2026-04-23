@@ -336,7 +336,9 @@ body.tools { background: var(--tools-surface); }
 
 .tools-grid-section {
   padding: 64px var(--gutter) 72px;
-  background: var(--tools-surface);
+  background: #FFFFFF;
+  border-top: 1px solid var(--tools-rule);
+  border-bottom: 1px solid var(--tools-rule);
 }
 .tools-grid-section-inner {
   max-width: var(--max-w);
@@ -695,7 +697,10 @@ body.tools { background: var(--tools-surface); }
    8. PROOF POSTURE BLOCK
    ============================================================ */
 .tools-proof-posture {
-  background: #E0E0E0;
+  background:
+    radial-gradient(ellipse 720px 340px at 10% 18%, rgba(34,170,255,.18), transparent 58%),
+    radial-gradient(ellipse 600px 300px at 86% 84%, rgba(204,255,102,.09), transparent 56%),
+    linear-gradient(180deg, rgba(34,170,255,.10) 0%, rgba(255,255,255,.98) 100%);
   padding: 60px var(--gutter);
   border-top: 1px solid var(--tools-rule);
   border-bottom: 1px solid var(--tools-rule);
