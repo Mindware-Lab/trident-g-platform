@@ -21,15 +21,15 @@
   --faq-g7: #e2794a;          /* Access & support */
 
   /* Surfaces */
-  --faq-surface:   #eceef2;
-  --faq-rule:      rgba(0,0,0,.09);
+  --faq-surface:   #E0E0E0;
+  --faq-rule:      rgba(35,146,204,.34);
   --faq-card-bg:   #ffffff;
   --faq-card-bdr:  rgba(0,0,0,.08);
 
   /* Jump bar */
   --faq-chip-bg:     rgba(255,255,255,.70);
   --faq-chip-bdr:    rgba(0,0,0,.10);
-  --faq-chip-active: var(--blue-dp);
+  --faq-chip-active: #0044CC;
 }
 
 
@@ -48,7 +48,7 @@ body.faq   { background: var(--faq-surface); }
     radial-gradient(ellipse 800px 440px at  0% 70%, rgba(34,170,255,.09), transparent 55%),
     radial-gradient(ellipse 600px 380px at 100% 20%, rgba(204,255,102,.06), transparent 50%),
     var(--card-dark);
-  border-bottom: 2px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(35,146,204,.42);
   padding: 104px var(--gutter) 52px;
 }
 .faq-hero-inner {
@@ -82,7 +82,7 @@ body.faq   { background: var(--faq-surface); }
    4. QUICK JUMP BAR
    ============================================================ */
 .faq-jump-bar {
-  background: var(--pg-alt);
+  background: rgba(224,224,224,.92);
   border-bottom: 1px solid var(--faq-rule);
   padding: 14px var(--gutter);
   position: sticky;
@@ -165,7 +165,7 @@ body.faq   { background: var(--faq-surface); }
 }
 .faq-sidebar-link:hover { background: rgba(0,0,0,.05); color: var(--tl); }
 .faq-sidebar-link:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
-.faq-sidebar-link.active { background: rgba(39,100,183,.07); color: var(--blue-dp); font-weight: 700; }
+.faq-sidebar-link.active { background: rgba(35,146,204,.08); color: #0044CC; font-weight: 700; }
 .faq-sidebar-dot {
   width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
 }
@@ -225,7 +225,7 @@ body.faq   { background: var(--faq-surface); }
   border-radius: var(--r-xl);
   overflow: hidden;
   background: var(--faq-card-bg);
-  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  box-shadow: 0 12px 30px rgba(39,100,183,.08);
 }
 
 /* Left accent bar per group */
@@ -322,8 +322,8 @@ body.faq   { background: var(--faq-surface); }
    ============================================================ */
 .faq-help-strip {
   background: var(--card-dark);
-  border-top: 1px solid rgba(255,255,255,.06);
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  border-top: 1px solid rgba(35,146,204,.42);
+  border-bottom: 1px solid rgba(35,146,204,.42);
   padding: 44px var(--gutter);
 }
 .faq-help-inner {
@@ -376,7 +376,9 @@ body.faq   { background: var(--faq-surface); }
    8. TRUST FOOTER BLOCK
    ============================================================ */
 .faq-trust-block {
-  background: var(--pg-alt);
+  background:
+    radial-gradient(ellipse 700px 280px at 8% 18%, rgba(34,170,255,.12), transparent 58%),
+    linear-gradient(180deg, rgba(34,170,255,.06) 0%, rgba(255,255,255,.98) 100%);
   border-top: 1px solid var(--faq-rule);
   padding: 32px var(--gutter);
 }
