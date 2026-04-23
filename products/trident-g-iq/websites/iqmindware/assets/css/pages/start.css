@@ -43,8 +43,8 @@
   --boundary-text:  #92400e;
 
   /* Page surfaces */
-  --start-surface:  #eceef2;
-  --start-rule:     rgba(0,0,0,.09);
+  --start-surface:  #E0E0E0;
+  --start-rule:     rgba(35,146,204,.34);
   --start-card-bg:  #ffffff;
   --start-card-bdr: rgba(0,0,0,.08);
 }
@@ -65,7 +65,7 @@ body.start  { background: var(--start-surface); }
     radial-gradient(ellipse 800px 500px at 5%  60%, rgba(204,255,102,.10), transparent 55%),
     radial-gradient(ellipse 700px 400px at 95% 25%, rgba(34,170,255,.11),  transparent 55%),
     var(--card-dark);
-  border-bottom: 2px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(35,146,204,.42);
   padding: 64px var(--gutter) 56px;
 }
 .start-hero-inner {
@@ -370,9 +370,9 @@ body.start  { background: var(--start-surface); }
    5. FIRST-WIN STEP TIMELINE
    ============================================================ */
 .start-steps-section {
-  background: var(--card-dark);
-  border-top: 1px solid rgba(255,255,255,.06);
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  background: #333333;
+  border-top: 1px solid rgba(35,146,204,.42);
+  border-bottom: 1px solid rgba(35,146,204,.42);
   padding: 64px var(--gutter) 68px;
 }
 .start-steps-inner {
@@ -875,7 +875,7 @@ body.start  { background: var(--start-surface); }
 .start-cta-band {
   background: var(--card-deep);
   padding: 64px var(--gutter);
-  border-top: 1px solid rgba(255,255,255,.06);
+  border-top: 1px solid rgba(35,146,204,.42);
   text-align: center;
 }
 .start-cta-inner { max-width: 600px; margin: 0 auto; }
@@ -920,8 +920,9 @@ body.start  { background: var(--start-surface); }
    4b. ROUTE CHOOSER
    ============================================================ */
 .start-route-section {
-  background: var(--start-surface);
+  background: #FFFFFF;
   padding: 68px var(--gutter);
+  border-top: 1px solid var(--start-rule);
   border-bottom: 1px solid var(--start-rule);
 }
 .start-route-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -929,7 +930,7 @@ body.start  { background: var(--start-surface); }
 .start-route-eyebrow {
   font-family: 'DM Mono', monospace;
   font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
-  color: var(--blue-dp); margin-bottom: 8px; display: block;
+  color: #0044CC; margin-bottom: 8px; display: block;
 }
 .start-route-title {
   font-size: clamp(20px, 2.5vw, 28px);
@@ -948,6 +949,7 @@ body.start  { background: var(--start-surface); }
   padding: 24px 22px 22px;
   border-top: 3px solid transparent;
   display: flex; flex-direction: column; gap: 0;
+  box-shadow: 0 12px 34px rgba(39,100,183,.08);
 }
 .start-route-card--app     { border-top-color: var(--lime); }
 .start-route-card--setup   { border-top-color: var(--cyan); }
@@ -979,13 +981,13 @@ body.start  { background: var(--start-surface); }
   padding: 9px 16px; border-radius: var(--r-md);
   font-size: 13px; font-weight: 700;
   text-decoration: none;
-  background: rgba(0,0,0,.06);
-  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(35,146,204,.06);
+  border: 1px solid rgba(35,146,204,.18);
   color: var(--tl);
   transition: background var(--t-fast);
   width: fit-content;
 }
-.start-route-card-cta:hover { background: rgba(0,0,0,.10); }
+.start-route-card-cta:hover { background: rgba(35,146,204,.12); }
 .start-route-card-cta:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
 .start-route-note {
   font-size: 13px; color: var(--tlf); line-height: 1.6;
@@ -1002,9 +1004,12 @@ body.start  { background: var(--start-surface); }
    4c. BEST USE BLOCK
    ============================================================ */
 .start-bestuse-section {
-  background: var(--card-dark);
-  border-top: 1px solid rgba(255,255,255,.06);
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  background:
+    radial-gradient(ellipse 760px 360px at 12% 22%, rgba(34,170,255,.18), transparent 58%),
+    radial-gradient(ellipse 620px 320px at 88% 84%, rgba(204,255,102,.10), transparent 56%),
+    linear-gradient(180deg, rgba(34,170,255,.10) 0%, rgba(255,255,255,.98) 100%);
+  border-top: 1px solid rgba(35,146,204,.34);
+  border-bottom: 1px solid rgba(35,146,204,.34);
   padding: 64px var(--gutter);
 }
 .start-bestuse-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -1012,11 +1017,11 @@ body.start  { background: var(--start-surface); }
 .start-bestuse-eyebrow {
   font-family: 'DM Mono', monospace;
   font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
-  color: var(--lime); margin-bottom: 8px; display: block;
+  color: #0044CC; margin-bottom: 8px; display: block;
 }
 .start-bestuse-title {
   font-size: clamp(20px, 2.5vw, 28px);
-  font-weight: 800; letter-spacing: -.018em; color: var(--tc);
+  font-weight: 800; letter-spacing: -.018em; color: #333333;
 }
 .start-bestuse-list {
   list-style: none;
@@ -1026,9 +1031,9 @@ body.start  { background: var(--start-surface); }
   gap: 10px 40px;
 }
 .start-bestuse-item {
-  font-size: 15px; color: var(--tcm); line-height: 1.55;
+  font-size: 15px; color: var(--tlm); line-height: 1.55;
   padding: 12px 0 12px 20px;
-  border-bottom: 1px solid rgba(255,255,255,.07);
+  border-bottom: 1px solid rgba(35,146,204,.22);
   position: relative;
 }
 .start-bestuse-item::before {
