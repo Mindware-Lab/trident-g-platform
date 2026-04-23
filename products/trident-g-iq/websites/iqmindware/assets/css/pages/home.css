@@ -313,11 +313,12 @@ body.home  { background: var(--home-surface); }
 }
 .home-founder-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
   letter-spacing: .16em;
   text-transform: uppercase;
-  color: var(--blue-dp);
-  margin-bottom: 8px;
+  color: #0044CC;
+  margin-bottom: 10px;
   display: block;
 }
 .home-founder-title {
