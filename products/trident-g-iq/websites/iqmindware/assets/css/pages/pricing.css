@@ -145,8 +145,8 @@ body.pricing  { background: var(--pricing-surface); }
    4. CURRENCY TOGGLE
    ============================================================ */
 .pricing-currency-bar {
-  background: var(--card-deep);
-  border-bottom: 1px solid rgba(35,146,204,.42);
+  background: #22AAFF;
+  border-bottom: 1px solid #2392CC;
   padding: 0 var(--gutter);
   height: 48px;
   display: flex;
@@ -166,11 +166,11 @@ body.pricing  { background: var(--pricing-surface); }
   font-weight: 700;
   letter-spacing: .14em;
   text-transform: uppercase;
-  color: #d7ecff;
+  color: #0044CC;
   padding: 6px 10px;
   border-radius: var(--r-full);
-  background: rgba(34,170,255,.12);
-  border: 1px solid rgba(34,170,255,.34);
+  background: rgba(255,255,255,.40);
+  border: 1px solid rgba(0,68,204,.22);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -195,17 +195,17 @@ body.pricing  { background: var(--pricing-surface); }
   letter-spacing: .10em;
   padding: 5px 14px;
   border-radius: var(--r-full);
-  border: 1px solid rgba(255,255,255,.14);
+  border: 1px solid rgba(0,68,204,.22);
   background: transparent;
-  color: var(--tcm);
+  color: #333333;
   cursor: pointer;
   transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
   white-space: nowrap;
   font-family: inherit;
 }
 .pricing-currency-btn:hover {
-  background: rgba(255,255,255,.07);
-  color: var(--tc);
+  background: rgba(255,255,255,.28);
+  color: #111827;
 }
 .pricing-currency-btn.active {
   background: #0044CC;
@@ -216,12 +216,12 @@ body.pricing  { background: var(--pricing-surface); }
   font-family: 'DM Mono', monospace;
   font-size: 11px;
   letter-spacing: .05em;
-  color: #e8f5ff;
+  color: #0f2b46;
   margin-left: auto;
   padding: 6px 10px;
   border-radius: var(--r-full);
-  border: 1px solid rgba(142,212,255,.35);
-  background: rgba(34,170,255,.12);
+  border: 1px solid rgba(0,68,204,.22);
+  background: rgba(255,255,255,.40);
   font-weight: 700;
 }
 
