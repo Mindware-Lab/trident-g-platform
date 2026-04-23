@@ -58,6 +58,7 @@ body.learn    { background: #E0E0E0; }
   font-size: 15px; color: var(--tcm);
   max-width: 52ch; line-height: 1.72;
 }
+.lh-hero-sub strong { color: var(--tc); }
 
 /* Hero right: content count chips */
 .lh-hero-meta {
