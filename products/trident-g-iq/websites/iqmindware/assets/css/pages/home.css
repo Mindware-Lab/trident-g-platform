@@ -405,18 +405,20 @@ body.home  { background: var(--home-surface); }
 
 .home-route-icon { font-size: 22px; margin-bottom: 2px; }
 .home-route-title {
-  font-size: 15px; font-weight: 800;
-  color: var(--tc); letter-spacing: -.01em;
+  font-size: 17px; font-weight: 800;
+  color: var(--tl); letter-spacing: -.012em;
+  line-height: 1.2;
+  margin-bottom: 10px;
 }
 .home-route-desc {
-  font-size: 14px; color: var(--tcm); line-height: 1.6; flex: 1;
+  font-size: 14.5px; color: var(--tlm); line-height: 1.68; flex: 1;
 }
 .home-route-cta {
   font-size: 13.5px; font-weight: 800;
   display: flex; align-items: center; gap: 5px;
-  margin-top: 4px;
+  margin-top: 8px;
 }
-.home-route-card--start .home-route-cta { color: #6D6D6D; }
+.home-route-card--start .home-route-cta { color: #333333; }
 .home-route-card--tools .home-route-cta { color: #0044CC; }
 .home-route-card--plans .home-route-cta { color: #0044CC; }
 
