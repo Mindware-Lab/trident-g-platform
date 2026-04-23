@@ -730,6 +730,12 @@ body.plan-screenshot-modal-open {
 .pricing-coaching-intro-link:hover {
   border-bottom-color: var(--cyan-lt);
 }
+.pricing-coaching-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
 
 /* ============================================================
    8. COACHING ADD-ON CARDS
@@ -1125,6 +1131,7 @@ body.plan-screenshot-modal-open {
   .plan-screenshots              { flex-direction: row; flex: none; width: 100%; }
   .plan-screenshot-trigger       { flex: 1; }
   .pricing-coaching-intro-cols   { grid-template-columns: 1fr; gap: 20px; }
+  .pricing-coaching-actions      { margin-top: 20px; }
 }
 @media (max-width: 600px) {
   .plan-screenshots       { flex-direction: column; }
