@@ -72,8 +72,8 @@ body.start  { background: var(--start-surface); }
   max-width: var(--max-w);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(0, .86fr) minmax(420px, 1fr);
-  gap: 48px;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+  gap: 40px;
   align-items: center;
 }
 .start-hero-eyebrow {
@@ -129,11 +129,12 @@ body.start  { background: var(--start-surface); }
 
 .start-hero-screenshot {
   margin: 0;
-  justify-self: stretch;
+  justify-self: end;
+  width: min(100%, 320px);
   border: 1px solid rgba(255,255,255,.18);
   border-radius: var(--r-lg);
   background: rgba(4, 10, 24, .46);
-  box-shadow: 0 24px 70px rgba(0,0,0,.32);
+  box-shadow: 0 16px 44px rgba(0,0,0,.28);
   overflow: hidden;
 }
 .start-hero-screenshot img {
@@ -1082,7 +1083,7 @@ body.start  { background: var(--start-surface); }
 }
 @media (max-width: 900px) {
   .start-hero-inner         { grid-template-columns: 1fr; }
-  .start-hero-screenshot    { width: min(100%, 720px); }
+  .start-hero-screenshot    { justify-self: start; width: min(100%, 320px); }
   .start-steps-grid         { grid-template-columns: 1fr 1fr; gap: 28px; }
   .start-steps-grid--four   { grid-template-columns: 1fr 1fr; }
   .start-steps-grid::before { display: none; }
