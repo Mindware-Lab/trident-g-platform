@@ -32,8 +32,8 @@
   --plan-core-amber: #f59e0b;
 
   /* Page surface */
-  --home-surface:  #eceef2;
-  --home-rule:     rgba(0,0,0,.09);
+  --home-surface:  #E0E0E0;
+  --home-rule:     rgba(35,146,204,.34);
   --home-card-bg:  #ffffff;
   --home-card-bdr: rgba(0,0,0,.08);
 }
@@ -284,7 +284,7 @@ body.home  { background: var(--home-surface); }
    4. FOUNDER STRIP
    ============================================================ */
 .home-founder-strip {
-  background: var(--pg);
+  background: #FFFFFF;
   border-bottom: 1px solid var(--home-rule);
   padding: 42px var(--gutter);
 }
@@ -365,8 +365,8 @@ body.home  { background: var(--home-surface); }
    4. ROUTE CARDS
    ============================================================ */
 .home-routes-section {
-  background: var(--card-deep);
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  background: #E0E0E0;
+  border-bottom: 1px solid var(--home-rule);
   padding: 52px var(--gutter);
 }
 .home-routes-inner {
@@ -377,8 +377,8 @@ body.home  { background: var(--home-surface); }
   gap: 16px;
 }
 .home-route-card {
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.10);
+  background: #FFFFFF;
+  border: 1.5px solid rgba(35,146,204,.18);
   border-radius: var(--r-xl);
   padding: 24px 24px 20px;
   display: flex;
@@ -386,18 +386,19 @@ body.home  { background: var(--home-surface); }
   gap: 10px;
   text-decoration: none;
   color: inherit;
-  transition: background var(--t-base), border-color var(--t-base), transform var(--t-base);
+  transition: background var(--t-base), border-color var(--t-base), transform var(--t-base), box-shadow var(--t-base);
   outline: none;
 }
 .home-route-card:hover {
-  background: rgba(255,255,255,.07);
-  border-color: rgba(255,255,255,.18);
+  background: #FFFFFF;
+  border-color: rgba(35,146,204,.34);
+  box-shadow: 0 10px 28px rgba(35,146,204,.12);
   transform: translateY(-2px);
 }
 .home-route-card:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
 
 .home-route-card--start  { border-top: 3px solid var(--lime); }
-.home-route-card--tools  { border-top: 3px solid var(--cyan); }
+.home-route-card--tools  { border-top: 3px solid #22AAFF; }
 .home-route-card--plans  { border-top: 3px solid #f59e0b; }
 
 .home-route-icon { font-size: 22px; margin-bottom: 2px; }
@@ -413,17 +414,21 @@ body.home  { background: var(--home-surface); }
   display: flex; align-items: center; gap: 5px;
   margin-top: 4px;
 }
-.home-route-card--start .home-route-cta { color: var(--lime); }
-.home-route-card--tools .home-route-cta { color: var(--cyan-lt); }
-.home-route-card--plans .home-route-cta { color: #fcd34d; }
+.home-route-card--start .home-route-cta { color: #6D6D6D; }
+.home-route-card--tools .home-route-cta { color: #0044CC; }
+.home-route-card--plans .home-route-cta { color: #0044CC; }
 
 
 /* ============================================================
    5. WHAT MAKES THIS DIFFERENT
    ============================================================ */
 .home-diff-section {
-  background: var(--home-surface);
+  background:
+    radial-gradient(ellipse 740px 360px at 12% 18%, rgba(34,170,255,.18), transparent 58%),
+    radial-gradient(ellipse 620px 320px at 88% 82%, rgba(204,255,102,.10), transparent 56%),
+    linear-gradient(180deg, rgba(34,170,255,.10) 0%, rgba(255,255,255,.98) 100%);
   padding: 72px var(--gutter);
+  border-top: 1px solid var(--home-rule);
   border-bottom: 1px solid var(--home-rule);
 }
 .home-diff-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -431,7 +436,7 @@ body.home  { background: var(--home-surface); }
 .home-section-eyebrow {
   font-family: 'DM Mono', monospace;
   font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
-  color: var(--blue-dp); margin-bottom: 8px; display: block;
+  color: #0044CC; margin-bottom: 8px; display: block;
 }
 .home-section-title {
   font-size: clamp(22px, 3vw, 32px);
@@ -488,9 +493,9 @@ body.home  { background: var(--home-surface); }
    6. HOW IT WORKS MINI-FLOW
    ============================================================ */
 .home-flow-section {
-  background: var(--card-dark);
-  border-top: 1px solid rgba(255,255,255,.06);
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  background: #333333;
+  border-top: 1px solid rgba(35,146,204,.42);
+  border-bottom: 1px solid rgba(35,146,204,.42);
   padding: 68px var(--gutter);
 }
 .home-flow-inner { max-width: var(--max-w); margin: 0 auto; }
@@ -624,7 +629,7 @@ body.home  { background: var(--home-surface); }
    6c. HOW FAR TRANSFER WORKS
    ============================================================ */
 .home-transfer-section {
-  background: var(--home-surface);
+  background: #FFFFFF;
   padding: 72px var(--gutter);
   border-bottom: 1px solid var(--home-rule);
 }
@@ -659,7 +664,7 @@ body.home  { background: var(--home-surface); }
    7. TOOLS SNAPSHOT
    ============================================================ */
 .home-tools-section {
-  background: var(--home-surface);
+  background: #E0E0E0;
   padding: 72px var(--gutter);
   border-bottom: 1px solid var(--home-rule);
 }
@@ -792,7 +797,9 @@ body.home  { background: var(--home-surface); }
    8. PROOF POSTURE BLOCK (full expanded)
    ============================================================ */
 .home-proof-section {
-  background: var(--pg-alt);
+  background:
+    radial-gradient(ellipse 720px 320px at 82% 18%, rgba(34,170,255,.14), transparent 58%),
+    linear-gradient(180deg, rgba(34,170,255,.08) 0%, rgba(255,255,255,.98) 100%);
   padding: 68px var(--gutter);
   border-top: 1px solid var(--home-rule);
   border-bottom: 1px solid var(--home-rule);
@@ -856,7 +863,7 @@ body.home  { background: var(--home-surface); }
    9. PLANS SNAPSHOT STRIP
    ============================================================ */
 .home-plans-section {
-  background: var(--home-surface);
+  background: #FFFFFF;
   padding: 68px var(--gutter);
   border-bottom: 1px solid var(--home-rule);
 }
@@ -1001,7 +1008,7 @@ body.home  { background: var(--home-surface); }
    10. UPDATES SIGNUP
    ============================================================ */
 .home-updates-section {
-  background: var(--pg);
+  background: #E0E0E0;
   padding: 58px var(--gutter);
   border-bottom: 1px solid var(--home-rule);
 }
@@ -1042,9 +1049,9 @@ body.home  { background: var(--home-surface); }
    11. FINAL CTA BAND
    ============================================================ */
 .home-cta-band {
-  background: var(--card-deep);
+  background: #333333;
   padding: 72px var(--gutter);
-  border-top: 1px solid rgba(255,255,255,.06);
+  border-top: 1px solid rgba(35,146,204,.42);
   text-align: center;
   position: relative;
   overflow: hidden;
