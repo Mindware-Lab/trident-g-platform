@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    IQ MINDWARE - how-it-works.css v1.0
    Scope: /how-it-works - method explainer.
    Requires: brand.css loaded first.
@@ -85,7 +85,8 @@ body.how  { background: var(--how-surface); }
 }
 .how-hero-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10.5px;
+  font-size: 11.5px;
+  font-weight: 700;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--cyan-lt);
@@ -206,7 +207,9 @@ body.how  { background: var(--how-surface); }
 .how-section-hd { margin-bottom: 40px; }
 .how-section-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
   margin-bottom: 8px; display: block;
 }
 .how-section--light     .how-section-eyebrow,
@@ -791,7 +794,9 @@ body.how  { background: var(--how-surface); }
 .how-cta-inner { max-width: 580px; margin: 0 auto; position: relative; z-index: 1; }
 .how-cta-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
   color: var(--tcf); margin-bottom: 12px; display: block;
 }
 .how-cta-title {

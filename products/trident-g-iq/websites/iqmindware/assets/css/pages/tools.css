@@ -73,7 +73,8 @@ body.tools { background: var(--tools-surface); }
 }
 .tools-hero-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10.5px;
+  font-size: 11.5px;
+  font-weight: 700;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--lime);
@@ -349,7 +350,8 @@ body.tools { background: var(--tools-surface); }
 }
 .tools-grid-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: #0044CC;
@@ -604,7 +606,8 @@ body.tools { background: var(--tools-surface); }
 }
 .tools-today-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--lime);
@@ -717,7 +720,8 @@ body.tools { background: var(--tools-surface); }
 }
 .tools-posture-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
   letter-spacing: .16em;
   text-transform: uppercase;
   color: #0044CC;
@@ -807,7 +811,8 @@ body.tools { background: var(--tools-surface); }
 }
 .tools-cta-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--tcf);
@@ -935,7 +940,8 @@ body.tool-detail { background: var(--tools-surface); }
   display: inline-block;
   margin-bottom: 10px;
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--lime);

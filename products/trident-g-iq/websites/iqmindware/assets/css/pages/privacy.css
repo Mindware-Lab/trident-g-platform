@@ -57,7 +57,9 @@ body.privacy  { background: var(--pv-surface); }
 .pv-hero-inner { max-width: var(--max-w); margin: 0 auto; }
 .pv-hero-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
   color: var(--cyan-lt); display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
 }
 .pv-hero-eyebrow::before {

@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    IQ MINDWARE - coaching.css  v1.0
    Scope: /coaching - qualification + conversion for live services.
    Requires: brand.css loaded first.
@@ -85,7 +85,9 @@ body.coaching          { background: var(--co-surface); }
 
 .co-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
   display: block; margin-bottom: 8px;
 }
 .co-section--light .co-eyebrow,
@@ -128,7 +130,9 @@ body.coaching          { background: var(--co-surface); }
 }
 .co-hero-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
   color: var(--cyan-lt); margin-bottom: 14px;
   display: flex; align-items: center; gap: 8px;
 }
@@ -748,7 +752,9 @@ body.coaching          { background: var(--co-surface); }
 .co-cta-inner { max-width: 580px; margin: 0 auto; position: relative; z-index: 1; }
 .co-cta-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
   color: var(--tcf); margin-bottom: 12px; display: block;
 }
 .co-cta-title {

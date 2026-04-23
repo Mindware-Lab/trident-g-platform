@@ -78,7 +78,8 @@ body.start  { background: var(--start-surface); }
 }
 .start-hero-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10.5px;
+  font-size: 11.5px;
+  font-weight: 700;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--lime);
@@ -195,7 +196,8 @@ body.start  { background: var(--start-surface); }
 }
 .start-lanes-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--blue-dp);
@@ -381,7 +383,8 @@ body.start  { background: var(--start-surface); }
 }
 .start-steps-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--lime);
@@ -505,7 +508,9 @@ body.start  { background: var(--start-surface); }
 .start-actions-hd { margin-bottom: 32px; }
 .start-actions-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
   color: var(--blue-dp); margin-bottom: 8px; display: block;
 }
 .start-actions-title {
@@ -743,7 +748,9 @@ body.start  { background: var(--start-surface); }
 .start-proof-lhs {}
 .start-proof-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase;
   color: var(--blue-dp); margin-bottom: 10px; display: block;
 }
 .start-proof-title {
@@ -881,7 +888,9 @@ body.start  { background: var(--start-surface); }
 .start-cta-inner { max-width: 600px; margin: 0 auto; }
 .start-cta-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
   color: var(--tcf); margin-bottom: 12px; display: block;
 }
 .start-cta-title {
@@ -929,7 +938,9 @@ body.start  { background: var(--start-surface); }
 .start-route-hd { margin-bottom: 36px; }
 .start-route-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
   color: #0044CC; margin-bottom: 8px; display: block;
 }
 .start-route-title {
@@ -1016,7 +1027,9 @@ body.start  { background: var(--start-surface); }
 .start-bestuse-hd { margin-bottom: 32px; }
 .start-bestuse-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
   color: #0044CC; margin-bottom: 8px; display: block;
 }
 .start-bestuse-title {

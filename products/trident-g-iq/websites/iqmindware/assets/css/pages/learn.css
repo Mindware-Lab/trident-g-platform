@@ -33,7 +33,9 @@ body.learn    { background: #E0E0E0; }
 }
 .lh-hero-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
   color: var(--cyan-lt); margin-bottom: 12px;
   display: flex; align-items: center; gap: 8px;
 }
@@ -84,7 +86,9 @@ body.learn    { background: #E0E0E0; }
 /* Section label */
 .lh-section-label {
   font-family: 'DM Mono', monospace;
-  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase;
   color: #0044CC; display: block; margin-bottom: 16px;
 }
 
@@ -261,7 +265,8 @@ body.learn    { background: #E0E0E0; }
 .lh-cta-inner { max-width: 580px; margin: 0 auto; position: relative; z-index: 1; }
 .lh-cta-eyebrow {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--tcf);
