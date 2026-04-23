@@ -38,8 +38,8 @@
   --tag-soon-bdr:  rgba(107,114,128,.22);
 
   /* Page surface */
-  --tools-surface: #eceef2;
-  --tools-rule:    rgba(0,0,0,.09);
+  --tools-surface: #E0E0E0;
+  --tools-rule:    rgba(35,146,204,.34);
   --tools-card-bg: #ffffff;
   --tools-card-bdr: rgba(0,0,0,.08);
 }
@@ -60,7 +60,7 @@ body.tools { background: var(--tools-surface); }
     radial-gradient(ellipse 900px 500px at 10% 60%,  rgba(204,255,102,.10), transparent 55%),
     radial-gradient(ellipse 700px 400px at 90% 20%,  rgba(34,170,255,.10),  transparent 55%),
     var(--card-dark);
-  border-bottom: 2px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(35,146,204,.42);
   padding: 64px var(--gutter) 52px;
 }
 .tools-hero-inner {
@@ -157,7 +157,7 @@ body.tools { background: var(--tools-surface); }
    ============================================================ */
 .tools-routes {
   background: var(--card-deep);
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(35,146,204,.42);
   padding: 0 var(--gutter);
 }
 .tools-routes-inner {
@@ -198,9 +198,9 @@ body.tools { background: var(--tools-surface); }
   border-color: rgba(255,255,255,.18);
 }
 .tools-route-chip.active {
-  background: var(--blue-dp);
+  background: #0044CC;
   color: #fff;
-  border-color: var(--blue-dp);
+  border-color: #0044CC;
 }
 .tools-route-dot {
   width: 7px;
@@ -231,14 +231,18 @@ body.tools { background: var(--tools-surface); }
    ============================================================ */
 .tools-programme-section {
   padding: 60px var(--gutter);
-  background: var(--tools-surface);
+  background: #FFFFFF;
+  border-top: 1px solid var(--tools-rule);
   border-bottom: 1px solid var(--tools-rule);
 }
 .tools-programme-section--alt {
-  background: var(--pg-alt);
+  background:
+    radial-gradient(ellipse 740px 340px at 12% 18%, rgba(34,170,255,.18), transparent 58%),
+    radial-gradient(ellipse 620px 320px at 88% 82%, rgba(204,255,102,.10), transparent 56%),
+    linear-gradient(180deg, rgba(34,170,255,.10) 0%, rgba(255,255,255,.98) 100%);
 }
 .tools-programme-section--manual {
-  background: #fff;
+  background: #E0E0E0;
 }
 .tools-programme-inner {
   max-width: var(--max-w);
@@ -258,7 +262,8 @@ body.tools { background: var(--tools-surface); }
   padding: 18px 20px;
 }
 .tools-principle-card {
-  border-top: 3px solid var(--blue-dp);
+  border-top: 3px solid #22AAFF;
+  box-shadow: 0 12px 34px rgba(39,100,183,.08);
 }
 .tools-principle-label,
 .tools-structure-label,
@@ -345,7 +350,7 @@ body.tools { background: var(--tools-surface); }
   font-size: 10px;
   letter-spacing: .18em;
   text-transform: uppercase;
-  color: var(--blue-dp);
+  color: #0044CC;
   margin-bottom: 8px;
   display: block;
 }
@@ -378,12 +383,12 @@ body.tools { background: var(--tools-surface); }
   outline: none; /* custom focus below */
 }
 .tool-card:hover {
-  box-shadow: 0 12px 36px rgba(0,0,0,.12);
+  box-shadow: 0 12px 36px rgba(39,100,183,.12);
   transform: translateY(-3px);
 }
 .tool-card:focus-within {
-  border-color: var(--blue-dp);
-  box-shadow: 0 0 0 3px rgba(39,100,183,.20);
+  border-color: #2392CC;
+  box-shadow: 0 0 0 3px rgba(35,146,204,.18);
 }
 
 /* Coming soon - muted */
@@ -556,13 +561,13 @@ body.tools { background: var(--tools-surface); }
   text-decoration: none;
   color: var(--tlm);
   background: transparent;
-  border: 1px solid rgba(0,0,0,.12);
+  border: 1px solid rgba(35,146,204,.18);
   transition: background var(--t-fast), color var(--t-fast);
   font-family: inherit;
   cursor: pointer;
   line-height: 1;
 }
-.tool-cta-secondary:hover { background: rgba(0,0,0,.05); color: var(--tl); }
+.tool-cta-secondary:hover { background: rgba(35,146,204,.08); color: var(--tl); }
 .tool-cta-secondary:focus { outline: 3px solid rgba(39,100,183,.4); outline-offset: 2px; }
 
 .tool-cta-waitlist {
@@ -586,9 +591,9 @@ body.tools { background: var(--tools-surface); }
    7. "WHAT TO DO TODAY" STRIP
    ============================================================ */
 .tools-today {
-  background: var(--card-dark);
-  border-top: 1px solid rgba(255,255,255,.06);
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  background: #333333;
+  border-top: 1px solid rgba(35,146,204,.42);
+  border-bottom: 1px solid rgba(35,146,204,.42);
   padding: 52px var(--gutter);
 }
 .tools-today-inner {
@@ -690,8 +695,9 @@ body.tools { background: var(--tools-surface); }
    8. PROOF POSTURE BLOCK
    ============================================================ */
 .tools-proof-posture {
-  background: var(--pg-alt);
+  background: #E0E0E0;
   padding: 60px var(--gutter);
+  border-top: 1px solid var(--tools-rule);
   border-bottom: 1px solid var(--tools-rule);
 }
 .tools-proof-posture-inner {
@@ -709,7 +715,7 @@ body.tools { background: var(--tools-surface); }
   font-size: 10px;
   letter-spacing: .16em;
   text-transform: uppercase;
-  color: var(--blue-dp);
+  color: #0044CC;
   margin-bottom: 10px;
   display: block;
 }
@@ -766,6 +772,7 @@ body.tools { background: var(--tools-surface); }
   display: flex;
   flex-direction: column;
   gap: 9px;
+  box-shadow: 0 12px 34px rgba(39,100,183,.08);
 }
 .tools-link-group a {
   color: var(--blue-dp);
@@ -786,7 +793,7 @@ body.tools { background: var(--tools-surface); }
 .tools-cta-band {
   background: var(--card-deep);
   padding: 64px var(--gutter);
-  border-top: 1px solid rgba(255,255,255,.06);
+  border-top: 1px solid rgba(35,146,204,.42);
   text-align: center;
 }
 .tools-cta-band-inner {
