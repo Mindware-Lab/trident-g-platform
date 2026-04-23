@@ -46,8 +46,8 @@
   --boundary-bdr:   rgba(180,83,9,.28);
 
   /* Page surfaces */
-  --co-surface:     #eceef2;
-  --co-rule:        rgba(0,0,0,.09);
+  --co-surface:     #E0E0E0;
+  --co-rule:        rgba(35,146,204,.34);
   --co-card-bg:     #ffffff;
   --co-card-bdr:    rgba(0,0,0,.08);
 }
@@ -67,12 +67,18 @@ body.coaching          { background: var(--co-surface); }
   padding: 68px var(--gutter) 72px;
   border-bottom: 1px solid var(--co-rule);
 }
-.co-section--light     { background: var(--co-surface); }
-.co-section--alt       { background: var(--pg-alt); }
+.co-section--light     { background: #FFFFFF; }
+.co-section--alt       { background: #E0E0E0; }
 .co-section--dark {
-  background: var(--card-dark);
-  border-top:    1px solid rgba(255,255,255,.06);
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  background: #333333;
+  border-top:    1px solid rgba(35,146,204,.42);
+  border-bottom: 1px solid rgba(35,146,204,.42);
+}
+#packages.co-section--light {
+  background:
+    radial-gradient(ellipse 740px 340px at 12% 18%, rgba(34,170,255,.18), transparent 58%),
+    radial-gradient(ellipse 620px 320px at 88% 82%, rgba(204,255,102,.10), transparent 56%),
+    linear-gradient(180deg, rgba(34,170,255,.10) 0%, rgba(255,255,255,.98) 100%);
 }
 .co-section-inner { max-width: var(--max-w); margin: 0 auto; }
 .co-section-hd    { margin-bottom: 36px; }
@@ -83,7 +89,7 @@ body.coaching          { background: var(--co-surface); }
   display: block; margin-bottom: 8px;
 }
 .co-section--light .co-eyebrow,
-.co-section--alt   .co-eyebrow { color: var(--blue-dp); }
+.co-section--alt   .co-eyebrow { color: #0044CC; }
 .co-section--dark  .co-eyebrow { color: var(--cyan-lt); }
 
 .co-section-title {
@@ -111,7 +117,7 @@ body.coaching          { background: var(--co-surface); }
     radial-gradient(ellipse 900px 500px at  0% 60%, rgba(34,170,255,.10),  transparent 55%),
     radial-gradient(ellipse 700px 400px at 100% 25%, rgba(167,139,250,.10), transparent 55%),
     var(--card-dark);
-  border-bottom: 2px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(35,146,204,.42);
   padding: 114px var(--gutter) 60px;
 }
 .co-hero-inner {
@@ -210,7 +216,7 @@ body.coaching          { background: var(--co-surface); }
   display: flex; flex-direction: column;
   transition: box-shadow var(--t-base), transform var(--t-base);
 }
-.co-uc-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.09); transform: translateY(-2px); }
+.co-uc-card:hover { box-shadow: 0 12px 34px rgba(39,100,183,.12); transform: translateY(-2px); }
 
 .co-uc-card:nth-child(1) { border-top: 3px solid var(--uc-1); }
 .co-uc-card:nth-child(2) { border-top: 3px solid var(--uc-2); }
@@ -342,7 +348,7 @@ body.coaching          { background: var(--co-surface); }
   display: flex; flex-direction: column;
   transition: box-shadow var(--t-base), transform var(--t-base);
 }
-.co-pkg-card:hover { box-shadow: 0 12px 32px rgba(0,0,0,.11); transform: translateY(-3px); }
+.co-pkg-card:hover { box-shadow: 0 12px 36px rgba(39,100,183,.12); transform: translateY(-3px); }
 .co-pkg-card--cohort  { border-top: 3px solid var(--pkg-cohort); }
 .co-pkg-card--premium {
   border-top: 3px solid var(--pkg-premium);
@@ -557,6 +563,7 @@ body.coaching          { background: var(--co-surface); }
   padding: 18px 20px;
   border-left: 3px solid transparent;
   display: flex; gap: 12px; align-items: flex-start;
+  box-shadow: 0 12px 34px rgba(39,100,183,.08);
 }
 .co-artifact-card:nth-child(1) { border-left-color: var(--pkg-cohort); }
 .co-artifact-card:nth-child(2) { border-left-color: var(--uc-2); }
@@ -621,6 +628,7 @@ body.coaching          { background: var(--co-surface); }
   border: 1.5px solid var(--co-card-bdr);
   border-radius: var(--r-xl);
   overflow: hidden;
+  box-shadow: 0 12px 34px rgba(39,100,183,.08);
 }
 .co-policy-row {
   display: flex; align-items: flex-start; gap: 14px;
@@ -685,6 +693,7 @@ body.coaching          { background: var(--co-surface); }
   border-radius: var(--r-xl);
   overflow: hidden;
   background: var(--co-card-bg);
+  box-shadow: 0 12px 34px rgba(39,100,183,.08);
 }
 .co-faq-item { border-bottom: 1px solid var(--co-rule); }
 .co-faq-item:last-child { border-bottom: none; }
