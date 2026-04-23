@@ -145,8 +145,8 @@ body.pricing  { background: var(--pricing-surface); }
    4. CURRENCY TOGGLE
    ============================================================ */
 .pricing-currency-bar {
-  background: #22AAFF;
-  border-bottom: 1px solid #2392CC;
+  background: rgba(224,224,224,.92);
+  border-bottom: 1px solid var(--pricing-rule);
   padding: 0 var(--gutter);
   height: 48px;
   display: flex;
