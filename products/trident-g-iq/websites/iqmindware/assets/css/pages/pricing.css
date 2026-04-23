@@ -43,8 +43,8 @@
   --guarantee-bdr:  rgba(46,125,50,.22);
 
   /* Page surfaces */
-  --pricing-surface: #eceef2;
-  --pricing-rule:    rgba(0,0,0,.09);
+  --pricing-surface: #E0E0E0;
+  --pricing-rule:    rgba(35,146,204,.34);
   --pricing-card-bg: #ffffff;
   --pricing-card-bdr: rgba(0,0,0,.08);
 }
@@ -65,7 +65,7 @@ body.pricing  { background: var(--pricing-surface); }
     radial-gradient(ellipse 700px 400px at 15% 60%, rgba(245,158,11,.09), transparent 55%),
     radial-gradient(ellipse 800px 500px at 85% 20%, rgba(34,170,255,.10), transparent 55%),
     var(--card-dark);
-  border-bottom: 2px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(35,146,204,.42);
   padding: 64px var(--gutter) 52px;
 }
 .pricing-hero-inner {
@@ -145,7 +145,7 @@ body.pricing  { background: var(--pricing-surface); }
    ============================================================ */
 .pricing-currency-bar {
   background: var(--card-deep);
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(35,146,204,.42);
   padding: 0 var(--gutter);
   height: 48px;
   display: flex;
@@ -207,9 +207,9 @@ body.pricing  { background: var(--pricing-surface); }
   color: var(--tc);
 }
 .pricing-currency-btn.active {
-  background: var(--blue-dp);
+  background: #0044CC;
   color: #fff;
-  border-color: var(--blue-dp);
+  border-color: #0044CC;
 }
 .pricing-currency-note {
   font-family: 'DM Mono', monospace;
@@ -233,12 +233,18 @@ body.pricing  { background: var(--pricing-surface); }
   border-bottom: 1px solid var(--pricing-rule);
 }
 .pricing-section:last-of-type { border-bottom: none; }
-.pricing-section--light     { background: var(--pricing-surface); }
-.pricing-section--light-alt { background: var(--pg-alt); }
+.pricing-section--light     { background: #FFFFFF; }
+.pricing-section--light-alt { background: #E0E0E0; }
 .pricing-section--dark {
-  background: var(--card-dark);
-  border-top: 1px solid rgba(255,255,255,.06);
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  background: #333333;
+  border-top: 1px solid rgba(35,146,204,.42);
+  border-bottom: 1px solid rgba(35,146,204,.42);
+}
+.pricing-section#route-chooser.pricing-section--light-alt {
+  background:
+    radial-gradient(ellipse 740px 340px at 12% 18%, rgba(34,170,255,.18), transparent 58%),
+    radial-gradient(ellipse 620px 320px at 88% 82%, rgba(204,255,102,.10), transparent 56%),
+    linear-gradient(180deg, rgba(34,170,255,.10) 0%, rgba(255,255,255,.98) 100%);
 }
 .pricing-section-inner { max-width: var(--max-w); margin: 0 auto; }
 
@@ -252,7 +258,7 @@ body.pricing  { background: var(--pricing-surface); }
   display: block;
 }
 .pricing-section--light     .pricing-section-eyebrow,
-.pricing-section--light-alt .pricing-section-eyebrow { color: var(--blue-dp); }
+.pricing-section--light-alt .pricing-section-eyebrow { color: #0044CC; }
 .pricing-section--dark      .pricing-section-eyebrow { color: var(--cyan); }
 
 .pricing-section-title {
@@ -403,12 +409,12 @@ body.plan-screenshot-modal-open {
   outline: none;
 }
 .plan-card:hover {
-  box-shadow: 0 10px 32px rgba(0,0,0,.10);
+  box-shadow: 0 12px 36px rgba(39,100,183,.12);
   transform: translateY(-3px);
 }
 .plan-card:focus-within {
-  border-color: var(--blue-dp);
-  box-shadow: 0 0 0 3px rgba(39,100,183,.18);
+  border-color: #2392CC;
+  box-shadow: 0 0 0 3px rgba(35,146,204,.18);
 }
 
 /* Coloured top bar */
@@ -880,6 +886,7 @@ body.plan-screenshot-modal-open {
   display: flex;
   flex-direction: column;
   min-height: 190px;
+  box-shadow: 0 12px 34px rgba(39,100,183,.08);
 }
 .route-card:nth-child(2) { border-top-color: var(--plan-core); }
 .route-card:nth-child(3) { border-top-color: var(--cyan); }
@@ -985,6 +992,7 @@ body.plan-screenshot-modal-open {
   border: 1px solid var(--pricing-card-bdr);
   background: var(--pricing-card-bg);
   border-left: 3px solid transparent;
+  box-shadow: 0 12px 34px rgba(39,100,183,.08);
 }
 .guarantee-item--green  { border-left-color: #2e7d32; }
 .guarantee-item--blue   { border-left-color: var(--blue-dp); }
@@ -1009,6 +1017,7 @@ body.plan-screenshot-modal-open {
   border-radius: var(--r-xl);
   overflow: hidden;
   background: var(--pricing-card-bg);
+  box-shadow: 0 12px 34px rgba(39,100,183,.08);
 }
 .faq-item {
   border-bottom: 1px solid var(--pricing-rule);
@@ -1048,7 +1057,7 @@ body.plan-screenshot-modal-open {
 .pricing-cta-band {
   background: var(--card-deep);
   padding: 64px var(--gutter);
-  border-top: 1px solid rgba(255,255,255,.06);
+  border-top: 1px solid rgba(35,146,204,.42);
   text-align: center;
 }
 .pricing-cta-inner { max-width: 600px; margin: 0 auto; }
