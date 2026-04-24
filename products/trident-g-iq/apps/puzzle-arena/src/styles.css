@@ -472,7 +472,7 @@ h1 {
   background: var(--hc);
 }
 
-.tower-cell:not(.is-given) .height-fill {
+.tower-cell:not(.is-given):not(.is-solved) .height-fill {
   animation: growIn 0.18s ease-out;
 }
 
@@ -485,7 +485,7 @@ h1 {
   text-shadow: 0 0 12px color-mix(in srgb, var(--ht), transparent 40%);
 }
 
-.tower-cell:not(.is-given) strong {
+.tower-cell:not(.is-given):not(.is-solved) strong {
   animation: popIn 0.18s ease-out;
 }
 

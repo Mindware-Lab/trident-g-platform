@@ -150,6 +150,7 @@ function TowerCell(args: {
   value: number;
   selected: boolean;
   given: boolean;
+  solved: boolean;
   error: boolean;
   collapsed?: boolean;
   reinforced?: boolean;
@@ -158,7 +159,7 @@ function TowerCell(args: {
 }): string {
   const value = args.value;
   return `
-    <button class="tower-cell h${value || 0} ${args.selected ? "is-selected" : ""} ${args.given ? "is-given" : ""} ${args.error ? "is-error" : ""} ${args.collapsed ? "is-collapsed" : ""} ${args.reinforced ? "is-reinforced" : ""} ${args.trueFault ? "is-true-fault" : ""}"
+    <button class="tower-cell h${value || 0} ${args.selected ? "is-selected" : ""} ${args.given ? "is-given" : ""} ${args.solved ? "is-solved" : ""} ${args.error ? "is-error" : ""} ${args.collapsed ? "is-collapsed" : ""} ${args.reinforced ? "is-reinforced" : ""} ${args.trueFault ? "is-true-fault" : ""}"
       data-action="${args.mode}-select-cell" data-cell="${args.idx}" type="button">
       ${value ? `<span class="height-fill"></span><strong>${value}</strong>` : `<span class="empty-dot"></span>`}
     </button>
@@ -199,6 +200,7 @@ function towerBoard(props: {
             value: props.grid[idx],
             selected: props.selected === idx,
             given: props.puzzle.givens.has(idx),
+            solved: validation.valid,
             error: validation.rowErrors.has(idx) || validation.colErrors.has(idx),
             collapsed: props.collapsed?.has(idx),
             reinforced: props.reinforced?.has(key),
