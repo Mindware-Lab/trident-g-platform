@@ -120,6 +120,12 @@
       "required_template_blocks": []
     },
     {
+      "route": "/organisations/",
+      "intent": "organisational_pilots_and_licensing",
+      "primary_cta": "Discuss a pilot",
+      "required_template_blocks": []
+    },
+    {
       "route": "/cases/",
       "intent": "case_context",
       "primary_cta": "Read case context",

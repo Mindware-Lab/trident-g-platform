@@ -141,6 +141,11 @@ body.contact    { background: var(--pg-alt); }
 }
 .ct-section--white { background: #ffffff; }
 .ct-section--light { background: #eceef2; }
+.ct-section--org {
+  background:
+    radial-gradient(ellipse 680px 280px at 100% 0%, rgba(34,170,255,.12), transparent 58%),
+    #333333;
+}
 .ct-section-inner  { max-width: var(--max-w); margin: 0 auto; }
 
 .ct-section-eyebrow {
@@ -208,6 +213,34 @@ body.contact    { background: var(--pg-alt); }
 /* LinkedIn icon inside card CTA */
 .ct-li-icon { width: 14px; height: 14px; flex-shrink: 0; }
 
+.ct-org-box {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 28px;
+  align-items: center;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: var(--r-xl);
+  padding: 30px;
+}
+.ct-section--org .ct-section-eyebrow { color: var(--cyan-lt); }
+.ct-section--org .ct-section-title {
+  color: var(--tc);
+  margin-bottom: 10px;
+}
+.ct-org-text {
+  color: var(--tcm);
+  font-size: 14.5px;
+  line-height: 1.68;
+  max-width: 72ch;
+}
+.ct-org-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 
 /* ============================================================
    4. EXPECTATIONS BLOCK
@@ -252,6 +285,8 @@ body.contact    { background: var(--pg-alt); }
 @media (max-width: 900px) {
   .ct-hero-inner   { grid-template-columns: 1fr; }
   .ct-identity-card { max-width: 320px; }
+  .ct-org-box       { grid-template-columns: 1fr; }
+  .ct-org-actions   { justify-content: flex-start; }
 }
 @media (max-width: 700px) {
   .ct-cards        { grid-template-columns: 1fr; }
@@ -261,4 +296,7 @@ body.contact    { background: var(--pg-alt); }
   .ct-hero-btns    { flex-direction: column; }
   .ct-hero-btns .btn { justify-content: center; }
   .ct-identity-card { max-width: 100%; }
+  .ct-org-box       { padding: 24px 20px; }
+  .ct-org-actions   { flex-direction: column; }
+  .ct-org-actions .btn { justify-content: center; }
 }

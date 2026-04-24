@@ -111,6 +111,7 @@ function primaryNavPath(pathname) {
   if (path.startsWith("/za/pricing/")) return "/pricing/"
   if (path.startsWith("/pricing/")) return "/pricing/"
   if (path.startsWith("/coaching/")) return "/coaching/"
+  if (path.startsWith("/organisations/")) return "/organisations/"
   if (path.startsWith("/learn/")) return "/learn/"
   if (path.startsWith("/about/")) return "/about/"
   if (path.startsWith("/faq/")) return "/faq/"

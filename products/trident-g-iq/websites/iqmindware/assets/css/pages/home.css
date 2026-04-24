@@ -454,7 +454,74 @@ body.home  { background: var(--home-surface); }
 
 
 /* ============================================================
-   4c. ROUTE CARDS
+   4c. ORGANISATIONAL ROUTE
+   ============================================================ */
+.home-org-section {
+  background:
+    radial-gradient(ellipse 720px 320px at 86% 12%, rgba(204,255,102,.12), transparent 56%),
+    linear-gradient(180deg, #FFFFFF 0%, #EEF5FA 100%);
+  border-bottom: 1px solid var(--home-rule);
+  padding: 64px var(--gutter);
+}
+.home-org-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 36px;
+  align-items: center;
+}
+.home-org-copy .home-section-sub {
+  max-width: 62ch;
+}
+.home-org-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+.home-org-email {
+  color: var(--blue-dp);
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(39,100,183,.25);
+}
+.home-org-email:hover { border-bottom-color: var(--blue-dp); }
+.home-org-email:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; border-radius: 2px; }
+.home-org-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+.home-org-card {
+  background: #FFFFFF;
+  border: 1.5px solid rgba(35,146,204,.16);
+  border-left: 4px solid var(--cyan);
+  border-radius: var(--r-lg);
+  padding: 20px 22px;
+  box-shadow: 0 10px 26px rgba(39,100,183,.06);
+}
+.home-org-card:nth-child(2) { border-left-color: var(--lime); }
+.home-org-card:nth-child(3) { border-left-color: var(--plan-core-amber); }
+.home-org-card-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--tl);
+  letter-spacing: -.01em;
+  margin-bottom: 7px;
+}
+.home-org-card p {
+  margin: 0;
+  color: var(--tlm);
+  font-size: 14px;
+  line-height: 1.62;
+}
+
+
+/* ============================================================
+   4d. ROUTE CARDS
    ============================================================ */
 .home-routes-section {
   background: #E0E0E0;
@@ -1199,6 +1266,7 @@ body.home  { background: var(--home-surface); }
   .home-testimonials-hd   { grid-template-columns: 1fr; gap: 10px; }
   .home-testimonials-grid { grid-template-columns: 1fr 1fr; }
   .home-testimonial--featured { grid-row: auto; grid-column: span 2; }
+  .home-org-inner         { grid-template-columns: 1fr; }
   .home-transfer-grid     { grid-template-columns: 1fr 1fr; }
   .home-tools-grid        { grid-template-columns: 1fr 1fr; }
   .home-plans-strip       { grid-template-columns: 1fr 1fr; }
@@ -1230,6 +1298,8 @@ body.home  { background: var(--home-surface); }
   .home-testimonials-grid { grid-template-columns: 1fr; }
   .home-testimonial--featured { grid-column: auto; padding: 24px 22px 20px; }
   .home-testimonial       { min-height: 0; }
+  .home-org-section       { padding: 46px var(--gutter); }
+  .home-org-actions       { align-items: flex-start; flex-direction: column; }
   .home-diff-grid         { grid-template-columns: 1fr; }
   .home-transfer-grid     { grid-template-columns: 1fr; }
   .home-tools-grid        { grid-template-columns: 1fr; }

@@ -81,6 +81,14 @@
         "Offer"
       ]
     },
+    "/organisations/": {
+      "title": "Organisational pilots and licensing",
+      "canonical": "https://www.iqmindware.com/organisations/",
+      "schema": [
+        "WebPage",
+        "Service"
+      ]
+    },
     "/learn/": {
       "title": "Learn",
       "canonical": "https://www.iqmindware.com/learn/",
