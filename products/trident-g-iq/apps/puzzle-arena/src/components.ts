@@ -124,7 +124,7 @@ export function LeaderboardPanel(props: {
   `;
 }
 
-export function InstructionsPanel(props: { game: "towers" | "hidden"; compact?: boolean }): string {
+export function InstructionsPanel(props: { game: "towers" | "hidden"; compact?: boolean; open?: boolean }): string {
   const towersBasics = `
     <li>Fill every square with a tower height from 1 to 4.</li>
     <li>Each row and column must contain 1, 2, 3, and 4 exactly once.</li>
@@ -145,8 +145,8 @@ export function InstructionsPanel(props: { game: "towers" | "hidden"; compact?: 
   if (props.compact) {
     return `
       <section class="instructions-panel is-compact">
-        <details>
-          <summary>How to play</summary>
+        <details ${props.open ? "open" : ""}>
+          <summary data-action="toggle-instructions">How to play</summary>
           <ul>${body}</ul>
         </details>
         <div class="source-credit compact-credit">
