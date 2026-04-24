@@ -366,7 +366,95 @@ body.home  { background: var(--home-surface); }
 
 
 /* ============================================================
-   4. ROUTE CARDS
+   4b. TESTIMONIALS
+   ============================================================ */
+.home-testimonials-section {
+  background:
+    radial-gradient(ellipse 680px 320px at 12% 0%, rgba(34,170,255,.13), transparent 58%),
+    #F7FAFC;
+  border-bottom: 1px solid var(--home-rule);
+  padding: 64px var(--gutter);
+}
+.home-testimonials-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+.home-testimonials-hd {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 440px);
+  gap: 28px;
+  align-items: end;
+  margin-bottom: 30px;
+}
+.home-testimonials-grid {
+  display: grid;
+  grid-template-columns: 1.18fr 1fr 1fr;
+  gap: 14px;
+  align-items: stretch;
+}
+.home-testimonial {
+  margin: 0;
+  background: #FFFFFF;
+  border: 1.5px solid rgba(35,146,204,.16);
+  border-radius: var(--r-xl);
+  padding: 24px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: 250px;
+  box-shadow: 0 10px 28px rgba(39,100,183,.06);
+}
+.home-testimonial--featured {
+  grid-row: span 2;
+  background:
+    linear-gradient(160deg, rgba(204,255,102,.12), rgba(255,255,255,1) 44%),
+    #FFFFFF;
+  border-top: 3px solid var(--lime);
+  padding: 30px 28px;
+}
+.home-testimonial:not(.home-testimonial--featured):nth-child(2) { border-top: 3px solid var(--cyan); }
+.home-testimonial:not(.home-testimonial--featured):nth-child(3) { border-top: 3px solid #a78bfa; }
+.home-testimonial:not(.home-testimonial--featured):nth-child(4) { border-top: 3px solid var(--plan-core-amber); }
+.home-testimonial blockquote {
+  margin: 0;
+  color: var(--tl);
+  font-size: 14px;
+  line-height: 1.66;
+  letter-spacing: 0;
+}
+.home-testimonial--featured blockquote {
+  font-size: clamp(18px, 2.2vw, 24px);
+  line-height: 1.46;
+  letter-spacing: 0;
+}
+.home-testimonial figcaption {
+  margin-top: auto;
+  padding-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.home-testimonial-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--tl);
+}
+.home-testimonial-role {
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--tlf);
+}
+.home-testimonials-note {
+  margin-top: 16px;
+  font-size: 12.5px;
+  color: var(--tlf);
+  line-height: 1.55;
+}
+
+
+/* ============================================================
+   4c. ROUTE CARDS
    ============================================================ */
 .home-routes-section {
   background: #E0E0E0;
@@ -1108,6 +1196,9 @@ body.home  { background: var(--home-surface); }
    ============================================================ */
 @media (max-width: 1050px) {
   .home-diff-grid         { grid-template-columns: 1fr 1fr; }
+  .home-testimonials-hd   { grid-template-columns: 1fr; gap: 10px; }
+  .home-testimonials-grid { grid-template-columns: 1fr 1fr; }
+  .home-testimonial--featured { grid-row: auto; grid-column: span 2; }
   .home-transfer-grid     { grid-template-columns: 1fr 1fr; }
   .home-tools-grid        { grid-template-columns: 1fr 1fr; }
   .home-plans-strip       { grid-template-columns: 1fr 1fr; }
@@ -1135,6 +1226,10 @@ body.home  { background: var(--home-surface); }
   .home-founder-strip     { padding: 34px var(--gutter); }
   .home-founder-inner     { grid-template-columns: 1fr; gap: 16px; }
   .home-founder-photo-wrap { width: 86px; height: 86px; }
+  .home-testimonials-section { padding: 46px var(--gutter); }
+  .home-testimonials-grid { grid-template-columns: 1fr; }
+  .home-testimonial--featured { grid-column: auto; padding: 24px 22px 20px; }
+  .home-testimonial       { min-height: 0; }
   .home-diff-grid         { grid-template-columns: 1fr; }
   .home-transfer-grid     { grid-template-columns: 1fr; }
   .home-tools-grid        { grid-template-columns: 1fr; }
