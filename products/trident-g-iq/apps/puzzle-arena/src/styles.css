@@ -442,7 +442,6 @@ h1 {
   inset: auto 0 0;
   height: calc(var(--h, 0) * 25%);
   opacity: 0.75;
-  animation: growIn 0.18s ease-out;
 }
 
 .h1 {
@@ -473,6 +472,10 @@ h1 {
   background: var(--hc);
 }
 
+.tower-cell:not(.is-given) .height-fill {
+  animation: growIn 0.18s ease-out;
+}
+
 .tower-cell strong {
   position: relative;
   z-index: 1;
@@ -480,6 +483,9 @@ h1 {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 23px;
   text-shadow: 0 0 12px color-mix(in srgb, var(--ht), transparent 40%);
+}
+
+.tower-cell:not(.is-given) strong {
   animation: popIn 0.18s ease-out;
 }
 
