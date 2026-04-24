@@ -1,0 +1,3 @@
+[functions.submit-score]
+verify_jwt = false
+

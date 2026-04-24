@@ -64,23 +64,57 @@ The browser should never directly insert scores into `score_attempts`.
 
 ## 4. Vercel Environment Variables Later
 
-After the frontend is wired to Supabase reads, add these to Vercel:
+The frontend is wired to Supabase reads and score submission. Add these to Vercel:
 
 ```text
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
 ```
 
-After the Edge Function is added, keep backend secrets in Supabase function secrets, not Vercel browser env:
+Find them in Supabase:
+
+`Project Settings` -> `Data API`
+
+Use:
+
+- Project URL
+- anon public key
+
+Keep backend secrets in Supabase function secrets, not Vercel browser env:
 
 ```text
-STRIPE_SECRET_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ```
 
 For Puzzle Arena leaderboards, Stripe is not needed.
 
-## 5. Quick SQL Smoke Test
+## 5. Deploy The Edge Function
+
+The secure score write endpoint lives here:
+
+`supabase/functions/submit-score/index.ts`
+
+It recomputes scores server-side and inserts into `score_attempts`.
+
+Recommended deploy path:
+
+```bash
+supabase login
+supabase link --project-ref YOUR_PROJECT_REF
+supabase functions deploy submit-score --no-verify-jwt
+```
+
+The project ref is visible in the Supabase project URL and settings.
+
+If needed, set the service role secret explicitly:
+
+```bash
+supabase secrets set SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
+```
+
+Supabase usually provides `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` automatically inside Edge Functions, but confirm in your function settings if deployment fails.
+
+## 6. Quick SQL Smoke Test
 
 After running the migration, this should return an empty result, not an error:
 
@@ -93,3 +127,13 @@ from public.get_leaderboard(
   20
 );
 ```
+
+## 7. Frontend Behavior
+
+If `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are absent, the app keeps using the localStorage mock leaderboard.
+
+If both variables are present:
+
+- leaderboard tabs read from `get_leaderboard(...)`
+- score submission calls the `submit-score` Edge Function
+- if the Edge Function is not deployed yet, nickname submission will show a submission error

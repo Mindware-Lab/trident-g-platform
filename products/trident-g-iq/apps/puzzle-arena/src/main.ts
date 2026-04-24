@@ -488,6 +488,15 @@ function renderHidden(): string {
 
 function render(): void {
   appRoot.innerHTML = state.mode === "towers" ? renderTowers() : renderHidden();
+  refreshVisibleLeaderboard();
+}
+
+function refreshVisibleLeaderboard(): void {
+  const gameSlug = state.mode === "towers" ? "towers-speed-run" : "hidden-foundations";
+  const puzzleSeed = state.mode === "towers" ? state.towers.puzzle.seed : state.hidden.puzzle.seed;
+  void leaderboard.refreshRows(gameSlug, puzzleSeed, state.windowKey).then((changed) => {
+    if (changed) render();
+  });
 }
 
 function enterTowerValue(mode: Mode, value: number): void {
@@ -657,7 +666,7 @@ appRoot.addEventListener("click", (event) => {
   }
 });
 
-appRoot.addEventListener("submit", (event) => {
+appRoot.addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.target as HTMLFormElement;
   const data = new FormData(form);
@@ -669,37 +678,48 @@ appRoot.addEventListener("submit", (event) => {
     return;
   }
 
-  let row: ScoreRow;
-  if (state.mode === "towers") {
-    const seconds = Math.max(TOWERS_MIN_SECONDS, state.towers.elapsed || secondsSince(state.towers.startedAt, 0));
-    row = leaderboard.submit({
-      gameSlug: "towers-speed-run",
-      puzzleSeed: state.towers.puzzle.seed,
-      nickname,
-      totalScore: scoreTowers(seconds),
-      buildSeconds: seconds,
-    });
-    state.towers.submittedRowId = row.id;
-    state.towers.submitError = "";
-  } else {
-    const result = state.hidden.result;
-    if (!result) return;
-    row = leaderboard.submit({
-      gameSlug: "hidden-foundations",
-      puzzleSeed: state.hidden.puzzle.seed,
-      nickname,
-      totalScore: result.totalScore,
-      surveyScore: result.surveyScore,
-      buildScore: result.buildScore,
-      probes: state.hidden.probeShots,
-      correctFaults: result.correctMarkers,
-      buildSeconds: Math.max(BUILD_MIN_SECONDS, state.hidden.buildElapsed),
-    });
-    state.hidden.submittedRowId = row.id;
-    state.hidden.submitError = "";
+  try {
+    let row: ScoreRow;
+    if (state.mode === "towers") {
+      const seconds = Math.max(TOWERS_MIN_SECONDS, state.towers.elapsed || secondsSince(state.towers.startedAt, 0));
+      row = await leaderboard.submit({
+        gameSlug: "towers-speed-run",
+        puzzleSeed: state.towers.puzzle.seed,
+        nickname,
+        totalScore: scoreTowers(seconds),
+        buildSeconds: seconds,
+        grid: state.towers.grid,
+      });
+      state.towers.submittedRowId = row.id;
+      state.towers.submitError = "";
+      void leaderboard.refreshRows("towers-speed-run", state.towers.puzzle.seed, state.windowKey, true);
+    } else {
+      const result = state.hidden.result;
+      if (!result) return;
+      row = await leaderboard.submit({
+        gameSlug: "hidden-foundations",
+        puzzleSeed: state.hidden.puzzle.seed,
+        nickname,
+        totalScore: result.totalScore,
+        surveyScore: result.surveyScore,
+        buildScore: result.buildScore,
+        probes: state.hidden.probeShots,
+        correctFaults: result.correctMarkers,
+        buildSeconds: Math.max(BUILD_MIN_SECONDS, state.hidden.buildElapsed),
+        grid: state.hidden.buildGrid,
+        markers: Array.from(state.hidden.markers),
+      });
+      state.hidden.submittedRowId = row.id;
+      state.hidden.submitError = "";
+      void leaderboard.refreshRows("hidden-foundations", state.hidden.puzzle.seed, state.windowKey, true);
+    }
+    audio.cue("submit");
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Score submission failed.";
+    if (state.mode === "towers") state.towers.submitError = message;
+    else state.hidden.submitError = message;
   }
   localStorage.setItem("iqmw.puzzle.nickname", escapeHtml(nickname));
-  audio.cue("submit");
   render();
 });
 
