@@ -117,7 +117,7 @@ export function LeaderboardPanel(props: {
       <div class="table-wrap">
         <table>
           <thead>${headers}</thead>
-          <tbody>${rows || `<tr><td colspan="${props.game === "hidden" ? 7 : 4}">No local scores yet.</td></tr>`}</tbody>
+          <tbody>${rows || `<tr><td colspan="${props.game === "hidden" ? 7 : 4}">No scores yet.</td></tr>`}</tbody>
         </table>
       </div>
     </section>
