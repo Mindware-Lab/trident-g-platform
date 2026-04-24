@@ -128,7 +128,7 @@ export function InstructionsPanel(props: { game: "towers" | "hidden"; compact?: 
   const towersBasics = `
     <li>Fill every square with a tower height from 1 to 4.</li>
     <li>Each row and column must contain 1, 2, 3, and 4 exactly once.</li>
-    <li>Edge clues show how many towers are visible from that direction. Taller towers hide shorter towers behind them.</li>
+    <li>Edge clues show how many towers are visible from that direction. Taller towers hide shorter towers behind them. Imagine the towers in 3D.</li>
     <li>Select a square, then use the number pad or keyboard. Backspace clears a selected editable square.</li>
   `;
 
