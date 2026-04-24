@@ -1,5 +1,9 @@
 desktop.ini
 **/desktop.ini
+**/node_modules/
+apps/*/dist/
+products/*/apps/*/dist/
+apps/leaderboard-puzzles/
 .claude/
 .tmp-*/
 .tmp/
