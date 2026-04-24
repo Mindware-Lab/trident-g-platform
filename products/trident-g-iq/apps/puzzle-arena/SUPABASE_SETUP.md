@@ -22,6 +22,12 @@ This creates:
 - RLS read policies
 - `get_leaderboard(...)` RPC function
 
+Then run:
+
+`products/trident-g-iq/apps/puzzle-arena/supabase/migrations/20260424_0002_leaderboard_all_random_runs.sql`
+
+This updates `get_leaderboard(...)` so the app can use random per-run puzzle seeds while still showing a daily/weekly leaderboard across all runs.
+
 Public clients can read valid leaderboard rows, but they cannot insert scores directly.
 
 ## 2. What This Enables

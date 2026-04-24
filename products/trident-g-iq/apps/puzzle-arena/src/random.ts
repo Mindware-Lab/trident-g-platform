@@ -28,6 +28,8 @@ export function shuffle<T>(rng: Rng, input: T[]): T[] {
   return arr;
 }
 
-export function todaySeed(gameSlug: string): string {
-  return `${gameSlug}:${new Date().toISOString().slice(0, 10)}`;
+export function randomRunSeed(gameSlug: string): string {
+  const day = new Date().toISOString().slice(0, 10);
+  const id = crypto.randomUUID ? crypto.randomUUID().slice(0, 8) : Math.random().toString(36).slice(2, 10);
+  return `${gameSlug}:${day}:${id}`;
 }

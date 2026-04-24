@@ -1,5 +1,5 @@
 import type { Grid } from "./puzzles/towers";
-import { todaySeed } from "./random";
+import { randomRunSeed } from "./random";
 import { isSupabaseConfigured, supabase } from "./supabaseClient";
 
 export type GameSlug = "towers-speed-run" | "hidden-foundations";
@@ -30,7 +30,7 @@ const fetched = new Set<string>();
 const inFlight = new Map<string, Promise<boolean>>();
 
 function cacheKey(gameSlug: GameSlug, puzzleSeed: string, windowKey: WindowKey): string {
-  return `${gameSlug}|${puzzleSeed}|${windowKey}`;
+  return `${gameSlug}|all-runs|${windowKey}`;
 }
 
 function loadRows(): ScoreRow[] {
@@ -91,7 +91,7 @@ function localSubmit(row: Omit<ScoreRow, "id" | "createdAt">): ScoreRow {
 function localRows(gameSlug: GameSlug, puzzleSeed: string, windowKey: WindowKey): ScoreRow[] {
   const bestByName = new Map<string, ScoreRow>();
   for (const row of loadRows()) {
-    if (row.gameSlug !== gameSlug || row.puzzleSeed !== puzzleSeed || !inWindow(row, windowKey)) continue;
+    if (row.gameSlug !== gameSlug || !inWindow(row, windowKey)) continue;
     const key = row.nickname.trim().toLowerCase();
     const existing = bestByName.get(key);
     if (!existing || compareRows(row, existing) < 0) bestByName.set(key, row);
@@ -144,7 +144,7 @@ export const leaderboard = {
     const request = (async () => {
       const { data, error } = await supabase.rpc("get_leaderboard", {
         p_game_slug: gameSlug,
-        p_puzzle_seed: puzzleSeed,
+        p_puzzle_seed: null,
         p_window: windowKey,
         p_limit: 20,
       });
@@ -167,6 +167,6 @@ export const leaderboard = {
   },
 
   seedFor(gameSlug: GameSlug): string {
-    return todaySeed(gameSlug);
+    return randomRunSeed(gameSlug);
   },
 };
