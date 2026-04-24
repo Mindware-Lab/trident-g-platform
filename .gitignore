@@ -1,5 +1,6 @@
 desktop.ini
 **/desktop.ini
+.claude/
 .tmp-*/
 .tmp/
 .chrome-headless-profile-website-dom2/
