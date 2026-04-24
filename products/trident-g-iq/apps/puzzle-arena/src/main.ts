@@ -217,6 +217,24 @@ function numberPad(mode: "towers" | "hidden", disabled = false): string {
   `;
 }
 
+function mobileCellPicker(mode: "towers" | "hidden", selected: number | null, puzzle: TowersPuzzle, disabled = false): string {
+  if (selected === null || puzzle.givens.has(selected) || disabled) return "";
+  const row = Math.floor(selected / N) + 1;
+  const col = (selected % N) + 1;
+  return `
+    <div class="mobile-cell-picker" role="dialog" aria-label="Choose tower height">
+      <div class="mobile-picker-head">
+        <span>Cell ${row},${col}</span>
+        <button class="mobile-picker-close" data-action="clear-selection" type="button" aria-label="Close height picker">x</button>
+      </div>
+      <div class="mobile-picker-buttons">
+        ${[1, 2, 3, 4].map((n) => `<button class="num-btn h${n}" data-action="${mode}-enter" data-number="${n}" type="button">${n}</button>`).join("")}
+        <button class="num-btn clear" data-action="${mode}-clear" type="button" aria-label="Clear selected cell">Clear</button>
+      </div>
+    </div>
+  `;
+}
+
 function renderTowers(): string {
   const game = state.towers;
   const seconds = secondsSince(game.startedAt, game.elapsed);
@@ -260,6 +278,7 @@ function renderTowers(): string {
               ${ScoreChip("Clues", `${validation.clueSatisfied.size}/16`, validation.clueErrors.size ? "accent-red" : "accent-green")}
             </div>
             ${towerBoard({ puzzle: game.puzzle, grid: game.grid, selected: game.selected, mode: "towers" })}
+            ${mobileCellPicker("towers", game.selected, game.puzzle, game.completed)}
             ${numberPad("towers", game.completed)}
             <div class="action-row">
               <button class="ghost-btn" data-action="reset-towers" type="button">New run</button>
@@ -435,6 +454,7 @@ function renderHidden(): string {
               reinforced: game.markers,
               trueFaults: game.phase === "reveal" ? faultSet : undefined,
             })}
+            ${mobileCellPicker("hidden", game.selected, game.puzzle, game.phase === "reveal")}
             ${numberPad("hidden", game.phase === "reveal")}
             <div class="action-row">
               <button class="ghost-btn" data-action="reset-hidden" type="button">New site</button>
@@ -555,6 +575,12 @@ appRoot.addEventListener("click", (event) => {
   }
   if (action === "hidden-select-cell") {
     state.hidden.selected = Number(actionEl.dataset.cell);
+    render();
+    return;
+  }
+  if (action === "clear-selection") {
+    if (state.mode === "towers") state.towers.selected = null;
+    else state.hidden.selected = null;
     render();
     return;
   }
