@@ -41,7 +41,7 @@ import {
   scoreReasoningResponse,
   summarizeReasoningBlock,
   updateReasoningFamilyState
-} from "./runtime/reasoning/engine.js?v=20260419-sessioncount";
+} from "./runtime/reasoning/engine.js?v=20260422-reasoning-progression";
 import {
   TRACKER_LEGACY_STORAGE_KEY,
   TRACKER_PSI_OPTIONS,
@@ -1246,6 +1246,19 @@ function recommendedNForWrapper(wrapper, routeClass) {
   return clampN(last.recommendedN || last.block?.nEnd || 1);
 }
 
+function latestCapacityEntryForSession(sessionId) {
+  if (!sessionId) return null;
+  return latest((entry) => entry.sessionId === sessionId && entry.rewardMode !== "manual");
+}
+
+function recommendedNForCoachSession(session, wrapper) {
+  if (!session) return recommendedNForWrapper(wrapper, "core");
+  if (session.routeClass !== "core") return 1;
+  const lastInSession = latestCapacityEntryForSession(session.id);
+  if (lastInSession) return blockEndN(lastInSession);
+  return recommendedNForWrapper(wrapper, session.routeClass);
+}
+
 function recommendedManualN(wrapper, targetModality) {
   const lastForTarget = latest((entry) => entry.wrapper === wrapper && entry.targetModality === targetModality);
   const lastForWrapper = latest((entry) => entry.wrapper === wrapper);
@@ -1273,7 +1286,7 @@ function resolveNextBlockSettings() {
     return {
       wrapper,
       targetModality: pickFamilyTarget(wrapper),
-      n: recommendedNForWrapper(wrapper, session.routeClass),
+      n: recommendedNForCoachSession(session, wrapper),
       speed: recommendedSpeedForWrapper(wrapper, session.routeClass),
       rewardMode: session.routeClass === "core" ? "core" : "support"
     };
@@ -1299,7 +1312,7 @@ function resolveCoachBlockSettings() {
   return {
     wrapper,
     targetModality: pickFamilyTarget(wrapper),
-    n: recommendedNForWrapper(wrapper, routeClass),
+    n: recommendedNForCoachSession(session, wrapper),
     speed: recommendedSpeedForWrapper(wrapper, routeClass),
     rewardMode: routeClass === "core" ? "core" : "support"
   };
@@ -1810,7 +1823,7 @@ function clearReasoningTimer() {
 
 function currentReasoningSessionDisplay() {
   return reasoningState.settings.mode === "coach"
-    ? `${Math.min(REASONING_SESSION_TARGET, completedUnifiedCoreSessions())}/${REASONING_SESSION_TARGET}`
+    ? nextCoachSessionDisplay()
     : `${Math.max(1, Number(reasoningState.programme.manualSessionNumber || 0) + 1)}`;
 }
 
@@ -1818,6 +1831,26 @@ function reasoningSessionToGoDisplay() {
   return reasoningState.settings.mode === "coach"
     ? `${Math.max(0, REASONING_SESSION_TARGET - Math.min(REASONING_SESSION_TARGET, completedUnifiedCoreSessions()))}`
     : "-";
+}
+
+function reasoningItemProgressDisplay() {
+  const contract = coachContractForDisplay();
+  if (reasoningState.settings.mode === "coach" && contract && Number(contract.reasoningTargetItems || 0) > 0) {
+    const target = Math.max(1, Math.round(Number(contract.reasoningTargetItems || 1)));
+    const completed = clamp(Math.round(Number(contract.reasoningCompletedItems || 0)), 0, target);
+    return `${completed}/${target}`;
+  }
+  return "--";
+}
+
+function reasoningBlockProgressDisplay() {
+  const session = reasoningState.settings.mode === "coach" ? reasoningState.currentSession : null;
+  if (session) {
+    const planned = Math.max(1, Math.round(Number(session.plannedBlocks || 1)));
+    const completed = clamp(Math.round(Number(session.blocksCompleted || 0)), 0, planned);
+    return `${completed}/${planned}`;
+  }
+  return "--";
 }
 
 function reasoningZoneRecommendation() {
@@ -4403,6 +4436,8 @@ function renderReasoningRightStrip() {
         <section class="panel">
           <h2 class="strip-title panel-strip-title">GAME PLAY</h2>
           <div class="stat-grid">
+            <div class="stat"><span class="mini-label">Reason Items</span><strong>${escapeHtml(reasoningItemProgressDisplay())}</strong></div>
+            <div class="stat"><span class="mini-label">Reason Blocks</span><strong>${escapeHtml(reasoningBlockProgressDisplay())}</strong></div>
             <div class="stat"><span class="mini-label">Current Session</span><strong>${escapeHtml(currentReasoningSessionDisplay())}</strong></div>
             <div class="stat"><span class="mini-label">Sessions To Go</span><strong>${escapeHtml(reasoningSessionToGoDisplay())}</strong></div>
           </div>
@@ -4535,8 +4570,25 @@ function gameplayStatsModel() {
     lastNBack: last ? `N-${blockEndN(last)}` : "--",
     nextNBack: `N-${projectedNextN(plan)}`,
     currentSession: currentSessionDisplay(),
-    sessionsToGo: sessionsToGoDisplay()
+    sessionsToGo: sessionsToGoDisplay(),
+    capacityBlocks: capacityBlockProgressDisplay()
   };
+}
+
+function capacityBlockProgressDisplay() {
+  const session = activeCoachSession();
+  if (session) {
+    const planned = Math.max(1, Math.round(Number(session.plannedBlocks || 1)));
+    const completed = clamp(Math.round(Number(session.blocksCompleted || 0)), 0, planned);
+    return `${completed}/${planned}`;
+  }
+  const contract = coachContractForDisplay();
+  if (state.settings.mode === "coach" && contract && Number(contract.capacityTargetBlocks || 0) > 0) {
+    const target = Math.max(1, Math.round(Number(contract.capacityTargetBlocks || 1)));
+    const completed = clamp(Math.round(Number(contract.capacityCompletedBlocks || 0)), 0, target);
+    return `${completed}/${target}`;
+  }
+  return "--";
 }
 
 function renderRightStrip() {
@@ -4591,6 +4643,7 @@ function renderRightStrip() {
           <div class="stat-grid">
             <div class="stat"><span class="mini-label">Last N-Back</span><strong>${gameplayStats.lastNBack}</strong></div>
             <div class="stat"><span class="mini-label">Next N-back</span><strong>${gameplayStats.nextNBack}</strong></div>
+            <div class="stat"><span class="mini-label">Cap Blocks</span><strong>${gameplayStats.capacityBlocks}</strong></div>
             <div class="stat"><span class="mini-label">Current Session</span><strong>${gameplayStats.currentSession}</strong></div>
             <div class="stat"><span class="mini-label">Sessions To Go</span><strong>${gameplayStats.sessionsToGo}</strong></div>
           </div>
