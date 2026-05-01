@@ -1505,3 +1505,146 @@ More intelligent collectives spend more time in their collective Ψ-band — mai
 This definition applies equally to dyads, teams, organisations, and — at civilisational scale — to the multipolar GP network as an alternative to the centralised intelligence architectures that treat collective intelligence as mutual-information maximisation under a single dominant objective function.
 
 ---
+# Part XIII — Key References
+ 
+---
+ 
+## 43. Primary Sources for the Integrated Framework
+ 
+The following references are the core empirical and theoretical foundations for the G loop / Griffiths Phase / Trident-G integrated architecture. They are listed by framework layer.
+ 
+---
+ 
+### 43.1 Griffiths Phase in Brain Networks
+ 
+**Wu, K., Chialvo, D. R., Zhou, C., & Yu, L. (2026).**
+Optimal Griffiths Phase in Heterogeneous Human Brain Networks: Brain Criticality Embracing Stability and Flexibility across Individuals.
+*Preprint.* arXiv:2512.03409 / ResearchSquare DOI: 10.21203/rs.3.rs-8410190/v1
+- The primary empirical source for the GP framework as applied to individual differences in human brain dynamics
+- Demonstrates that synergistic interaction between structural network modularity and regional heterogeneity in local excitability generates a biologically viable GP in human brain networks
+- Uses Human Connectome Project data (n=990); shows individual position within GP predicts cognitive profile
+- Available open access: https://arxiv.org/abs/2512.03409
+  
+**Moretti, P., & Muñoz, M. A. (2013).**
+Griffiths phases and the stretching of criticality in brain networks.
+*Nature Communications, 4,* 2521. https://doi.org/10.1038/ncomms3521
+- Original demonstration that hierarchical-modular architecture of cortical networks replaces a singular critical point with an extended Griffiths phase
+- Foundational paper showing GP in both synthetic hierarchical networks and empirical brain networks including the human connectome
+- Available open access
+  
+**Wang, R., Liu, M., Cheng, X., Wu, Y., Hildebrandt, A., & Zhou, C. (2021).**
+Segregation, integration, and balance of large-scale resting brain networks configure different cognitive abilities.
+*Proceedings of the National Academy of Sciences, 118*(23), e2022288118. https://doi.org/10.1073/pnas.2022288118
+- Empirical basis for the segregation/integration balance and its relationship to cognitive ability profiles
+- Shows stronger FC integration associates with better general cognitive ability; stronger segregation fosters crystallised intelligence and processing speed; memory peaks at the balanced state
+- Available open access: https://pmc.ncbi.nlm.nih.gov/articles/PMC8201916/
+---
+ 
+### 43.2 Zhang-Tang: Entropy/Mutual Information Bifurcating Dynamic
+ 
+**Zhang, X.-Y., & Tang, C. (2025).**
+Heavy-tailed update distributions arise from information-driven self-organization in nonequilibrium learning.
+*Proceedings of the National Academy of Sciences, 122*(51), e2523012122. https://doi.org/10.1073/pnas.2523012122
+- Demonstrates that heavy-tailed power-law update distributions in neural networks arise from a fundamental trade-off between maximum entropy (exploration) and mutual information constraint (exploitation)
+- Shows the power-law exponent α = λβ remains stable throughout training — the signature of self-organised criticality
+- Directly provides the computational-level mechanism for the FPCN-A/B bifurcating dynamic
+- Available open access: https://pmc.ncbi.nlm.nih.gov/articles/PMC12745802/
+---
+ 
+### 43.3 Successor Representation
+ 
+**Stachenfeld, K. L., Botvinick, M. M., & Gershman, S. J. (2017).**
+The hippocampus as a predictive map.
+*Nature Neuroscience, 20*(11), 1643–1653. https://doi.org/10.1038/nn.4650
+- Foundational paper establishing that hippocampal place cells encode successor representations — predictive maps of future states weighted by temporal discounting
+- Argues that entorhinal grid cells encode a low-dimensional basis set for the predictive representation
+- Provides the neural substrate for the intermediate-horizon SR layer of the G loop architecture
+**Gershman, S. J. (2018).**
+The successor representation: its computational logic and neural substrates.
+*Journal of Neuroscience, 38*(33), 7193–7200. https://doi.org/10.1523/JNEUROSCI.0151-18.2018
+- Review of the computational logic and neural evidence for successor representations
+- Frames SR as a solution to the efficiency/flexibility trade-off in reinforcement learning
+- Available open access: https://pmc.ncbi.nlm.nih.gov/articles/PMC6096039/
+---
+ 
+### 43.4 Neuronal Avalanches and Criticality
+ 
+**Beggs, J. M., & Plenz, D. (2003).**
+Neuronal avalanches in neocortical circuits.
+*Journal of Neuroscience, 23*(35), 11167–11177. https://doi.org/10.1523/JNEUROSCI.23-35-11167.2003
+- Original demonstration that spontaneous activity propagation in cortical networks follows power-law avalanche statistics
+- Establishes the empirical signature of criticality that the α stability monitor in the G loop tracks
+- Foundational paper for the critical brain hypothesis
+---
+ 
+### 43.5 Free Energy Principle and Active Inference
+ 
+**Friston, K. (2010).**
+The free-energy principle: a unified brain theory?
+*Nature Reviews Neuroscience, 11*(2), 127–138. https://doi.org/10.1038/nrn2787
+- Foundational paper for the free energy framework that Trident-G extends
+- Proposes that the brain minimises surprise/prediction error — the computational principle that Trident-G refines into band-maintenance rather than zero-minimisation
+---
+ 
+### 43.6 Trident-G
+ 
+**Smith, M. A. (2025).**
+Trident G: A Computational-Level Theory of Intelligent Life.
+*University of Essex Online.* December 2025.
+- The primary source for the allostatic grounding, cusp geometry, meta-parameter architecture, and Ψ-band formulation integrated throughout Parts VI–XII of this document
+- Proposes that intelligence is the navigable G-volume an organism can traverse while remaining within its Ψ-band
+- Available as preprint from the author (ma18183@essex.ac.uk)
+---
+ 
+### 43.7 Piecewise Learning Curves
+ 
+**Donner, Y., & Hardy, J. L. (2015).**
+Piecewise power laws in individual learning curves.
+*Psychonomic Bulletin & Review, 22*(5), 1308–1319. https://doi.org/10.3758/s13423-015-0811-x
+- Empirical analysis of 25,280 individual learning curves across four cognitive tasks
+- Shows individual curves often contain multiple power-law segments with transition points where performance briefly drops before a stronger curve emerges
+- Provides the empirical learning curve evidence that the G loop's transition events explain mechanistically
+- Available open access: https://pmc.ncbi.nlm.nih.gov/articles/PMC4577530/
+---
+ 
+### 43.8 Additional References from Trident-G Source Document
+ 
+The following references appear in the original Trident-G paper and support specific components of the integrated framework:
+ 
+**Friston, K., FitzGerald, T., Rigoli, F., Schwartenbeck, P., & Pezzulo, G. (2017).**
+Active inference: A process theory.
+*Neural Computation, 29*(1), 1–49. https://doi.org/10.1162/NECO_a_00912
+ 
+**Sterling, P., & Eyer, J. (1988).**
+Allostasis: A new paradigm to explain arousal pathology.
+In S. Fisher & J. Reason (Eds.), *Handbook of life stress, cognition and health* (pp. 629–649). John Wiley & Sons.
+- Foundational allostasis paper; basis for Trident-G's defended band concept
+**McEwen, B. S., & Stellar, E. (1993).**
+Stress and the individual: Mechanisms leading to disease.
+*Archives of Internal Medicine, 153*(3), 209–221. https://doi.org/10.1001/archinte.153.3.209
+ 
+**Aston-Jones, G., & Cohen, J. D. (2005).**
+An integrative theory of locus coeruleus–norepinephrine function: Adaptive gain and optimal performance.
+*Annual Review of Neuroscience, 28,* 403–450. https://doi.org/10.1146/annurev.neuro.28.061604.135709
+- Basis for the explore–exploit tilt δ and its neuromodulatory implementation
+**Barrett, L. F., & Simmons, W. K. (2015).**
+Interoceptive predictions in the brain.
+*Nature Reviews Neuroscience, 16*(7), 419–429. https://doi.org/10.1038/nrn3950
+- Foundational paper linking interoceptive inference to the allostatic prediction error ε
+**Thom, R. (2018).**
+*Structural stability and morphogenesis: An outline of a general theory of models.* CRC Press. https://doi.org/10.1201/9780429493027
+- Mathematical foundation for the cusp catastrophe geometry used in Trident-G
+---
+ 
+### 43.9 Working Memory Transfer — Negative Evidence
+ 
+The following papers establish the failure of standard working memory training to produce far transfer, against which the G loop's training architecture is positioned:
+ 
+**Redick, T. S., et al. (2013).**
+No evidence of intelligence improvement after working memory training: A randomized, placebo-controlled study.
+*Journal of Experimental Psychology: General, 142*(2), 359–379.
+ 
+**Melby-Lervåg, M., Redick, T. S., & Hulme, C. (2016).**
+Working memory training does not improve performance on measures of intelligence or other measures of far transfer.
+*Perspectives on Psychological Science, 11*(4), 512–534.
+Available: https://pmc.ncbi.nlm.nih.gov/articles/PMC4968033/
