@@ -1,5 +1,5 @@
-# Summary Ground Truth  
-## The G Loop: Complete Architecture with Individual Differences Layer
+# Trident G Theory of General Adaptive Intelligence  
+## Complete Architecture with Individual Differences Layer
 
 **Subtitle:** A dynamical characterisation of intelligence as Griffiths Phase bifurcating dynamics
 
