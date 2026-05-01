@@ -44,7 +44,7 @@ This is **not random exploration**. It is **SR-structured search**:
 
 This corresponds to the **Zhang–Tang entropy maximisation process**: the system maintains maximal flexibility across the current state of knowledge.
 
-The entropy arm’s reach depends on the richness of the intermediate-horizon SR maps installed by prior loop iterations through the slow Gc pathway.
+The entropy arm's reach depends on the richness of the intermediate-horizon SR maps installed by prior loop iterations through the slow Gc pathway.
 
 ---
 
@@ -72,7 +72,7 @@ The maintained competition between FPCN-B entropy and FPCN-A mutual information 
 - pure exploitation
 - pure exploration
 
-This balance is monitored through **α stability**: whether the system’s representational update distribution maintains heavy-tailed, power-law statistics consistent with Griffiths Phase operation.
+This balance is monitored through **α stability**: whether the system's representational update distribution maintains heavy-tailed, power-law statistics consistent with Griffiths Phase operation.
 
 #### Regulation rules
 
@@ -90,7 +90,7 @@ When **entropy excess** is detected:
 
 This regulation keeps the system within the Griffiths Phase regime rather than drifting into subcritical rigidity or supercritical fragmentation.
 
-The GP regulation function is the computational analogue of regional heterogeneity and structural modularity producing an extended critical regime. It prevents any single module’s bifurcation resolution from dominating the global dynamic.
+The GP regulation function is the computational analogue of regional heterogeneity and structural modularity producing an extended critical regime. It prevents any single module's bifurcation resolution from dominating the global dynamic.
 
 ---
 
@@ -115,7 +115,7 @@ This is the interior of a power-law learning segment: efficient exploitation of 
 
 The key variable is the **SR temporal horizon**.
 
-Horizontal tuning deepens the map’s predictive accuracy at the current horizon without yet extending it.
+Horizontal tuning deepens the map's predictive accuracy at the current horizon without yet extending it.
 
 #### Characteristic signature
 
@@ -130,7 +130,7 @@ Horizontal tuning deepens the map’s predictive accuracy at the current horizon
 
 Simultaneously, the system probes whether extending the SR temporal horizon reveals deeper relational structure.
 
-This means asking whether the current map’s predictions improve if the discount factor is relaxed to include more distal state transitions.
+This means asking whether the current map's predictions improve if the discount factor is relaxed to include more distal state transitions.
 
 This is not deliberate strategy. It is an automatic property of the hippocampal SR system.
 
@@ -251,7 +251,7 @@ Adequate consolidation is therefore not a rest period in a weak sense. It is an 
 ## 5. Layer 4: The Individual Differences Layer  
 **Characteristic loop signatures across stable FPCN-A/B balance profiles**
 
-The individual differences layer characterises how stable biases in FPCN-A/B balance produce distinctive patterns across the loop’s phases and transition events.
+The individual differences layer characterises how stable biases in FPCN-A/B balance produce distinctive patterns across the loop's phases and transition events.
 
 Rather than treating individual differences as fixed capacity variations, this layer treats them as **characteristic dynamical signatures**.
 
@@ -535,7 +535,7 @@ Transition Event 3 produces formally correct structures that pass portability va
 
 FPCN-A/B balance is appropriately maintained but over limited associative territory.
 
-The `I·β` product is stable, indicating genuine GP dynamics, but the entropy arm’s search space is constrained by shallow SR map depth.
+The `I·β` product is stable, indicating genuine GP dynamics, but the entropy arm's search space is constrained by shallow SR map depth.
 
 The update distribution is heavy-tailed, but the tail only reaches shallow relational territory.
 
@@ -605,7 +605,7 @@ GP dynamics are well maintained within each loop iteration.
 
 However, cross-iteration continuity is poor.
 
-The entropy arm’s search space at the start of each new iteration is not demonstrably richer than before, indicating slow Gc pathway failure.
+The entropy arm's search space at the start of each new iteration is not demonstrably richer than before, indicating slow Gc pathway failure.
 
 ---
 
@@ -676,7 +676,7 @@ Transition events mark qualitative regime changes across all layers simultaneous
 
 ## 12. Transition Event 1: Asymptote Detection
 
-The current SR map’s performance gains flatten. The power-law learning segment reaches its local ceiling.
+The current SR map's performance gains flatten. The power-law learning segment reaches its local ceiling.
 
 This is detected by the GP regulation subsystem as mutual-information saturation:
 
@@ -701,7 +701,7 @@ The FPCN-B entropy arm reactivates at increased intensity.
 
 The hippocampal SR temporal horizon extends beyond its current tuned value.
 
-The default mode network’s associative reach expands into domains not previously connected to the current relational structure.
+The default mode network's associative reach expands into domains not previously connected to the current relational structure.
 
 FPCN-A mutual-information constraint relaxes. It does not disappear, but loosens enough to allow novel relational configurations to be evaluated.
 
@@ -726,7 +726,7 @@ A qualitatively better relational configuration becomes available through entrop
 
 The new structure:
 
-- accounts for the current map’s successes
+- accounts for the current map's successes
 - explains its failures as boundary cases
 - reveals a more general invariant
 
@@ -736,7 +736,7 @@ In Zhang–Tang terms, this appears as:
 - one of the power-law distributed jumps
 - rapid mutual-information gain afterwards
 
-Profile 4’s limitation occurs here: the new structure is genuine but shallow because SR depth constrains invariant complexity.
+Profile 4's limitation occurs here: the new structure is genuine but shallow because SR depth constrains invariant complexity.
 
 ---
 
@@ -776,7 +776,7 @@ The next loop iteration begins from a representationally richer state.
 
 This is where the spiral advances.
 
-Profile 5’s failure occurs here: fast Gc compilation completes, but slow Gc installation fails before the next loop iteration begins.
+Profile 5's failure occurs here: fast Gc compilation completes, but slow Gc installation fails before the next loop iteration begins.
 
 ---
 
@@ -929,7 +929,7 @@ The ability to sustain FPCN-A/B competition varies with:
 - niche coupling
 - allostatic state
 
-The Ψ-band’s width and accessibility are shaped by the meta-parameters:
+The Ψ-band's width and accessibility are shaped by the meta-parameters:
 
 - `η` — meta-efficacy
 - `χ` — coherence
@@ -977,7 +977,7 @@ Mutual-information dominance resolves the dynamic into stable automation.
 
 ## 27. Dopaminergic Implementation of Explore–Exploit Tilt
 
-Trident-G’s `δ` maps onto FPCN-A/B balance.
+Trident-G's `δ` maps onto FPCN-A/B balance.
 
 | Dopaminergic channel | Trident-G function | G-loop function |
 |---|---|---|
@@ -994,9 +994,501 @@ The dopaminergic mechanism provides a biological implementation of the Zhang–T
 
 ## 28. Cusp Geometry as Bifurcation Topology
 
-Trident-G’s cusp catastrophe geometry gives a precise description of the bifurcation topology.
+Trident-G's cusp catastrophe geometry gives a precise description of the bifurcation topology that the G loop's qualitative account requires.
 
 The cusp potential is:
 
-```math
-V(x; \xi, \delta) = x^4 - \xi x^2 - \delta x
+```
+V(x; ξ, δ) = x⁴ − ξx² − δx
+```
+
+This gives the bifurcating dynamic a precise geometric form with three identifiable regime regions corresponding to the cusp surface's structure.
+
+---
+
+## 29. The Three Cusp Regimes and Their G-Loop Interpretations
+
+### 29.1 Subcritical Single-Well Regime (ξ < 0)
+
+When engagement ξ is negative — endorsed challenge is below the defended band — the cusp potential has a single shallow well near x ≈ 0.
+
+**G-loop interpretation:** This is the compiled Gc / SR automation regime. The bifurcating dynamic has already resolved. Mutual information has won, entropy has been suppressed, and the update distribution has thinned. The system operates efficiently within a single stable attractor — the Autopilot basin.
+
+This corresponds to post-bifurcation subcritical Gc: model-free, subcortical-dominant, no longer internally bifurcating. It is not a low-engagement version of Gf but a qualitatively different dynamical mode.
+
+### 29.2 Near-Critical Ψ-Band Regime (ξ ≈ 0)
+
+As ξ approaches zero from either direction, the central basin flattens. The cusp potential is shallow with low barrier heights. Switching between modes is easy and metabolically inexpensive.
+
+**G-loop interpretation:** This is the GP / Gf regime — the sustained bifurcating dynamic. The system is neither fully committed to exploitation nor to exploration. The FPCN-A/B competition is genuinely alive. The α stability monitor shows healthy heavy-tailed power-law statistics. The entropy arm and mutual-information arm are in genuine dynamic competition.
+
+This is the region of maximum flexibility and minimum commitment: the operational Ψ-band where G-loop iterations generate genuine relational learning rather than mere performance optimisation within an existing schema.
+
+### 29.3 Supercritical Double-Well Regime (ξ ≫ 0)
+
+When engagement ξ is strongly positive, the central point becomes unstable and two deep outer wells appear at larger values of |x|. The barrier between wells is high, transitions between them are metabolically costly, and the system is committed to one of two high-engagement modes.
+
+**G-loop interpretation:** This is the supercritical fragmentation failure mode — the entropy arm operating without sufficient mutual-information constraint. The system is generating broad search without convergence. The two wells correspond to two qualitatively distinct high-load Gf branches that can be biased toward exploration-dominated or exploitation-dominated processing when a small tilt δ ≠ 0 is present.
+
+A small tilt δ specifying which of the two wells is occupied maps directly onto the FPCN-A/B balance within the GP regime — whether the system is tilted toward the mutual-information arm's exploitation-dominated processing or the entropy arm's exploration-dominated processing at any given moment.
+
+---
+
+## 30. Meta-Parameter Modulation of Cusp Geometry
+
+The cusp potential includes meta-parameters that reshape the landscape:
+
+```
+V(x; ξ★, ξ̃, η, χ, λ) = b(ξ★, η)x⁴ − a(ξ★, χ)ξeff(t)x² − δ(t)x
+```
+
+Where:
+
+- **ξeff(t) = λ(t)[ξ★(t) + ξ̃(t)]** — effective engagement after niche coupling
+- **a(ξ★, χ)** — quadratic coefficient: controls how sharply engagement splits Autopilot versus Gf regimes
+- **b(ξ★, η)** — quartic coefficient: controls well depth and stiffness
+
+### How each meta-parameter shapes the landscape
+
+**η (meta-efficacy):** Modulates the quartic coefficient b. Higher η effectively flattens the potential — shallower wells, more freedom to move between regimes, lower cost of operating near the Ψ-band fold. Lower η makes wells deeper and stiffer — the system feels less safe operating near the bifurcation point and tends to collapse into either the Autopilot well or a high-engagement well and stay there. This explains why damaged meta-efficacy (chronic failure experiences, PTSD, depression) makes the Ψ-band harder to access even when allostatic load is technically within range.
+
+**χ (coherence):** Modulates the quadratic coefficient a. High χ gives steeper, more clearly differentiated wells — the Autopilot and Gf modes are more distinct and switching between them is more decisive. Low χ flattens the splitting — the system cannot clearly differentiate between modes and transitions become blurred and unreliable. This is the GP architecture's coherence requirement: without sufficient integration quality in the FPCN-A/B coupling, the bifurcating dynamic cannot maintain stable competition between the two arms.
+
+**λ (niche coupling):** Amplifies ξeff — how much of the endorsed challenge level actually reaches the system from the niche. High λ means environmental demands cut deeper grooves in the cusp landscape for a given G − F★. Low λ means the system's internal GP dynamics are partially decoupled from environmental structure — the entropy arm is searching a space that doesn't accurately reflect the niche's relational demands, reducing the portability of whatever structures emerge from the bifurcation.
+
+### Training, trauma, and meta-parameter shifts
+
+Training, illness, and environment can move and stretch the Ψ-band by shifting these meta-parameters:
+
+- Successful training and robust niches widen the Ψ-band (increase η and λ, stabilise χ)
+- Chronic stress and impoverished niches narrow it (reduce η, destabilise χ, reduce λ)
+- These shifts appear as concrete changes in the cusp landscape geometry — how much of the defended band is reachable and stable as a high-functioning near-critical region
+
+---
+
+## 31. Tonic and Phasic Engagement: The ξ★ / ξ̃ Distinction
+
+A critical distinction for individual differences and training design is the decomposition of engagement ξ into two components:
+
+**Tonic engagement bias (ξ★):**
+```
+ξ★(t) = G★(t) − F★(t)
+```
+The long-run challenge stance in a given niche. This is a trait-like variable — how boldly the system habitually operates near the Ψ-band fold. High ξ★ means the system is chronically set toward challenge-seeking and high engagement. Low ξ★ means the system chronically expects and endorses low demand.
+
+**Phasic engagement update (ξ̃):**
+```
+ξ̃(t) = G(t) − G★(t)
+```
+The short-term adjustment around the tonic stance. For this specific episode, I will push harder, or for now, I am backing off. This is a state-like variable that can shift on timescales of seconds to hours.
+
+**Full engagement:**
+```
+ξ(t) = ξ★(t) + ξ̃(t)
+```
+
+### Why this distinction matters for the G loop
+
+The five Layer 4 profiles differ primarily in ξ★ — their trait-level tonic engagement bias:
+
+- Profile 2 (mutual information dominant) corresponds to chronically high ξ★ — the system is set toward exploitation and premature constraint application even before specific task demands are known
+- Profile 3 (entropy dominant) corresponds to chronically low ξ★ — the system is set toward exploration but cannot apply sufficient constraint when it matters
+- Profile 1 (balanced GP) corresponds to ξ★ calibrated near the Ψ-band optimum for the relevant domain
+
+Training operates primarily through repeated phasic ξ̃ shifts — creating episodes that push the system beyond its current ξ★ baseline and demonstrating successful navigation. When these phasic successes accumulate, they update G★ (the baseline expected load) through prediction-error learning, gradually reshaping ξ★ itself. This is the mechanism of genuine profile shifts: sustained training that targets profile-specific constraints produces tonic changes in the challenge stance, not just state-level performance improvements.
+
+The key training calibration principle follows directly: interventions should produce systematic **positive prediction errors (ε < 0)** — challenges that feel harder than they turn out to be. This keeps ε = F − G slightly negative, which Trident-G identifies as the signal that increases meta-efficacy η and widens the Ψ-band. Chronically negative ε (reality easier than expected) confirms competence and expands the operational corridor. Chronically positive ε (reality harsher than expected) produces overload and Ψ-band narrowing.
+
+---
+
+# Part IX — Operational Regimes: A Unified Two-Axis Classification
+
+---
+
+## 32. Two Classification Systems and Why Both Are Needed
+
+Two classification systems apply to the operational regimes of the G loop. They cut the space differently and must be distinguished clearly.
+
+**The Trident-G operational regimes** (well-regulated, over-braced, under-braced, dark-room/adventure) describe the **allostatic pathways** into different states — how the system's (x, ξ, ε) configuration is being driven. They describe the forces acting on the system.
+
+**The dynamical state classification** (subcritical flat, in the zone, supercritical spun-out, supercritical locked-in) describes **where the system is on the cusp surface** — what the system's internal dynamics look like once it is in a given region. They describe the state itself.
+
+Both are needed because the same dynamical state can be reached by different allostatic routes, and the same allostatic route can produce different dynamical states depending on the system's pre-existing ξ★ bias, cusp geometry, and meta-parameter configuration.
+
+---
+
+## 33. The Two-Axis Dynamical State Classification
+
+The dynamical state classification cuts the cusp surface along two independent axes:
+
+**Axis 1: ξ — subcritical versus supercritical**
+Whether the system is below the bifurcation threshold (single well, no GP dynamics) or above it (double well, GP dynamics available but potentially unstable).
+
+**Axis 2: δ — which well of the supercritical double-well**
+When supercritical, whether the entropy arm or the mutual-information arm is dominating — which branch the system is occupying.
+
+This yields four distinct dynamical states:
+
+---
+
+### 33.1 Subcritical Flat
+
+**Cusp position:** ξ < 0. Single shallow Autopilot well. δ is irrelevant — there is only one well to occupy.
+
+**Dynamical signature:** No GP bifurcating dynamic. The bifurcation has either not been entered or has fully resolved. Update distribution thin. α stability below the GP range. The system is operating in pure SR automation mode — model-free, subcortical-dominant, efficient within its compiled strategy but unable to generate genuine relational reconfiguration.
+
+**G-loop state:** Loop cannot initiate productively. No prediction error large enough to trigger Transition Event 2. The system cycles through existing fast Gc automations without spiral advance.
+
+**Relation to profiles:** The chronic failure state of Profile 5 (consolidation deficient — loop cycles without spiralling). Also the intended destination for compiled Gc structures — subcritical flat is the correct regime for automated expertise, pathological only when the system cannot exit it.
+
+**Allostatic routes in:** Dark-room proper (ξ ≪ 0, both actual and expected load low, ε small); chronic depression (F★ has drifted, system is below Ψ-band); or successful Gc compilation (the system has correctly resolved the bifurcation for a specific structure and is executing it efficiently).
+
+---
+
+### 33.2 In the Zone
+
+**Cusp position:** ξ ≈ 0. Near-critical Ψ-band region. Central basin shallow with low barrier heights. δ small and balanced.
+
+**Dynamical signature:** Full GP bifurcating dynamic active. FPCN-A/B competition genuine and productive. α stability maintained in the healthy heavy-tailed range. The I·β product is approximately stable — the Zhang-Tang invariant holds. Neither entropy arm nor mutual-information arm dominates long enough to collapse the dynamic. Switching between modes is easy and metabolically inexpensive.
+
+**G-loop state:** All five phases accessible. Loop can initiate, sustain SR tuning, complete the bifurcation response, generate higher-order structures, and complete the dual Gc banking sequence. This is the productive iteration state.
+
+**Relation to profiles:** The operating state of Profile 1 (balanced GP). The training target for all other profiles.
+
+**Allostatic routes in:** Well-regulated Ψ-band regime (x and ξ both near zero, ε small); adventure sub-regime (x ≪ 0 but ξ ≥ 0, strongly negative ε driving challenge-seeking); calibrated training challenge (ε consistently slightly negative, building η and widening the Ψ-band).
+
+---
+
+### 33.3 Supercritical Spun-Out
+
+**Cusp position:** ξ ≫ 0, δ tilted toward the entropy-dominant well (exploration-dominated Gf branch).
+
+**Dynamical signature:** Entropy arm dominating without sufficient mutual-information constraint. FPCN-B broadly activated, FPCN-A engagement intermittent or weak. Update distribution develops extreme heavy tails without convergence. α exceeds the optimal range — supercritical dynamics rather than GP regime maintenance. β remains high while λ fails to rise. Rich generative search is occurring but cannot resolve into validated relational structure.
+
+**G-loop state:** Transition Event 3 (higher-order structure emergence) is delayed or fails. Many candidate relational configurations are generated but cannot be selected among. Fast Gc banking is rare. The bifurcation threshold is rarely crossed cleanly. Slow Gc gist extraction is rich in diversity but produces schematic geometry that is broad and associatively rich but poorly calibrated to task-relevant structure — creative but unreliable.
+
+**Relation to profiles:** The characteristic operating state of Profile 3 (entropy dominant). Also the acute failure mode under genuine under-bracing when D2-mediated exploration opens without the mutual-information constraint to direct it productively.
+
+**Allostatic routes in:** Two distinct pathways reach this state:
+- *Acute under-bracing* (ε > 0 at high magnitude — reality far harsher than expected, emergency exploration activated without productive constraint)
+- *Chronic low ξ★ trait bias* (Profile 3's stable tonic engagement bias — the system is chronically set toward exploration regardless of acute allostatic state)
+
+These are mechanistically different. Acute spun-out resolves when the allostatic mismatch resolves. Chronic spun-out (Profile 3) persists because it reflects a stable FPCN-A/B balance bias — it requires the MFT-M mutual-information constraint training rather than simply stress reduction.
+
+---
+
+### 33.4 Supercritical Locked-In
+
+**Cusp position:** ξ ≫ 0, δ tilted toward the mutual-information dominant well (exploitation-dominated Gf branch).
+
+**Dynamical signature:** Mutual-information arm dominating without sufficient entropy arm activation. FPCN-A strongly activated, FPCN-B search prematurely closed. Update distribution flattens toward thin tails as the system over-commits to its current constraint schema. α falls below the optimal heavy-tailed range — the system is operating subcritically during what should be the GP bifurcation response phase. λ rises quickly while β collapses.
+
+**G-loop state:** Transition Event 2 (GP bifurcation response) is truncated. The entropy arm activates briefly but FPCN-A recaptures the dynamic before genuine higher-order structure can emerge. Fast Gc banking occurs prematurely — structures are compiled before portability validation cascade is complete. Wrapper-specific automations accumulate. The loop appears productive but generates brittle, poorly portable Gc.
+
+**Relation to profiles:** The characteristic operating state of Profile 2 (mutual information dominant). Also the failure mode of OCD (extreme locked-in), PTSD's hypervigilant exploitation well, and rigid expertise that cannot reconfigure under novel conditions.
+
+**Allostatic routes in:** Two distinct pathways reach this state:
+- *Acute over-bracing* (ξ ≫ 0, ε < 0, the system is braced for threat and applying tight constraint — high G★ relative to actual F, chronic hypervigilance)
+- *Chronic high ξ★ trait bias* (Profile 2's stable tonic engagement bias — the system is chronically set toward exploitation and constraint regardless of acute allostatic state)
+
+Again, these are mechanistically different. Acute locked-in resolves when the over-bracing resolves and G★ is revised downward. Chronic locked-in (Profile 2) persists because it reflects a stable FPCN-A/B balance bias — it requires specific entropy injection training at the bifurcation response phase rather than simply reducing arousal.
+
+**Important non-equivalence:** A system with low χ (poor FPCN-A/B coupling coherence) may present as spun-out even under conditions of over-bracing, because the mutual-information arm cannot maintain coherent constraint even when over-activated. Conversely, a system with very deep existing cusp wells (high accumulated Gc rigidity) may present as locked-in even under under-bracing, because it defaults to its most familiar exploitation strategy rather than generating novel exploration. The dynamical state and the allostatic pathway are therefore partially independent and both must be assessed for accurate diagnostic and training prescription.
+
+---
+
+## 34. Unified Mapping: Dynamical States × Allostatic Pathways
+
+The two classification systems interact as follows:
+
+| Dynamical state | Primary allostatic route | Secondary allostatic route | Profile correspondence |
+|---|---|---|---|
+| Subcritical flat | Dark-room (ξ ≪ 0, ε ≈ 0) | Depression (F★ drift) | Profile 5 failure; compiled Gc (intended) |
+| In the zone | Well-regulated (x ≈ 0, ξ ≈ 0) | Adventure (x ≪ 0, ξ ≥ 0) | Profile 1 |
+| Supercritical spun-out | Chronic low ξ★ trait bias | Acute under-bracing (ε ≫ 0) | Profile 3 |
+| Supercritical locked-in | Chronic high ξ★ trait bias | Acute over-bracing (ξ ≫ 0, ε < 0) | Profile 2 |
+
+---
+
+## 35. The Trident-G Operational Regimes as Allostatic Pathways
+
+The Trident-G operational regimes — originally formulated as the primary classification — are now understood as the allostatic pathway layer: they describe the forces driving the system toward or away from each dynamical state.
+
+### 35.1 Well-Regulated Ψ-Band Regime
+
+**Conditions:** x ≈ 0, ξ ≈ 0. |x|, |ξ|, |ε| all small.
+
+**Allostatic function:** Maintains the system in or near the in the zone dynamical state. The cusp is multi-stable but not excessively stiff. The system can engage Gf when needed and relax back to Autopilot without large allostatic swings.
+
+**Training relevance:** The target allostatic configuration for all productive G-loop iteration. Training should be calibrated to maintain this regime — specifically in the adventure sub-region where ξ ≥ 0 while F remains manageable.
+
+---
+
+### 35.2 Over-Braced Regime
+
+**Conditions:** ξ ≫ 0, x smaller. ε = x − ξ < 0 (reality easier than expected).
+
+**Allostatic function:** Primary pathway into the supercritical locked-in dynamical state. The mutual-information arm is chronically over-activated relative to actual prediction-error signal. Compresses entropy arm reach. Deep, steep wells. High mobilisation cost.
+
+Over time, repeated negative ε should drive G★ downward. If this revision fails — as in anxiety disorders and PTSD — the system remains chronically over-braced, Ψ-band narrows through sustained metabolic cost, and η erodes.
+
+**Training relevance:** The training prescription of entropy injection is specifically designed to create repeated negative ε in the bifurcation response phase, demonstrating the system can tolerate exploration without catastrophic outcomes — gradually revising ξ★ downward and widening the Ψ-band.
+
+---
+
+### 35.3 Under-Braced Regime
+
+**Conditions:** x ≫ 0, ξ small. ε = x − ξ > 0 (reality harsher than expected).
+
+**Allostatic function:** Acute pathway into supercritical spun-out (emergency exploration) or paradoxically into locked-in (emergency exploitation in systems with deep existing wells). The positive prediction error signal that should drive productive Transition Event 2 is present but at excessive magnitude — the system enters emergency mode rather than productive bifurcation response.
+
+Chronic under-bracing progressively erodes η through sustained overload, narrows the Ψ-band, and degrades mutual-information arm precision.
+
+**Training relevance:** The regime the training calibration principle specifically avoids. The appropriate training stress is achievable challenge — tasks consistently in the range where ε < 0 is the typical outcome.
+
+---
+
+### 35.4 Dark-Room and Adventure Regimes
+
+**Dark-room conditions:** F ≪ F★, ξ ≪ 0. Both actual and expected load are low. ε ≈ 0 — nothing pushes the system out.
+
+**Allostatic function:** Pathway into and maintenance of the subcritical flat dynamical state. The cusp flattens around a single low-engagement Autopilot well. No G-loop initiation possible. Profile 5's chronic failure in its sustained form.
+
+**Adventure conditions:** F ≪ F★, ξ ≥ 0. Actual load low but endorsed challenge high. ε = x − ξ ≪ 0 — strongly negative, driving challenge-seeking.
+
+**Allostatic function:** Productive sub-regime that maintains near-critical dynamics without full bifurcation activation. The system is in the lower Ψ-band — optimal for slow Gc gist extraction. The adventure regime is what good consolidation intervals look like allostatic-ally: near-critical enough for rich statistical structure, stable enough for consolidation to complete.
+
+**Training relevance:** Genuine consolidation intervals should target the adventure sub-regime — not pure dark-room inactivity but deliberate low-load engagement maintaining near-criticality without new prediction-error override. Sleep achieves this through oscillatory dynamics that keep the system near-critical while the slow Gc pathway installs gist as schematic geometry.
+
+---
+
+# Part X — Separation of Timescales
+
+---
+
+## 36. Three Layers of Change
+
+A critical architectural distinction for training design is the separation of the framework's variables into three distinct timescale layers.
+
+---
+
+### 36.1 Fast and Semi-Fast: Meta-Parameters and Expectations
+
+**Variables:** η, χ, λ, G, ξ = G − F★, δ
+
+**Timescales:**
+- seconds to minutes: neuromodulators, attention shifts, momentary belief changes
+- hours to days: standard synaptic plasticity, therapeutic conversations, feedback
+- weeks to months: training, psychotherapy, lifestyle implementation
+
+These meta-parameters effectively reconfigure how the system rides the cusp and occupies the Ψ-band without needing to move the underlying metabolic criticality threshold. They change:
+
+- how strongly engagement carves distinct Autopilot versus Gf wells
+- how often the system leans into exploration versus exploitation
+- how safe it feels operating near the cusp folds
+
+Placebo and belief effects operate primarily at this layer — changing η, G, and the interpretation of surprises rather than the hardware itself.
+
+**G-loop implication:** Most acute training effects — session-to-session performance improvements, therapeutic gains, challenge calibration adjustments — operate at this layer. They reshape how the system uses its existing critical band and Gc substrate. They do not directly expand the substrate itself.
+
+---
+
+### 36.2 Intermediate: Self-Organising Gc Structure
+
+**Variables:** The structure of the generative model — semantic, relational, and skill patterns built through repeated operation near criticality
+
+**Timescale:** Weeks to months through the slow Gc gist extraction and cortical consolidation pathway
+
+This is the active Gc layer: schematic geometry that is neither a fast meta-parameter shift nor a fixed physiological property, but an intermediate-rate self-organising structure emerging from repeated G-loop iteration.
+
+The slow Gc pathway installs relational invariants as cortical representational geometry. Once installed, these invariants actively reshape the search space available to the entropy arm in subsequent loop iterations — this is what distinguishes the self-enriching spiral from flat cycling.
+
+**G-loop implication:** The spiral advance of the G loop operates at this timescale. Individual loop iterations produce fast Gc compilations (sessions to weeks). These feed the slow Gc gist extractor (weeks to months). The schematic geometry that results actively enriches the starting conditions for future iterations. Training programs shorter than this timescale cannot produce genuine spiral advance — they can improve performance within the current schematic geometry without expanding it.
+
+---
+
+### 36.3 Slow: Physiology of Network Criticality
+
+**Variables:** Anatomical connectivity, white-matter structure, vascular and metabolic capacity, baseline excitation–inhibition balance, endocrine milieu, long-term health
+
+**Timescale:** Months to years — development, ageing, chronic disease, intensive long-term training
+
+These determine:
+
+- the location of the near-critical window in terms of energy or load (the feasible range for F★)
+- the intrinsic breadth of the underlying Griffiths phase
+
+**G-loop implication:** This layer sets the ultimate limits on where the Ψ-band can sit and how wide it can be. It defines the long-run boundaries within which both meta-parameter adjustment and self-organising Gc construction must operate. Development, lifestyle, ageing, and chronic disease shift these boundaries slowly but significantly. Very long-term training programs — years of sustained practice — can genuinely expand this substrate, but single training interventions cannot.
+
+---
+
+### 36.4 Why This Separation Matters for Training Design
+
+| Timescale | What changes | What does not change |
+|---|---|---|
+| Fast (minutes–days) | η, χ, λ, G, ξ, δ | Gc schematic geometry, criticality substrate |
+| Intermediate (weeks–months) | Slow Gc schematic geometry | Criticality substrate |
+| Slow (months–years) | Physiological criticality thresholds | — |
+
+A training program that produces rapid performance gains but no change in the slow Gc schematic geometry (no spiral advance) is operating exclusively at the fast layer — adjusting meta-parameters on a fixed substrate. It will not produce far transfer.
+
+A training program that produces genuine spiral advance — measurable enrichment of the schematic geometry across loop iterations — is operating at the intermediate layer. This requires adequate loop iterations with sufficient episodic diversity and adequate consolidation intervals. It will produce genuine far transfer.
+
+A training program that expands the physiological criticality substrate — genuinely widening the Ψ-band at the hardware level — requires years of sustained near-critical operation and healthy lifestyle support. It corresponds to genuine long-term intelligence development rather than skill acquisition.
+
+---
+
+# Part XI — The Computational-Level Definition of General Intelligence
+
+---
+
+## 37. General Intelligence as Ψ-Band Navigation Capacity
+
+At Marr's computational level, general intelligence g can be defined precisely within the Trident-G framework.
+
+Let **OccΨ(t)** indicate whether the current state (x, ξ, δ, η, χ, λ) lies within the Ψ-band.
+
+Let **⟨OccΨ⟩** be the time-average of Ψ-band occupancy under standardised challenges.
+
+Let **𝒢** denote the set of recurrent Ψ-band trajectories — G-loops — that the organism can reliably realise and re-enter.
+
+**Working definition of g:**
+
+> g is an increasing function of (i) ⟨OccΨ⟩ and (ii) the volume or diversity of 𝒢 in (x, ξ, δ, η, χ, λ)-space.
+
+Informally: more intelligent organisms spend more time in their Ψ-band and can access a richer repertoire of near-critical loops without falling out of their viability band.
+
+---
+
+### 37.1 What This Definition Captures
+
+**⟨OccΨ⟩ — time in the Ψ-band:**
+This captures the sustained maintenance of GP dynamics under real-world challenge. A system that frequently drops out of the Ψ-band under moderate load has lower g than one that maintains near-critical dynamics across varied and demanding conditions. This corresponds to the robustness dimension of intelligence — the ability to maintain GP operation despite perturbation.
+
+**Volume of 𝒢 — diversity of accessible G-loops:**
+This captures the richness of the relational territory the system can navigate while remaining in the Ψ-band. A system that can sustain G-loops across many domains, timescales, and levels of abstraction has higher g than one whose GP dynamics are confined to a narrow representational territory. This corresponds to the flexibility dimension of intelligence — the ability to generate genuinely novel relational structures across diverse domains.
+
+**The interaction:** The definition requires both. High ⟨OccΨ⟩ with narrow 𝒢 is robust but not flexible — the system stays near-critical but only in familiar territory. Wide 𝒢 with low ⟨OccΨ⟩ is potentially flexible but unreliable — the system can generate novel structures but cannot sustain the dynamics needed to validate and compile them. Peak general intelligence requires sustained Ψ-band occupancy across a rich and diverse G-loop repertoire.
+
+---
+
+### 37.2 How the G-Loop Builds g
+
+Each complete G-loop spiral advances along both dimensions of the g definition:
+
+- **Ψ-band occupancy increases** because the slow Gc schematic geometry enriches the representational substrate, making future loop entry from a richer starting state and requiring less recovery time after perturbation
+- **G-loop repertoire expands** because the fast Gc compilations add new SR automations as structured building blocks, and the slow Gc gist extraction installs cross-domain invariants that allow the entropy arm to reach genuinely novel relational territories on subsequent iterations
+
+Training that produces genuine spiral advance — full loop iterations with dual Gc banking and adequate consolidation — therefore directly increases both components of g. Training that produces performance improvement without spiral advance increases neither.
+
+---
+
+### 37.3 Implications for the Individual Differences Profiles
+
+The g definition specifies precisely what each profile lacks:
+
+| Profile | ⟨OccΨ⟩ limitation | 𝒢 volume limitation |
+|---|---|---|
+| 1: Balanced GP | Neither — limited only by relational territory available | Neither — limited only by novelty of challenges encountered |
+| 2: MI dominant | Ψ-band collapses during bifurcation response phase | G-loops confined to existing schema territory |
+| 3: Entropy dominant | Ψ-band destabilises into supercritical fragmentation | Nominally wide but G-loops rarely complete; repertoire is shallow |
+| 4: SR depth deficient | Ψ-band maintained but on thin substrate | G-loops complete correctly but reach only shallow invariants |
+| 5: Consolidation deficient | Ψ-band maintained within iterations but drops between them | G-loop repertoire does not expand across iterations; 𝒢 is static |
+
+---
+
+# Part XII — Socially Extended Trident-G
+
+---
+
+## 38. The Group as a Trident-G Agent
+
+The Trident-G framework applies not only to individual organisms but to groups, teams, and collectives that are sufficiently coupled to behave as semi-coherent agents.
+
+When individuals are coupled through shared beliefs, norms, roles, joint policies, and interaction patterns, a group-level generative model emerges with its own quasi-Markov blanket relative to the wider environment.
+
+The same core quantities can be defined at the group scale:
+
+| Quantity | Group interpretation |
+|---|---|
+| **Fgroup(t)** | Group-level allostatic load — overall stress on the collective, including resource scarcity, conflict, coordination cost, and risk exposure |
+| **Ggroup(t)** | Expected group load — how demanding the group tacitly expects the shared niche to be |
+| **F★group(t)** | Defended group set-point — reference level of group strain compatible with sustainable near-critical operation |
+| **G★group(t)** | Baseline expected group load — slowly learned sense of how demanding life typically is for this group in this niche |
+
+From these:
+
+```
+xgroup(t) = Fgroup(t) − F★group(t)
+ξgroup(t) = Ggroup(t) − F★group(t)
+εgroup(t) = Fgroup(t) − Ggroup(t)
+```
+
+The group's **Ψ-band** is the region in (Fgroup, Ggroup) space where:
+- collective load is neither chronically overwhelming nor chronically under-stimulating
+- the group maintains high dynamic range in internal coordination
+- recovery from perturbations is high
+- multiple workable coordination modes are available
+
+---
+
+## 39. Group-Level Meta-Parameters
+
+The group cusp geometry is shaped by group-level meta-parameters:
+
+- **ηgroup** — collective meta-efficacy: the group's belief in its controllability and competence; built through demonstrated performance across varied challenges
+- **χgroup** — group coherence: the integration quality of the group's shared generative model; built through trust, data sharing, and aligned objectives
+- **λgroup** — niche coupling: the strength of connection between the group's internal models and its shared environment; built through genuine environmental engagement and feedback integration
+
+These parameters reshape the group cusp geometry in the same way individual meta-states reshape the individual cusp — determining how deep and stiff the coordination wells are, how wide the group Ψ-band can be, and how readily the group can switch between exploitation and exploration modes.
+
+---
+
+## 40. Mechanisms of Group-Level Coupling
+
+For a social Trident-G to be meaningful, individuals must not merely model each other but become dynamically coupled such that a shared higher-level structure emerges. Three coupling mechanisms support this:
+
+**Neural and physiological synchrony:** Interpersonal synchrony in brain activity, heart rate, and autonomic signals during joint action, conversation, and cooperation. From a Trident-G perspective, this is what occurs when individuals' internal trajectories are pulled into generalised synchrony by reciprocal prediction and signalling.
+
+**Behavioural synchrony and joint rhythms:** Walking in step, complementary speech rhythms, and aligned postures reduce the cost of mutual prediction. These effectively sharpen the group's cusp — producing clearer, more stable coordination modes — while lowering individual prediction errors.
+
+**Symbolic communication and shared narratives:** Language, shared stories, rules, and norms allow the group to build and maintain a shared generative model that persists beyond any momentary interaction. This is the cultural substrate of G★group and F★group — the slowly evolving sense of what the group can handle and how demanding its niche typically is.
+
+---
+
+## 41. The GP Collective as Group-Level Trident-G
+
+The GP collective business architecture we have described is a direct instantiation of socially extended Trident-G.
+
+**Each partner node** is an individual Trident-G agent maintaining its own Ψ-band navigation, its own fast Gc SR automation store, and its own domain-specific G-loop dynamics.
+
+**The shared slow Gc gist store** is the group's shared generative model substrate — the cultural and schematic geometry built from cross-node episodic diversity through the collective's gist extraction pathway. This corresponds to the symbolic communication and shared narratives mechanism at the cognitive infrastructure level.
+
+**The GP kernel's regulation function** corresponds to the group's GP regulation subsystem — monitoring the collective's α stability, detecting when mutual-information dominance is suppressing node-level exploration, and triggering entropy injection through cross-domain challenge and novel partnership configurations.
+
+**The governance architecture** corresponds to the group cusp geometry's meta-parameters:
+- building ηgroup through demonstrated collective performance
+- building χgroup through trust and data-sharing structures
+- building λgroup through genuine environmental engagement and feedback
+
+**The collective's Ψ-band** is the organisational regime where:
+- collective load is neither chronically overwhelming nor under-stimulating
+- semi-independent node-level bifurcation dynamics are preserved
+- recovery from environmental perturbations is high
+- the collective can switch between exploitation-dominant coordination (scaling proven strategies) and exploration-dominant coordination (generating novel cross-domain configurations)
+
+The socially extended Trident-G formalism therefore provides the formal basis for treating the GP collective not merely as a business model but as a genuine higher-level intelligent system with its own Ψ-band, its own G-loop dynamics, and its own developmental trajectory toward expanding 𝒢volume — the diversity of near-critical G-loops the collective can reliably enter and re-enter across its operational niche.
+
+---
+
+## 42. Group-Level G Definition
+
+At the collective level, general intelligence g can be read off the group control loop in the same way as for individuals:
+
+> Collective intelligence is an increasing function of (i) time the group spends in its Ψ-band under standardised challenges, and (ii) the diversity of G-loops the group can reliably enter across its operational domains.
+
+More intelligent collectives spend more time in their collective Ψ-band — maintaining productive GP dynamics across their node network — and can access a richer repertoire of near-critical coordination loops without falling out of their collective viability band.
+
+This definition applies equally to dyads, teams, organisations, and — at civilisational scale — to the multipolar GP network as an alternative to the centralised intelligence architectures that treat collective intelligence as mutual-information maximisation under a single dominant objective function.
+
+---
