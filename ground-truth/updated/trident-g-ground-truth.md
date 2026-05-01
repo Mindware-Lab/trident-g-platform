@@ -3,7 +3,7 @@
 
 **General adaptive intelligence (G)** is the capacity to maintain viable near-critical cognition across challenge, search relational problem spaces without collapsing into rigidity or fragmentation, validate useful structures across variation, and crystallise what survives into reusable Gc that can later be re-entered flexibly under new Gf demand.
 
-Trident-G now offers a unified architecture for how adaptive intelligence is maintained, expressed, destabilised, trained, validated, and crystallised over time.
+Trident-G theory offers a unified architecture for how adaptive intelligence is maintained, expressed, destabilised, trained, validated, and crystallised over time.
 
 ---
 
