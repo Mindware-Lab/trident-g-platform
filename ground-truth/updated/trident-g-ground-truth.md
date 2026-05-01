@@ -1033,6 +1033,8 @@ As ξ approaches zero from either direction, the central basin flattens. The cus
 
 This is the region of maximum flexibility and minimum commitment: the operational Ψ-band where G-loop iterations generate genuine relational learning rather than mere performance optimisation within an existing schema.
 
+The near-critical Ψ-band is not a pre-bifurcation single basin — it is the region where the double-well has formed but remains shallow. The two incipient wells correspond to the entropy-arm-dominant and mutual-information-arm-dominant modes. Productive movement between them, regulated by the I·β balance, is what generates the power-law heavy-tailed update statistics. The continuous surface means pathology is not a different structure but the same double-well deepened: as ξ increases, the same wells that sustain GP dynamics when shallow become the pathological multistable traps when deep. The Ψ-band is specifically the range of ξ where well depth permits productive switching rather than trapping.
+
 ### 29.3 Supercritical Double-Well Regime (ξ ≫ 0)
 
 When engagement ξ is strongly positive, the central point becomes unstable and two deep outer wells appear at larger values of |x|. The barrier between wells is high, transitions between them are metabolically costly, and the system is committed to one of two high-engagement modes.
