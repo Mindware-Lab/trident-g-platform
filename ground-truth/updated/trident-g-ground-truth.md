@@ -1097,7 +1097,11 @@ The five Layer 4 profiles differ primarily in ξ★ — their trait-level tonic 
 
 Training operates primarily through repeated phasic ξ̃ shifts — creating episodes that push the system beyond its current ξ★ baseline and demonstrating successful navigation. When these phasic successes accumulate, they update G★ (the baseline expected load) through prediction-error learning, gradually reshaping ξ★ itself. This is the mechanism of genuine profile shifts: sustained training that targets profile-specific constraints produces tonic changes in the challenge stance, not just state-level performance improvements.
 
-The key training calibration principle follows directly: interventions should produce systematic **positive prediction errors (ε < 0)** — challenges that feel harder than they turn out to be. This keeps ε = F − G slightly negative, which Trident-G identifies as the signal that increases meta-efficacy η and widens the Ψ-band. Chronically negative ε (reality easier than expected) confirms competence and expands the operational corridor. Chronically positive ε (reality harsher than expected) produces overload and Ψ-band narrowing.
+The key training calibration principle follows directly: interventions should produce systematic **competence-confirming negative mismatch (ε < 0)** — challenges that initially feel demanding, but turn out to be more manageable than expected. In Trident-G terms, this means realised burden is slightly lower than expected burden: ε = F − G < 0.
+
+This slightly negative mismatch teaches the system that it can meet challenge without leaving the Ψ-band. Repeated experiences of this kind should increase meta-efficacy η, reduce unnecessary bracing, and gradually widen the accessible Ψ-band.
+
+Chronically negative ε, when produced by well-calibrated challenge rather than avoidance, confirms competence and expands the operational corridor. Chronically positive ε, where reality is repeatedly harsher than expected, produces overload, erodes meta-efficacy, and narrows the Ψ-band.
 
 ---
 
