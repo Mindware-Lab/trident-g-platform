@@ -1,7 +1,9 @@
 # Trident G Theory of General Adaptive Intelligence  
-## Complete Architecture with Individual Differences Layer
+## Complete Architecture with Individual Differences Layer: A dynamical characterisation of intelligence as Griffiths Phase bifurcating dynamics
 
-**Subtitle:** A dynamical characterisation of intelligence as Griffiths Phase bifurcating dynamics
+**General adaptive intelligence (G)** is the capacity to maintain viable near-critical cognition across challenge, search relational problem spaces without collapsing into rigidity or fragmentation, validate useful structures across variation, and crystallise what survives into reusable Gc that can later be re-entered flexibly under new Gf demand.
+
+Trident-G now offers a unified architecture for how adaptive intelligence is maintained, expressed, destabilised, trained, validated, and crystallised over time.
 
 ---
 
@@ -1003,6 +1005,13 @@ V(x; ξ, δ) = x⁴ − ξx² − δx
 ```
 
 This gives the bifurcating dynamic a precise geometric form with three identifiable regime regions corresponding to the cusp surface's structure.
+
+<img width="927" height="716" alt="image" src="https://github.com/user-attachments/assets/d362519b-52c6-4f22-9589-9bb8de708537" />
+Figure 1. Trident-G cusp geometry and Ψ-band operating corridor. 
+(A) Equilibrium cusp surface in \((\xi,\delta,x)\), derived from \(V(x;\xi,\delta)=x^4-\xi x^2-\delta x\), where \(x=F-F^\star\) indexes state deviation from the defended corridor, \(\xi=G-F^\star\) indexes engagement/control, and \(\delta\) indexes explore–exploit tilt. The blue band schematically marks the near-critical Ψ operating corridor around the central fold region, where transitions between low-cost Gc/Autopilot execution and high-engagement Gf reconfiguration remain flexible and reversible. 
+(B) Normalised cusp potential \(V(x;\xi,0)\) at zero tilt, showing the transition from a single-well to a double-well landscape as \(\xi\) increases. 
+(C) One-dimensional cross-sections of the potential for different engagement levels \(\xi\), illustrating the subcritical single-well regime, the near-critical Ψ-band regime, and the supercritical double-well regime. 
+(D) Equilibrium branches \(x^\*(\xi)\) in the \((\xi,x)\) plane at \(\delta=0\), highlighting the Autopilot/Gc shaft for \(\xi<0\), the shaded near-critical Ψ-band around \(\xi\approx0\), and the emergence of two high-engagement branches that can be biased by \(\delta\) toward exploration- or exploitation-dominated Gf modes.
 
 ---
 
