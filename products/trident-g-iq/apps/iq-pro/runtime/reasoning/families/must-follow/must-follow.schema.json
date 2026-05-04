@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Must Follow Item Schema",
+  "type": "object",
+  "required": [
+    "id",
+    "family",
+    "subtype",
+    "wrapper_type",
+    "difficulty_tier",
+    "binding_load",
+    "uncertainty_level",
+    "control_burden",
+    "logical_form",
+    "premises",
+    "query",
+    "answer_type",
+    "options",
+    "correct_answer"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "family": {
+      "const": "must_follow"
+    },
+    "subtype": {
+      "type": "string",
+      "enum": [
+        "choose_forced",
+        "select_forced",
+        "select_consistent_not_forced",
+        "must_follow_tf",
+        "best_conclusion_mcq",
+        "select_all_must_follow",
+        "cannot_follow_mcq"
+      ]
+    },
+    "semantic_v2": {
+      "type": "boolean"
+    },
+    "prompt_type": {
+      "type": "string",
+      "enum": [
+        "choose_forced",
+        "select_forced",
+        "select_consistent_not_forced"
+      ]
+    },
+    "wrapper_type": {
+      "type": "string",
+      "enum": [
+        "real_world",
+        "nonsense"
+      ]
+    },
+    "difficulty_tier": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "binding_load": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "uncertainty_level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "control_burden": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "logical_form": {
+      "type": "string"
+    },
+    "target_relation_type": {
+      "type": "string"
+    },
+    "premise_semantics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/semanticStatement"
+      }
+    },
+    "pre_flight_check": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "forced_count": {
+          "type": "integer"
+        },
+        "equivalent_count": {
+          "type": "integer"
+        },
+        "correct_count": {
+          "type": "integer"
+        },
+        "rejects_premise_restatement_for_choose_forced": {
+          "type": "boolean"
+        }
+      }
+    },
+    "premises": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "query": {
+      "type": "string"
+    },
+    "answer_type": {
+      "type": "string",
+      "enum": [
+        "true_false",
+        "single_choice",
+        "multi_select"
+      ]
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "text"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "semantic_label": {
+            "type": "string",
+            "enum": [
+              "equivalent",
+              "forced",
+              "consistent",
+              "contradiction",
+              "irrelevant"
+            ]
+          },
+          "semantic": {
+            "$ref": "#/$defs/semanticStatement"
+          },
+          "explanation": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "correct_answer": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "explanation": {
+      "type": "string"
+    },
+    "skill_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "semanticStatement": {
+      "type": "object",
+      "properties": {
+        "relation": {
+          "type": "string"
+        },
+        "lhs": {
+          "type": "string"
+        },
+        "rhs": {
+          "type": "string"
+        },
+        "polarity": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

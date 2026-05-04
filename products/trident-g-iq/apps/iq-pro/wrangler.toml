@@ -1,0 +1,6 @@
+name = "trident-g-iq-pro"
+compatibility_date = "2026-04-28"
+pages_build_output_dir = "dist"
+
+[vars]
+VITE_IQ_PRO_REQUIRED_BUNDLE = "iq_pro"
