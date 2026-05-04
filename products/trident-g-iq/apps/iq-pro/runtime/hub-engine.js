@@ -762,13 +762,13 @@ export function displayHubTargetLabel(targetModality, wrapper) {
     return `${objectLabel} + COLOR`;
   }
   if (wrapper === "relate_vectors_dual") {
-    return "ORI + REL";
+    return "AXIS + REL";
   }
   if (wrapper === "relate_numbers_dual") {
     return "DIR + REL";
   }
   if (wrapper === "relate_vectors" && targetModality === "sym") {
-    return "ORI";
+    return "AXIS";
   }
   if (wrapper === "relate_numbers" && targetModality === "sym") {
     return "DIR";
@@ -971,7 +971,7 @@ function resolveDisplaySymbol({ wrapper, symIdx, renderMapping, rng }) {
 
   if (wrapper === "and_noncat" || wrapper === "hub_noncat") {
     const category = renderMapping.symbolSet[symIdx];
-    const variant = category.variants[randomInt(rng, 0, category.variants.length - 1)];
+    const variant = category.variants[0];
     return {
       symbolLabel: category.label,
       symbolImageUrl: null,

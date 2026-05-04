@@ -348,23 +348,24 @@ function blockTipRule(plan) {
     if (wrapper === "relate_numbers_dual") {
       return "Track both streams: press F for direction matches and L for number-relation matches.";
     }
-    return "Track both streams: press F for orientation matches and L for relation matches.";
+    return "Track both streams: press F when the pair axis repeats and L when the arrow relation repeats.";
   }
 
   if (wrapper === "and_cat" || wrapper === "and_noncat") {
     const objectName = wrapper === "and_cat" ? "animal" : "shape";
+    const variantNote = wrapper === "and_noncat" ? " The exact outline is the match cue." : "";
     if (target === "loc_sym") {
-      return `Press MATCH only when the same location-${objectName} pair repeats; ignore color.`;
+      return `Press MATCH only when the same location-${objectName} pair repeats; ignore color.${variantNote}`;
     }
     if (target === "loc_col") {
       return `Press MATCH only when the same location-color pair repeats; ignore ${objectName}.`;
     }
-    return `Press MATCH only when the same ${objectName}-color pair repeats; ignore location.`;
+    return `Press MATCH only when the same ${objectName}-color pair repeats; ignore location.${variantNote}`;
   }
 
   if (wrapper === "relate_vectors") {
     if (target === "rel") return "Press MATCH when the arrow relation repeats - same, outwards, inwards, diagonal.";
-    return "Press MATCH when the arrow orientation repeats; ignore relation.";
+    return "Press MATCH when the pair axis repeats - vertical, horizontal or diagonal; ignore the arrow relation.";
   }
 
   if (wrapper === "relate_numbers") {
@@ -413,7 +414,8 @@ function blockTipRule(plan) {
   }
 
   const symbolName = wrapper === "hub_noncat" ? "shape" : "letter";
-  return `Press MATCH when the ${symbolName} repeats; ignore position and color.`;
+  const variantNote = wrapper === "hub_noncat" ? " The exact outline is the match cue." : "";
+  return `Press MATCH when the ${symbolName} repeats; ignore position and color.${variantNote}`;
 }
 
 function blockTipModel(plan) {
@@ -2371,8 +2373,20 @@ function numericScore(value) {
 
 function dualSecondaryTargetLabel(wrapper) {
   if (wrapper === "relate_numbers_dual") return "DIRECTION";
-  if (wrapper === "relate_vectors_dual") return "ORIENTATION";
+  if (wrapper === "relate_vectors_dual") return "PAIR AXIS";
   return "SURFACE";
+}
+
+function dualSecondaryResponseLabel(wrapper) {
+  if (wrapper === "relate_numbers_dual") return "Direction match";
+  if (wrapper === "relate_vectors_dual") return "Pair axis match";
+  return "Spatial / surface match";
+}
+
+function dualRelationResponseLabel(wrapper) {
+  if (wrapper === "relate_numbers_dual") return "Number relation match";
+  if (wrapper === "relate_vectors_dual") return "Arrow relation match";
+  return "Object / relation match";
 }
 
 function accuracyModeModel() {
@@ -4757,11 +4771,13 @@ function renderPlayControls() {
   }
   if (activeBlock?.status === "trial" || activeBlock?.status === "countdown") {
     if (activeBlock.plan.targetModality === "dual") {
+      const secondaryLabel = dualSecondaryResponseLabel(activeBlock.plan.wrapper);
+      const relationLabel = dualRelationResponseLabel(activeBlock.plan.wrapper);
       return `
         <div class="response-row">
           <button class="response-btn is-control" type="button" data-action="pause-block">Pause</button>
-          <button class="response-btn secondary" type="button" data-action="respond-sym"><span class="keycap">F</span> Spatial / surface match</button>
-          <button class="response-btn" type="button" data-action="respond-rel"><span class="keycap">L</span> Object / relation match</button>
+          <button class="response-btn secondary" type="button" data-action="respond-sym"><span class="keycap">F</span> ${escapeHtml(secondaryLabel)}</button>
+          <button class="response-btn" type="button" data-action="respond-rel"><span class="keycap">L</span> ${escapeHtml(relationLabel)}</button>
           <button class="response-btn is-stop" type="button" data-action="stop-block">Stop</button>
         </div>
       `;
