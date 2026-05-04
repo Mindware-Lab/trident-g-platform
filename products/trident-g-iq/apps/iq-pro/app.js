@@ -2037,6 +2037,10 @@ function currentReasoningItem() {
   return activeReasoningBlock.items[activeReasoningBlock.itemIndex] || null;
 }
 
+function reasoningItemRequiresSubmit(item) {
+  return item?.answer_type === "multi_select";
+}
+
 function scheduleReasoningTimeout() {
   clearReasoningTimer();
   const item = currentReasoningItem();
@@ -2049,9 +2053,8 @@ function scheduleReasoningTimeout() {
 function toggleReasoningOption(optionId) {
   const item = currentReasoningItem();
   if (!item || activeReasoningBlock?.status !== "question") return;
-  if (item.answer_type !== "multi_select") {
-    activeReasoningBlock.selectedIds = [optionId];
-    render();
+  if (!reasoningItemRequiresSubmit(item)) {
+    submitReasoningAnswer({ selectedIds: [optionId] });
     return;
   }
   const selected = new Set(activeReasoningBlock.selectedIds || []);
@@ -4057,7 +4060,7 @@ function renderReasoningItemCard() {
       <div class="reasoning-options${item.answer_type === "true_false" ? " is-binary" : ""}">
         ${(item.options || []).map((option) => renderReasoningOptionButton(item, option)).join("")}
       </div>
-      ${activeReasoningBlock.status === "question" ? `
+      ${activeReasoningBlock.status === "question" && reasoningItemRequiresSubmit(item) ? `
         <button class="btn btn-primary reasoning-submit" type="button" data-action="reasoning-submit">Submit Answer</button>
       ` : ""}
       ${feedback ? `
@@ -5470,14 +5473,18 @@ document.addEventListener("keydown", (event) => {
   if (activeReasoningBlock?.status === "question") {
     const item = currentReasoningItem();
     const key = event.key.toUpperCase();
-    if (item?.answer_type === "multi_select" && key === "ENTER") {
+    if (key === "ENTER" && (activeReasoningBlock.selectedIds || []).length) {
       submitReasoningAnswer();
       event.preventDefault();
       return;
     }
     const option = item?.options?.find((entry) => entry.id === key);
     if (option) {
-      toggleReasoningOption(option.id);
+      if (reasoningItemRequiresSubmit(item)) {
+        toggleReasoningOption(option.id);
+      } else {
+        submitReasoningAnswer({ selectedIds: [option.id] });
+      }
       event.preventDefault();
       return;
     }
