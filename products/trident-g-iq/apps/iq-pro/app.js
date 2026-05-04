@@ -877,6 +877,10 @@ function capacityRouteStartLabel(contract) {
 function coachContractPrimaryActionMarkup(contract, options = {}) {
   if (!contract) return "";
   const disabled = options.disabled ? "disabled" : "";
+  const capacitySession = activeCoachSession();
+  if (capacitySession && capacityRemainingForContract(contract) > 0) {
+    return `<button class="btn btn-primary" type="button" data-action="start-block" ${disabled}>Start next block</button>`;
+  }
   if (capacityRemainingForContract(contract) > 0) {
     return `<button class="btn btn-primary" type="button" data-action="start-coach-session" ${disabled}>${escapeHtml(capacityRouteStartLabel(contract))}</button>`;
   }
@@ -1365,7 +1369,14 @@ function recommendedManualFamilyId() {
 }
 
 function beginCoachSession() {
-  if (activeBlock || state.currentSession || zonePulseIsRunning()) return;
+  if (activeBlock || zonePulseIsRunning()) return;
+  if (state.currentSession) {
+    viewState.centerMode = "play";
+    viewState.message = "Capacity route already active. Continue with the next block.";
+    triggerSfx("ui_tap_soft");
+    render();
+    return;
+  }
   viewState.centerMode = "play";
   const contractResult = ensureUnifiedCoachContract();
   if (!contractResult.ok) {
